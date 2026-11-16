@@ -63,6 +63,13 @@ return {
 				{ pet = "Dragon", chance = 0.5 },
 			},
 		},
+		FarmTestEgg = {
+			displayName = "Hof-Test-Ei",
+			price = 100,
+			pets = {
+				{ pet = "Cat", chance = 100 },
+			},
+		},
 	},
 	worlds = {
 		{
@@ -74,6 +81,7 @@ return {
 				{ topping = "Mushroom", weight = 3 },
 				{ topping = "Mozzarella", weight = 1 },
 			},
+			eggs = { "TestEgg" },
 		},
 		{
 			id = "Farm",
@@ -83,6 +91,7 @@ return {
 				{ topping = "Onion", weight = 3 },
 				{ topping = "Ham", weight = 1 },
 			},
+			eggs = { "FarmTestEgg" },
 		},
 		{
 			id = "Beach",

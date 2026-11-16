@@ -129,6 +129,20 @@ function GameRules.new(config: any)
 		return not spawnsSomewhere
 	end
 
+	-- An egg can be opened if a world it stands in is unlocked (eggs in no world: always).
+	local function isEggReachable(state: PlayerState, eggId: string): boolean
+		local standsSomewhere = false
+		for _, world in config.worlds do
+			if world.eggs and table.find(world.eggs, eggId) then
+				standsSomewhere = true
+				if rules.isWorldUnlocked(state, world.id) then
+					return true
+				end
+			end
+		end
+		return not standsSomewhere
+	end
+
 	-- Buys access to a world (the barrier in front of it) for this player only.
 	function rules.unlockWorld(state: PlayerState, worldId: string): Result
 		local world, index = findWorld(worldId)
@@ -377,6 +391,9 @@ function GameRules.new(config: any)
 		local egg = config.eggs[eggId]
 		if egg == nil then
 			return fail(state, "UnknownEgg")
+		end
+		if not isEggReachable(state, eggId) then
+			return fail(state, "WorldLocked")
 		end
 		if state.coins < egg.price then
 			return fail(state, "NotEnoughCoins")

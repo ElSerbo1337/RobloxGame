@@ -103,6 +103,13 @@ local GameConfig = {
 		CheeseMouse = { displayName = "Käse-Maus", rarity = "Epic", bonus = 0.4 },
 		OliveOwl = { displayName = "Oliven-Eule", rarity = "Legendary", bonus = 0.75 },
 		PizzaDragon = { displayName = "Pizza-Drache", rarity = "Mythic", bonus = 1.5 },
+		-- World 2 (Bauernhof): about 2x world 1.
+		FarmChick = { displayName = "Hof-Küken", rarity = "Common", bonus = 0.2 },
+		CornPiglet = { displayName = "Mais-Ferkel", rarity = "Uncommon", bonus = 0.3 },
+		PepperGoat = { displayName = "Paprika-Ziege", rarity = "Rare", bonus = 0.5 },
+		OnionCow = { displayName = "Zwiebel-Kuh", rarity = "Epic", bonus = 0.8 },
+		HayHorse = { displayName = "Heu-Pferd", rarity = "Legendary", bonus = 1.5 },
+		GoldenRooster = { displayName = "Goldener Hahn", rarity = "Mythic", bonus = 3 },
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -117,6 +124,18 @@ local GameConfig = {
 				{ pet = "CheeseMouse", chance = 5.5 },
 				{ pet = "OliveOwl", chance = 1 },
 				{ pet = "PizzaDragon", chance = 0.5 },
+			},
+		},
+		FarmEgg = {
+			displayName = "Bauernhof-Ei",
+			price = 200,
+			pets = {
+				{ pet = "FarmChick", chance = 50 },
+				{ pet = "CornPiglet", chance = 28 },
+				{ pet = "PepperGoat", chance = 15 },
+				{ pet = "OnionCow", chance = 5.5 },
+				{ pet = "HayHorse", chance = 1 },
+				{ pet = "GoldenRooster", chance = 0.5 },
 			},
 		},
 	},
@@ -160,6 +179,7 @@ local GameConfig = {
 				{ topping = "Corn", weight = 17 },
 				{ topping = "Ham", weight = 8 },
 			},
+			eggs = { "FarmEgg" },
 		},
 	},
 }

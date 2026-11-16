@@ -212,3 +212,34 @@ describe("GameConfig pets and eggs", function()
 		end
 	end)
 end)
+
+describe("GameConfig worlds and eggs", function()
+	it("gives every world its own egg", function()
+		local seen = {}
+		for _, world in GameConfig.worlds do
+			expect(world.eggs ~= nil and #world.eggs >= 1).toBe(true)
+			for _, eggId in world.eggs do
+				expect(GameConfig.eggs[eggId] ~= nil).toBe(true)
+				expect(seen[eggId] == nil).toBe(true)
+				seen[eggId] = true
+			end
+		end
+	end)
+
+	it("makes the pets of a later world's egg about 2x stronger and the egg pricier", function()
+		local function averageBonus(eggId: string): number
+			local total = 0
+			for _, entry in GameConfig.eggs[eggId].pets do
+				total += GameConfig.pets[entry.pet].bonus
+			end
+			return total / #GameConfig.eggs[eggId].pets
+		end
+		for i = 2, #GameConfig.worlds do
+			local previous = GameConfig.worlds[i - 1].eggs[1]
+			local current = GameConfig.worlds[i].eggs[1]
+			local ratio = averageBonus(current) / averageBonus(previous)
+			expect(ratio >= 1.5 and ratio <= 2.5).toBe(true)
+			expect(GameConfig.eggs[current].price > GameConfig.eggs[previous].price).toBe(true)
+		end
+	end)
+end)

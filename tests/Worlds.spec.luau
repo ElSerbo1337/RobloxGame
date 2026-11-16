@@ -101,4 +101,21 @@ describe("worlds", function()
 		expect(rules.isWorldUnlocked(state, "PizzeriaGarden")).toBe(true)
 		expect(rules.isWorldUnlocked(state, "Farm")).toBe(false)
 	end)
+
+	it("refuses to open an egg standing in a world the player has not unlocked", function()
+		local result = rules.openEgg(withCoins(5000), "FarmTestEgg", TestKit.sequenceRandom({ 0.5 }))
+
+		expect(result.ok).toBe(false)
+		expect(result.reason).toBe("WorldLocked")
+		expect(result.state.coins).toBe(5000)
+	end)
+
+	it("opens an egg of an unlocked world", function()
+		local state = rules.unlockWorld(withCoins(5000), "Farm").state
+
+		local result = rules.openEgg(state, "FarmTestEgg", TestKit.sequenceRandom({ 0.5 }))
+
+		expect(result.ok).toBe(true)
+		expect(result.state.coins).toBe(3400)
+	end)
 end)
