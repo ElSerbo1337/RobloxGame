@@ -5,6 +5,11 @@
 -- SetAutoCollect  client -> server  (enabled: boolean)          "switch auto-collect on/off"
 -- UnlockWorld     client -> server  (worldId: string)          "I want to buy the barrier to this world"
 -- Notify          server -> client  (kind: string, amount: number?)  feedback, e.g. "PizzaFull", "Sold"
+-- ShopOpen        server -> client  (shopId: string, offers: { GameRules.ShopOffer })  player entered a shop stand
+-- ShopUpdate      server -> client  (shopId: string, offers: { GameRules.ShopOffer })  offers changed while inside
+-- ShopClose       server -> client  ()                           player left the shop stand
+-- BuyUpgrade      client -> server  (shopId: string, upgradeId: string)  "I want the next level"
+-- ShopPurchase    server -> client  (ok: boolean, reasonOrUpgradeId: string)  result of BuyUpgrade
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought).
@@ -18,6 +23,11 @@ local EVENTS = {
 	SetAutoCollect = true,
 	Notify = true,
 	UnlockWorld = true,
+	ShopOpen = true,
+	ShopUpdate = true,
+	ShopClose = true,
+	BuyUpgrade = true,
+	ShopPurchase = true,
 }
 
 local Net = {}

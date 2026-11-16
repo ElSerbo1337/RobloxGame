@@ -13,6 +13,7 @@ local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local ToppingField = require(ReplicatedStorage.Shared.ToppingField)
 local PlayerStates = require(script.Parent.PlayerStates)
+local MagnetPull = require(script.Parent.MagnetPull)
 local ToppingLook = require(script.Parent.ToppingLook)
 local DISC_DIAMETER = 3.5
 local DISC_THICKNESS = 0.6
@@ -99,6 +100,9 @@ function ToppingService.start(worldId: string, layout: Layout)
 
 		local result = rule(state, topping.toppingId, distanceTo(root, parts[slotId]))
 		if result.ok then
+			if rule == PlayerStates.rules.autoCollectTopping then
+				MagnetPull.fly(parts[slotId], root)
+			end
 			-- No yield between the check above and here, so no other request can take it meanwhile.
 			field:take(slotId, os.clock())
 			PlayerStates.set(player, result.state)
