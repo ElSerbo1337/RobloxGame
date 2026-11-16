@@ -1,0 +1,17 @@
+# Roblox Studio Places/Modelle (Quelle der Wahrheit ist src/ via Rojo)
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+*.lock
+roblox.yml
+sourcemap.json
+
+# Editor / OS
+.vscode/settings.json
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Claude lokal
+.claude/settings.local.json
