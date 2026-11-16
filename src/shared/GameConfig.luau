@@ -72,9 +72,9 @@ local GameConfig = {
 				{ price = 5000, value = 8 },
 				{ price = 15000, value = 10 },
 				{ price = 40000, value = 12 },
-				-- Shop 3 (world 7): priced for world 7 toppings (about 300 / 1.200 of them).
-				{ price = 5000000, value = 15 },
-				{ price = 20000000, value = 20 },
+				-- Shop 3 (world 7): priced as goals for world 7 (about 15 / 45 min of income there).
+				{ price = 400000000, value = 15 },
+				{ price = 1200000000, value = 20 },
 			},
 		},
 		CollectRange = {
@@ -88,8 +88,8 @@ local GameConfig = {
 				{ price = 25000, value = 30 },
 				{ price = 60000, value = 35 },
 				-- Shop 3 (world 7)
-				{ price = 5000000, value = 40 },
-				{ price = 15000000, value = 45 },
+				{ price = 250000000, value = 40 },
+				{ price = 700000000, value = 45 },
 			},
 		},
 		Magnet = {
@@ -100,8 +100,8 @@ local GameConfig = {
 				{ price = 30000, value = 18 },
 				{ price = 100000, value = 25 },
 				-- Shop 3 (world 7)
-				{ price = 8000000, value = 32 },
-				{ price = 25000000, value = 40 },
+				{ price = 300000000, value = 32 },
+				{ price = 900000000, value = 40 },
 			},
 		},
 
@@ -258,27 +258,27 @@ local GameConfig = {
 		SalmonBear = { displayName = "Lachs-Bär", rarity = "Epic", bonus = 3.2 },
 		LettuceYeti = { displayName = "Salat-Yeti", rarity = "Legendary", bonus = 6 },
 		FrostPhoenix = { displayName = "Frost-Phönix", rarity = "Mythic", bonus = 12 },
-		-- World 5 (Vulkan): about 2x world 4.
-		LavaLizard = { displayName = "Lava-Echse", rarity = "Common", bonus = 1.6 },
-		ChiliSalamander = { displayName = "Chili-Salamander", rarity = "Uncommon", bonus = 2.4 },
-		MagmaMole = { displayName = "Magma-Maulwurf", rarity = "Rare", bonus = 4 },
-		JalapenoGolem = { displayName = "Jalapeño-Golem", rarity = "Epic", bonus = 6.4 },
-		FireWolf = { displayName = "Feuer-Wolf", rarity = "Legendary", bonus = 12 },
-		LavaTitan = { displayName = "Lava-Titan", rarity = "Mythic", bonus = 24 },
-		-- World 6 (Süßigkeitenland): about 2x world 5.
-		GummyWorm = { displayName = "Gummi-Wurm", rarity = "Common", bonus = 3.2 },
-		LollipopPoodle = { displayName = "Lolli-Pudel", rarity = "Uncommon", bonus = 4.8 },
-		MarshmallowSheep = { displayName = "Marshmallow-Schaf", rarity = "Rare", bonus = 8 },
-		ChocoBear = { displayName = "Schoko-Bär", rarity = "Epic", bonus = 12.8 },
-		CottonCandyUnicorn = { displayName = "Zuckerwatte-Einhorn", rarity = "Legendary", bonus = 24 },
-		CaramelGriffin = { displayName = "Karamell-Greif", rarity = "Mythic", bonus = 48 },
+		-- World 5 (Vulkan): about 2.25x world 4 (the pizza stays at 12 until shop 3, pets carry the curve).
+		LavaLizard = { displayName = "Lava-Echse", rarity = "Common", bonus = 1.8 },
+		ChiliSalamander = { displayName = "Chili-Salamander", rarity = "Uncommon", bonus = 2.7 },
+		MagmaMole = { displayName = "Magma-Maulwurf", rarity = "Rare", bonus = 4.5 },
+		JalapenoGolem = { displayName = "Jalapeño-Golem", rarity = "Epic", bonus = 7.2 },
+		FireWolf = { displayName = "Feuer-Wolf", rarity = "Legendary", bonus = 13.5 },
+		LavaTitan = { displayName = "Lava-Titan", rarity = "Mythic", bonus = 27 },
+		-- World 6 (Süßigkeitenland): about 2.2x world 5.
+		GummyWorm = { displayName = "Gummi-Wurm", rarity = "Common", bonus = 4 },
+		LollipopPoodle = { displayName = "Lolli-Pudel", rarity = "Uncommon", bonus = 6 },
+		MarshmallowSheep = { displayName = "Marshmallow-Schaf", rarity = "Rare", bonus = 10 },
+		ChocoBear = { displayName = "Schoko-Bär", rarity = "Epic", bonus = 16 },
+		CottonCandyUnicorn = { displayName = "Zuckerwatte-Einhorn", rarity = "Legendary", bonus = 30 },
+		CaramelGriffin = { displayName = "Karamell-Greif", rarity = "Mythic", bonus = 60 },
 		-- World 7 (Weltraum): about 2x world 6.
-		MoonMouse = { displayName = "Mond-Maus", rarity = "Common", bonus = 6.4 },
-		StarCat = { displayName = "Sternen-Katze", rarity = "Uncommon", bonus = 9.6 },
-		AlienFrog = { displayName = "Alien-Frosch", rarity = "Rare", bonus = 16 },
-		RocketDog = { displayName = "Raketen-Hund", rarity = "Epic", bonus = 25.6 },
-		CometWhale = { displayName = "Kometen-Wal", rarity = "Legendary", bonus = 48 },
-		GalaxyDragon = { displayName = "Galaxie-Drache", rarity = "Mythic", bonus = 96 },
+		MoonMouse = { displayName = "Mond-Maus", rarity = "Common", bonus = 8 },
+		StarCat = { displayName = "Sternen-Katze", rarity = "Uncommon", bonus = 12 },
+		AlienFrog = { displayName = "Alien-Frosch", rarity = "Rare", bonus = 20 },
+		RocketDog = { displayName = "Raketen-Hund", rarity = "Epic", bonus = 32 },
+		CometWhale = { displayName = "Kometen-Wal", rarity = "Legendary", bonus = 60 },
+		GalaxyDragon = { displayName = "Galaxie-Drache", rarity = "Mythic", bonus = 120 },
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).

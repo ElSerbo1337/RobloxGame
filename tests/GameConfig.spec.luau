@@ -178,6 +178,92 @@ describe("GameConfig", function()
 	end)
 end)
 
+describe("GameConfig balancing", function()
+	-- Rough income model of a player who plays world k-1 to save for the barrier of world k:
+	-- they sell world k-1 toppings (spawn-weighted average), carry the biggest pizza the shops
+	-- in worlds 1..k-1 sell, need 1.5 s per topping plus 10 s per trip to the oven, and have
+	-- the starting pet slots filled with "Selten" pets from world k-1's egg.
+	local SECONDS_PER_TOPPING = 1.5
+	local SECONDS_PER_SELL_TRIP = 10
+
+	local function averageToppingValue(world): number
+		local weight, value = 0, 0
+		for _, spawn in world.toppingSpawns do
+			weight += spawn.weight
+			value += spawn.weight * GameConfig.toppings[spawn.topping].value
+		end
+		return value / weight
+	end
+
+	local function biggestPizza(upToWorld: number): number
+		local reachable = {}
+		for i = 1, upToWorld do
+			reachable[GameConfig.worlds[i].id] = true
+		end
+		local capacity = GameConfig.pizza.startCapacity
+		for _, shop in GameConfig.shops do
+			if reachable[shop.worldId] then
+				for _, offer in shop.offers do
+					if offer.upgrade == "PizzaSpace" then
+						capacity = math.max(capacity, GameConfig.upgrades.PizzaSpace.levels[offer.maxLevel].value)
+					end
+				end
+			end
+		end
+		return capacity
+	end
+
+	local function rarePetBonus(world): number
+		for _, entry in GameConfig.eggs[world.eggs[1]].pets do
+			local pet = GameConfig.pets[entry.pet]
+			if pet.rarity == "Rare" then
+				return pet.bonus
+			end
+		end
+		error(`no rare pet in {world.eggs[1]}`)
+	end
+
+	local function coinsPerMinute(worldIndex: number, pizza: number?): number
+		local world = GameConfig.worlds[worldIndex]
+		local capacity = pizza or biggestPizza(worldIndex)
+		local toppingsPerMinute = 60 * capacity / (capacity * SECONDS_PER_TOPPING + SECONDS_PER_SELL_TRIP)
+		local multiplier = 1 + GameConfig.petSlots.start * rarePetBonus(world)
+		return averageToppingValue(world) * toppingsPerMinute * multiplier
+	end
+
+	it("makes every world reachable with the income of the world before in 10-60 minutes", function()
+		for i = 2, #GameConfig.worlds do
+			local minutes = GameConfig.worlds[i].unlockPrice / coinsPerMinute(i - 1)
+			if minutes < 10 or minutes > 60 then
+				error(`{GameConfig.worlds[i].id}: {math.floor(minutes)} min`)
+			end
+		end
+	end)
+
+	it("prices the coin levels only shop 3 sells at 5-60 minutes of world 7 income each", function()
+		local shop2Max = {}
+		for _, offer in GameConfig.shops.World4Shop.offers do
+			shop2Max[offer.upgrade] = offer.maxLevel
+		end
+		-- Before shop 3 the player still carries the biggest pizza from shop 2.
+		local income = coinsPerMinute(7, biggestPizza(6))
+		local checked = 0
+		for _, offer in GameConfig.shops.World7Shop.offers do
+			local upgrade = GameConfig.upgrades[offer.upgrade]
+			if upgrade.currency ~= "Gems" then
+				for level = shop2Max[offer.upgrade] + 1, offer.maxLevel do
+					local minutes = upgrade.levels[level].price / income
+					if minutes < 5 or minutes > 60 then
+						error(`{offer.upgrade} level {level}: {math.floor(minutes)} min`)
+					end
+					checked += 1
+				end
+			end
+		end
+		expect(checked).toBe(6)
+	end)
+end)
+
 describe("GameConfig shops", function()
 	local rules = GameRules.new(GameConfig)
 
