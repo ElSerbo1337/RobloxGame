@@ -73,7 +73,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [x] Zweiten Belag aufsammeln → Pizza `2/2` (rot), Meldung „Pizza voll! Ab zum Ofen.“ erscheint **einmal** sofort.
 - [ ] Mit voller Pizza weiter über Beläge laufen → Beläge bleiben liegen, Meldung höchstens alle ~3 s (kein Dauer-Spam).
 - [ ] Knopf erneut drücken → AUS (grau), Auto-Sammeln stoppt.
-- [ ] Mit Belägen in die Ofen-Zone laufen → **Animation**: eine Pizza fliegt vom Spieler in die glühende Ofenöffnung und schrumpft, danach fliegen mehrere goldene Münzen vom Ofen hoch zur Münzanzeige; Münzanzeige hüpft, „+X Münzen“. Beläge auf der Pizza in der Hand sind danach weg.
+- [x] Mit Belägen in die Ofen-Zone laufen → **Animation**: eine Pizza fliegt vom Spieler in die glühende Ofenöffnung und schrumpft, danach fliegen mehrere goldene Münzen vom Ofen hoch zur Münzanzeige; Münzanzeige hüpft, „+X Münzen“. Beläge auf der Pizza in der Hand sind danach weg.
 - [ ] Ofen außerhalb des Bildschirms (Kamera wegdrehen) → Münzen starten aus der Bildschirmmitte, keine Fehler.
 - [x] Nach Reset (Esc → Reset Character) bleibt der Schalter-Zustand erhalten.
 - [ ] Gespeichert: Schalter AN, Play beenden, neu starten → wieder AN. **Erst testbar, wenn #3 (Spielerstand speichern) umgesetzt ist** – der Schalter ist Teil des Spielerstands (`autoCollect`).
@@ -98,17 +98,17 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozz
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler.
-- [ ] Links hinten vom Spawn (bei x = -60, z = 72, außerhalb der Sammelfläche) steht ein Holz-Stand mit rot-weißer Markise, Schild „Pizza-Shop – Upgrades“ (seit #12; vorher „Münz-Tresen“) und grüner Zone davor. Im HUD gibt es **keinen** Shop-Knopf.
-- [ ] In die grüne Zone laufen → Shop-Menü öffnet sich (kurzes Aufploppen) mit 3 Karten: Pizza-Platz, Reichweite, Magnet. Jede zeigt Name, Beschreibung, „Stufe 0 von N“, Wirkung `jetzt → nächste` (z. B. `2 Beläge → 3 Beläge`, `10 Studs → 14 Studs`, `aus → 12 Studs`) und einen Kaufknopf mit Preis (25 / 40 / 600 Münzen).
-- [ ] Aus der Zone laufen → Menü schließt. Wieder rein → öffnet erneut. Mit „X“ schließen, in der Zone stehen bleiben → bleibt zu, bis man raus- und wieder reinläuft.
-- [ ] Mit 0 Münzen „25 Münzen“ drücken → Knopf ist grau, rote Meldung „Nicht genug Münzen!“, Münzen und Stufe unverändert.
-- [ ] Genug Münzen: Pizza-Platz kaufen → grüne Meldung „Gekauft: Pizza-Platz!“, Münzen sinken um den Preis, Karte zeigt „Stufe 1 von 3“, `3 Beläge → 4 Beläge`, HUD unten `Pizza 0/3`.
-- [ ] Pizza-Platz bis Stufe 3 kaufen (2 → 3 → 4 → 6) → HUD `Pizza x/6`, Karte zeigt grauen Knopf „Im größeren Shop erhältlich“ (nächste Stufe 8 Beläge, nicht kaufbar).
+- [x] Output ohne rote Fehler.
+- [x] Links hinten vom Spawn (bei x = -60, z = 72, außerhalb der Sammelfläche) steht ein Holz-Stand mit rot-weißer Markise, Schild „Pizza-Shop – Upgrades“ (seit #12; vorher „Münz-Tresen“) und grüner Zone davor. Im HUD gibt es **keinen** Shop-Knopf. _(16.11. noch mit altem Schild „Münz-Tresen“ getestet)_
+- [x] In die grüne Zone laufen → Shop-Menü öffnet sich (kurzes Aufploppen) mit 3 Karten: Pizza-Platz, Reichweite, Magnet. Jede zeigt Name, Beschreibung, „Stufe 0 von N“, Wirkung `jetzt → nächste` (z. B. `2 Beläge → 3 Beläge`, `10 Studs → 14 Studs`, `aus → 12 Studs`) und einen Kaufknopf mit Preis (25 / 40 / 600 Münzen).
+- [x] Aus der Zone laufen → Menü schließt. Wieder rein → öffnet erneut. Mit „X“ schließen, in der Zone stehen bleiben → bleibt zu, bis man raus- und wieder reinläuft.
+- [x] Mit 0 Münzen „25 Münzen“ drücken → Knopf ist grau, rote Meldung „Nicht genug Münzen!“, Münzen und Stufe unverändert.
+- [x] Genug Münzen: Pizza-Platz kaufen → grüne Meldung „Gekauft: Pizza-Platz!“, Münzen sinken um den Preis, Karte zeigt „Stufe 1 von 3“, `3 Beläge → 4 Beläge`, HUD unten `Pizza 0/3`.
+- [x] Pizza-Platz bis Stufe 3 kaufen (2 → 3 → 4 → 6) → HUD `Pizza x/6`, Karte zeigt grauen Knopf „Im größeren Shop erhältlich“ (nächste Stufe 8 Beläge, nicht kaufbar).
 - [ ] Reichweite kaufen → Beläge lassen sich aus ca. 14 Studs Entfernung anklicken (vorher „Zu weit weg!“). Bis Stufe 3 (22 Studs), danach „Im größeren Shop erhältlich“.
-- [ ] Magnet Stufe 1 kaufen, Auto-Sammeln AN → Beläge im Umkreis von ca. 12 Studs (statt 4) fliegen sichtbar zur Spielfigur und landen auf der Pizza. Danach „Im größeren Shop erhältlich“.
+- [x] Magnet Stufe 1 kaufen, Auto-Sammeln AN → Beläge im Umkreis von ca. 12 Studs (statt 4) fliegen sichtbar zur Spielfigur und landen auf der Pizza. Danach „Im größeren Shop erhältlich“. _(6 Beläge sofort geholt; Flug selbst nicht beobachtet)_
 - [ ] Ohne Magnet, Auto-Sammeln AN: auch normale Auto-Sammel-Beläge fliegen kurz zur Figur (kein hässlicher Rest-Belag in der Welt, unter `World1_PizzeriaGarden` bleibt kein `PulledTopping` übrig).
-- [ ] Mit zu wenig Münzen ist der Preisknopf grau; nach einem Verkauf am Ofen zurück in den Shop → Knopf ist grün, sobald genug Geld da ist.
+- [x] Mit zu wenig Münzen ist der Preisknopf grau; nach einem Verkauf am Ofen zurück in den Shop → Knopf ist grün, sobald genug Geld da ist.
 - [ ] Gespeichert (#3): Upgrades kaufen, Play beenden, neu starten → Stufen, Pizza-Platz und Münzen sind erhalten.
 
 **Mehrspieler** (2 Spieler): A kauft ein Upgrade → nur A's Stufen/Münzen ändern sich, B's Menü bleibt unverändert.
@@ -125,14 +125,14 @@ Vorbereitung: Zum schnellen Testen in `src/shared/GameConfig.luau` vorübergehen
 
 **Welt und Barriere** (Play, 1 Spieler):
 
-- [ ] Hinter dem Pizzeria-Garten (Richtung −Z, hinter der Belag-Fläche) liegt eine zweite Fläche „Bauernhof“ (sandfarben) mit eigener Belag-Fläche, Ofen, Ei-Sockel mit „Bauernhof-Ei“ und 60 Belägen in neuen Farben (Zwiebel lila, Paprika grün, Mais gelb, Schinken rosa).
-- [ ] Zwischen den Welten steht eine rote Kraftfeld-Wand über die ganze Breite; davor schwebt „🔒 Bauernhof / 1.500 Münzen“.
-- [ ] Gegen die Wand laufen → man kommt nicht durch, auch nicht durch Springen oder an den Rändern.
-- [ ] Nahe der Wand (< ca. 22 Studs) erscheint unten ein großer Knopf „🔓 Bauernhof freischalten / 1.500 Münzen“: grau bei zu wenig Münzen, grün bei genug. Weggehen → Knopf verschwindet.
+- [x] Hinter dem Pizzeria-Garten (Richtung −Z, hinter der Belag-Fläche) liegt eine zweite Fläche „Bauernhof“ (sandfarben) mit eigener Belag-Fläche, Ofen, Ei-Sockel mit „Bauernhof-Ei“ und 60 Belägen in neuen Farben (Zwiebel lila, Paprika grün, Mais gelb, Schinken rosa).
+- [x] Zwischen den Welten steht eine rote Kraftfeld-Wand über die ganze Breite; davor schwebt „🔒 Bauernhof / 1.500 Münzen“.
+- [x] Gegen die Wand laufen → man kommt nicht durch, auch nicht durch Springen oder an den Rändern.
+- [x] Nahe der Wand (< ca. 22 Studs) erscheint unten ein großer Knopf „🔓 Bauernhof freischalten / 1.500 Münzen“: grau bei zu wenig Münzen, grün bei genug. Weggehen → Knopf verschwindet. _(grün geprüft; grau bei zu wenig Münzen nicht geprüft)_
 - [ ] Knopf mit zu wenig Münzen → Meldung „Nicht genug Münzen!“, Münzen unverändert.
-- [ ] Knopf mit genug Münzen → Münzen −1.500, Meldung „Neue Welt freigeschaltet!“, Wand wird für mich unsichtbar, Preisschild weg, Knopf weg, man läuft durch.
-- [ ] Im Bauernhof Beläge sammeln (Klick und Auto-Sammeln) und am Bauernhof-Ofen verkaufen → Werte 4/8/12/20 Münzen.
-- [ ] Output ohne Fehler (rot) beim Start und beim Freischalten.
+- [x] Knopf mit genug Münzen → Münzen −1.500, Meldung „Neue Welt freigeschaltet!“, Wand wird für mich unsichtbar, Preisschild weg, Knopf weg, man läuft durch.
+- [x] Im Bauernhof Beläge sammeln (Klick und Auto-Sammeln) und am Bauernhof-Ofen verkaufen → Werte 4/8/12/20 Münzen. _(4 Beläge → +60, Klick-Sammeln dort nicht einzeln geprüft)_
+- [x] Output ohne Fehler (rot) beim Start und beim Freischalten.
 
 **Speichern** (braucht API-Zugriff wie bei #3):
 
@@ -157,19 +157,19 @@ Vorbereitung: Zum schnellen Testen in `src/shared/GameConfig.luau` vorübergehen
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler. Im Workspace gibt es `Eggs` (mit `GardenEgg` und `FarmEgg`) und `Pets`.
-- [ ] Links neben dem Spawn (x = −30, zwischen Spawn und Shop-Stand) steht auf einem Sockel ein cremefarbenes Ei mit orangen Punkten, nicht im Boden versunken und nicht schwebend.
-- [ ] Hinlaufen (< 20 Studs) → über dem Ei schwebt die Vorschau „Garten-Ei“ mit 6 Zeilen: Teig-Hamster (grau, 50 %, +10 %), Basilikum-Hase (grün, 28 %, +15 %), Tomaten-Katze (blau, 15 %, +25 %), Käse-Maus (lila, 5,5 %, +40 %), Oliven-Eule (orange, 1 %, +75 %), Pizza-Drache (pink, 0,5 %, +150 %) und darunter der grüne Knopf „1 öffnen – 25 Münzen“. Weggehen → Vorschau verschwindet.
-- [ ] Vorschau ist lesbar, nicht abgeschnitten und verdeckt das Ei nicht komplett (ggf. `StudsOffsetWorldSpace`/`WIDTH` in `src/client/EggPreview.luau` anpassen).
+- [x] Output ohne rote Fehler. Im Workspace gibt es `Eggs` (mit `GardenEgg` und `FarmEgg`) und `Pets`.
+- [x] Links neben dem Spawn (x = −30, zwischen Spawn und Shop-Stand) steht auf einem Sockel ein cremefarbenes Ei mit orangen Punkten, nicht im Boden versunken und nicht schwebend.
+- [x] Hinlaufen (< 20 Studs) → über dem Ei schwebt die Vorschau „Garten-Ei“ mit 6 Zeilen: Teig-Hamster (grau, 50 %, +10 %), Basilikum-Hase (grün, 28 %, +15 %), Tomaten-Katze (blau, 15 %, +25 %), Käse-Maus (lila, 5,5 %, +40 %), Oliven-Eule (orange, 1 %, +75 %), Pizza-Drache (pink, 0,5 %, +150 %) und darunter der grüne Knopf „1 öffnen – 25 Münzen“. Weggehen → Vorschau verschwindet.
+- [ ] Vorschau ist lesbar, nicht abgeschnitten und verdeckt das Ei nicht komplett (ggf. `StudsOffsetWorldSpace`/`WIDTH` in `src/client/EggPreview.luau` anpassen). _(16.11.: lesbar, überdeckt aber von nah die Münzanzeige oben)_
 - [ ] Mit weniger als 25 Münzen „1 öffnen“ antippen → Knopf wird kurz rot „Zu wenig Münzen!“, Münzen unverändert, kein Pet.
-- [ ] Mit genug Münzen „1 öffnen“ → Münzen sinken um 25; Animation: Ei wackelt immer stärker, knackt (⚡), weißer Blitz, Pet-Karte springt heraus (Name, Seltenheit in Farbe, „+X % Münzen“). Antippen oder 3 s warten schließt sie.
-- [ ] Schnell mehrfach tippen öffnet nicht mehrere Eier gleichzeitig (Sperre ca. 2,5 s).
-- [ ] Links mittig großer runder Knopf „Pets“ → Menü „Meine Pets“ mit Karten (Farbe = Seltenheit, Name, Bonus, Knopf „Ausrüsten“). Ohne Pets: „Noch keine Pets – öffne ein Ei!“.
-- [ ] Karte antippen → Pet ausgerüstet (Karte rückt nach vorn, „Ablegen“), Kopfzeile „Ausgerüstet 1/3 · Münz-Bonus +X %“. Neben dem Spieler erscheint eine farbige Kugel mit Augen und Namensschild.
-- [ ] 4 Pets öffnen, 3 ausrüsten → das 4. lässt sich nicht ausrüsten, Meldung „Alle Pet-Plätze belegt – erst ein Pet ablegen!“. Eins ablegen → Kugel verschwindet, das 4. lässt sich nun ausrüsten.
-- [ ] Ausgerüstete Pets laufen in einer Reihe hinter dem Spieler her, hüpfen beim Laufen, schweben im Stand leicht, stehen auf dem Boden (nicht im Boden / nicht in der Luft), auch an Rampen/Kanten. Kein Ruckeln, Spieler kollidiert nicht mit ihnen.
-- [ ] Verkaufswert: z. B. mit Teig-Hamster (+10 %) und Tomaten-Katze (+25 %) ergibt eine Pizza aus Pilz + Mozzarella (7) → 7 × 1,35 = 9,45 → **9** Münzen. Ohne ausgerüstete Pets wieder 7.
-- [ ] Nach Reset (Esc → Reset Character) folgen die Pets der neuen Figur weiter.
+- [x] Mit genug Münzen „1 öffnen“ → Münzen sinken um 25; Animation: Ei wackelt immer stärker, knackt (⚡), weißer Blitz, Pet-Karte springt heraus (Name, Seltenheit in Farbe, „+X % Münzen“). Antippen oder 3 s warten schließt sie.
+- [x] Schnell mehrfach tippen öffnet nicht mehrere Eier gleichzeitig (Sperre ca. 2,5 s).
+- [x] Links mittig großer runder Knopf „Pets“ → Menü „Meine Pets“ mit Karten (Farbe = Seltenheit, Name, Bonus, Knopf „Ausrüsten“). Ohne Pets: „Noch keine Pets – öffne ein Ei!“.
+- [x] Karte antippen → Pet ausgerüstet (Karte rückt nach vorn, „Ablegen“), Kopfzeile „Ausgerüstet 1/3 · Münz-Bonus +X %“. Neben dem Spieler erscheint eine farbige Kugel mit Augen und Namensschild.
+- [x] 4 Pets öffnen, 3 ausrüsten → das 4. lässt sich nicht ausrüsten, Meldung „Alle Pet-Plätze belegt – erst ein Pet ablegen!“. Eins ablegen → Kugel verschwindet, das 4. lässt sich nun ausrüsten.
+- [ ] Ausgerüstete Pets laufen in einer Reihe hinter dem Spieler her, hüpfen beim Laufen, schweben im Stand leicht, stehen auf dem Boden (nicht im Boden / nicht in der Luft), auch an Rampen/Kanten. Kein Ruckeln, Spieler kollidiert nicht mit ihnen. _(16.11.: Pets standen am Ofen auf dem Ofendach bzw. halb in der Ofenwand)_
+- [x] Verkaufswert: z. B. mit Teig-Hamster (+10 %) und Tomaten-Katze (+25 %) ergibt eine Pizza aus Pilz + Mozzarella (7) → 7 × 1,35 = 9,45 → **9** Münzen. Ohne ausgerüstete Pets wieder 7. _(Pilz mit +60 % → 3 Münzen)_
+- [x] Nach Reset (Esc → Reset Character) folgen die Pets der neuen Figur weiter.
 - [ ] Rejoin (Speichern aktiv wie bei #3): Pets und Ausrüstung sind noch da.
 - [ ] Bauernhof-Ei (Welt 2, auf dem Ei-Sockel aus #8): Ohne Freischaltung → „1 öffnen“ wird abgelehnt (Server meldet `WorldLocked`, keine Münzen weg). Nach Freischaltung öffnen klappt, die Bauernhof-Pets erscheinen.
 
