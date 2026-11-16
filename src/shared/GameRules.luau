@@ -37,6 +37,26 @@ export type PlayerState = {
 	-- Potion id -> seconds of effect left for potions that are running (missing = not active).
 	-- Counts down only while the player is online (see tickPotions).
 	activePotions: { [string]: number },
+	-- Delivery service (phone -> order -> delivery van). All fields optional:
+	-- `call` = order offered by the ringing phone, `order` = accepted order being delivered,
+	-- `nextCallAt` = earliest time (server clock, seconds) the phone rings again.
+	delivery: Delivery,
+}
+
+export type Delivery = { call: Order?, order: Order?, nextCallAt: number? }
+
+-- A delivery order: toppings (id -> count) from one world and the kind of reward.
+export type Order = {
+	worldId: string,
+	toppings: { [string]: number },
+	-- "Coins" | "Gems" | "Potion"
+	reward: string,
+	-- Gem reward before the speed bonus (reward "Gems").
+	gems: number?,
+	-- Potion handed out (reward "Potion").
+	potionId: string?,
+	-- Set once accepted: when the time is up (same clock as `now`).
+	expiresAt: number?,
 }
 
 export type OwnedPet = { uid: number, petId: string }
@@ -48,7 +68,9 @@ export type Result = {
 	-- | "UnknownWorld" | "AlreadyUnlocked" | "PreviousWorldLocked" | "WorldLocked"
 	-- | "UnknownEgg" | "UnknownPet" | "AlreadyEquipped" | "PetSlotsFull" | "NotEquipped"
 	-- | "InventoryFull" | "NoPets" | "NotEnoughGems" | "InvalidTime" | "MultiOpenLocked" | "InvalidCount"
-	-- | "UnknownPotion" | "NoPotion"
+	-- | "UnknownPotion" | "NoPotion" | "OrderToppingsOnly"
+	-- | "TutorialRunning" | "CallWaiting" | "OrderActive" | "PhoneNotReady" | "NoCall" | "NoOrder"
+	-- | "OrderExpired" | "WrongToppings" | "NotExpired"
 	reason: string?,
 	state: PlayerState,
 }
@@ -99,6 +121,11 @@ export type PotionOffer = {
 -- Passing time for running potions: the potion ids whose time ran out with this tick.
 export type PotionTickResult = Result & { expired: { string } }
 
+-- What a delivered order pays: `amount` coins, gems or potions (of `potionId`).
+export type DeliveryReward = { reward: string, amount: number, potionId: string? }
+
+export type DeliveryResult = Result & { reward: DeliveryReward? }
+
 export type OpenEggResult = Result & { pet: OwnedPet? }
 
 -- Opening several eggs at once: the drawn pets in order (empty on failure).
@@ -145,6 +172,7 @@ function GameRules.new(config: any)
 			tutorialStep = 1,
 			potions = {},
 			activePotions = {},
+			delivery = {},
 		}
 	end
 
@@ -443,22 +471,47 @@ function GameRules.new(config: any)
 		return math.round((1 + bonus) * 1e6) / 1e6
 	end
 
-	-- Sells every topping on the pizza at once:
-	-- earned = sum of topping values x coinMultiplier x coin potion (rounded down).
+	-- Splits the pizza into toppings the active delivery order still needs (kept, in
+	-- pizza order) and the rest (sold at the oven). Without an order everything is sold.
+	local function splitForOrder(state: PlayerState): ({ string }, { string })
+		local order = state.delivery.order
+		if order == nil then
+			return {}, state.pizza
+		end
+		local needed = table.clone(order.toppings)
+		local kept, sold = {}, {}
+		for _, toppingId in state.pizza do
+			if (needed[toppingId] or 0) > 0 then
+				needed[toppingId] -= 1
+				table.insert(kept, toppingId)
+			else
+				table.insert(sold, toppingId)
+			end
+		end
+		return kept, sold
+	end
+
+	-- Sells every topping on the pizza at once (during a delivery order only the ones
+	-- the order does not need): earned = sum of topping values x coinMultiplier x coin
+	-- potion (rounded down).
 	function rules.sellPizza(state: PlayerState): SellResult
 		if #state.pizza == 0 then
 			return { ok = false, reason = "PizzaEmpty", state = state, coinsEarned = 0 }
 		end
+		local kept, sold = splitForOrder(state)
+		if #sold == 0 then
+			return { ok = false, reason = "OrderToppingsOnly", state = state, coinsEarned = 0 }
+		end
 
 		local toppingValue = 0
-		for _, toppingId in state.pizza do
+		for _, toppingId in sold do
 			toppingValue += config.toppings[toppingId].value
 		end
 		-- Rounded down; the epsilon guards against float noise like 7 * 1.6 = 11.19999.
 		local earned = math.floor(toppingValue * rules.coinMultiplier(state) * rules.potionCoinMultiplier(state) + 1e-6)
 
 		local newState = table.clone(state)
-		newState.pizza = {}
+		newState.pizza = kept
 		newState.coins = state.coins + earned
 		advanceTutorial(newState, "SellPizza")
 		return { ok = true, state = newState, coinsEarned = earned }
@@ -736,6 +789,218 @@ function GameRules.new(config: any)
 		end
 		table.sort(expired)
 		return { ok = true, state = newState, expired = expired }
+	end
+
+	-- Delivery service ---------------------------------------------------------
+
+	-- Picks an entry of a { { [key]: any, weight: number } } list by weight.
+	local function drawWeighted(entries: { any }, random: () -> number): any
+		local total = 0
+		for _, entry in entries do
+			total += entry.weight
+		end
+		local roll = random() * total
+		for _, entry in entries do
+			roll -= entry.weight
+			if roll < 0 then
+				return entry
+			end
+		end
+		return entries[#entries]
+	end
+
+	-- The last world in unlock order the player has unlocked.
+	local function highestUnlockedWorld(state: PlayerState): any
+		local highest = config.worlds[1]
+		for _, world in config.worlds do
+			if rules.isWorldUnlocked(state, world.id) then
+				highest = world
+			end
+		end
+		return highest
+	end
+
+	-- A new order for this player: toppings of the highest unlocked world (by spawn
+	-- weight), between delivery.minToppings and the pizza space in total.
+	local function newOrder(state: PlayerState, random: () -> number): Order
+		local delivery = config.delivery
+		local world = highestUnlockedWorld(state)
+		local most = rules.pizzaCapacity(state)
+		local fewest = math.min(delivery.minToppings, most)
+		local count = math.min(most, fewest + math.floor(random() * (most - fewest + 1)))
+		local toppings = {}
+		for _ = 1, count do
+			local toppingId = drawWeighted(world.toppingSpawns, random).topping
+			toppings[toppingId] = (toppings[toppingId] or 0) + 1
+		end
+		local order: Order = {
+			worldId = world.id,
+			toppings = toppings,
+			reward = drawWeighted(delivery.rewardWeights, random).reward,
+		}
+		if order.reward == "Gems" then
+			local spread = delivery.gemsBaseMax - delivery.gemsMin + 1
+			order.gems = delivery.gemsMin + math.min(spread - 1, math.floor(random() * spread))
+		elseif order.reward == "Potion" then
+			local potionIds = {}
+			for potionId in config.potions do
+				table.insert(potionIds, potionId)
+			end
+			table.sort(potionIds)
+			order.potionId = potionIds[math.min(#potionIds, 1 + math.floor(random() * #potionIds))]
+		end
+		return order
+	end
+
+	-- The order the ringing phone offers (nil = phone is quiet).
+	function rules.deliveryCall(state: PlayerState): Order?
+		return state.delivery.call
+	end
+
+	-- The accepted order being delivered (nil = none).
+	function rules.activeOrder(state: PlayerState): Order?
+		return state.delivery.order
+	end
+
+	-- Seconds left to deliver the active order (0 = none or time is up).
+	function rules.orderTimeLeft(state: PlayerState, now: number): number
+		local order = state.delivery.order
+		return if order and order.expiresAt then math.max(0, order.expiresAt - now) else 0
+	end
+
+	-- A copy of the state with a changed delivery part; `nextCallAt` set when the phone
+	-- should stay quiet for a call interval from `now`.
+	local function withDelivery(state: PlayerState, call: Order?, order: Order?, quietFrom: number?): PlayerState
+		local newState = table.clone(state)
+		newState.delivery = {
+			call = call,
+			order = order,
+			nextCallAt = if quietFrom
+				then quietFrom + config.delivery.callIntervalSeconds
+				else state.delivery.nextCallAt,
+		}
+		return newState
+	end
+
+	-- The phone rings with a new order offer, if it is time. It stays quiet during the
+	-- tutorial, while a call waits or an order runs, and for a call interval after one ended.
+	function rules.ringPhone(state: PlayerState, now: number, random: () -> number): Result
+		if rules.tutorial(state) ~= nil then
+			return fail(state, "TutorialRunning")
+		end
+		if state.delivery.call then
+			return fail(state, "CallWaiting")
+		end
+		if state.delivery.order then
+			return fail(state, "OrderActive")
+		end
+		if now < (state.delivery.nextCallAt or -math.huge) then
+			return fail(state, "PhoneNotReady")
+		end
+		return { ok = true, state = withDelivery(state, newOrder(state, random), nil) }
+	end
+
+	-- Takes the offered order: it becomes the active order, to be delivered within the time limit.
+	function rules.acceptOrder(state: PlayerState, now: number): Result
+		local call = state.delivery.call
+		if call == nil then
+			return fail(state, "NoCall")
+		end
+		local order = table.clone(call)
+		order.expiresAt = now + config.delivery.timeLimitSeconds
+		return { ok = true, state = withDelivery(state, nil, order) }
+	end
+
+	-- Whether the pizza holds exactly the order's toppings (nothing missing, nothing extra).
+	local function pizzaMatches(pizza: { string }, order: Order): boolean
+		local counts = {}
+		for _, toppingId in pizza do
+			counts[toppingId] = (counts[toppingId] or 0) + 1
+		end
+		for toppingId, count in order.toppings do
+			if counts[toppingId] ~= count then
+				return false
+			end
+			counts[toppingId] = nil
+		end
+		return next(counts) == nil
+	end
+
+	-- What delivering the active order at `now` would give: faster = more.
+	-- Coins: topping values x pet bonus x coin potion x coinFactor x speed.
+	-- Gems: base x speed (rounded, at most gemsMax). Potion: 1, or 2 in the fast part of the time.
+	-- Speed = 1 + speedBonus x share of the time left.
+	function rules.orderReward(state: PlayerState, now: number): DeliveryReward?
+		local order = state.delivery.order
+		if order == nil then
+			return nil
+		end
+		local delivery = config.delivery
+		local share = math.clamp(rules.orderTimeLeft(state, now) / delivery.timeLimitSeconds, 0, 1)
+		local speed = 1 + delivery.speedBonus * share
+		if order.reward == "Gems" then
+			return { reward = "Gems", amount = math.min(delivery.gemsMax, math.round((order.gems or 0) * speed)) }
+		elseif order.reward == "Potion" then
+			local amount = if share >= delivery.fastPotionShare then 2 else 1
+			return { reward = "Potion", amount = amount, potionId = order.potionId }
+		end
+		local value = 0
+		for toppingId, count in order.toppings do
+			value += config.toppings[toppingId].value * count
+		end
+		local multiplier = rules.coinMultiplier(state) * rules.potionCoinMultiplier(state) * delivery.coinFactor
+		-- The epsilon guards against float noise (see sellPizza).
+		return { reward = "Coins", amount = math.floor(value * multiplier * speed + 1e-6) }
+	end
+
+	-- Hands the order pizza over at the delivery van. The pizza must hold exactly the
+	-- ordered toppings; they are used up (not sold) and the reward is paid out.
+	function rules.deliverOrder(state: PlayerState, now: number): DeliveryResult
+		local function reject(reason: string): DeliveryResult
+			return { ok = false, reason = reason, state = state }
+		end
+		local order = state.delivery.order
+		if order == nil then
+			return reject("NoOrder")
+		end
+		if rules.orderTimeLeft(state, now) <= 0 then
+			return reject("OrderExpired")
+		end
+		if not pizzaMatches(state.pizza, order) then
+			return reject("WrongToppings")
+		end
+		local reward = rules.orderReward(state, now) :: DeliveryReward
+		local newState = withDelivery(state, nil, nil, now)
+		newState.pizza = {}
+		if reward.reward == "Coins" then
+			newState.coins = state.coins + reward.amount
+		elseif reward.reward == "Gems" then
+			newState.gems = state.gems + reward.amount
+		elseif reward.potionId then
+			newState.potions = table.clone(state.potions)
+			newState.potions[reward.potionId] = rules.potionCount(state, reward.potionId) + reward.amount
+		end
+		return { ok = true, state = newState, reward = reward }
+	end
+
+	-- Ends the active order once its time is up. Nothing is lost but the reward: the
+	-- pizza stays as it is. The phone rings again after a call interval.
+	function rules.expireOrder(state: PlayerState, now: number): Result
+		if state.delivery.order == nil then
+			return fail(state, "NoOrder")
+		end
+		if rules.orderTimeLeft(state, now) > 0 then
+			return fail(state, "NotExpired")
+		end
+		return { ok = true, state = withDelivery(state, nil, nil, now) }
+	end
+
+	-- Turns the offered order down; the phone rings again after a call interval.
+	function rules.declineOrder(state: PlayerState, now: number): Result
+		if state.delivery.call == nil then
+			return fail(state, "NoCall")
+		end
+		return { ok = true, state = withDelivery(state, nil, nil, now) }
 	end
 
 	-- How many pets can be equipped at once; grows with the "PetSlots" gem upgrade.

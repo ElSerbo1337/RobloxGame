@@ -111,6 +111,30 @@ return {
 		Speed = { displayName = "Speed-Trank", price = 15, durationSeconds = 600, walkSpeedMultiplier = 1.5 },
 	},
 	tutorial = { collectToppings = 2 },
+	-- Delivery service: phone -> order -> delivery van.
+	delivery = {
+		-- Seconds between the end of one call/order and the next ring.
+		callIntervalSeconds = 120,
+		-- Time to deliver an accepted order.
+		timeLimitSeconds = 180,
+		-- Fewest toppings in an order (never more than the pizza holds).
+		minToppings = 2,
+		-- Reward x (1 + speedBonus x share of time left).
+		speedBonus = 0.5,
+		-- Coin reward = topping values x pet bonus x coin potion x coinFactor (x speed).
+		coinFactor = 3,
+		-- Gem reward: base drawn from gemsMin..gemsBaseMax, x speed, at most gemsMax.
+		gemsMin = 3,
+		gemsBaseMax = 7,
+		gemsMax = 10,
+		-- Potion reward: 1 potion, 2 when delivered with at least this share of time left.
+		fastPotionShare = 0.5,
+		rewardWeights = {
+			{ reward = "Coins", weight = 60 },
+			{ reward = "Gems", weight = 25 },
+			{ reward = "Potion", weight = 15 },
+		},
+	},
 	rarities = {
 		Common = { displayName = "Gewöhnlich", order = 1, color = { 200, 200, 200 } },
 		Rare = { displayName = "Selten", order = 3, color = { 80, 150, 255 } },

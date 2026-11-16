@@ -213,6 +213,35 @@ local GameConfig = {
 		},
 	},
 
+	-- Delivery service: every world has a phone and a delivery van. The phone rings with
+	-- an order (toppings of the highest unlocked world, at most the pizza space); accepted,
+	-- it has to be delivered at the van within the time limit. Faster = bigger reward.
+	delivery = {
+		-- Seconds of quiet phone after an order or call ended (and after joining it rings at once).
+		callIntervalSeconds = 150,
+		-- Seconds to deliver an accepted order; afterwards it expires (nothing else is lost).
+		timeLimitSeconds = 180,
+		-- Fewest toppings in an order (never more than the pizza holds).
+		minToppings = 2,
+		-- Reward x (1 + speedBonus x share of the time left): up to +50 % for instant delivery.
+		speedBonus = 0.5,
+		-- Coin reward = topping values x pet bonus x coin potion x coinFactor (x speed),
+		-- i.e. about 3-4.5 times what selling the same toppings would pay.
+		coinFactor = 3,
+		-- Gem reward: base drawn from gemsMin..gemsBaseMax, x speed, at most gemsMax (3-10).
+		gemsMin = 3,
+		gemsBaseMax = 7,
+		gemsMax = 10,
+		-- Potion reward (a random potion): 1, or 2 when delivered with at least this share of time left.
+		fastPotionShare = 0.5,
+		-- Chance of each reward kind (relative weights). Gems kept low for the 20-40 gems/hour target.
+		rewardWeights = {
+			{ reward = "Coins", weight = 65 },
+			{ reward = "Gems", weight = 20 },
+			{ reward = "Potion", weight = 15 },
+		},
+	},
+
 	-- New-player tutorial: collect toppings -> sell -> buy an upgrade -> open an egg.
 	tutorial = {
 		-- Toppings to collect in the first step (must fit on the starting pizza).

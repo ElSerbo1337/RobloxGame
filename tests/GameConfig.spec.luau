@@ -645,3 +645,57 @@ describe("GameConfig potions", function()
 		end
 	end)
 end)
+
+describe("GameConfig delivery", function()
+	local rules = GameRules.new(GameConfig)
+
+	-- A player who finished the tutorial, with every world unlocked up to `worldCount`.
+	local function progressed(worldCount: number)
+		local state = rules.newPlayerState()
+		state.tutorialStep = 1000
+		for index = 2, worldCount do
+			table.insert(state.unlockedWorlds, GameConfig.worlds[index].id)
+		end
+		return state
+	end
+
+	it("rings every few minutes and gives about 3 minutes to deliver", function()
+		expect(GameConfig.delivery.timeLimitSeconds).toBe(180)
+		expect(GameConfig.delivery.callIntervalSeconds >= 60).toBe(true)
+		expect(GameConfig.delivery.callIntervalSeconds <= 300).toBe(true)
+	end)
+
+	it("orders toppings of the highest unlocked world in every world", function()
+		for worldCount, world in GameConfig.worlds do
+			local state = progressed(worldCount)
+			local call = rules.deliveryCall(rules.ringPhone(state, 0, TestKit.sequenceRandom({ 0.99, 0.5 })).state)
+			expect(call.worldId).toBe(world.id)
+			for toppingId in call.toppings do
+				expect(GameConfig.toppings[toppingId] ~= nil).toBe(true)
+			end
+		end
+	end)
+
+	it("pays 3 to 10 gems for gem orders, slow or fast", function()
+		local slowest = { 0, 0.5, 0.5, 0.5, 0 }
+		local fastest = { 0, 0.5, 0.5, 0.5, 0.999 }
+		local gemRoll = 0
+		-- Find a reward roll that picks gems with the real weights.
+		local total, before = 0, 0
+		for _, entry in GameConfig.delivery.rewardWeights do
+			total += entry.weight
+		end
+		for _, entry in GameConfig.delivery.rewardWeights do
+			if entry.reward == "Gems" then
+				gemRoll = (before + entry.weight / 2) / total
+			end
+			before += entry.weight
+		end
+		slowest[4], fastest[4] = gemRoll, gemRoll
+		for _, case in { { rolls = slowest, now = 180, gems = 3 }, { rolls = fastest, now = 0, gems = 10 } } do
+			local state = rules.ringPhone(progressed(1), 0, TestKit.sequenceRandom(case.rolls)).state
+			state = rules.acceptOrder(state, 0).state
+			expect(rules.orderReward(state, case.now - 1e-3)).toEqual({ reward = "Gems", amount = case.gems })
+		end
+	end)
+end)
