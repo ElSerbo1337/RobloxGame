@@ -419,6 +419,8 @@ local GameConfig = {
 				{ upgrade = "WalkSpeed", maxLevel = 5 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed" },
 		},
 	},
 
