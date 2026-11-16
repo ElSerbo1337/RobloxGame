@@ -85,6 +85,11 @@ local GameConfig = {
 		start = 3,
 	},
 
+	inventory = {
+		-- Pets a new player can own. A full inventory blocks opening eggs.
+		start = 50,
+	},
+
 	-- Pet rarities. `order` sorts from common (1) to rarest; `color` is RGB 0-255.
 	rarities = {
 		Common = { displayName = "Gewöhnlich", order = 1, color = { 190, 190, 190 } },

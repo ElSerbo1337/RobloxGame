@@ -184,3 +184,147 @@ describe("eggPreview", function()
 		expect(preview.pets[3]).toEqual({ petId = "Dragon", rarity = "Mythic", chancePercent = 0.5, bonus = 1.5 })
 	end)
 end)
+
+describe("inventory limit", function()
+	it("starts with the configured number of inventory slots", function()
+		expect(rules.inventorySlots(rules.newPlayerState())).toBe(5)
+	end)
+
+	it("rejects opening an egg when the inventory is full and keeps coins and pets", function()
+		local state = stateWithPets(5)
+		state.coins = 100
+
+		local result = rules.openEgg(state, "TestEgg", fixedRandom(0))
+
+		expect(result.ok).toBe(false)
+		expect(result.reason).toBe("InventoryFull")
+		expect(result.state.coins).toBe(100)
+		expect(#result.state.pets).toBe(5)
+	end)
+
+	it("allows opening again after a pet was deleted", function()
+		local state = rules.deletePet(stateWithPets(5), 3).state
+		state.coins = 10
+
+		local result = rules.openEgg(state, "TestEgg", fixedRandom(0))
+
+		expect(result.ok).toBe(true)
+		expect(#result.state.pets).toBe(5)
+	end)
+end)
+
+describe("deletePet", function()
+	it("removes the pet from the inventory", function()
+		local result = rules.deletePet(stateWithPets(3), 2)
+
+		expect(result.ok).toBe(true)
+		expect(#result.state.pets).toBe(2)
+		expect(result.state.pets[1].uid).toBe(1)
+		expect(result.state.pets[2].uid).toBe(3)
+	end)
+
+	it("puts an equipped pet away when deleting it", function()
+		local state = stateWithPets(3)
+		state = rules.equipPet(state, 1).state
+		state = rules.equipPet(state, 2).state
+
+		local result = rules.deletePet(state, 1)
+
+		expect(result.ok).toBe(true)
+		expect(result.state.equipped).toEqual({ 2 })
+		expect(rules.coinMultiplier(result.state)).toBe(1.1)
+	end)
+
+	it("never hands out a deleted pet's uid again", function()
+		local state = rules.deletePet(stateWithPets(2), 2).state
+		state.coins = 10
+
+		local result = rules.openEgg(state, "TestEgg", fixedRandom(0))
+
+		expect(result.pet.uid).toBe(3)
+	end)
+
+	it("rejects a pet the player does not own and keeps the state unchanged", function()
+		local state = stateWithPets(1)
+
+		local result = rules.deletePet(state, 42)
+
+		expect(result.ok).toBe(false)
+		expect(result.reason).toBe("UnknownPet")
+		expect(#result.state.pets).toBe(1)
+	end)
+
+	it("does not change the old state", function()
+		local state = rules.equipPet(stateWithPets(2), 1).state
+
+		rules.deletePet(state, 1)
+
+		expect(#state.pets).toBe(2)
+		expect(state.equipped).toEqual({ 1 })
+	end)
+end)
+
+describe("equipBest", function()
+	-- Opens one egg per entry; 0 = Hamster (+10 %), 0.8 = Cat (+20 %), 0.999 = Dragon (+150 %).
+	local function stateWithRolls(rolls: { number })
+		local state = richState(10 * #rolls)
+		for _, roll in rolls do
+			state = rules.openEgg(state, "TestEgg", fixedRandom(roll)).state
+		end
+		return state
+	end
+
+	it("equips the pets with the highest bonus, up to the pet slots", function()
+		-- uids: 1 Hamster, 2 Cat, 3 Dragon, 4 Hamster, 5 Cat
+		local state = stateWithRolls({ 0, 0.8, 0.999, 0, 0.8 })
+
+		local result = rules.equipBest(state)
+
+		expect(result.ok).toBe(true)
+		expect(result.state.equipped).toEqual({ 3, 2, 5 })
+		expect(rules.coinMultiplier(result.state)).toBe(2.9)
+	end)
+
+	it("replaces weaker equipped pets", function()
+		local state = stateWithRolls({ 0, 0, 0, 0.999 })
+		for uid = 1, 3 do
+			state = rules.equipPet(state, uid).state
+		end
+
+		local result = rules.equipBest(state)
+
+		expect(result.state.equipped).toEqual({ 4, 1, 2 })
+	end)
+
+	it("keeps already equipped pets when bonuses are tied", function()
+		-- Five Hamsters, 4 and 5 equipped: the best set is any three, keep 4 and 5.
+		local state = stateWithRolls({ 0, 0, 0, 0, 0 })
+		state = rules.equipPet(state, 5).state
+		state = rules.equipPet(state, 4).state
+
+		local result = rules.equipBest(state)
+
+		expect(result.state.equipped).toEqual({ 4, 5, 1 })
+	end)
+
+	it("equips all pets when there are fewer pets than slots", function()
+		local result = rules.equipBest(stateWithRolls({ 0, 0.8 }))
+
+		expect(result.state.equipped).toEqual({ 2, 1 })
+	end)
+
+	it("rejects when the player has no pets", function()
+		local result = rules.equipBest(rules.newPlayerState())
+
+		expect(result.ok).toBe(false)
+		expect(result.reason).toBe("NoPets")
+	end)
+
+	it("does not change the old state", function()
+		local state = stateWithRolls({ 0, 0.999 })
+
+		rules.equipBest(state)
+
+		expect(state.equipped).toEqual({})
+	end)
+end)

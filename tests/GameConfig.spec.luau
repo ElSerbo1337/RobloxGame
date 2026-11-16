@@ -174,6 +174,11 @@ describe("GameConfig pets and eggs", function()
 		expect(rules.petSlots(rules.newPlayerState())).toBe(3)
 	end)
 
+	it("starts players with 50 inventory slots", function()
+		local rules = GameRules.new(GameConfig)
+		expect(rules.inventorySlots(rules.newPlayerState())).toBe(50)
+	end)
+
 	it("gives world 1 an egg", function()
 		local world1 = GameConfig.worlds[1]
 		expect(#world1.eggs >= 1).toBe(true)

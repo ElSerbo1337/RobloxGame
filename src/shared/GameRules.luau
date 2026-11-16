@@ -35,6 +35,7 @@ export type Result = {
 	-- | "UnknownShop" | "UnknownUpgrade" | "NotOffered" | "MaxLevel" | "ShopLevelLimit" | "NotEnoughCoins"
 	-- | "UnknownWorld" | "AlreadyUnlocked" | "PreviousWorldLocked" | "WorldLocked"
 	-- | "UnknownEgg" | "UnknownPet" | "AlreadyEquipped" | "PetSlotsFull" | "NotEquipped"
+	-- | "InventoryFull" | "NoPets"
 	reason: string?,
 	state: PlayerState,
 }
@@ -423,6 +424,9 @@ function GameRules.new(config: any)
 		if not isEggReachable(state, eggId) then
 			return fail(state, "WorldLocked")
 		end
+		if #state.pets >= rules.inventorySlots(state) then
+			return fail(state, "InventoryFull")
+		end
 		if state.coins < egg.price then
 			return fail(state, "NotEnoughCoins")
 		end
@@ -438,6 +442,11 @@ function GameRules.new(config: any)
 
 	function rules.petSlots(_state: PlayerState): number
 		return config.petSlots.start
+	end
+
+	-- How many pets the player can own; opening an egg needs a free slot.
+	function rules.inventorySlots(_state: PlayerState): number
+		return config.inventory.start
 	end
 
 	local function ownsPet(state: PlayerState, uid: number): boolean
@@ -475,6 +484,57 @@ function GameRules.new(config: any)
 		local newState = table.clone(state)
 		newState.equipped = table.clone(state.equipped)
 		table.remove(newState.equipped, index)
+		return { ok = true, state = newState }
+	end
+
+	-- Removes a pet for good; an equipped pet is put away first. Its uid is never reused.
+	function rules.deletePet(state: PlayerState, uid: number): Result
+		if not ownsPet(state, uid) then
+			return fail(state, "UnknownPet")
+		end
+
+		local newState = table.clone(state)
+		newState.pets = {}
+		for _, pet in state.pets do
+			if pet.uid ~= uid then
+				table.insert(newState.pets, pet)
+			end
+		end
+		newState.equipped = table.clone(state.equipped)
+		local index = table.find(newState.equipped, uid)
+		if index then
+			table.remove(newState.equipped, index)
+		end
+		return { ok = true, state = newState }
+	end
+
+	-- Equips the pets with the highest coin bonus, filling all pet slots. On equal bonus,
+	-- pets that are already equipped stay, then older pets (lower uid) win.
+	-- `equipped` ends up ordered from best to weakest.
+	function rules.equipBest(state: PlayerState): Result
+		if #state.pets == 0 then
+			return fail(state, "NoPets")
+		end
+
+		local ranked = table.clone(state.pets)
+		table.sort(ranked, function(a, b)
+			local bonusA, bonusB = config.pets[a.petId].bonus, config.pets[b.petId].bonus
+			if bonusA ~= bonusB then
+				return bonusA > bonusB
+			end
+			local equippedA = table.find(state.equipped, a.uid) ~= nil
+			local equippedB = table.find(state.equipped, b.uid) ~= nil
+			if equippedA ~= equippedB then
+				return equippedA
+			end
+			return a.uid < b.uid
+		end)
+
+		local newState = table.clone(state)
+		newState.equipped = {}
+		for i = 1, math.min(rules.petSlots(state), #ranked) do
+			table.insert(newState.equipped, ranked[i].uid)
+		end
 		return { ok = true, state = newState }
 	end
 

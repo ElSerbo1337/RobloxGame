@@ -43,6 +43,7 @@ return {
 		},
 	},
 	petSlots = { start = 3 },
+	inventory = { start = 5 },
 	rarities = {
 		Common = { displayName = "Gewöhnlich", order = 1, color = { 200, 200, 200 } },
 		Rare = { displayName = "Selten", order = 3, color = { 80, 150, 255 } },
