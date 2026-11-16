@@ -184,3 +184,36 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] „1 öffnen“ in der Ei-Vorschau lässt sich antippen (BillboardGui in PlayerGui, `Active`). Falls Antippen nicht ankommt: melden – dann kommt der Knopf als ScreenGui unten ins HUD.
 - [ ] Pet-Menü passt auf den Bildschirm (Schließen-„X“ erreichbar), Karten gut antippbar, Liste scrollt per Wischen.
 - [ ] Pet-Karte nach dem Öffnen ist komplett sichtbar; Antippen schließt sie.
+
+## #9 Teleport-Portale zwischen freigeschalteten Welten
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Portals.spec.luau`).
+
+Vorbereitung: Für den Bauernhof 1.500 Münzen nötig – z. B. vorübergehend `unlockPrice` von `Farm` in `src/shared/GameConfig.luau` auf `1` setzen (**nicht committen**).
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler. Im Workspace gibt es den Ordner `Portals` mit je einem `Portal_<WeltId>` pro Welt aus der Config (aktuell `Portal_PizzeriaGarden`, `Portal_Farm`, ggf. weitere aus #10).
+- [ ] Welt 1: Rechts vom Ofen (ca. x = 65, z = 70) steht ein lila leuchtender Ring mit hellblauer Fläche, Funkeln und Schild „🌀 Teleport“. Steht auf dem Boden, nicht im Ofen / in der Belag-Fläche.
+- [ ] In den Ring laufen → Menü „🌀 Teleport“ in der Bildschirmmitte: „📍 Pizzeria-Garten (du bist hier)“ (orange, nicht anwählbar), darunter „🔒 Bauernhof – 1.500 Münzen“ grau (und weitere gesperrte Welten grau mit Preis).
+- [ ] Grauen Eintrag antippen → nichts passiert (kein Teleport).
+- [ ] Aus dem Ring laufen → Menü schließt. „X“ schließt es ebenfalls.
+- [ ] Bauernhof an der Barriere freischalten, zurück in den Portal-Ring → „2. Bauernhof“ ist jetzt lila und anwählbar. (Steht man beim Freischalten im Ring, aktualisiert sich das Menü sofort.)
+- [ ] „Bauernhof“ antippen → Figur steht sofort vor dem Bauernhof-Portal (Blick Richtung Welt), Menü zu, es öffnet sich nicht gleich wieder.
+- [ ] Im Bauernhof-Portal steht „📍 Bauernhof (du bist hier)“; „Pizzeria-Garten“ antippen → zurück in Welt 1 vor dem Portal.
+- [ ] Ankunftspunkt ist frei (nicht in Ofen, Ei oder Barriere), man fällt nicht durch den Boden.
+- [ ] Im HUD gibt es **keinen** Teleport-Knopf.
+
+**Server-Schutz** (Command Bar im Client-Fenster bzw. Executor nicht nötig):
+
+- [ ] Im Client-Fenster (nicht im Portal) in der Command Bar: `game.ReplicatedStorage.Remotes.Teleport:FireServer("Farm")` → nichts passiert (nur aus einem Portal heraus).
+- [ ] Im Portal stehend, Bauernhof gesperrt: `game.ReplicatedStorage.Remotes.Teleport:FireServer("Farm")` → kein Teleport, Meldung „Diese Welt ist noch gesperrt!“.
+
+**Mehrspieler** (Test → Clients and Servers → 2 Spieler):
+
+- [ ] A hat den Bauernhof, B nicht: Bei A ist „Bauernhof“ anwählbar, bei B grau. Teleport von A beeinflusst B nicht (B's Menü bleibt unverändert).
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Menü passt auf den Bildschirm, „X“ erreichbar, Einträge groß und mit dem Daumen antippbar, Liste scrollt per Wischen.
+- [ ] Antippen teleportiert (kein Maus-Hover nötig).
