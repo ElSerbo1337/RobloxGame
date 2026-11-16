@@ -284,8 +284,9 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 Vorher: `lune run test` → alle grün (u. a. `tests/Tutorial.spec.luau` und `GameConfig` „tutorial“).
 
-Wichtig: Wer schon **vor** diesem Ticket gespeichert hat, gilt als erfahrener Spieler und sieht das Tutorial **nicht** (Migration v2 → v3). Zum Testen als neuer Spieler den eigenen Spielstand löschen – in Studio (API-Zugriff an, siehe #3) im **Server**-Fenster in die Command Bar:
-`game:GetService("DataStoreService"):GetDataStore("PlayerState"):RemoveAsync("player_" .. game.Players:GetPlayers()[1].UserId)` – danach **Stop** und neu **Play** (der Leave-Save schreibt den Stand sonst sofort zurück: also Stop direkt nach dem Löschen, ohne vorher etwas zu tun, ggf. zweimal ausführen). Alternativ mit „Enable Studio Access to API Services“ **aus** spielen: Dann startet man immer frisch.
+Wichtig: Wer schon **vor** diesem Ticket gespeichert hat, gilt als erfahrener Spieler und sieht das Tutorial **nicht** (Migration v2 → v3). Zum Testen als neuer Spieler den eigenen Spielstand löschen – **nicht im Play-Modus** (sonst schreibt der Leave-Save ihn zurück), sondern im Bearbeitungsmodus (API-Zugriff an, siehe #3) in die Command Bar:
+`game:GetService("DataStoreService"):GetDataStore("PlayerState"):RemoveAsync("player_" .. game:GetService("StudioService"):GetUserId())`
+Danach **Play** → frischer Spieler mit Tutorial. (Für die Schritte ohne Speichern geht auch: API-Zugriff aus → man startet immer frisch.)
 
 Studio: Rojo verbinden, dann **Play** als neuer Spieler (1 Spieler):
 
