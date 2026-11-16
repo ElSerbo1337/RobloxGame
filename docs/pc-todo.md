@@ -43,14 +43,14 @@ Vorher: `lune run test` → alle grün (inkl. `tests/SaveData.spec.luau`).
 
 Einmalig einrichten (ohne das funktioniert in Studio kein DataStore):
 
-- [ ] Place veröffentlichen: **File → Publish to Roblox** (falls noch nicht geschehen).
-- [ ] **Home → Game Settings → Security → „Enable Studio Access to API Services“** einschalten, **Save**.
+- [x] Place veröffentlichen: **File → Publish to Roblox** (falls noch nicht geschehen).
+- [x] **Home → Game Settings → Security → „Enable Studio Access to API Services“** einschalten, **Save**.
 
 Test (1 Spieler, Rojo verbunden):
 
-- [ ] **Play**: Output ohne `[Save]`-Warnungen. (Eine Warnung `Laden für … fehlgeschlagen` / `StudioAccessToApisNotAllowed` heißt: API-Zugriff ist noch aus – oben einschalten.)
-- [ ] Ein paar Beläge sammeln und verkaufen, Münzstand merken (z. B. 12), eine Pizza mit 1 Belag halten. **Stop**.
-- [ ] Erneut **Play**: Münzen zeigen denselben Stand, Pizza-Füllstand im HUD ist wie vorher (`Pizza 1/2`).
+- [x] **Play**: Output ohne `[Save]`-Warnungen. (Eine Warnung `Laden für … fehlgeschlagen` / `StudioAccessToApisNotAllowed` heißt: API-Zugriff ist noch aus – oben einschalten.)
+- [x] Ein paar Beläge sammeln und verkaufen, Münzstand merken (z. B. 12), eine Pizza mit 1 Belag halten. **Stop**. _(3 Münzen, Pizza 2/2)_
+- [x] Erneut **Play**: Münzen zeigen denselben Stand, Pizza-Füllstand im HUD ist wie vorher (`Pizza 1/2`). _(Münzen, Pizza und Tutorial-Schritt erhalten)_
 - [ ] Mit **Test → Clients and Servers** (1 Spieler) den Client-Fenster schließen (Spieler verlässt), danach neu starten → Münzen erhalten (Speichern beim Verlassen).
 - [ ] Optional periodisch: Play, Münzen verdienen, > 2 Minuten warten, dann Studio-Prozess hart beenden (Task-Manager) → beim nächsten Play ist mindestens der Stand von vor 2 Minuten da.
 
@@ -76,7 +76,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [x] Mit Belägen in die Ofen-Zone laufen → **Animation**: eine Pizza fliegt vom Spieler in die glühende Ofenöffnung und schrumpft, danach fliegen mehrere goldene Münzen vom Ofen hoch zur Münzanzeige; Münzanzeige hüpft, „+X Münzen“. Beläge auf der Pizza in der Hand sind danach weg.
 - [ ] Ofen außerhalb des Bildschirms (Kamera wegdrehen) → Münzen starten aus der Bildschirmmitte, keine Fehler.
 - [x] Nach Reset (Esc → Reset Character) bleibt der Schalter-Zustand erhalten.
-- [ ] Gespeichert: Schalter AN, Play beenden, neu starten → wieder AN. **Erst testbar, wenn #3 (Spielerstand speichern) umgesetzt ist** – der Schalter ist Teil des Spielerstands (`autoCollect`).
+- [x] Gespeichert: Schalter AN, Play beenden, neu starten → wieder AN. **Erst testbar, wenn #3 (Spielerstand speichern) umgesetzt ist** – der Schalter ist Teil des Spielerstands (`autoCollect`).
 
 **Mehrspieler** (Test → Clients and Servers → 2 Spieler):
 
