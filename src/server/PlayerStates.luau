@@ -1,12 +1,14 @@
 --!strict
 -- Owns every player's PlayerState on the server. State only changes through
 -- results of the game rules; each change is replicated to the client as attributes.
+-- States are loaded on join and saved on leave, periodically and on shutdown.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
+local SaveService = require(script.Parent.SaveService)
 
 type PlayerState = GameRules.PlayerState
 
@@ -43,19 +45,60 @@ function PlayerStates.onChanged(listener: (Player, PlayerState) -> ())
 	table.insert(listeners, listener)
 end
 
+local AUTOSAVE_SECONDS = 120
+
+-- Saves still running for players who left; shutdown waits for them.
+local pendingLeaveSaves = 0
+
 function PlayerStates.start()
 	local function onPlayerAdded(player: Player)
-		-- TODO(save): load from DataStore once saving is implemented.
-		states[player] = PlayerStates.rules.newPlayerState()
-		PlayerStates.set(player, states[player])
+		local state = SaveService.load(player, PlayerStates.rules.newPlayerState())
+		if player.Parent == nil then
+			SaveService.forget(player.UserId) -- left while loading
+			return
+		end
+		states[player] = state
+		PlayerStates.set(player, state)
 	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)
 	for _, player in Players:GetPlayers() do
-		onPlayerAdded(player)
+		task.spawn(onPlayerAdded, player)
 	end
+
 	Players.PlayerRemoving:Connect(function(player)
+		local state = states[player]
 		states[player] = nil
+		if state == nil then
+			return
+		end
+		pendingLeaveSaves += 1
+		SaveService.save(player.UserId, state)
+		SaveService.forget(player.UserId)
+		pendingLeaveSaves -= 1
+	end)
+
+	task.spawn(function()
+		while true do
+			task.wait(AUTOSAVE_SECONDS)
+			for player, state in states do
+				task.spawn(SaveService.save, player.UserId, state)
+			end
+		end
+	end)
+
+	game:BindToClose(function()
+		local running = 0
+		for player, state in states do
+			running += 1
+			task.spawn(function()
+				SaveService.save(player.UserId, state)
+				running -= 1
+			end)
+		end
+		while running > 0 or pendingLeaveSaves > 0 do
+			task.wait()
+		end
 	end)
 end
 
