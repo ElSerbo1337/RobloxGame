@@ -1,5 +1,6 @@
 --!strict
--- Small UI helpers and the shared look (colors, font) for the pet and egg UI.
+-- Small UI helpers and the shared look (colors, font) for all game UI.
+-- The rules behind it are written down in docs/ui-style.md; new UI uses UiKit.
 -- Everything is sized for touch: buttons are at least 60 px high.
 
 local GameConfig = require(game:GetService("ReplicatedStorage").Shared.GameConfig)
@@ -14,6 +15,11 @@ UiKit.DARK = Color3.fromRGB(60, 35, 20)
 UiKit.COIN = Color3.fromRGB(255, 200, 40)
 UiKit.GREEN = Color3.fromRGB(110, 200, 90)
 UiKit.RED = Color3.fromRGB(230, 70, 50)
+UiKit.GEM = Color3.fromRGB(60, 230, 255)
+UiKit.ORANGE = Color3.fromRGB(240, 130, 60)
+UiKit.GREY = Color3.fromRGB(190, 180, 170)
+-- Smallest tappable size (px, before UIScale) for anything the player presses.
+UiKit.MIN_TOUCH = 60
 
 function UiKit.corner(parent: Instance, radius: number)
 	local uiCorner = Instance.new("UICorner")
@@ -63,6 +69,16 @@ function UiKit.button(parent: Instance, text: string, color: Color3): TextButton
 	textStroke.Thickness = 2
 	textStroke.Parent = button
 	button.Parent = parent
+	return button
+end
+
+-- Round icon button (HUD side buttons like "Pets"): a circle `size` px wide.
+function UiKit.roundButton(parent: Instance, text: string, color: Color3, size: number?): TextButton
+	local button = UiKit.button(parent, text, color)
+	local diameter = math.max(size or 96, UiKit.MIN_TOUCH)
+	button.Size = UDim2.fromOffset(diameter, diameter)
+	local round = button:FindFirstChildOfClass("UICorner") :: UICorner
+	round.CornerRadius = UDim.new(0.5, 0)
 	return button
 end
 

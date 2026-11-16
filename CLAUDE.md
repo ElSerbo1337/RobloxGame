@@ -59,6 +59,10 @@ Issues und Specs leben als GitHub Issues in `ElSerbo1337/RobloxGame`. See `docs/
 
 Die fünf Standard-Labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
 
+### UI-Stil
+
+Gemeinsamer Stil für alle UIs und den 3D-Look: `docs/ui-style.md` (umgesetzt in `src/client/UiKit.luau`).
+
 ### Domain docs
 
 Single-context: ein `GLOSSARY.md` + `docs/adr/` im Repo-Root. See `docs/agents/domain.md`.

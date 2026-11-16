@@ -346,3 +346,58 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] „1 öffnen“ und „3 öffnen“ sind nebeneinander groß genug zum Antippen, der Text ist lesbar.
 - [ ] Die 3 Pet-Karten passen auf den Bildschirm (ggf. verkleinert); Antippen schließt.
 - [ ] Gem-Tresen im Shop-Menü scrollt per Wischen, Kaufknöpfe sind gut antippbar.
+
+## #15 Look-Pass Welt 1 und Sounds
+
+Vorher: `git pull`, `lune run test` → alle grün. Vorschau der Modelle: `assets/previews/*.png` (Übersicht: `assets/previews/Overview.png`).
+
+Ohne die folgenden Import-Schritte läuft alles weiter mit den bisherigen Teilen (farbige Scheiben, Ofen-Kasten); Bäume, Büsche, Wege, Blumen, Licht und Wolken sind schon ohne Import da.
+
+**1. Licht (einmalig, wird im Place gespeichert):**
+
+- [ ] Explorer → **Lighting** auswählen → Properties → **Technology = Future**. (Kann kein Skript setzen.) Alles andere (ClockTime, Atmosphere, Bloom, Farbkorrektur, SunRays, Wolken) setzt das Spiel selbst beim Start (`src/client/WorldAmbience.luau`, Werte in `src/shared/WorldLooks.luau`).
+
+**2. 3D-Modelle importieren** (Dateien in `assets/models/`, im Repo-Ordner):
+
+- [ ] Im Explorer unter **ReplicatedStorage** einen **Folder** `GameAssets` anlegen, darin einen **Folder** `Models` (Rechtsklick → Insert Object → Folder, umbenennen). Rojo lässt diese Ordner in Ruhe.
+- [ ] Für **jede** dieser 7 Dateien: **Home → Import 3D** (bzw. File → Import 3D) → Datei wählen → im Import-Fenster: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**.
+  | Datei | Name im Explorer (exakt) | enthaltene Teile |
+  | --- | --- | --- |
+  | `Salami.fbx` | `Salami` | Meat, Fat |
+  | `Mushroom.fbx` | `Mushroom` | Cap, Stem |
+  | `Mozzarella.fbx` | `Mozzarella` | Cheese, Basil |
+  | `Pizza.fbx` | `Pizza` | Dough, Crust, Sauce, Melt |
+  | `PizzaOven.fbx` | `PizzaOven` | Stone, Dome, Arch, Mouth, Glow, Chimney |
+  | `Tree.fbx` | `Tree` | Wood, Leaves, LeavesLight |
+  | `Bush.fbx` | `Bush` | Leaves, Berry |
+- [ ] Das importierte Modell erscheint im Workspace. Es per Drag & Drop nach **ReplicatedStorage → GameAssets → Models** ziehen und exakt wie in der Tabelle benennen (es muss ein **Model** mit **MeshParts** sein; heißen die Teile z. B. `Meat.001`, ist das in Ordnung). Größe, Farbe und Position sind egal – das Spiel skaliert und färbt nach den Teilnamen.
+- [ ] Place speichern und **File → Publish to Roblox** (die hochgeladenen Meshes gehören zum Place).
+
+**3. Sounds** (IDs in `src/client/Sounds.luau`, starten leer = stumm):
+
+Aus der Cloud-Sitzung ließ sich keine Roblox-Asset-ID prüfen (roblox.com gesperrt), deshalb sind die IDs noch leer. In Studio: **View → Toolbox → Creator Store → Audio**, Creator-Filter **Roblox** (diese Sounds bleiben öffentlich), anhören, Rechtsklick → **Copy Asset ID**, als Zahl in `Sounds.luau` eintragen:
+
+- [ ] `Collect` – kurzer „Plopp“ (Suche: *pop*, *plop*, *bubble pop*), < 0,5 s.
+- [ ] `Sell` – Kasse/Münzen (Suche: *cash register*, *coins*, *purchase*).
+- [ ] `Gem` – Glitzern/Chime (Suche: *sparkle*, *chime*, *magic*).
+- [ ] `EggCrack` – Ei/Schale knackt (Suche: *egg crack*, *crack*, *shell*).
+- [ ] `PhoneRing` – altes Telefonklingeln (Suche: *phone ring*, *telephone*); wird erst mit #13 (Lieferdienst) abgespielt.
+- [ ] `Music_PizzeriaGarden` – fröhliche, leichte Hintergrundmusik zum Loopen (Suche: *happy*, *cheerful*, *ukulele*, *italian*), Lautstärke ist schon leise (0,25).
+- [ ] Eingetragene IDs hier mit Namen notieren, committen (`Add sound IDs (#15)`), pushen.
+
+**4. Test** (Rojo verbunden, **Play**, 1 Spieler):
+
+- [ ] Output ohne rote Fehler.
+- [ ] Look: warmes Nachmittagslicht mit weichen Schatten, leichter Dunst am Horizont, Wolken am Himmel, kräftige Farben, Neon-Glut leuchtet leicht (Bloom). Nichts ist überstrahlt.
+- [ ] Welt 1: Bäume links/rechts und hinter dem Spawn, Büsche mit Blumen, sandiger Weg vor Ofen/Spawn/Ei/Shop/Portal, ein Weg-Stück zum Sammelfeld. Nichts davon steht im Sammelfeld, im Weg zum Ofen, Shop, Ei oder Portal.
+- [ ] Beläge sind die Modelle: Salami-Scheibe mit Fettaugen, kleiner Pilz, Mozzarella-Kugeln mit Basilikum. Anklicken/Antippen, Auto-Sammeln und Magnet-Flug funktionieren wie vorher (das Modell fliegt mit).
+- [ ] Pizza in der Hand ist das Pizza-Modell (Rand, Soße, Käse), gesammelte Beläge erscheinen klein darauf. Liegt sie schief/verdreht: `GRIP` in `src/server/PizzaVisual.luau` prüfen.
+- [ ] Ofen ist der runde Kuppelofen mit glühender Öffnung **zur Verkaufszone hin**. Zeigt die Öffnung woanders hin: in `src/shared/ModelLibrary.luau` bei `YAW.PizzaOven` 90/180/270 eintragen. Schild „Ofen – hier verkaufen“ steht über dem Schornstein. Verkaufsanimation: Pizza (Modell) fliegt in die Ofenöffnung.
+- [ ] Shop-Stand: Pizza-Modell liegt auf der Theke.
+- [ ] Sounds (sobald IDs eingetragen): Plopp beim Sammeln (nicht beim Beitreten), Kasse beim Verkaufen, Glitzern bei Gems, Knacken in der Ei-Animation, Musik läuft in Schleife.
+- [ ] Welt 2 und weitere: Ofen dort ist ebenfalls der Kuppelofen.
+
+**Handy** (Device-Emulator):
+
+- [ ] Bildrate bleibt flüssig (60 Modell-Beläge pro Welt, Bäume). Falls es ruckelt: im Emulator mit niedriger Grafikqualität prüfen und hier notieren.
+- [ ] Beläge (jetzt Modelle) lassen sich weiterhin gut antippen.
