@@ -7,6 +7,11 @@ local LOOKS: { [string]: Look } = {
 	Salami = { color = Color3.fromRGB(190, 45, 40), material = Enum.Material.SmoothPlastic },
 	Mushroom = { color = Color3.fromRGB(215, 190, 160), material = Enum.Material.SmoothPlastic },
 	Mozzarella = { color = Color3.fromRGB(250, 248, 235), material = Enum.Material.SmoothPlastic },
+	-- World 2 (Bauernhof)
+	Onion = { color = Color3.fromRGB(200, 140, 200), material = Enum.Material.SmoothPlastic },
+	BellPepper = { color = Color3.fromRGB(60, 170, 60), material = Enum.Material.SmoothPlastic },
+	Corn = { color = Color3.fromRGB(255, 215, 50), material = Enum.Material.SmoothPlastic },
+	Ham = { color = Color3.fromRGB(240, 150, 160), material = Enum.Material.SmoothPlastic },
 }
 
 local FALLBACK: Look = { color = Color3.fromRGB(255, 0, 255), material = Enum.Material.Neon }

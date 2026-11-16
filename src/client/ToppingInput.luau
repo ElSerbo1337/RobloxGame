@@ -14,26 +14,27 @@ local MAX_PICK_DISTANCE = 80 -- studs from the camera; the server checks the rea
 
 local ToppingInput = {}
 
-local function findToppingsFolder(): Instance?
+-- Every world folder in the Workspace has its own "Toppings" folder.
+local function allToppings(): { Instance }
+	local parts = {}
 	for _, child in Workspace:GetChildren() do
 		local toppings = child:FindFirstChild("Toppings")
 		if toppings and child:IsA("Folder") then
-			return toppings
+			table.move(toppings:GetChildren(), 1, #toppings:GetChildren(), #parts + 1, parts)
 		end
 	end
-	return nil
+	return parts
 end
 
 local function pickTopping(screenPosition: Vector2): BasePart?
 	local camera = Workspace.CurrentCamera
-	local toppings = findToppingsFolder()
-	if camera == nil or toppings == nil then
+	if camera == nil then
 		return nil
 	end
 
 	local best: BasePart? = nil
 	local bestDistance = TAP_RADIUS
-	for _, part in toppings:GetChildren() do
+	for _, part in allToppings() do
 		if part:IsA("BasePart") then
 			local point, onScreen = camera:WorldToScreenPoint(part.Position)
 			local cameraDistance = (part.Position - camera.CFrame.Position).Magnitude
@@ -55,8 +56,9 @@ function ToppingInput.start()
 	local function tryCollectAt(screenPosition: Vector2)
 		local part = pickTopping(screenPosition)
 		local slotId = part and part:GetAttribute("SlotId")
-		if typeof(slotId) == "number" then
-			collect:FireServer(slotId)
+		local worldId = part and part:GetAttribute("WorldId")
+		if typeof(slotId) == "number" and typeof(worldId) == "string" then
+			collect:FireServer(slotId, worldId)
 		end
 	end
 

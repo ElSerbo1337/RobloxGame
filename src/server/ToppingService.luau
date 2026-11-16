@@ -1,6 +1,7 @@
 --!strict
--- Shows the shared toppings of world 1, handles collect requests from clients and
+-- Shows the shared toppings of one world, handles collect requests from clients and
 -- picks up toppings players walk over while auto-collect is on.
+-- Started once per world; each instance only answers requests for its own world.
 -- Every request is validated by the game rules (range, pizza capacity) and the
 -- ToppingField (topping still there), so a topping can only be taken once.
 
@@ -13,9 +14,6 @@ local Net = require(ReplicatedStorage.Shared.Net)
 local ToppingField = require(ReplicatedStorage.Shared.ToppingField)
 local PlayerStates = require(script.Parent.PlayerStates)
 local ToppingLook = require(script.Parent.ToppingLook)
-local World1Map = require(script.Parent.World1Map)
-
-local WORLD_ID = "PizzeriaGarden"
 local DISC_DIAMETER = 3.5
 local DISC_THICKNESS = 0.6
 local RESPAWN_CHECK_SECONDS = 0.25
@@ -26,11 +24,21 @@ local FULL_NOTICE_SECONDS = 3
 
 type PlayerState = GameRules.PlayerState
 
+-- What ToppingService needs from a world's map (World1Map and WorldMap layouts both fit).
+export type Layout = {
+	toppingAreaCenter: Vector3,
+	toppingAreaSize: Vector2,
+	toppingsFolder: Folder,
+}
+
+-- The auto-collect switch is per player, not per world: hook it up only once.
+local autoCollectSwitchConnected = false
+
 local ToppingService = {}
 
-function ToppingService.start(layout: World1Map.Layout)
+function ToppingService.start(worldId: string, layout: Layout)
 	local rng = Random.new()
-	local field = ToppingField.new(GameConfig, WORLD_ID, function()
+	local field = ToppingField.new(GameConfig, worldId, function()
 		return rng:NextNumber()
 	end)
 	local parts: { [number]: BasePart } = {}
@@ -52,6 +60,7 @@ function ToppingService.start(layout: World1Map.Layout)
 		local disc = ToppingLook.createDisc(topping.toppingId, DISC_DIAMETER, DISC_THICKNESS)
 		disc.CFrame = CFrame.new(worldPosition(topping.x, topping.z)) * ToppingLook.FLAT
 		disc:SetAttribute("SlotId", slotId)
+		disc:SetAttribute("WorldId", worldId)
 		disc.Parent = layout.toppingsFolder
 		parts[slotId] = disc
 	end
@@ -111,9 +120,9 @@ function ToppingService.start(layout: World1Map.Layout)
 		return Vector2.new(offset.X, offset.Z).Magnitude
 	end
 
-	Net.event("CollectTopping").OnServerEvent:Connect(function(player: Player, slotId: unknown)
-		if typeof(slotId) ~= "number" then
-			return
+	Net.event("CollectTopping").OnServerEvent:Connect(function(player: Player, slotId: unknown, toppingWorld: unknown)
+		if typeof(slotId) ~= "number" or toppingWorld ~= worldId then
+			return -- malformed, or meant for another world's ToppingService
 		end
 		local result = tryCollect(player, slotId, PlayerStates.rules.collectTopping, directDistance)
 		if result and not result.ok then
@@ -125,13 +134,16 @@ function ToppingService.start(layout: World1Map.Layout)
 		end
 	end)
 
-	Net.event("SetAutoCollect").OnServerEvent:Connect(function(player: Player, enabled: unknown)
-		local state = PlayerStates.get(player)
-		if typeof(enabled) ~= "boolean" or state == nil then
-			return
-		end
-		PlayerStates.set(player, PlayerStates.rules.setAutoCollect(state, enabled).state)
-	end)
+	if not autoCollectSwitchConnected then
+		autoCollectSwitchConnected = true
+		Net.event("SetAutoCollect").OnServerEvent:Connect(function(player: Player, enabled: unknown)
+			local state = PlayerStates.get(player)
+			if typeof(enabled) ~= "boolean" or state == nil then
+				return
+			end
+			PlayerStates.set(player, PlayerStates.rules.setAutoCollect(state, enabled).state)
+		end)
+	end
 
 	Players.PlayerRemoving:Connect(function(player)
 		lastFullNotice[player] = nil

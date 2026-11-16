@@ -23,6 +23,10 @@ local OFF = Color3.fromRGB(190, 180, 170)
 local MESSAGES: { [string]: string } = {
 	PizzaFull = "Pizza voll! Ab zum Ofen.",
 	OutOfRange = "Zu weit weg!",
+	NotEnoughCoins = "Nicht genug Münzen!",
+	WorldLocked = "Diese Welt ist noch gesperrt!",
+	PreviousWorldLocked = "Erst die vorige Welt freischalten!",
+	WorldUnlocked = "Neue Welt freigeschaltet!",
 }
 
 local Hud = {}
@@ -239,7 +243,13 @@ function Hud.start(): GuiObject
 		if kind == "Sold" and amount then
 			showToast(`+{formatNumber(amount)} Münzen`, COIN)
 		elseif MESSAGES[kind] then
-			showToast(MESSAGES[kind], if kind == "PizzaFull" then FULL else nil)
+			local color = if kind == "PizzaFull"
+					or kind == "NotEnoughCoins"
+					or kind == "WorldLocked"
+				then FULL
+				elseif kind == "WorldUnlocked" then COIN
+				else nil
+			showToast(MESSAGES[kind], color)
 		end
 	end)
 
