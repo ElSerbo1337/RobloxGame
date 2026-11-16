@@ -118,3 +118,33 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Menü passt komplett auf den Bildschirm, Text lesbar, Kaufknöpfe und „X“ mit dem Finger gut antippbar (Antippen kauft, kein Maus-Hover nötig).
 - [ ] Bei vielen Karten/kleinem Bildschirm lässt sich die Liste mit dem Finger scrollen.
 - [ ] Joystick bleibt bedienbar, man kann aus der Zone laufen, um das Menü zu schließen.
+
+## #8 Welt 2 Bauernhof und Barriere freischalten
+
+Vorbereitung: Zum schnellen Testen in `src/shared/GameConfig.luau` vorübergehend `unlockPrice = 15` für `Farm` setzen (**nicht committen**, danach zurück auf 1500) oder ein paar Runden sammeln/verkaufen. Bei Testpreis 15 steht im Folgenden „15“ statt „1.500“.
+
+**Welt und Barriere** (Play, 1 Spieler):
+
+- [ ] Hinter dem Pizzeria-Garten (Richtung −Z, hinter der Belag-Fläche) liegt eine zweite Fläche „Bauernhof“ (sandfarben) mit eigener Belag-Fläche, Ofen, Ei-Sockel mit „Bauernhof-Ei“ und 60 Belägen in neuen Farben (Zwiebel lila, Paprika grün, Mais gelb, Schinken rosa).
+- [ ] Zwischen den Welten steht eine rote Kraftfeld-Wand über die ganze Breite; davor schwebt „🔒 Bauernhof / 1.500 Münzen“.
+- [ ] Gegen die Wand laufen → man kommt nicht durch, auch nicht durch Springen oder an den Rändern.
+- [ ] Nahe der Wand (< ca. 22 Studs) erscheint unten ein großer Knopf „🔓 Bauernhof freischalten / 1.500 Münzen“: grau bei zu wenig Münzen, grün bei genug. Weggehen → Knopf verschwindet.
+- [ ] Knopf mit zu wenig Münzen → Meldung „Nicht genug Münzen!“, Münzen unverändert.
+- [ ] Knopf mit genug Münzen → Münzen −1.500, Meldung „Neue Welt freigeschaltet!“, Wand wird für mich unsichtbar, Preisschild weg, Knopf weg, man läuft durch.
+- [ ] Im Bauernhof Beläge sammeln (Klick und Auto-Sammeln) und am Bauernhof-Ofen verkaufen → Werte 4/8/12/20 Münzen.
+- [ ] Output ohne Fehler (rot) beim Start und beim Freischalten.
+
+**Speichern** (braucht API-Zugriff wie bei #3):
+
+- [ ] Nach dem Freischalten Stop → Play: Wand ist sofort offen, Münzen stimmen.
+
+**Mehrspieler** (Test → Clients and Servers → 2 Spieler):
+
+- [ ] A schaltet frei, B nicht: A läuft durch, B prallt weiterhin ab und sieht die Wand weiter.
+- [ ] Server-Schutz: Bei B im Client-Fenster per Explorer `Workspace.World2_Farm.Barrier` → `CanCollide` aus und durchlaufen → B wird innerhalb ~0,5 s vor die Wand zurückgesetzt, Meldung „Diese Welt ist noch gesperrt!“.
+- [ ] B kann Bauernhof-Beläge auch aus der Ferne nicht einsammeln (Server lehnt mit „WorldLocked“ ab, nichts landet auf der Pizza).
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Freischalt-Knopf ist groß, gut lesbar, mit dem Daumen antippbar und verdeckt weder Joystick noch Sprung-Knopf noch die Pizza-Leiste.
+- [ ] Antippen kauft (kein Maus-Hover nötig).

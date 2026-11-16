@@ -25,7 +25,7 @@ export type Layout = {
 	boundsSize: Vector2,
 	-- Where players without access are put back (in front of the barrier, previous world).
 	returnPoint: Vector3,
-	-- Where the world's egg sits; the egg ticket (#6) hooks in here (attribute WorldId).
+	-- Where the world's egg sits (attributes WorldId, EggId); the egg service hooks in here.
 	eggStand: BasePart,
 }
 
@@ -158,7 +158,7 @@ function WorldMap.build(world: any, index: number): Layout
 		Parent = folder,
 	})
 
-	-- Egg stand on the other side of the entrance. Placeholder egg until #6 adds eggs.
+	-- Egg stand on the other side of the entrance (x = -30 like in world 1). Placeholder egg model.
 	local eggPos = center + Vector3.new(-30, 0, 68)
 	local eggStand = part({
 		Name = "EggStand",
@@ -169,7 +169,9 @@ function WorldMap.build(world: any, index: number): Layout
 		Material = Enum.Material.SmoothPlastic,
 		Parent = folder,
 	})
+	local eggId = world.eggs and world.eggs[1]
 	eggStand:SetAttribute("WorldId", world.id)
+	eggStand:SetAttribute("EggId", eggId)
 	local egg = part({
 		Name = "Egg",
 		Shape = Enum.PartType.Ball,
@@ -179,7 +181,8 @@ function WorldMap.build(world: any, index: number): Layout
 		Material = Enum.Material.SmoothPlastic,
 		Parent = folder,
 	})
-	sign(folder, egg, `{world.displayName}-Ei`)
+	local eggConfig = eggId and GameConfig.eggs[eggId]
+	sign(folder, egg, if eggConfig then eggConfig.displayName else `{world.displayName}-Ei`)
 
 	-- Barrier on the border to the previous world. Solid for everyone on the server;
 	-- each client makes it passable locally once its player unlocked the world.
