@@ -41,6 +41,13 @@ return {
 				{ upgrade = "Magnet", maxLevel = 2 },
 			},
 		},
+		-- Stands in a world that must be unlocked first.
+		BeachShop = {
+			worldId = "Beach",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 3 },
+			},
+		},
 	},
 	petSlots = { start = 3 },
 	inventory = { start = 5 },

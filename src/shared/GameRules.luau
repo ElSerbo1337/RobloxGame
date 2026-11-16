@@ -319,14 +319,19 @@ function GameRules.new(config: any)
 		return 0
 	end
 
-	-- Buys the next level of an upgrade in a shop. Each shop only sells up to its own max level.
+	-- Buys the next level of an upgrade in a shop. Each shop only sells up to its own max level,
+	-- and only to players who unlocked the world it stands in.
 	function rules.buyUpgrade(state: PlayerState, shopId: string, upgradeId: string): Result
-		if config.shops[shopId] == nil then
+		local shop = config.shops[shopId]
+		if shop == nil then
 			return fail(state, "UnknownShop")
 		end
 		local upgrade = config.upgrades[upgradeId]
 		if upgrade == nil then
 			return fail(state, "UnknownUpgrade")
+		end
+		if shop.worldId and not rules.isWorldUnlocked(state, shop.worldId) then
+			return fail(state, "WorldLocked")
 		end
 		local shopMax = shopMaxLevel(shopId, upgradeId)
 		if shopMax == 0 then

@@ -66,6 +66,25 @@ describe("buyUpgrade", function()
 		expect(result.reason).toBe("NotOffered")
 	end)
 
+	it("rejects buying in a shop whose world is still locked, keeping coins and level", function()
+		local result = rules.buyUpgrade(playerWithCoins(1000), "BeachShop", "PizzaSpace")
+
+		expect(result.ok).toBe(false)
+		expect(result.reason).toBe("WorldLocked")
+		expect(result.state.coins).toBe(1000)
+		expect(rules.upgradeLevel(result.state, "PizzaSpace")).toBe(0)
+	end)
+
+	it("sells in a shop once its world is unlocked", function()
+		local state = playerWithCoins(1000)
+		state.unlockedWorlds = { "Farm", "Beach" }
+
+		local result = rules.buyUpgrade(state, "BeachShop", "PizzaSpace")
+
+		expect(result.ok).toBe(true)
+		expect(rules.pizzaCapacity(result.state)).toBe(3)
+	end)
+
 	it("rejects unknown shops and upgrades", function()
 		expect(rules.buyUpgrade(playerWithCoins(1000), "NoShop", "PizzaSpace").reason).toBe("UnknownShop")
 		expect(rules.buyUpgrade(playerWithCoins(1000), "SmallShop", "SellValue").reason).toBe("UnknownUpgrade")
