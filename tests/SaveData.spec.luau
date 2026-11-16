@@ -24,7 +24,7 @@ describe("SaveData.load", function()
 		expect(result.state.coins).toBe(1234)
 		expect(result.state.pizza).toEqual({ "Salami", "Mozzarella" })
 		expect(result.state.rebirthMultiplier).toBe(1)
-		expect(result.state.version).toBe(2)
+		expect(result.state.version).toBe(rules.newPlayerState().version)
 	end)
 
 	it("fills fields that did not exist when the save was written with their defaults", function()

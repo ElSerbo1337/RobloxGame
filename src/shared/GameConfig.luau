@@ -166,6 +166,12 @@ local GameConfig = {
 		playtimeGems = 1,
 	},
 
+	-- New-player tutorial: collect toppings -> sell -> buy an upgrade -> open an egg.
+	tutorial = {
+		-- Toppings to collect in the first step (must fit on the starting pizza).
+		collectToppings = 2,
+	},
+
 	-- Pet rarities. `order` sorts from common (1) to rarest; `color` is RGB 0-255.
 	rarities = {
 		Common = { displayName = "Gewöhnlich", order = 1, color = { 190, 190, 190 } },

@@ -24,6 +24,12 @@ local MIGRATIONS: { [number]: (save: { [string]: any }) -> () } = {
 		-- v2: rebirth multiplier, prepared for the rebirth system.
 		save.rebirthMultiplier = 1
 	end,
+	[2] = function(save)
+		-- v3: new-player tutorial. Players who saved before it existed already know
+		-- the game, so it counts as finished for them (new players start at step 1).
+		-- Any number past the last step means finished (math.huge cannot be stored as JSON).
+		save.tutorialStep = 1000
+	end,
 }
 
 -- `fresh` is a brand-new PlayerState (rules.newPlayerState()); it provides the

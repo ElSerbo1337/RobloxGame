@@ -95,6 +95,7 @@ return {
 		playtimeSeconds = 900,
 		playtimeGems = 1,
 	},
+	tutorial = { collectToppings = 2 },
 	rarities = {
 		Common = { displayName = "Gewöhnlich", order = 1, color = { 200, 200, 200 } },
 		Rare = { displayName = "Selten", order = 3, color = { 80, 150, 255 } },

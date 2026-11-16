@@ -402,3 +402,13 @@ describe("GameConfig gems", function()
 		expect(rules.eggsPerOpen(state)).toBe(3)
 	end)
 end)
+
+describe("GameConfig tutorial", function()
+	it("asks new players to collect 2 toppings, which fit on the starting pizza", function()
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+
+		expect(rules.tutorial(state).goal).toBe(2)
+		expect(rules.tutorial(state).goal <= rules.pizzaCapacity(state)).toBe(true)
+	end)
+end)

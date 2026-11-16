@@ -29,6 +29,9 @@ export type PlayerState = {
 	gems: number,
 	-- Play time not yet turned into gems (seconds).
 	playtimeSeconds: number,
+	-- Current step of the new-player tutorial (index into the tutorial steps;
+	-- past the last step = finished, never shown again).
+	tutorialStep: number,
 }
 
 export type OwnedPet = { uid: number, petId: string }
@@ -81,8 +84,20 @@ export type OpenEggResult = Result & { pet: OwnedPet? }
 -- Opening several eggs at once: the drawn pets in order (empty on failure).
 export type OpenEggsResult = Result & { pets: { OwnedPet } }
 
+-- The tutorial step a player is on, for the arrow and text on the client.
+export type TutorialInfo = {
+	-- "CollectToppings" | "SellPizza" | "BuyUpgrade" | "OpenEgg"
+	step: string,
+	-- Position of the step (1-based) and number of steps.
+	number: number,
+	total: number,
+	-- How far the player is within the step, e.g. 1 of 2 toppings.
+	progress: number,
+	goal: number,
+}
+
 -- Bump together with a migration step in SaveData when a field changes shape.
-local STATE_VERSION = 2
+local STATE_VERSION = 3
 
 local GameRules = {}
 
@@ -107,7 +122,44 @@ function GameRules.new(config: any)
 			equipped = {},
 			gems = 0,
 			playtimeSeconds = 0,
+			tutorialStep = 1,
 		}
+	end
+
+	-- Tutorial steps in order; each one is finished by a successful real action.
+	local TUTORIAL_STEPS = { "CollectToppings", "SellPizza", "BuyUpgrade", "OpenEgg" }
+
+	local function tutorialGoal(stepId: string): number
+		return if stepId == "CollectToppings" then config.tutorial.collectToppings else 1
+	end
+
+	-- The step the player is on, or nil when the tutorial is finished.
+	function rules.tutorial(state: PlayerState): TutorialInfo?
+		local stepId = TUTORIAL_STEPS[state.tutorialStep]
+		if stepId == nil then
+			return nil
+		end
+		local goal = tutorialGoal(stepId)
+		local progress = if stepId == "CollectToppings" then math.min(#state.pizza, goal) else 0
+		return {
+			step = stepId,
+			number = state.tutorialStep,
+			total = #TUTORIAL_STEPS,
+			progress = progress,
+			goal = goal,
+		}
+	end
+
+	-- Called with the new state after a successful action; moves the tutorial on
+	-- when that action finishes the current step. Mutates `newState` (a fresh copy).
+	local function advanceTutorial(newState: PlayerState, stepId: string)
+		if TUTORIAL_STEPS[newState.tutorialStep] ~= stepId then
+			return
+		end
+		if stepId == "CollectToppings" and #newState.pizza < tutorialGoal(stepId) then
+			return
+		end
+		newState.tutorialStep += 1
 	end
 
 	-- Returns the world's config entry and its position in the unlock order.
@@ -295,6 +347,7 @@ function GameRules.new(config: any)
 		local newState = table.clone(state)
 		newState.pizza = table.clone(state.pizza)
 		table.insert(newState.pizza, toppingId)
+		advanceTutorial(newState, "CollectToppings")
 		return { ok = true, state = newState }
 	end
 
@@ -371,6 +424,7 @@ function GameRules.new(config: any)
 		local newState = table.clone(state)
 		newState.pizza = {}
 		newState.coins = state.coins + earned
+		advanceTutorial(newState, "SellPizza")
 		return { ok = true, state = newState, coinsEarned = earned }
 	end
 
@@ -425,6 +479,7 @@ function GameRules.new(config: any)
 		else
 			newState.coins = state.coins - nextLevel.price
 		end
+		advanceTutorial(newState, "BuyUpgrade")
 		return { ok = true, state = newState }
 	end
 
@@ -536,6 +591,7 @@ function GameRules.new(config: any)
 			table.insert(drawn, pet)
 		end
 		newState.nextPetUid = state.nextPetUid + count
+		advanceTutorial(newState, "OpenEgg")
 		return { ok = true, state = newState, pets = drawn }
 	end
 
