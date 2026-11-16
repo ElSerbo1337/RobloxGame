@@ -89,3 +89,32 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Auto-Sammeln-Knopf mit dem Finger gut antippbar, nicht vom Joystick oder Sprung-Knopf verdeckt, Text lesbar.
 - [ ] Münz-Animation endet sichtbar an der Münzanzeige (auch bei kleiner Bildschirmgröße/HUD-Skalierung). Falls daneben: Zielpunkt in `src/client/SellAnimation.luau` (`flyCoins`) anpassen.
 
+
+## #5 Shop 1: Münz-Tresen mit Pizza-Platz, Reichweite, Magnet
+
+Vorher: `lune run test` → alle grün (inkl. `tests/Shop.spec.luau` und `GameConfig shops`).
+
+Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozzarella.value = 500` setzen (Rojo synchronisiert live), damit genug Münzen da sind. **Danach zurücksetzen, nicht committen.**
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler.
+- [ ] Links hinten vom Spawn (bei x = -60, z = 72, außerhalb der Sammelfläche) steht ein Holz-Stand mit rot-weißer Markise, Schild „Münz-Tresen – Upgrades“ und grüner Zone davor. Im HUD gibt es **keinen** Shop-Knopf.
+- [ ] In die grüne Zone laufen → Shop-Menü öffnet sich (kurzes Aufploppen) mit 3 Karten: Pizza-Platz, Reichweite, Magnet. Jede zeigt Name, Beschreibung, „Stufe 0 von N“, Wirkung `jetzt → nächste` (z. B. `2 Beläge → 3 Beläge`, `10 Studs → 14 Studs`, `aus → 12 Studs`) und einen Kaufknopf mit Preis (25 / 40 / 600 Münzen).
+- [ ] Aus der Zone laufen → Menü schließt. Wieder rein → öffnet erneut. Mit „X“ schließen, in der Zone stehen bleiben → bleibt zu, bis man raus- und wieder reinläuft.
+- [ ] Mit 0 Münzen „25 Münzen“ drücken → Knopf ist grau, rote Meldung „Nicht genug Münzen!“, Münzen und Stufe unverändert.
+- [ ] Genug Münzen: Pizza-Platz kaufen → grüne Meldung „Gekauft: Pizza-Platz!“, Münzen sinken um den Preis, Karte zeigt „Stufe 1 von 3“, `3 Beläge → 4 Beläge`, HUD unten `Pizza 0/3`.
+- [ ] Pizza-Platz bis Stufe 3 kaufen (2 → 3 → 4 → 6) → HUD `Pizza x/6`, Karte zeigt grauen Knopf „Im größeren Shop erhältlich“ (nächste Stufe 8 Beläge, nicht kaufbar).
+- [ ] Reichweite kaufen → Beläge lassen sich aus ca. 14 Studs Entfernung anklicken (vorher „Zu weit weg!“). Bis Stufe 3 (22 Studs), danach „Im größeren Shop erhältlich“.
+- [ ] Magnet Stufe 1 kaufen, Auto-Sammeln AN → Beläge im Umkreis von ca. 12 Studs (statt 4) fliegen sichtbar zur Spielfigur und landen auf der Pizza. Danach „Im größeren Shop erhältlich“.
+- [ ] Ohne Magnet, Auto-Sammeln AN: auch normale Auto-Sammel-Beläge fliegen kurz zur Figur (kein hässlicher Rest-Belag in der Welt, unter `World1_PizzeriaGarden` bleibt kein `PulledTopping` übrig).
+- [ ] Mit zu wenig Münzen ist der Preisknopf grau; nach einem Verkauf am Ofen zurück in den Shop → Knopf ist grün, sobald genug Geld da ist.
+- [ ] Gespeichert (#3): Upgrades kaufen, Play beenden, neu starten → Stufen, Pizza-Platz und Münzen sind erhalten.
+
+**Mehrspieler** (2 Spieler): A kauft ein Upgrade → nur A's Stufen/Münzen ändern sich, B's Menü bleibt unverändert.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Menü passt komplett auf den Bildschirm, Text lesbar, Kaufknöpfe und „X“ mit dem Finger gut antippbar (Antippen kauft, kein Maus-Hover nötig).
+- [ ] Bei vielen Karten/kleinem Bildschirm lässt sich die Liste mit dem Finger scrollen.
+- [ ] Joystick bleibt bedienbar, man kann aus der Zone laufen, um das Menü zu schließen.
