@@ -472,3 +472,35 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Kamera: In Ofen-, Shop- und Ei-Nähe wird die Kamera an den Kopf gedrückt (Stationen stehen hinter der Startkamera, +Z).
 - [ ] Pets stellen sich am Ofen aufs Dach bzw. stecken halb in der Wand.
 - [ ] Sounds (#15 Schritt 3) noch offen: IDs müssen in Studio angehört und ausgewählt werden.
+
+## #14 Lieferdienst: Telefon, Auftrag, Lieferwagen
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Delivery.spec.luau` und `GameConfig delivery`).
+
+Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `delivery.callIntervalSeconds = 10` und `delivery.timeLimitSeconds = 40` setzen (Server neu starten). Das Telefon klingelt erst **nach dem Tutorial** – mit einem neuen Spielstand also zuerst das Tutorial durchspielen. **Danach zurücksetzen, nicht committen.**
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler. Im Workspace gibt es den Ordner `Delivery` mit je einem `DeliveryPhone` und `DeliveryVan` pro Welt (Welt 1: Telefon bei ca. x = 78, z = 46, Lieferwagen bei x = 78, z = 14, rechts vom Portal). Beide stehen frei: nicht im Portal, nicht in Büschen/Bäumen, nicht in der Belag-Fläche. Schilder „📞 Telefon – Aufträge“ und „🚚 Lieferwagen – Bestellung abgeben“ lesbar.
+- [ ] Nach dem Tutorial klingelt das Telefon sofort: Toast „📞 Das Telefon klingelt!“, über **jedem** Telefon hüpft eine rote Blase „📞 RING!“ (auch von weit weg sichtbar), rechts im HUD steht „📞 Das Telefon klingelt! – Lauf zum Telefon und geh ran.“. Klingelton alle 3 s (nur wenn die Sound-ID aus #15 eingetragen ist).
+- [ ] Zum Telefon laufen → Panel „📞 Neuer Auftrag!“ mit z. B. „1× Pilz / 1× Salami“, „Belohnung: bis zu …“ und „Zeit: 3:00 – je schneller, desto mehr!“. Weglaufen schließt das Panel, das Telefon klingelt weiter.
+- [ ] **Ablehnen** → Toast „Auftrag abgelehnt.“, Blasen weg, nach 2,5 Min. (bzw. Tipp-Wert) klingelt es wieder.
+- [ ] **Annehmen** → Toast „Auftrag angenommen! …“, über der Hand-Pizza schwebt „🧾 Bestellung“ (Bestell-Pizza), rechts unter den Trank-Anzeigen steht die Auftragskarte „🧾 Auftrag ⏱ 3:00“ mit den Belägen („• 0/1 Salami“), der Belohnung „wenn jetzt geliefert“ und „Schnell = mehr Belohnung!“. Der Timer zählt sekündlich herunter, unter 0:30 rot.
+- [ ] Bestellte Beläge sammeln → Zeilen werden grün mit „✓ 1/1“; sind alle da: „Fertig! Ab zum 🚚 Lieferwagen.“.
+- [ ] Falschen Belag dazu sammeln und zum Lieferwagen → Toast „Falsche Beläge! Überzählige am Ofen verkaufen.“, nichts passiert. Dann zum Ofen: **nur die überzähligen** Beläge werden verkauft, die bestellten bleiben auf der Pizza. Nur bestellte Beläge auf der Pizza → der Ofen verkauft nichts.
+- [ ] Richtige Pizza zum Lieferwagen (in die Zone neben dem Wagen, Seite zur Belag-Fläche) → Toast „Geliefert! +… Münzen“ (bzw. Gems / Trank), Kassen-Sound, Pizza leer, Karte und „🧾 Bestellung“ verschwinden. Münz-Belohnung ≈ 3–4,5 × Belagwert × Pet-Bonus (sofort geliefert mehr als kurz vor Ablauf).
+- [ ] Gem-Auftrag: 3–10 Gems. Trank-Auftrag: Trank landet im Trank-Menü (2 Stück, wenn in der ersten Hälfte der Zeit geliefert).
+- [ ] Zeit ablaufen lassen → Toast „Zeit um – der Auftrag ist verfallen.“, Karte und Ticket weg, Beläge bleiben auf der Pizza (am Ofen verkaufbar), nach dem Abstand klingelt es wieder.
+- [ ] Ohne Auftrag zum Lieferwagen → Toast „Kein Auftrag – geh ans Telefon!“.
+- [ ] Fortschritt: Mit freigeschaltetem Bauernhof (Münz-Tipp aus #11) und größerer Pizza bestellt das Telefon Bauernhof-Beläge und mehr Stück (höchstens Pizza-Platz). Telefon und Lieferwagen funktionieren in **jeder** Welt gleich.
+- [ ] Speichern: Angenommenen Auftrag haben, rausgehen, innerhalb der Zeit wieder rein → Auftrag ist noch da, Timer läuft weiter (die Zeit läuft auch offline, Server-Uhr). Nach Ablauf wieder rein → Auftrag weg.
+- [ ] Server-Schutz (Command Bar im Client): `game.ReplicatedStorage.Remotes.AnswerPhone:FireServer(true)` **weg vom Telefon** → nichts passiert.
+
+**Mehrspieler** (2 Spieler):
+
+- [ ] Das Klingeln ist pro Spieler: Blasen und Auftragskarte sieht nur der Spieler, dessen Telefon klingelt; das „🧾 Bestellung“-Ticket über der Pizza sehen beide.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Telefon-Panel passt auf den Bildschirm, „Annehmen“/„Ablehnen“ sind groß und per Antippen bedienbar.
+- [ ] Auftragskarte rechts ist lesbar, überdeckt weder Trank-Anzeigen (bei 3 aktiven Tränken) noch den Sprung-Knopf unten rechts. Falls doch: `CARD_TOP` in `src/client/DeliveryMenu.luau` anpassen.
