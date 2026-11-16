@@ -10,9 +10,14 @@
 -- ShopClose       server -> client  ()                           player left the shop stand
 -- BuyUpgrade      client -> server  (shopId: string, upgradeId: string)  "I want the next level"
 -- ShopPurchase    server -> client  (ok: boolean, reasonOrUpgradeId: string)  result of BuyUpgrade
+-- OpenEgg         client -> server  (eggId: string)             "open one of this egg"
+-- EggOpened       server -> client  (eggId: string, petId: string)  plays the hatch animation
+-- EquipPet        client -> server  (uid: number)               "equip this pet"
+-- UnequipPet      client -> server  (uid: number)               "put this pet away"
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought).
+-- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, CoinMultiplier.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -28,6 +33,10 @@ local EVENTS = {
 	ShopClose = true,
 	BuyUpgrade = true,
 	ShopPurchase = true,
+	OpenEgg = true,
+	EggOpened = true,
+	EquipPet = true,
+	UnequipPet = true,
 }
 
 local Net = {}

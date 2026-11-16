@@ -158,7 +158,7 @@ function WorldMap.build(world: any, index: number): Layout
 		Parent = folder,
 	})
 
-	-- Egg stand on the other side of the entrance (x = -30 like in world 1). Placeholder egg model.
+	-- Egg stand on the other side of the entrance; EggService puts the world's egg on it.
 	local eggPos = center + Vector3.new(-30, 0, 68)
 	local eggStand = part({
 		Name = "EggStand",
@@ -172,17 +172,6 @@ function WorldMap.build(world: any, index: number): Layout
 	local eggId = world.eggs and world.eggs[1]
 	eggStand:SetAttribute("WorldId", world.id)
 	eggStand:SetAttribute("EggId", eggId)
-	local egg = part({
-		Name = "Egg",
-		Shape = Enum.PartType.Ball,
-		Size = Vector3.new(5, 6.5, 5),
-		Position = eggPos + Vector3.new(0, 4.5, 0),
-		Color = Color3.fromRGB(255, 225, 150),
-		Material = Enum.Material.SmoothPlastic,
-		Parent = folder,
-	})
-	local eggConfig = eggId and GameConfig.eggs[eggId]
-	sign(folder, egg, if eggConfig then eggConfig.displayName else `{world.displayName}-Ei`)
 
 	-- Barrier on the border to the previous world. Solid for everyone on the server;
 	-- each client makes it passable locally once its player unlocked the world.
