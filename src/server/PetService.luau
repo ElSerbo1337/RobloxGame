@@ -16,12 +16,19 @@ local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
+local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
 
 type PlayerState = GameRules.PlayerState
 
 local PET_SIZE = 2.2
+-- Imported pet models (#16): largest dimension in studs, a bit bigger for rarer pets.
+local MODEL_SIZE = 2.8
+local MODEL_SIZE_PER_RARITY = 0.25
+-- PetFollow holds the pivot HOVER (1.4) studs above the ground; the models' bottom
+-- should float just above it, like the placeholder ball did.
+local MODEL_LIFT = 1.2
 
 local PetService = {}
 
@@ -47,22 +54,60 @@ local function ball(name: string, size: number, color: Color3, cframe: CFrame, p
 	return p
 end
 
--- Placeholder pet: round body in the rarity color with eyes and a name tag.
+-- The imported Blender model of the pet (tools/blender/build_pets.py), with an
+-- invisible root part as PrimaryPart (= pivot) that PetFollow moves. Nil if the
+-- model wasn't imported in Studio yet (docs/pc-todo.md, #16).
+local function modelPet(petId: string, origin: CFrame): (Model?, BasePart?, number)
+	local rarity = GameConfig.rarities[GameConfig.pets[petId].rarity]
+	local size = MODEL_SIZE + (rarity.order - 1) * MODEL_SIZE_PER_RARITY
+	local model = ModelLibrary.pet(petId, size)
+	if model == nil then
+		return nil, nil, 0
+	end
+	local _, boxSize = model:GetBoundingBox()
+	local root = Instance.new("Part")
+	root.Name = "Root"
+	root.Size = Vector3.new(0.2, 0.2, 0.2)
+	root.Transparency = 1
+	root.Anchored = true
+	root.CanCollide = false
+	root.CanQuery = false
+	root.CanTouch = false
+	-- Root sits MODEL_LIFT above the model's bottom center, facing the model's front.
+	root.CFrame = model:GetPivot() * CFrame.new(0, MODEL_LIFT, 0)
+	root.Parent = model
+	model.PrimaryPart = root
+	model:PivotTo(origin)
+	return model, root, boxSize.Y - MODEL_LIFT
+end
+
+-- Pet: the imported model, or a placeholder (round body in the rarity color with
+-- eyes); both with a name tag.
 local function buildPet(uid: number, petId: string, origin: CFrame, parent: Instance): Model
-	local model = Instance.new("Model")
+	local model, body, height = modelPet(petId, origin)
+	if model == nil or body == nil then
+		model = Instance.new("Model")
+		body = ball("Body", PET_SIZE, rarityColor(petId), origin, model)
+		for _, side in { -1, 1 } do
+			local eyeCFrame = origin * CFrame.new(side * PET_SIZE * 0.2, PET_SIZE * 0.15, -PET_SIZE * 0.42)
+			ball("Eye", PET_SIZE * 0.28, Color3.new(1, 1, 1), eyeCFrame, model)
+			ball(
+				"Pupil",
+				PET_SIZE * 0.14,
+				Color3.new(0.1, 0.1, 0.1),
+				eyeCFrame * CFrame.new(0, 0, -PET_SIZE * 0.1),
+				model
+			)
+		end
+		height = PET_SIZE / 2
+	end
+	assert(model and body, "pet model without body")
 	model.Name = tostring(uid)
 	model:SetAttribute("PetId", petId)
 
-	local body = ball("Body", PET_SIZE, rarityColor(petId), origin, model)
-	for _, side in { -1, 1 } do
-		local eyeCFrame = origin * CFrame.new(side * PET_SIZE * 0.2, PET_SIZE * 0.15, -PET_SIZE * 0.42)
-		ball("Eye", PET_SIZE * 0.28, Color3.new(1, 1, 1), eyeCFrame, model)
-		ball("Pupil", PET_SIZE * 0.14, Color3.new(0.1, 0.1, 0.1), eyeCFrame * CFrame.new(0, 0, -PET_SIZE * 0.1), model)
-	end
-
 	local tag = Instance.new("BillboardGui")
 	tag.Size = UDim2.fromOffset(160, 32)
-	tag.StudsOffset = Vector3.new(0, PET_SIZE * 0.9, 0)
+	tag.StudsOffset = Vector3.new(0, height + PET_SIZE * 0.4, 0)
 	tag.MaxDistance = 60
 	tag.Adornee = body
 	local text = Instance.new("TextLabel")

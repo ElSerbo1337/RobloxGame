@@ -14,6 +14,7 @@ local Workspace = game:GetService("Workspace")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
+local PetIcon = require(script.Parent.PetIcon)
 local UiKit = require(script.Parent.UiKit)
 
 -- Studs between player and egg at which the preview appears.
@@ -77,7 +78,7 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 		UiKit.corner(row, 12)
 		row.Parent = root
 
-		-- Placeholder picture: a dot in the rarity color.
+		-- Picture: the 3D pet (imported model), otherwise a dot in the rarity color.
 		local icon = Instance.new("Frame")
 		icon.Position = UDim2.fromOffset(6, 4)
 		icon.Size = UDim2.fromOffset(32, 32)
@@ -85,6 +86,9 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 		UiKit.corner(icon, 16)
 		UiKit.stroke(icon, 2)
 		icon.Parent = row
+		if PetIcon.show(icon, entry.petId, 1.35) then
+			icon.BackgroundColor3 = UiKit.CREAM
+		end
 
 		local name = UiKit.label(row, pet.displayName)
 		name.Position = UDim2.fromOffset(46, 2)

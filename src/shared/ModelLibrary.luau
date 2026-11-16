@@ -4,8 +4,13 @@
 -- docs/pc-todo.md, #15). Rojo leaves that folder alone, it is saved with the place.
 -- Every function here falls back gracefully: if a model is missing, nothing happens
 -- and the callers keep their simple placeholder parts.
+-- Models may also sit in subfolders of Models (e.g. Models/Pets, Models/Deco).
+-- Pets (tools/blender/build_pets.py) carry their colour in the part name instead of a
+-- palette entry: "Pet_F2D49B" or "Pet_FF7A1A_Neon" (materials: Neon, Glass, Metal).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local GameConfig = require(script.Parent.GameConfig)
 
 local ASSETS_FOLDER = "GameAssets"
 local MODELS_FOLDER = "Models"
@@ -34,14 +39,63 @@ local PALETTE: { [string]: { color: Color3, material: Enum.Material } } = {
 	Leaves = { color = Color3.fromRGB(96, 196, 82), material = Enum.Material.SmoothPlastic },
 	LeavesLight = { color = Color3.fromRGB(140, 220, 96), material = Enum.Material.SmoothPlastic },
 	Berry = { color = Color3.fromRGB(235, 60, 70), material = Enum.Material.SmoothPlastic },
+	-- Worlds 2-7 (#16)
+	Hay = { color = Color3.fromRGB(232, 196, 96), material = Enum.Material.SmoothPlastic },
+	Twine = { color = Color3.fromRGB(176, 128, 60), material = Enum.Material.SmoothPlastic },
+	Petal = { color = Color3.fromRGB(255, 206, 40), material = Enum.Material.SmoothPlastic },
+	Seed = { color = Color3.fromRGB(110, 70, 35), material = Enum.Material.SmoothPlastic },
+	BarnRed = { color = Color3.fromRGB(204, 62, 52), material = Enum.Material.SmoothPlastic },
+	Gable = { color = Color3.fromRGB(204, 62, 52), material = Enum.Material.SmoothPlastic },
+	DoorCross = { color = Color3.fromRGB(204, 62, 52), material = Enum.Material.SmoothPlastic },
+	Trim = { color = Color3.fromRGB(250, 246, 236), material = Enum.Material.SmoothPlastic },
+	Pole = { color = Color3.fromRGB(250, 246, 236), material = Enum.Material.SmoothPlastic },
+	Roof = { color = Color3.fromRGB(92, 72, 64), material = Enum.Material.SmoothPlastic },
+	PalmTrunk = { color = Color3.fromRGB(196, 150, 92), material = Enum.Material.Wood },
+	PalmLeaf = { color = Color3.fromRGB(64, 182, 84), material = Enum.Material.SmoothPlastic },
+	Coconut = { color = Color3.fromRGB(120, 80, 45), material = Enum.Material.SmoothPlastic },
+	Canvas = { color = Color3.fromRGB(240, 84, 84), material = Enum.Material.SmoothPlastic },
+	Pine = { color = Color3.fromRGB(44, 128, 96), material = Enum.Material.SmoothPlastic },
+	Snow = { color = Color3.fromRGB(246, 250, 255), material = Enum.Material.SmoothPlastic },
+	Ice = { color = Color3.fromRGB(150, 214, 255), material = Enum.Material.Glass },
+	Coal = { color = Color3.fromRGB(42, 42, 48), material = Enum.Material.SmoothPlastic },
+	Carrot = { color = Color3.fromRGB(255, 140, 40), material = Enum.Material.SmoothPlastic },
+	Basalt = { color = Color3.fromRGB(78, 62, 60), material = Enum.Material.Basalt },
+	Lava = { color = Color3.fromRGB(255, 112, 30), material = Enum.Material.Neon },
+	Charcoal = { color = Color3.fromRGB(58, 46, 46), material = Enum.Material.SmoothPlastic },
+	CandyPink = { color = Color3.fromRGB(255, 92, 162), material = Enum.Material.SmoothPlastic },
+	CandyWhite = { color = Color3.fromRGB(255, 246, 250), material = Enum.Material.SmoothPlastic },
+	Stick = { color = Color3.fromRGB(255, 246, 250), material = Enum.Material.SmoothPlastic },
+	CandyRed = { color = Color3.fromRGB(232, 42, 62), material = Enum.Material.SmoothPlastic },
+	Wrapper = { color = Color3.fromRGB(120, 200, 242), material = Enum.Material.SmoothPlastic },
+	Frosting = { color = Color3.fromRGB(255, 182, 216), material = Enum.Material.SmoothPlastic },
+	MoonRock = { color = Color3.fromRGB(152, 152, 168), material = Enum.Material.Slate },
+	Base = { color = Color3.fromRGB(152, 152, 168), material = Enum.Material.Slate },
+	Crater = { color = Color3.fromRGB(112, 112, 128), material = Enum.Material.Slate },
+	PlanetBody = { color = Color3.fromRGB(150, 110, 232), material = Enum.Material.SmoothPlastic },
+	PlanetRing = { color = Color3.fromRGB(255, 202, 120), material = Enum.Material.SmoothPlastic },
+	Crystal = { color = Color3.fromRGB(110, 255, 212), material = Enum.Material.Neon },
+	Hull = { color = Color3.fromRGB(240, 240, 246), material = Enum.Material.SmoothPlastic },
+	Fin = { color = Color3.fromRGB(232, 62, 62), material = Enum.Material.SmoothPlastic },
+}
+
+-- Materials a pet part can ask for with a name suffix ("Pet_FF7A1A_Neon").
+local PET_MATERIALS: { [string]: Enum.Material } = {
+	Neon = Enum.Material.Neon,
+	Glass = Enum.Material.Glass,
+	Metal = Enum.Material.SmoothPlastic,
 }
 
 -- Extra turn around the up axis per model, in degrees, in case Studio imported a
--- model facing the wrong way (front must face -Z). Only PizzaOven has a front.
+-- model facing the wrong way (front must face -Z). Models whose front matters only.
+-- Blender's front (+Y) arrives in Studio as +Z, so models built facing +Y need 180.
 local YAW: { [string]: number } = {
 	-- The imported oven's mouth faced +Z (away from the sell zone) in Studio.
 	PizzaOven = 180,
+	Barn = 180,
+	Snowman = 180,
 }
+-- Same fix for every pet (all pets are built facing Blender +Y, like the oven).
+local PET_YAW = 180
 
 local ModelLibrary = {}
 
@@ -51,17 +105,55 @@ local prepared: { [string]: Model } = {}
 local function source(name: string): Instance?
 	local assets = ReplicatedStorage:FindFirstChild(ASSETS_FOLDER)
 	local models = assets and assets:FindFirstChild(MODELS_FOLDER)
-	return models and models:FindFirstChild(name)
+	if models == nil then
+		return nil
+	end
+	local direct = models:FindFirstChild(name)
+	if direct then
+		return direct
+	end
+	-- Models sorted into subfolders (Models/Pets/...): only folders are searched, so a
+	-- part called like a model (e.g. "Leaves" inside "Tree") never counts.
+	for _, child in models:GetDescendants() do
+		if child.Name == name and child.Parent and child.Parent:IsA("Folder") then
+			return child
+		end
+	end
+	return nil
+end
+
+-- Colour and material of a part: palette entry by name, or the colour in a pet part
+-- name ("Pet_F2D49B_Neon"). Studio may add suffixes like ".001"; they are ignored.
+local function lookFor(partName: string): { color: Color3, material: Enum.Material }?
+	local base = string.match(partName, "^[^%.]+") or partName
+	local palette = PALETTE[base]
+	if palette then
+		return palette
+	end
+	local hex = string.match(base, "^Pet_(%x%x%x%x%x%x)")
+	if hex == nil then
+		return nil
+	end
+	local suffix = string.match(base, "^Pet_%x+_(%a+)$")
+	return {
+		color = Color3.fromHex(hex),
+		material = (suffix and PET_MATERIALS[suffix]) or Enum.Material.SmoothPlastic,
+	}
+end
+
+local function isPet(name: string): boolean
+	return GameConfig.pets[name] ~= nil
 end
 
 function ModelLibrary.has(name: string): boolean
 	return source(name) ~= nil
 end
 
--- A copy of the model, recoloured, as wide (X/Z) as `width` studs, with its pivot at
--- the bottom center. Nil if the model wasn't imported.
-local function prepare(name: string, width: number): Model?
-	local key = `{name}@{width}`
+-- A copy of the model, recoloured, as wide (X/Z) as `width` studs (with `fitAll`: as
+-- big in its largest dimension), with its pivot at the bottom center. Nil if the
+-- model wasn't imported.
+local function prepare(name: string, width: number, fitAll: boolean?): Model?
+	local key = `{name}@{width}{if fitAll then "a" else ""}`
 	if prepared[key] then
 		return prepared[key]
 	end
@@ -88,11 +180,12 @@ local function prepare(name: string, width: number): Model?
 			descendant.CanQuery = false
 			descendant.CanTouch = false
 			descendant.Massless = true
-			-- Studio may add suffixes like "Meat.001"; the part name before the dot counts.
-			local look = PALETTE[string.match(descendant.Name, "^[^%.]+") or descendant.Name]
+			local look = lookFor(descendant.Name)
 			if look then
 				descendant.Color = look.color
 				descendant.Material = look.material
+				descendant.Transparency = if look.material == Enum.Material.Glass then 0.35 else 0
+				descendant.Reflectance = if string.find(descendant.Name, "_Metal") then 0.25 else 0
 				for _, child in descendant:GetChildren() do
 					if child:IsA("SurfaceAppearance") then
 						child:Destroy()
@@ -103,7 +196,7 @@ local function prepare(name: string, width: number): Model?
 	end
 
 	local _, size = model:GetBoundingBox()
-	local widest = math.max(size.X, size.Z)
+	local widest = if fitAll then math.max(size.X, size.Y, size.Z) else math.max(size.X, size.Z)
 	if widest <= 0 then
 		return nil
 	end
@@ -111,7 +204,7 @@ local function prepare(name: string, width: number): Model?
 
 	-- Pivot = bottom center, facing -Z (with the per-model yaw fix).
 	local box, boxSize = model:GetBoundingBox()
-	local yaw = CFrame.Angles(0, math.rad(YAW[name] or 0), 0)
+	local yaw = CFrame.Angles(0, math.rad(YAW[name] or (if isPet(name) then PET_YAW else 0)), 0)
 	model.WorldPivot = CFrame.new(box.Position - Vector3.new(0, boxSize.Y / 2, 0)) * yaw:Inverse()
 
 	prepared[key] = model
@@ -186,6 +279,45 @@ function ModelLibrary.weldLook(disc: BasePart)
 			descendant.Anchored = false
 		end
 	end
+end
+
+-- A loose copy of a pet model (anchored, not collidable, not parented) whose largest
+-- dimension is `size` studs, pivot at its bottom center facing -Z. Nil if not imported.
+function ModelLibrary.pet(petId: string, size: number): Model?
+	local template = prepare(petId, size, true)
+	return if template then template:Clone() else nil
+end
+
+-- A ViewportFrame (fills its parent) showing the model from the front, slightly from
+-- above and from the right, like the preview renders. Works without uploading images:
+-- it only needs the imported model. Nil if the model wasn't imported.
+function ModelLibrary.viewport(name: string): ViewportFrame?
+	local template = prepare(name, 4, true)
+	if template == nil then
+		return nil
+	end
+	local frame = Instance.new("ViewportFrame")
+	frame.Name = "ModelView"
+	frame.Size = UDim2.fromScale(1, 1)
+	frame.BackgroundTransparency = 1
+	frame.Ambient = Color3.fromRGB(200, 200, 200)
+	frame.LightColor = Color3.fromRGB(255, 250, 240)
+	frame.LightDirection = Vector3.new(-0.5, -1, 0.6)
+
+	local model = template:Clone()
+	model:PivotTo(CFrame.new())
+	model.Parent = frame
+	local box, boxSize = model:GetBoundingBox()
+
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = 30
+	-- Model front is -Z: look from -Z, a bit from the right and from above.
+	local direction = Vector3.new(0.4, 0.3, -1).Unit
+	local distance = (boxSize.Magnitude / 2) / math.tan(math.rad(camera.FieldOfView / 2)) * 1.05
+	camera.CFrame = CFrame.lookAt(box.Position + direction * distance, box.Position)
+	camera.Parent = frame
+	frame.CurrentCamera = camera
+	return frame
 end
 
 return ModelLibrary

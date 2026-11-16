@@ -10,6 +10,7 @@ local TweenService = game:GetService("TweenService")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
+local PetIcon = require(script.Parent.PetIcon)
 local UiKit = require(script.Parent.UiKit)
 
 local CARD_WIDTH = 300
@@ -104,6 +105,8 @@ function EggAnimation.start()
 		UiKit.corner(petIcon, 70)
 		UiKit.stroke(petIcon, 4)
 		petIcon.Parent = card
+		-- The 3D pet (imported model) jumps out in front of its rarity-coloured circle.
+		PetIcon.show(petIcon, petId, 1.2)
 
 		local petName = UiKit.label(card, pet.displayName)
 		petName.Position = UDim2.fromOffset(16, 176)

@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
+local PetIcon = require(script.Parent.PetIcon)
 local UiKit = require(script.Parent.UiKit)
 
 type PetEntry = { uid: number, petId: string, equipped: boolean }
@@ -218,6 +219,8 @@ function PetMenu.start()
 		dot.BackgroundColor3 = color
 		UiKit.corner(dot, 20)
 		dot.Parent = icon
+		-- The 3D pet (imported model) replaces the dot.
+		dot.Visible = not PetIcon.show(icon, entry.petId, 1.2)
 
 		local name = UiKit.label(button, pet.displayName)
 		name.Position = UDim2.fromOffset(6, 78)
