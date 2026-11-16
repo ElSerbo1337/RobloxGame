@@ -68,8 +68,10 @@ end
 ShopService.start(shopStands)
 -- Look pass (#15): models, trees and paths for world 1, dome ovens everywhere.
 WorldDeco.decorateWorld1(layout.folder)
+-- Look of worlds 2-7 (#16): themed paths, props and landmarks.
 for _, world in laterWorlds do
 	WorldDeco.dressOven(world.folder)
+	WorldDeco.decorateWorld(world.folder, world.worldId, world.boundsCenter)
 end
 -- Eggs: world 1 gets its own stand (x = -30 next to the spawn), later worlds use their egg stand.
 local eggSpots = {

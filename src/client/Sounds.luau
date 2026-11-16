@@ -32,6 +32,13 @@ local SOUNDS: { [string]: Entry } = {
 	PhoneRing = { id = "", volume = 0.6 },
 	-- Background music per world, looped (cheerful, light).
 	Music_PizzeriaGarden = { id = "", volume = 0.25, looped = true },
+	-- Worlds 2-7 (#16), see docs/pc-todo.md for search terms per world.
+	Music_Farm = { id = "", volume = 0.25, looped = true },
+	Music_Beach = { id = "", volume = 0.25, looped = true },
+	Music_Icebergs = { id = "", volume = 0.25, looped = true },
+	Music_Volcano = { id = "", volume = 0.25, looped = true },
+	Music_CandyLand = { id = "", volume = 0.25, looped = true },
+	Music_Space = { id = "", volume = 0.25, looped = true },
 }
 
 -- Several pickups within this time play only one plop.
