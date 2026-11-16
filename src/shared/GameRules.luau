@@ -63,7 +63,10 @@ export type EggPreview = {
 	pets: { { petId: string, rarity: string, chancePercent: number, bonus: number } },
 }
 
-export type OpenEggResult = Result & { pet: OwnedPet? }
+-- One world as shown in the portal menu; locked worlds are greyed out with their price.
+export type PortalEntry = { worldId: string, displayName: string, unlockPrice: number, unlocked: boolean }
+
+export type OpenEggResult =Result & { pet: OwnedPet? }
 
 -- Bump together with a migration step in SaveData when a field changes shape.
 local STATE_VERSION = 2
@@ -163,6 +166,31 @@ function GameRules.new(config: any)
 		newState.unlockedWorlds = table.clone(state.unlockedWorlds)
 		table.insert(newState.unlockedWorlds, worldId)
 		return { ok = true, state = newState }
+	end
+
+	-- Whether a portal may send the player into this world. Free; the state stays unchanged.
+	function rules.teleport(state: PlayerState, worldId: string): Result
+		if findWorld(worldId) == nil then
+			return fail(state, "UnknownWorld")
+		end
+		if not rules.isWorldUnlocked(state, worldId) then
+			return fail(state, "WorldLocked")
+		end
+		return { ok = true, state = state }
+	end
+
+	-- Every world in unlock order, as shown in the portal menu.
+	function rules.portalMenu(state: PlayerState): { PortalEntry }
+		local entries = {}
+		for _, world in config.worlds do
+			table.insert(entries, {
+				worldId = world.id,
+				displayName = world.displayName,
+				unlockPrice = world.unlockPrice or 0,
+				unlocked = rules.isWorldUnlocked(state, world.id),
+			})
+		end
+		return entries
 	end
 
 	function rules.upgradeLevel(state: PlayerState, upgradeId: string): number
