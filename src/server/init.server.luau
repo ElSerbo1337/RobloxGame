@@ -13,6 +13,7 @@ local PlayerStates = require(script.PlayerStates)
 local PortalService = require(script.PortalService)
 local ShopService = require(script.ShopService)
 local ToppingService = require(script.ToppingService)
+local TutorialService = require(script.TutorialService)
 local World1Map = require(script.World1Map)
 local WorldMap = require(script.WorldMap)
 
@@ -66,6 +67,13 @@ for _, world in laterWorlds do
 	end
 end
 EggService.start(eggSpots)
+-- New-player tutorial arrows point at world 1: toppings, oven, shop, egg.
+TutorialService.start({
+	CollectToppings = layout.toppingsFolder,
+	SellPizza = layout.sellZone,
+	BuyUpgrade = shopStands[1].zone,
+	OpenEgg = eggSpots[1].stand,
+})
 PetService.start()
 -- One teleport portal per configured world (same spot in each world).
 PortalService.start(PortalService.buildAll())

@@ -25,6 +25,12 @@ local function replicate(player: Player, state: PlayerState)
 	player:SetAttribute("PizzaCapacity", PlayerStates.rules.pizzaCapacity(state))
 	player:SetAttribute("AutoCollect", state.autoCollect == true)
 	player:SetAttribute("UnlockedWorlds", table.concat(state.unlockedWorlds, ","))
+	local tutorial = PlayerStates.rules.tutorial(state)
+	player:SetAttribute("TutorialStep", if tutorial then tutorial.step else "")
+	player:SetAttribute("TutorialNumber", if tutorial then tutorial.number else 0)
+	player:SetAttribute("TutorialTotal", if tutorial then tutorial.total else 0)
+	player:SetAttribute("TutorialProgress", if tutorial then tutorial.progress else 0)
+	player:SetAttribute("TutorialGoal", if tutorial then tutorial.goal else 0)
 end
 
 function PlayerStates.get(player: Player): PlayerState?

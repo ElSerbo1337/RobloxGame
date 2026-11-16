@@ -22,6 +22,7 @@
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought).
+-- Tutorial: TutorialStep (step id, "" = finished), TutorialNumber, TutorialTotal, TutorialProgress, TutorialGoal.
 -- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, InventorySlots, CoinMultiplier.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
