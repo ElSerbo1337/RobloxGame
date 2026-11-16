@@ -4,6 +4,8 @@ Roblox-Spiel, Code-Verwaltung mit [Rojo](https://rojo.space) + Git.
 
 ## Einmalige Einrichtung (Windows-PC)
 
+**Schnell:** In PowerShell `irm https://raw.githubusercontent.com/ElSerbo1337/RobloxGame/main/setup.ps1 | iex` ausführen – erledigt Schritte 1–4 automatisch. Oder manuell:
+
 1. **Git** installieren: https://git-scm.com/download/win
 2. **Rokit** (Tool-Manager) installieren: https://github.com/rojo-rbx/rokit – Installer aus den Releases ausführen, Terminal neu öffnen.
 3. Repo in den Projektordner klonen (PowerShell):
