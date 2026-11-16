@@ -453,7 +453,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] **Münz-Trank** trinken → Toast „Münz-Trank wirkt 10 Minuten!“, rechts erscheint „💰 Münzen ×2  10:00“ und zählt sekündlich herunter. Pizza verkaufen → doppelte Münzen (mit Pets: Belagwert × Pet-Bonus × 2).
 - [ ] Gleichen Trank nochmal trinken → Restzeit **verlängert** sich um 10 Min. (z. B. 9:30 → 19:30), sie startet nicht neu.
 - [ ] **Speed-Trank** → man läuft sichtbar schneller (Tempo × 1,5, also 16 → 24, mit Tempo-Upgrade 19 → 28,5). Gilt auch nach Respawn (Reset). Nach Ablauf wieder normales Tempo.
-- [ ] **Glücks-Trank** → in jeder Ei-Vorschau steht „🍀 Glück!“ hinter dem Ei-Namen, die Chancen sind grün und seltene Pets höher (Garten-Ei: Pizza-Drache 0,5 % → ca. 1 %, Teig-Hamster 50 % → ca. 41 %). Nach Ablauf wieder die normalen Werte.
+- [ ] **Glücks-Trank** → in jeder Ei-Vorschau steht „🍀 Glück!“ hinter dem Ei-Namen, die Chancen sind grün und seltene Pets höher (Garten-Ei: Pizza-Drache 0,5 % → ca. 1,2 %, Teig-Hamster 50 % → ca. 41 %). Nach Ablauf wieder die normalen Werte.
 - [ ] Ablauf: Wenn die Zeit um ist, verschwindet die Anzeige rechts, Toast „… ist abgelaufen.“, die Wirkung endet (Verkaufswert/Tempo/Chancen wieder normal).
 - [ ] Mehrere Tränke gleichzeitig: alle drei trinken → drei Anzeigen rechts untereinander, jede mit eigener Zeit.
 - [ ] Speichern: Tränke im Inventar und laufende Restzeit bleiben nach Rejoin erhalten. Während man offline ist, läuft die Zeit **nicht** weiter (so gewollt).
