@@ -247,3 +247,35 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Pet-Menü (jetzt 560 hoch) passt komplett auf den Bildschirm, „X“, „Beste ausrüsten“ und „Löschen“ sind mit dem Daumen gut antippbar.
 - [ ] Bestätigungsdialog passt, beide Knöpfe gut antippbar; Antippen außerhalb des Dialogs löst keine Karte darunter aus.
 - [ ] Wischen in der Liste im Löschen-Modus öffnet nicht versehentlich den Dialog.
+
+## #10 Welten 3–4 (Strand, Eisberge) und Shop 2
+
+Vorher: `lune run test` → alle grün (u. a. `GameConfig` „world 3/4“ und „shop 2“).
+
+Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozzarella.value = 50000` setzen (Rojo synchronisiert live), damit 1.500 + 15.000 + 150.000 Münzen schnell zusammenkommen. **Danach zurücksetzen, nicht committen.**
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler. Im Workspace gibt es `World3_Beach` und `World4_Icebergs` (hinter dem Bauernhof entlang −Z), in `Portals` zusätzlich `Portal_Beach` und `Portal_Icebergs`.
+- [ ] Strand: Sand-Boden, türkise Barriere mit Schild „🔒 Strand – 15.000 Münzen“ am Ende des Bauernhofs. Eisberge: Schnee-Boden, blaue Barriere „🔒 Eisberge – 150.000 Münzen“ am Ende des Strands.
+- [ ] Mit zu wenig Münzen an der Strand-Barriere freischalten → „Nicht genug Münzen!“, Barriere bleibt. Eisberge vor dem Strand freischalten geht nicht („Erst die vorige Welt freischalten!“).
+- [ ] Strand freischalten → Barriere lokal durchlässig, Münzen −15.000. Danach Eisberge (−150.000).
+- [ ] Strand-Beläge: Thunfisch (rotbraun), Garnele (orange), Ananas (gelb), ca. 60 Stück; Eisberge: Gefrorene Erbsen (grün, glasig), Lachs (lachsfarben), Eisberg-Salat (hellgrün, glasig). Keine pinken Neon-Scheiben (= fehlende Optik).
+- [ ] Einsammeln und am Ofen der jeweiligen Welt verkaufen funktioniert; Werte: Thunfisch 25, Garnele 45, Ananas 65, Erbsen 100, Lachs 180, Eisberg-Salat 260 (× Pet-Bonus).
+- [ ] Ei-Sockel jeder Welt: Strand-Ei (1.500 Münzen) bzw. Eis-Ei (12.000 Münzen) mit Vorschau (6 Pets, 0,5 % Mythisch). Öffnen gibt ein Pet der Welt (z. B. Sand-Krabbe +40 %, Eis-Pinguin +80 %); es folgt nach dem Ausrüsten.
+- [ ] Portal-Menü listet „Strand“ und „Eisberge“; nach dem Freischalten anwählbar, Teleport landet vor dem Portal der Welt.
+- [ ] **Shop 2** in den Eisbergen links vom Ei (ca. x = −72, z = −528): sichtbar größer als der Shop in Welt 1 (ca. 1,5×), Schild „Großer Münz-Tresen – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche).
+- [ ] In die grüne Zone laufen → Menü zeigt Pizza-Platz „Stufe x von 8“, kaufbar bis 12 (danach „Im größeren Shop erhältlich“), Reichweite bis Stufe 6 (dann „MAX“), Magnet bis Stufe 3 („MAX“).
+- [ ] Zurück in Welt 1 im kleinen Shop: Pizza-Platz über 6 bzw. Magnet über Stufe 1 weiterhin nicht kaufbar („Im größeren Shop erhältlich“ bzw. bereits höhere Stufe angezeigt, kein Kauf).
+
+**Server-Schutz**:
+
+- [ ] Ohne Eisberge freigeschaltet (Command Bar im Client-Fenster): `game.ReplicatedStorage.Remotes.BuyUpgrade:FireServer("World4Shop", "PizzaSpace")` → nichts passiert, Münzen unverändert.
+
+**Mehrspieler** (2 Spieler):
+
+- [ ] A hat Strand freigeschaltet, B nicht: B kommt nicht durch die Strand-Barriere (wird zurückgesetzt), A schon.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Freischalt-Knöpfe für Strand/Eisberge und das Menü von Shop 2 sind groß, lesbar und per Antippen bedienbar; die längeren Namen („Gefrorene Erbsen“, „Großer Münz-Tresen“) werden nicht abgeschnitten.
