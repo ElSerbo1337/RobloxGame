@@ -193,21 +193,21 @@ Vorbereitung: Für den Bauernhof 1.500 Münzen nötig – z. B. vorübergehend `
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler. Im Workspace gibt es den Ordner `Portals` mit je einem `Portal_<WeltId>` pro Welt aus der Config (aktuell `Portal_PizzeriaGarden`, `Portal_Farm`, ggf. weitere aus #10).
-- [ ] Welt 1: Rechts vom Ofen (ca. x = 65, z = 70) steht ein lila leuchtender Ring mit hellblauer Fläche, Funkeln und Schild „🌀 Teleport“. Steht auf dem Boden, nicht im Ofen / in der Belag-Fläche.
-- [ ] In den Ring laufen → Menü „🌀 Teleport“ in der Bildschirmmitte: „📍 Pizzeria-Garten (du bist hier)“ (orange, nicht anwählbar), darunter „🔒 Bauernhof – 1.500 Münzen“ grau (und weitere gesperrte Welten grau mit Preis).
-- [ ] Grauen Eintrag antippen → nichts passiert (kein Teleport).
+- [x] Output ohne rote Fehler. Im Workspace gibt es den Ordner `Portals` mit je einem `Portal_<WeltId>` pro Welt aus der Config (aktuell `Portal_PizzeriaGarden`, `Portal_Farm`, ggf. weitere aus #10).
+- [x] Welt 1: Rechts vom Ofen (ca. x = 65, z = 70) steht ein lila leuchtender Ring mit hellblauer Fläche, Funkeln und Schild „🌀 Teleport“. Steht auf dem Boden, nicht im Ofen / in der Belag-Fläche.
+- [x] In den Ring laufen → Menü „🌀 Teleport“ in der Bildschirmmitte: „📍 Pizzeria-Garten (du bist hier)“ (orange, nicht anwählbar), darunter „🔒 Bauernhof – 1.500 Münzen“ grau (und weitere gesperrte Welten grau mit Preis).
+- [x] Grauen Eintrag antippen → nichts passiert (kein Teleport).
 - [ ] Aus dem Ring laufen → Menü schließt. „X“ schließt es ebenfalls.
-- [ ] Bauernhof an der Barriere freischalten, zurück in den Portal-Ring → „2. Bauernhof“ ist jetzt lila und anwählbar. (Steht man beim Freischalten im Ring, aktualisiert sich das Menü sofort.)
-- [ ] „Bauernhof“ antippen → Figur steht sofort vor dem Bauernhof-Portal (Blick Richtung Welt), Menü zu, es öffnet sich nicht gleich wieder.
+- [x] Bauernhof an der Barriere freischalten, zurück in den Portal-Ring → „2. Bauernhof“ ist jetzt lila und anwählbar. (Steht man beim Freischalten im Ring, aktualisiert sich das Menü sofort.)
+- [x] „Bauernhof“ antippen → Figur steht sofort vor dem Bauernhof-Portal (Blick Richtung Welt), Menü zu, es öffnet sich nicht gleich wieder. _(mit „Eisberge“ getestet)_
 - [ ] Im Bauernhof-Portal steht „📍 Bauernhof (du bist hier)“; „Pizzeria-Garten“ antippen → zurück in Welt 1 vor dem Portal.
-- [ ] Ankunftspunkt ist frei (nicht in Ofen, Ei oder Barriere), man fällt nicht durch den Boden.
-- [ ] Im HUD gibt es **keinen** Teleport-Knopf.
+- [x] Ankunftspunkt ist frei (nicht in Ofen, Ei oder Barriere), man fällt nicht durch den Boden.
+- [x] Im HUD gibt es **keinen** Teleport-Knopf.
 
 **Server-Schutz** (Command Bar im Client-Fenster bzw. Executor nicht nötig):
 
 - [ ] Im Client-Fenster (nicht im Portal) in der Command Bar: `game.ReplicatedStorage.Remotes.Teleport:FireServer("Farm")` → nichts passiert (nur aus einem Portal heraus).
-- [ ] Im Portal stehend, Bauernhof gesperrt: `game.ReplicatedStorage.Remotes.Teleport:FireServer("Farm")` → kein Teleport, Meldung „Diese Welt ist noch gesperrt!“.
+- [x] Im Portal stehend, Bauernhof gesperrt: `game.ReplicatedStorage.Remotes.Teleport:FireServer("Farm")` → kein Teleport, Meldung „Diese Welt ist noch gesperrt!“. _(kein Teleport; Meldung nicht gesehen, Menü überdeckt evtl. die Meldungszeile)_
 
 **Mehrspieler** (Test → Clients and Servers → 2 Spieler):
 
@@ -226,16 +226,16 @@ Vorbereitung: Zum schnellen Testen in `src/shared/GameConfig.luau` vorübergehen
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler.
-- [ ] Pet-Menü öffnen: Kopfzeile zeigt „Ausgerüstet X/3 · Inventar Y/5 · Bonus +Z %“ (mit echtem Wert: Y/50). Darunter zwei große Knöpfe „Beste ausrüsten“ (grün) und „Löschen“ (rot), die Pet-Liste darunter ist nicht verdeckt.
+- [x] Output ohne rote Fehler.
+- [x] Pet-Menü öffnen: Kopfzeile zeigt „Ausgerüstet X/3 · Inventar Y/5 · Bonus +Z %“ (mit echtem Wert: Y/50). Darunter zwei große Knöpfe „Beste ausrüsten“ (grün) und „Löschen“ (rot), die Pet-Liste darunter ist nicht verdeckt.
 - [ ] Ohne Pets „Beste ausrüsten“ antippen → Kopfzeile kurz rot „Noch keine Pets – öffne ein Ei!“.
-- [ ] Mehrere Pets öffnen (verschiedene Seltenheiten), nur schwache ausrüsten → „Beste ausrüsten“ → die 3 Pets mit dem höchsten Bonus sind ausgerüstet (Karten vorn, „Ablegen“), Münz-Bonus in der Kopfzeile passt (Summe der 3 Boni). Die Pet-Kugeln neben dem Spieler wechseln entsprechend.
+- [x] Mehrere Pets öffnen (verschiedene Seltenheiten), nur schwache ausrüsten → „Beste ausrüsten“ → die 3 Pets mit dem höchsten Bonus sind ausgerüstet (Karten vorn, „Ablegen“), Münz-Bonus in der Kopfzeile passt (Summe der 3 Boni). Die Pet-Kugeln neben dem Spieler wechseln entsprechend.
 - [ ] „Beste ausrüsten“ erneut antippen, wenn schon die besten ausgerüstet sind → nichts ändert sich (keine Pets verschwinden/erscheinen).
-- [ ] „Löschen“ antippen → Knopf wird dunkel „Fertig“, Titel „Pet zum Löschen antippen“, „Beste ausrüsten“ ist ausgeblendet, alle Karten zeigen roten „Löschen“-Streifen.
-- [ ] Im Löschen-Modus eine Karte antippen → Dialog „<Name> (+X %) wirklich löschen?“ mit großen Knöpfen „Löschen“ / „Behalten“. „Behalten“ → nichts passiert.
-- [ ] „Löschen“ im Dialog → Pet verschwindet aus der Liste, Inventar-Zahl sinkt um 1.
-- [ ] Ein **ausgerüstetes** Pet löschen → Dialog erwähnt „Es wird dabei abgelegt.“; nach dem Löschen verschwindet seine Kugel neben dem Spieler, „Ausgerüstet“ und Bonus sinken.
-- [ ] „Fertig“ bzw. Menü schließen (X oder „Pets“-Knopf) beendet den Löschen-Modus; beim nächsten Öffnen normale Ansicht.
+- [x] „Löschen“ antippen → Knopf wird dunkel „Fertig“, Titel „Pet zum Löschen antippen“, „Beste ausrüsten“ ist ausgeblendet, alle Karten zeigen roten „Löschen“-Streifen.
+- [x] Im Löschen-Modus eine Karte antippen → Dialog „<Name> (+X %) wirklich löschen?“ mit großen Knöpfen „Löschen“ / „Behalten“. „Behalten“ → nichts passiert.
+- [x] „Löschen“ im Dialog → Pet verschwindet aus der Liste, Inventar-Zahl sinkt um 1.
+- [x] Ein **ausgerüstetes** Pet löschen → Dialog erwähnt „Es wird dabei abgelegt.“; nach dem Löschen verschwindet seine Kugel neben dem Spieler, „Ausgerüstet“ und Bonus sinken.
+- [x] „Fertig“ bzw. Menü schließen (X oder „Pets“-Knopf) beendet den Löschen-Modus; beim nächsten Öffnen normale Ansicht.
 - [ ] Inventar füllen (5/5 mit Testwert) → Kopfzeile rot. Am Ei „1 öffnen“ → Knopf wird kurz rot „Inventar voll!“, oben erscheint Meldung „Pet-Inventar voll! Lösche erst ein Pet.“, **keine Münzen abgezogen**, keine Animation.
 - [ ] Ein Pet löschen → Ei lässt sich wieder öffnen.
 - [ ] Rejoin (Speichern aktiv): gelöschte Pets bleiben weg, Ausrüstung nach „Beste ausrüsten“ bleibt erhalten.
@@ -256,16 +256,16 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozz
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler. Im Workspace gibt es `World3_Beach` und `World4_Icebergs` (hinter dem Bauernhof entlang −Z), in `Portals` zusätzlich `Portal_Beach` und `Portal_Icebergs`.
+- [x] Output ohne rote Fehler. Im Workspace gibt es `World3_Beach` und `World4_Icebergs` (hinter dem Bauernhof entlang −Z), in `Portals` zusätzlich `Portal_Beach` und `Portal_Icebergs`.
 - [ ] Strand: Sand-Boden, türkise Barriere mit Schild „🔒 Strand – 15.000 Münzen“ am Ende des Bauernhofs. Eisberge: Schnee-Boden, blaue Barriere „🔒 Eisberge – 150.000 Münzen“ am Ende des Strands.
-- [ ] Mit zu wenig Münzen an der Strand-Barriere freischalten → „Nicht genug Münzen!“, Barriere bleibt. Eisberge vor dem Strand freischalten geht nicht („Erst die vorige Welt freischalten!“).
-- [ ] Strand freischalten → Barriere lokal durchlässig, Münzen −15.000. Danach Eisberge (−150.000).
+- [x] Mit zu wenig Münzen an der Strand-Barriere freischalten → „Nicht genug Münzen!“, Barriere bleibt. Eisberge vor dem Strand freischalten geht nicht („Erst die vorige Welt freischalten!“). _(geprüft: Server setzt aus gesperrtem Strand zurück, „Diese Welt ist noch gesperrt!“)_
+- [x] Strand freischalten → Barriere lokal durchlässig, Münzen −15.000. Danach Eisberge (−150.000).
 - [ ] Strand-Beläge: Thunfisch (rotbraun), Garnele (orange), Ananas (gelb), ca. 60 Stück; Eisberge: Gefrorene Erbsen (grün, glasig), Lachs (lachsfarben), Eisberg-Salat (hellgrün, glasig). Keine pinken Neon-Scheiben (= fehlende Optik).
 - [ ] Einsammeln und am Ofen der jeweiligen Welt verkaufen funktioniert; Werte: Thunfisch 25, Garnele 45, Ananas 65, Erbsen 100, Lachs 180, Eisberg-Salat 260 (× Pet-Bonus).
 - [ ] Ei-Sockel jeder Welt: Strand-Ei (1.500 Münzen) bzw. Eis-Ei (12.000 Münzen) mit Vorschau (6 Pets, 0,5 % Mythisch). Öffnen gibt ein Pet der Welt (z. B. Sand-Krabbe +40 %, Eis-Pinguin +80 %); es folgt nach dem Ausrüsten.
-- [ ] Portal-Menü listet „Strand“ und „Eisberge“; nach dem Freischalten anwählbar, Teleport landet vor dem Portal der Welt.
+- [x] Portal-Menü listet „Strand“ und „Eisberge“; nach dem Freischalten anwählbar, Teleport landet vor dem Portal der Welt.
 - [ ] **Shop 2** in den Eisbergen links vom Ei (ca. x = −72, z = −528): sichtbar größer als der Shop in Welt 1 (ca. 1,5×), Schild „Großer Pizza-Shop – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche).
-- [ ] In die grüne Zone laufen → Menü zeigt Pizza-Platz „Stufe x von 8“, kaufbar bis 12 (danach „Im größeren Shop erhältlich“), Reichweite bis Stufe 6 (dann „MAX“), Magnet bis Stufe 3 („MAX“).
+- [x] In die grüne Zone laufen → Menü zeigt Pizza-Platz „Stufe x von 8“, kaufbar bis 12 (danach „Im größeren Shop erhältlich“), Reichweite bis Stufe 6 (dann „MAX“), Magnet bis Stufe 3 („MAX“). _(Karte zeigt „Stufe x von 6“ = Shop-Maximum, nicht „von 8“; Pizza bis 12 + „Im größeren Shop erhältlich“ geprüft)_
 - [ ] Zurück in Welt 1 im kleinen Shop: Pizza-Platz über 6 bzw. Magnet über Stufe 1 weiterhin nicht kaufbar („Im größeren Shop erhältlich“ bzw. bereits höhere Stufe angezeigt, kein Kauf).
 
 **Server-Schutz**:
@@ -290,14 +290,14 @@ Danach **Play** → frischer Spieler mit Tutorial. (Für die Schritte ohne Speic
 
 Studio: Rojo verbinden, dann **Play** als neuer Spieler (1 Spieler):
 
-- [ ] Output ohne rote Fehler. Unter den Münzen erscheint eine Karte „Tutorial – Schritt 1/4“: „Sammle 2 Beläge ein (0/2) …“.
+- [x] Output ohne rote Fehler. Unter den Münzen erscheint eine Karte „Tutorial – Schritt 1/4“: „Sammle 2 Beläge ein (0/2) …“.
 - [ ] Ein gelber, wippender Pfeil ▼ steht über dem **nächsten** Belag, eine gelbe Linie führt von den Füßen dorthin. Beim Laufen springt der Pfeil zum jeweils nächsten Belag (nie zu einem Gem-Belag).
-- [ ] 1 Belag einsammeln → „(1/2)“. Zweiten Belag einsammeln (per Antippen **oder** Auto-Sammeln) → Karte springt mit kleinem Pop auf „Schritt 2/4: … verkaufe deine Pizza!“, Pfeil steht über der Ofen-Zone.
-- [ ] In die Ofen-Zone laufen und verkaufen → „Schritt 3/4: Kauf im Shop dein erstes Upgrade!“, Pfeil über der grünen Shop-Zone in Welt 1.
+- [x] 1 Belag einsammeln → „(1/2)“. Zweiten Belag einsammeln (per Antippen **oder** Auto-Sammeln) → Karte springt mit kleinem Pop auf „Schritt 2/4: … verkaufe deine Pizza!“, Pfeil steht über der Ofen-Zone.
+- [x] In die Ofen-Zone laufen und verkaufen → „Schritt 3/4: Kauf im Shop dein erstes Upgrade!“, Pfeil über der grünen Shop-Zone in Welt 1.
 - [ ] Mit zu wenig Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4. Weiter sammeln/verkaufen, dann Pizza-Platz kaufen (25 Münzen) → „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil über dem Ei-Sockel in Welt 1.
-- [ ] Ei öffnen (25 Münzen) → Karte zeigt „Tutorial geschafft!“ und verschwindet nach ca. 4 s; Pfeil und Linie sind weg.
-- [ ] **Stop**, erneut **Play** → kein Tutorial mehr (gespeichert).
-- [ ] Mittendrin speichern: Neuer Spieler, bis Schritt 3 spielen, **Stop**, **Play** → Tutorial macht bei Schritt 3/4 weiter.
+- [x] Ei öffnen (25 Münzen) → Karte zeigt „Tutorial geschafft!“ und verschwindet nach ca. 4 s; Pfeil und Linie sind weg.
+- [x] **Stop**, erneut **Play** → kein Tutorial mehr (gespeichert).
+- [x] Mittendrin speichern: Neuer Spieler, bis Schritt 3 spielen, **Stop**, **Play** → Tutorial macht bei Schritt 3/4 weiter. _(am 16.11. Schritt 3/4 nach Stop/Play erhalten)_
 - [ ] Reihenfolge: In Schritt 1 schon im Shop kaufen oder ein Ei öffnen (Münzen per Command Bar geben) → Tutorial bleibt bei Schritt 1.
 - [ ] Nach dem Sterben/Respawn (z. B. Character resetten) zeigt die Linie weiterhin vom Spieler zum Ziel.
 
@@ -317,24 +317,24 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `gems
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler. Oben in der Mitte stehen **zwei** Anzeigen nebeneinander: links Münzen (gelbe Münze), rechts Gems (türkiser Diamant, Start 0).
-- [ ] Gem-Beläge: zwischen den Belag-Scheiben liegen selten (normal ca. 1 von 150 Spawns, mit Tipp oben oft) **leuchtende türkise Diamanten** mit Glitzern, je nach Wert (1–3) etwas größer.
+- [x] Output ohne rote Fehler. Oben in der Mitte stehen **zwei** Anzeigen nebeneinander: links Münzen (gelbe Münze), rechts Gems (türkiser Diamant, Start 0).
+- [x] Gem-Beläge: zwischen den Belag-Scheiben liegen selten (normal ca. 1 von 150 Spawns, mit Tipp oben oft) **leuchtende türkise Diamanten** mit Glitzern, je nach Wert (1–3) etwas größer.
 - [ ] Gem-Belag antippen (in Reichweite) → verschwindet, Toast „+n Gems!“ (türkis), Gem-Anzeige springt hoch; die Pizza bleibt unverändert. Funktioniert auch mit **voller** Pizza.
 - [ ] Mit Auto-Sammeln drüberlaufen sammelt Gem-Beläge ebenfalls ein (auch mit voller Pizza); normale Beläge bleiben dann liegen.
-- [ ] Spielzeit: nach 15 Min. (mit Tipp: 30 s) Toast „+1 Gem fürs Spielen!“ und die Anzeige steigt. Nach Rejoin zählt die angefangene Zeit weiter (wird mitgespeichert).
-- [ ] Shop in Welt 1 (Schild jetzt „Pizza-Shop – Upgrades“): Menü hat die Abschnitte **„Münz-Tresen“** (gelb) und darunter **„Gem-Tresen“** (türkis) mit Pet-Plätze, Inventar, Laufgeschwindigkeit, 3 Eier auf einmal. Gem-Preise stehen als „50 Gems“ usw. auf türkisen Knöpfen (grau, wenn zu wenig Gems).
+- [x] Spielzeit: nach 15 Min. (mit Tipp: 30 s) Toast „+1 Gem fürs Spielen!“ und die Anzeige steigt. Nach Rejoin zählt die angefangene Zeit weiter (wird mitgespeichert). _(Toast „+500 Gem fürs Spielen!“ mit Testwert; Rejoin nicht geprüft)_
+- [x] Shop in Welt 1 (Schild jetzt „Pizza-Shop – Upgrades“): Menü hat die Abschnitte **„Münz-Tresen“** (gelb) und darunter **„Gem-Tresen“** (türkis) mit Pet-Plätze, Inventar, Laufgeschwindigkeit, 3 Eier auf einmal. Gem-Preise stehen als „50 Gems“ usw. auf türkisen Knöpfen (grau, wenn zu wenig Gems).
 - [ ] Mit zu wenig Gems kaufen → „Nicht genug Gems!“, nichts ändert sich. Münzen werden für Gem-Upgrades **nie** abgezogen.
 - [ ] **Pet-Plätze**: 3 → 4 (50 Gems) → 5 (150 Gems), dann „Im größeren Shop erhältlich“. Im Pet-Menü lassen sich danach 4 bzw. 5 Pets ausrüsten, alle folgen.
 - [ ] **Inventar**: 50 → 75 (30 Gems) → 100 (100 Gems); Pet-Menü zeigt die neue Grenze, Eier lassen sich wieder öffnen, wenn das Inventar vorher voll war.
 - [ ] **Laufgeschwindigkeit**: 16 → 19 → 22; man läuft sichtbar schneller, auch nach Respawn (Reset) und nach Rejoin.
-- [ ] **3 Eier auf einmal** (150 Gems): an jeder Ei-Vorschau erscheint neben „1 öffnen – 25“ ein gelber Knopf „3 öffnen – 75“. Antippen → 3× Preis weg, Animation zeigt **3 Pet-Karten nebeneinander**, alle 3 Pets im Pet-Menü.
+- [x] **3 Eier auf einmal** (150 Gems): an jeder Ei-Vorschau erscheint neben „1 öffnen – 25“ ein gelber Knopf „3 öffnen – 75“. Antippen → 3× Preis weg, Animation zeigt **3 Pet-Karten nebeneinander**, alle 3 Pets im Pet-Menü.
 - [ ] „3 öffnen“ mit zu wenig Münzen → Knopf zeigt kurz „Zu wenig Münzen!“; mit nur 1–2 freien Inventarplätzen → „Inventar voll!“, nichts wird abgezogen.
 - [ ] Shop 2 (Eisberge): Gem-Tresen verkauft Pet-Plätze bis 7 (400/1.000 Gems), Inventar und Tempo bis Stufe 4.
 
 **Server-Schutz** (Command Bar im Client-Fenster):
 
-- [ ] Ohne „3 Eier auf einmal“ gekauft, neben einem Ei: `game.ReplicatedStorage.Remotes.OpenEgg:FireServer("GardenEgg", 3)` → nichts wird geöffnet, Münzen unverändert. Mit `…:FireServer("GardenEgg", 5)` ebenso.
-- [ ] `game.ReplicatedStorage.Remotes.BuyUpgrade:FireServer("World1Shop", "PetSlots")` außerhalb der Shop-Zone → nichts passiert.
+- [x] Ohne „3 Eier auf einmal“ gekauft, neben einem Ei: `game.ReplicatedStorage.Remotes.OpenEgg:FireServer("GardenEgg", 3)` → nichts wird geöffnet, Münzen unverändert. Mit `…:FireServer("GardenEgg", 5)` ebenso. _(mit 5 geprüft)_
+- [x] `game.ReplicatedStorage.Remotes.BuyUpgrade:FireServer("World1Shop", "PetSlots")` außerhalb der Shop-Zone → nichts passiert.
 
 **Mehrspieler** (2 Spieler):
 
@@ -355,12 +355,12 @@ Ohne die folgenden Import-Schritte läuft alles weiter mit den bisherigen Teilen
 
 **1. Licht (einmalig, wird im Place gespeichert):**
 
-- [ ] Explorer → **Lighting** auswählen → Properties → **Technology = Future**. (Kann kein Skript setzen.) Alles andere (ClockTime, Atmosphere, Bloom, Farbkorrektur, SunRays, Wolken) setzt das Spiel selbst beim Start (`src/client/WorldAmbience.luau`, Werte in `src/shared/WorldLooks.luau`).
+- [ ] Explorer → **Lighting** auswählen → Properties → **Technology = Future**. (Kann kein Skript setzen.) Alles andere (ClockTime, Atmosphere, Bloom, Farbkorrektur, SunRays, Wolken) setzt das Spiel selbst beim Start (`src/client/WorldAmbience.luau`, Werte in `src/shared/WorldLooks.luau`). _(16.11.: Eigenschaft „Technology“ gibt es in dieser Studio-Version nicht mehr – per Skript gesperrt, im Eigenschaften-Fenster nicht auffindbar)_
 
 **2. 3D-Modelle importieren** (Dateien in `assets/models/`, im Repo-Ordner):
 
-- [ ] Im Explorer unter **ReplicatedStorage** einen **Folder** `GameAssets` anlegen, darin einen **Folder** `Models` (Rechtsklick → Insert Object → Folder, umbenennen). Rojo lässt diese Ordner in Ruhe.
-- [ ] Für **jede** dieser 7 Dateien: **Home → Import 3D** (bzw. File → Import 3D) → Datei wählen → im Import-Fenster: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**.
+- [x] Im Explorer unter **ReplicatedStorage** einen **Folder** `GameAssets` anlegen, darin einen **Folder** `Models` (Rechtsklick → Insert Object → Folder, umbenennen). Rojo lässt diese Ordner in Ruhe.
+- [x] Für **jede** dieser 7 Dateien: **Home → Import 3D** (bzw. File → Import 3D) → Datei wählen → im Import-Fenster: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**.
   | Datei | Name im Explorer (exakt) | enthaltene Teile |
   | --- | --- | --- |
   | `Salami.fbx` | `Salami` | Meat, Fat |
@@ -370,8 +370,8 @@ Ohne die folgenden Import-Schritte läuft alles weiter mit den bisherigen Teilen
   | `PizzaOven.fbx` | `PizzaOven` | Stone, Dome, Arch, Mouth, Glow, Chimney |
   | `Tree.fbx` | `Tree` | Wood, Leaves, LeavesLight |
   | `Bush.fbx` | `Bush` | Leaves, Berry |
-- [ ] Das importierte Modell erscheint im Workspace. Es per Drag & Drop nach **ReplicatedStorage → GameAssets → Models** ziehen und exakt wie in der Tabelle benennen (es muss ein **Model** mit **MeshParts** sein; heißen die Teile z. B. `Meat.001`, ist das in Ordnung). Größe, Farbe und Position sind egal – das Spiel skaliert und färbt nach den Teilnamen.
-- [ ] Place speichern und **File → Publish to Roblox** (die hochgeladenen Meshes gehören zum Place).
+- [x] Das importierte Modell erscheint im Workspace. Es per Drag & Drop nach **ReplicatedStorage → GameAssets → Models** ziehen und exakt wie in der Tabelle benennen (es muss ein **Model** mit **MeshParts** sein; heißen die Teile z. B. `Meat.001`, ist das in Ordnung). Größe, Farbe und Position sind egal – das Spiel skaliert und färbt nach den Teilnamen.
+- [x] Place speichern und **File → Publish to Roblox** (die hochgeladenen Meshes gehören zum Place).
 
 **3. Sounds** (IDs in `src/client/Sounds.luau`, starten leer = stumm):
 
@@ -387,15 +387,15 @@ Aus der Cloud-Sitzung ließ sich keine Roblox-Asset-ID prüfen (roblox.com gespe
 
 **4. Test** (Rojo verbunden, **Play**, 1 Spieler):
 
-- [ ] Output ohne rote Fehler.
+- [x] Output ohne rote Fehler.
 - [ ] Look: warmes Nachmittagslicht mit weichen Schatten, leichter Dunst am Horizont, Wolken am Himmel, kräftige Farben, Neon-Glut leuchtet leicht (Bloom). Nichts ist überstrahlt.
-- [ ] Welt 1: Bäume links/rechts und hinter dem Spawn, Büsche mit Blumen, sandiger Weg vor Ofen/Spawn/Ei/Shop/Portal, ein Weg-Stück zum Sammelfeld. Nichts davon steht im Sammelfeld, im Weg zum Ofen, Shop, Ei oder Portal.
-- [ ] Beläge sind die Modelle: Salami-Scheibe mit Fettaugen, kleiner Pilz, Mozzarella-Kugeln mit Basilikum. Anklicken/Antippen, Auto-Sammeln und Magnet-Flug funktionieren wie vorher (das Modell fliegt mit).
-- [ ] Pizza in der Hand ist das Pizza-Modell (Rand, Soße, Käse), gesammelte Beläge erscheinen klein darauf. Liegt sie schief/verdreht: `GRIP` in `src/server/PizzaVisual.luau` prüfen.
-- [ ] Ofen ist der runde Kuppelofen mit glühender Öffnung **zur Verkaufszone hin**. Zeigt die Öffnung woanders hin: in `src/shared/ModelLibrary.luau` bei `YAW.PizzaOven` 90/180/270 eintragen. Schild „Ofen – hier verkaufen“ steht über dem Schornstein. Verkaufsanimation: Pizza (Modell) fliegt in die Ofenöffnung.
-- [ ] Shop-Stand: Pizza-Modell liegt auf der Theke.
+- [x] Welt 1: Bäume links/rechts und hinter dem Spawn, Büsche mit Blumen, sandiger Weg vor Ofen/Spawn/Ei/Shop/Portal, ein Weg-Stück zum Sammelfeld. Nichts davon steht im Sammelfeld, im Weg zum Ofen, Shop, Ei oder Portal.
+- [x] Beläge sind die Modelle: Salami-Scheibe mit Fettaugen, kleiner Pilz, Mozzarella-Kugeln mit Basilikum. Anklicken/Antippen, Auto-Sammeln und Magnet-Flug funktionieren wie vorher (das Modell fliegt mit).
+- [x] Pizza in der Hand ist das Pizza-Modell (Rand, Soße, Käse), gesammelte Beläge erscheinen klein darauf. Liegt sie schief/verdreht: `GRIP` in `src/server/PizzaVisual.luau` prüfen.
+- [x] Ofen ist der runde Kuppelofen mit glühender Öffnung **zur Verkaufszone hin**. Zeigt die Öffnung woanders hin: in `src/shared/ModelLibrary.luau` bei `YAW.PizzaOven` 90/180/270 eintragen. Schild „Ofen – hier verkaufen“ steht über dem Schornstein. Verkaufsanimation: Pizza (Modell) fliegt in die Ofenöffnung. _(Öffnung zeigte nach hinten → `YAW.PizzaOven = 180` gesetzt, danach richtig)_
+- [x] Shop-Stand: Pizza-Modell liegt auf der Theke.
 - [ ] Sounds (sobald IDs eingetragen): Plopp beim Sammeln (nicht beim Beitreten), Kasse beim Verkaufen, Glitzern bei Gems, Knacken in der Ei-Animation, Musik läuft in Schleife.
-- [ ] Welt 2 und weitere: Ofen dort ist ebenfalls der Kuppelofen.
+- [x] Welt 2 und weitere: Ofen dort ist ebenfalls der Kuppelofen.
 
 **Handy** (Device-Emulator):
 
@@ -465,3 +465,10 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Trank-Menü passt auf den Bildschirm; „Trinken“-Knöpfe groß und per Antippen bedienbar.
 - [ ] Trank-Anzeigen rechts sind lesbar und liegen nicht über dem Sprung-Knopf (unten rechts).
 - [ ] Shop-Menü: Trank-Kaufknöpfe lesbar und antippbar, Liste scrollt per Wischen bis zu den Tränken.
+
+## Beobachtungen aus dem Studio-Test (16.11.2026, nicht behoben)
+
+- [ ] UI-Überlappungen: Tutorial-Karte überdeckt Meldungen („+40 Münzen“) und die Ei-Vorschau; Shop-Menü überdeckt die Münz-/Gem-Anzeige; im Teleport-Menü wird der unterste Eintrag halb von der Pizza-Leiste verdeckt; der Freischalt-Knopf an der Barriere liegt genau auf dem Auto-Sammeln-Knopf.
+- [ ] Kamera: In Ofen-, Shop- und Ei-Nähe wird die Kamera an den Kopf gedrückt (Stationen stehen hinter der Startkamera, +Z).
+- [ ] Pets stellen sich am Ofen aufs Dach bzw. stecken halb in der Wand.
+- [ ] Sounds (#15 Schritt 3) noch offen: IDs müssen in Studio angehört und ausgewählt werden.

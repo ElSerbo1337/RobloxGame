@@ -39,7 +39,8 @@ local PALETTE: { [string]: { color: Color3, material: Enum.Material } } = {
 -- Extra turn around the up axis per model, in degrees, in case Studio imported a
 -- model facing the wrong way (front must face -Z). Only PizzaOven has a front.
 local YAW: { [string]: number } = {
-	PizzaOven = 0,
+	-- The imported oven's mouth faced +Z (away from the sell zone) in Studio.
+	PizzaOven = 180,
 }
 
 local ModelLibrary = {}
