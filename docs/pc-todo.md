@@ -401,3 +401,39 @@ Aus der Cloud-Sitzung ließ sich keine Roblox-Asset-ID prüfen (roblox.com gespe
 
 - [ ] Bildrate bleibt flüssig (60 Modell-Beläge pro Welt, Bäume). Falls es ruckelt: im Emulator mit niedriger Grafikqualität prüfen und hier notieren.
 - [ ] Beläge (jetzt Modelle) lassen sich weiterhin gut antippen.
+
+## #11 Welten 5–7 (Vulkan, Süßigkeitenland, Weltraum) und Shop 3
+
+Vorher: `lune run test` → alle grün (u. a. `GameConfig` „world 5/6/7“, „shop 3“ und „balancing“).
+
+Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozzarella.value = 50000000` setzen (Rojo synchronisiert live), damit die Barrieren (1,5 Mio / 15 Mio / 150 Mio) und Shop 3 (bis 1,2 Mrd) schnell bezahlbar sind. **Danach zurücksetzen, nicht committen.**
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler. Im Workspace gibt es `World5_Volcano`, `World6_CandyLand` und `World7_Space` (hinter den Eisbergen entlang −Z, Welt 7 bei ca. z = −1.200), in `Portals` zusätzlich `Portal_Volcano`, `Portal_CandyLand` und `Portal_Space`.
+- [ ] Vulkan: dunkler Basalt-Boden, orange Barriere „🔒 Vulkan – 1.500.000 Münzen“ am Ende der Eisberge. Süßigkeitenland: rosa Boden, lila Barriere „🔒 Süßigkeitenland – 15.000.000 Münzen“. Weltraum: grauer Schiefer-Boden, mintgrüne Barriere „🔒 Weltraum – 150.000.000 Münzen“. Schilder lesbar.
+- [ ] Reihenfolge: Süßigkeitenland vor dem Vulkan freischalten geht nicht („Erst die vorige Welt freischalten!“); mit zu wenig Münzen → „Nicht genug Münzen!“.
+- [ ] Nacheinander freischalten → Barriere jeweils lokal durchlässig, Münzen sinken um den Preis.
+- [ ] Beläge (je ca. 60): Vulkan Chili (rot), Peperoni (rot-orange), Jalapeño (grün); Süßigkeitenland Schoko-Stücke (braun), Gummibärchen (pink, glasig), Marshmallow (weiß-rosa); Weltraum Mond-Käse (hellgelb), Sternen-Oliven (lila, leuchtend), Alien-Pilz (grün, leuchtend). Keine pinken Neon-Scheiben (= fehlende Optik).
+- [ ] Einsammeln und am Ofen der Welt verkaufen; Werte ohne Pets: Chili 500, Peperoni 850, Jalapeño 1.250, Schoko 2.400, Gummibärchen 4.100, Marshmallow 6.000, Mond-Käse 11.500, Sternen-Oliven 20.000, Alien-Pilz 29.000.
+- [ ] Ei-Sockel: Vulkan-Ei (100.000), Süßigkeiten-Ei (800.000), Weltraum-Ei (6.400.000) mit Vorschau (6 Pets, 0,5 % Mythisch: Lava-Titan, Karamell-Greif, Galaxie-Drache). Öffnen gibt ein Pet der Welt, es folgt nach dem Ausrüsten.
+- [ ] HUD: Große Beträge erscheinen kurz („1,5 Mio“, „1,2 Mrd“) und passen in die Münzanzeige; Toasts „+… Münzen“ ebenso.
+- [ ] Portal-Menü listet alle 7 Welten (scrollbar), gesperrte grau mit Preis; nach dem Freischalten anwählbar, Teleport landet vor dem Portal der Welt.
+- [ ] **Shop 3** im Weltraum links vom Ei (ca. x = −72, z = −1.128): doppelt so groß wie der Shop in Welt 1, Schild „Riesiger Pizza-Shop – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche, nicht über dem Weltrand).
+- [ ] Menü von Shop 3: Pizza-Platz bis 20 (Stufe 8 von 8, dann „MAX“), Reichweite bis Stufe 8 (45 Studs), Magnet bis Stufe 5 (40 Studs); Gem-Tresen: Pet-Plätze bis 8, Inventar bis 300, Tempo bis 32, 3 Eier auf einmal, alle drei Tränke.
+- [ ] Im Shop 2 (Eisberge) sind Pizza 15/20, Reichweite 7/8 und Magnet 4/5 als „Im größeren Shop erhältlich“ markiert.
+- [ ] Magnet Stufe 5 (40 Studs) und Pizza 20: Auto-Sammeln zieht spürbar viele Beläge an, Hand-Pizza zeigt 20 Beläge ohne Ruckeln.
+
+**Server-Schutz**:
+
+- [ ] Ohne Weltraum freigeschaltet (Command Bar im Client-Fenster): `game.ReplicatedStorage.Remotes.BuyUpgrade:FireServer("World7Shop", "PizzaSpace")` → nichts passiert, Münzen unverändert.
+
+**Mehrspieler** (2 Spieler):
+
+- [ ] A hat den Vulkan freigeschaltet, B nicht: B kommt nicht durch die Vulkan-Barriere (wird zurückgesetzt), A schon.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Freischalt-Knöpfe „… freischalten – 150.000.000 Münzen“ sind groß, lesbar (nicht abgeschnitten) und per Antippen bedienbar.
+- [ ] Shop-3-Menü: Kaufknöpfe mit langen Preisen („1.200.000.000 Münzen“) lesbar und gut antippbar; Liste scrollt per Wischen.
+- [ ] Portal-Menü mit 7 Einträgen scrollt per Wischen, alle Zeilen gut antippbar.
