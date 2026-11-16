@@ -278,7 +278,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
-- [ ] Freischalt-Knöpfe für Strand/Eisberge und das Menü von Shop 2 sind groß, lesbar und per Antippen bedienbar; die längeren Namen („Gefrorene Erbsen“, „Großer Münz-Tresen“) werden nicht abgeschnitten.
+- [ ] Freischalt-Knöpfe für Strand/Eisberge und das Menü von Shop 2 sind groß, lesbar und per Antippen bedienbar; die längeren Namen („Gefrorene Erbsen“, „Großer Pizza-Shop“) werden nicht abgeschnitten.
 
 ## #17 Tutorial für neue Spieler
 
@@ -308,8 +308,6 @@ Studio: Rojo verbinden, dann **Play** als neuer Spieler (1 Spieler):
 - [ ] Die Tutorial-Karte ist komplett sichtbar, Text lesbar und nicht abgeschnitten; sie überdeckt weder Münzanzeige noch Meldungen („Pizza voll!“) noch den Auto-Sammeln-Knopf.
 - [ ] Die Karte blockiert keine Eingaben: Beläge, die hinter der Karte liegen, lassen sich antippen; Kamera-Wischen über der Karte funktioniert.
 - [ ] Pfeil und Linie sind auf dem kleinen Bildschirm gut zu erkennen.
-
-- [ ] Freischalt-Knöpfe für Strand/Eisberge und das Menü von Shop 2 sind groß, lesbar und per Antippen bedienbar; die längeren Namen („Gefrorene Erbsen“, „Großer Pizza-Shop“) werden nicht abgeschnitten.
 
 ## #12 Gems und Gem-Tresen
 
