@@ -410,16 +410,16 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozz
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler. Im Workspace gibt es `World5_Volcano`, `World6_CandyLand` und `World7_Space` (hinter den Eisbergen entlang −Z, Welt 7 bei ca. z = −1.200), in `Portals` zusätzlich `Portal_Volcano`, `Portal_CandyLand` und `Portal_Space`.
+- [x] Output ohne rote Fehler. Im Workspace gibt es `World5_Volcano`, `World6_CandyLand` und `World7_Space` (hinter den Eisbergen entlang −Z, Welt 7 bei ca. z = −1.200), in `Portals` zusätzlich `Portal_Volcano`, `Portal_CandyLand` und `Portal_Space`.
 - [ ] Vulkan: dunkler Basalt-Boden, orange Barriere „🔒 Vulkan – 1.500.000 Münzen“ am Ende der Eisberge. Süßigkeitenland: rosa Boden, lila Barriere „🔒 Süßigkeitenland – 15.000.000 Münzen“. Weltraum: grauer Schiefer-Boden, mintgrüne Barriere „🔒 Weltraum – 150.000.000 Münzen“. Schilder lesbar.
 - [ ] Reihenfolge: Süßigkeitenland vor dem Vulkan freischalten geht nicht („Erst die vorige Welt freischalten!“); mit zu wenig Münzen → „Nicht genug Münzen!“.
-- [ ] Nacheinander freischalten → Barriere jeweils lokal durchlässig, Münzen sinken um den Preis.
+- [x] Nacheinander freischalten → Barriere jeweils lokal durchlässig, Münzen sinken um den Preis.
 - [ ] Beläge (je ca. 60): Vulkan Chili (rot), Peperoni (rot-orange), Jalapeño (grün); Süßigkeitenland Schoko-Stücke (braun), Gummibärchen (pink, glasig), Marshmallow (weiß-rosa); Weltraum Mond-Käse (hellgelb), Sternen-Oliven (lila, leuchtend), Alien-Pilz (grün, leuchtend). Keine pinken Neon-Scheiben (= fehlende Optik).
 - [ ] Einsammeln und am Ofen der Welt verkaufen; Werte ohne Pets: Chili 500, Peperoni 850, Jalapeño 1.250, Schoko 2.400, Gummibärchen 4.100, Marshmallow 6.000, Mond-Käse 11.500, Sternen-Oliven 20.000, Alien-Pilz 29.000.
 - [ ] Ei-Sockel: Vulkan-Ei (100.000), Süßigkeiten-Ei (800.000), Weltraum-Ei (6.400.000) mit Vorschau (6 Pets, 0,5 % Mythisch: Lava-Titan, Karamell-Greif, Galaxie-Drache). Öffnen gibt ein Pet der Welt, es folgt nach dem Ausrüsten.
-- [ ] HUD: Große Beträge erscheinen kurz („1,5 Mio“, „1,2 Mrd“) und passen in die Münzanzeige; Toasts „+… Münzen“ ebenso.
+- [x] HUD: Große Beträge erscheinen kurz („1,5 Mio“, „1,2 Mrd“) und passen in die Münzanzeige; Toasts „+… Münzen“ ebenso.
 - [ ] Portal-Menü listet alle 7 Welten (scrollbar), gesperrte grau mit Preis; nach dem Freischalten anwählbar, Teleport landet vor dem Portal der Welt.
-- [ ] **Shop 3** im Weltraum links vom Ei (ca. x = −72, z = −1.128): doppelt so groß wie der Shop in Welt 1, Schild „Riesiger Pizza-Shop – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche, nicht über dem Weltrand).
+- [x] **Shop 3** im Weltraum links vom Ei (ca. x = −72, z = −1.128): doppelt so groß wie der Shop in Welt 1, Schild „Riesiger Pizza-Shop – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche, nicht über dem Weltrand). _(Schild „Riesiger Pizza-Shop“ geprüft, Größe nicht nachgemessen)_
 - [ ] Menü von Shop 3: Pizza-Platz bis 20 (Stufe 8 von 8, dann „MAX“), Reichweite bis Stufe 8 (45 Studs), Magnet bis Stufe 5 (40 Studs); Gem-Tresen: Pet-Plätze bis 8, Inventar bis 300, Tempo bis 32, 3 Eier auf einmal, alle drei Tränke.
 - [ ] Im Shop 2 (Eisberge) sind Pizza 15/20, Reichweite 7/8 und Magnet 4/5 als „Im größeren Shop erhältlich“ markiert.
 - [ ] Magnet Stufe 5 (40 Studs) und Pizza 20: Auto-Sammeln zieht spürbar viele Beläge an, Hand-Pizza zeigt 20 Beläge ohne Ruckeln.
@@ -446,16 +446,16 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `dura
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler. Links unter dem runden „Pets“-Knopf steht ein runder lila Knopf **„Tränke“**; rechts ist noch keine Trank-Anzeige zu sehen.
+- [x] Output ohne rote Fehler. Links unter dem runden „Pets“-Knopf steht ein runder lila Knopf **„Tränke“**; rechts ist noch keine Trank-Anzeige zu sehen.
 - [ ] Shop in Welt 1: Unter den Gem-Upgrades kommt der Abschnitt **„Gem-Tresen: Tränke (je 10 Min.)“** mit Münz-Trank (25 Gems), Glücks-Trank (30) und Speed-Trank (15), jeweils mit „Im Inventar: 0“. Mit zu wenig Gems: grauer Knopf, Antippen → „Nicht genug Gems!“, nichts ändert sich.
-- [ ] Trank kaufen → Gems sinken um den Preis, Status „Gekauft: Münz-Trank! – im Trank-Menü trinken“, „Im Inventar“ steigt. Zweimal kaufen → 2.
-- [ ] „Tränke“-Knopf → Menü „Meine Tränke“ mit 3 Karten (💰/🍀/⚡), Anzahl im Inventar, grüner Knopf „Trinken“ (grau, wenn 0). „X“ und erneutes Tippen auf „Tränke“ schließen.
+- [x] Trank kaufen → Gems sinken um den Preis, Status „Gekauft: Münz-Trank! – im Trank-Menü trinken“, „Im Inventar“ steigt. Zweimal kaufen → 2.
+- [x] „Tränke“-Knopf → Menü „Meine Tränke“ mit 3 Karten (💰/🍀/⚡), Anzahl im Inventar, grüner Knopf „Trinken“ (grau, wenn 0). „X“ und erneutes Tippen auf „Tränke“ schließen. _(Untertitel „Gleiche Art nochmal trinken verlängert die…“ ist abgeschnitten)_
 - [ ] **Münz-Trank** trinken → Toast „Münz-Trank wirkt 10 Minuten!“, rechts erscheint „💰 Münzen ×2  10:00“ und zählt sekündlich herunter. Pizza verkaufen → doppelte Münzen (mit Pets: Belagwert × Pet-Bonus × 2).
 - [ ] Gleichen Trank nochmal trinken → Restzeit **verlängert** sich um 10 Min. (z. B. 9:30 → 19:30), sie startet nicht neu.
 - [ ] **Speed-Trank** → man läuft sichtbar schneller (Tempo × 1,5, also 16 → 24, mit Tempo-Upgrade 19 → 28,5). Gilt auch nach Respawn (Reset). Nach Ablauf wieder normales Tempo.
-- [ ] **Glücks-Trank** → in jeder Ei-Vorschau steht „🍀 Glück!“ hinter dem Ei-Namen, die Chancen sind grün und seltene Pets höher (Garten-Ei: Pizza-Drache 0,5 % → ca. 1,2 %, Teig-Hamster 50 % → ca. 41 %). Nach Ablauf wieder die normalen Werte.
+- [x] **Glücks-Trank** → in jeder Ei-Vorschau steht „🍀 Glück!“ hinter dem Ei-Namen, die Chancen sind grün und seltene Pets höher (Garten-Ei: Pizza-Drache 0,5 % → ca. 1,2 %, Teig-Hamster 50 % → ca. 41 %). Nach Ablauf wieder die normalen Werte.
 - [ ] Ablauf: Wenn die Zeit um ist, verschwindet die Anzeige rechts, Toast „… ist abgelaufen.“, die Wirkung endet (Verkaufswert/Tempo/Chancen wieder normal).
-- [ ] Mehrere Tränke gleichzeitig: alle drei trinken → drei Anzeigen rechts untereinander, jede mit eigener Zeit.
+- [x] Mehrere Tränke gleichzeitig: alle drei trinken → drei Anzeigen rechts untereinander, jede mit eigener Zeit.
 - [ ] Speichern: Tränke im Inventar und laufende Restzeit bleiben nach Rejoin erhalten. Während man offline ist, läuft die Zeit **nicht** weiter (so gewollt).
 - [ ] Server-Schutz (optional, Command Bar im Client): `game.ReplicatedStorage.Remotes.DrinkPotion:FireServer("Coins")` ohne Trank im Inventar → nichts passiert außer Meldung; `BuyPotion:FireServer("World1Shop", "Coins")` **außerhalb** des Shops → nichts passiert.
 
@@ -481,14 +481,14 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `deli
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler. Im Workspace gibt es den Ordner `Delivery` mit je einem `DeliveryPhone` und `DeliveryVan` pro Welt (Welt 1: Telefon bei ca. x = 78, z = 46, Lieferwagen bei x = 78, z = 14, rechts vom Portal). Beide stehen frei: nicht im Portal, nicht in Büschen/Bäumen, nicht in der Belag-Fläche. Schilder „📞 Telefon – Aufträge“ und „🚚 Lieferwagen – Bestellung abgeben“ lesbar.
-- [ ] Nach dem Tutorial klingelt das Telefon sofort: Toast „📞 Das Telefon klingelt!“, über **jedem** Telefon hüpft eine rote Blase „📞 RING!“ (auch von weit weg sichtbar), rechts im HUD steht „📞 Das Telefon klingelt! – Lauf zum Telefon und geh ran.“. Klingelton alle 3 s (nur wenn die Sound-ID aus #15 eingetragen ist).
-- [ ] Zum Telefon laufen → Panel „📞 Neuer Auftrag!“ mit z. B. „1× Pilz / 1× Salami“, „Belohnung: bis zu …“ und „Zeit: 3:00 – je schneller, desto mehr!“. Weglaufen schließt das Panel, das Telefon klingelt weiter.
+- [x] Output ohne rote Fehler. Im Workspace gibt es den Ordner `Delivery` mit je einem `DeliveryPhone` und `DeliveryVan` pro Welt (Welt 1: Telefon bei ca. x = 78, z = 46, Lieferwagen bei x = 78, z = 14, rechts vom Portal). Beide stehen frei: nicht im Portal, nicht in Büschen/Bäumen, nicht in der Belag-Fläche. Schilder „📞 Telefon – Aufträge“ und „🚚 Lieferwagen – Bestellung abgeben“ lesbar.
+- [x] Nach dem Tutorial klingelt das Telefon sofort: Toast „📞 Das Telefon klingelt!“, über **jedem** Telefon hüpft eine rote Blase „📞 RING!“ (auch von weit weg sichtbar), rechts im HUD steht „📞 Das Telefon klingelt! – Lauf zum Telefon und geh ran.“. Klingelton alle 3 s (nur wenn die Sound-ID aus #15 eingetragen ist).
+- [x] Zum Telefon laufen → Panel „📞 Neuer Auftrag!“ mit z. B. „1× Pilz / 1× Salami“, „Belohnung: bis zu …“ und „Zeit: 3:00 – je schneller, desto mehr!“. Weglaufen schließt das Panel, das Telefon klingelt weiter.
 - [ ] **Ablehnen** → Toast „Auftrag abgelehnt.“, Blasen weg, nach 2,5 Min. (bzw. Tipp-Wert) klingelt es wieder.
-- [ ] **Annehmen** → Toast „Auftrag angenommen! …“, über der Hand-Pizza schwebt „🧾 Bestellung“ (Bestell-Pizza), rechts unter den Trank-Anzeigen steht die Auftragskarte „🧾 Auftrag ⏱ 3:00“ mit den Belägen („• 0/1 Salami“), der Belohnung „wenn jetzt geliefert“ und „Schnell = mehr Belohnung!“. Der Timer zählt sekündlich herunter, unter 0:30 rot.
-- [ ] Bestellte Beläge sammeln → Zeilen werden grün mit „✓ 1/1“; sind alle da: „Fertig! Ab zum 🚚 Lieferwagen.“.
-- [ ] Falschen Belag dazu sammeln und zum Lieferwagen → Toast „Falsche Beläge! Überzählige am Ofen verkaufen.“, nichts passiert. Dann zum Ofen: **nur die überzähligen** Beläge werden verkauft, die bestellten bleiben auf der Pizza. Nur bestellte Beläge auf der Pizza → der Ofen verkauft nichts.
-- [ ] Richtige Pizza zum Lieferwagen (in die Zone neben dem Wagen, Seite zur Belag-Fläche) → Toast „Geliefert! +… Münzen“ (bzw. Gems / Trank), Kassen-Sound, Pizza leer, Karte und „🧾 Bestellung“ verschwinden. Münz-Belohnung ≈ 3–4,5 × Belagwert × Pet-Bonus (sofort geliefert mehr als kurz vor Ablauf).
+- [x] **Annehmen** → Toast „Auftrag angenommen! …“, über der Hand-Pizza schwebt „🧾 Bestellung“ (Bestell-Pizza), rechts unter den Trank-Anzeigen steht die Auftragskarte „🧾 Auftrag ⏱ 3:00“ mit den Belägen („• 0/1 Salami“), der Belohnung „wenn jetzt geliefert“ und „Schnell = mehr Belohnung!“. Der Timer zählt sekündlich herunter, unter 0:30 rot.
+- [x] Bestellte Beläge sammeln → Zeilen werden grün mit „✓ 1/1“; sind alle da: „Fertig! Ab zum 🚚 Lieferwagen.“.
+- [x] Falschen Belag dazu sammeln und zum Lieferwagen → Toast „Falsche Beläge! Überzählige am Ofen verkaufen.“, nichts passiert. Dann zum Ofen: **nur die überzähligen** Beläge werden verkauft, die bestellten bleiben auf der Pizza. Nur bestellte Beläge auf der Pizza → der Ofen verkauft nichts.
+- [x] Richtige Pizza zum Lieferwagen (in die Zone neben dem Wagen, Seite zur Belag-Fläche) → Toast „Geliefert! +… Münzen“ (bzw. Gems / Trank), Kassen-Sound, Pizza leer, Karte und „🧾 Bestellung“ verschwinden. Münz-Belohnung ≈ 3–4,5 × Belagwert × Pet-Bonus (sofort geliefert mehr als kurz vor Ablauf). _(2× Salami → +8 Münzen)_
 - [ ] Gem-Auftrag: 3–10 Gems. Trank-Auftrag: Trank landet im Trank-Menü (2 Stück, wenn in der ersten Hälfte der Zeit geliefert).
 - [ ] Zeit ablaufen lassen → Toast „Zeit um – der Auftrag ist verfallen.“, Karte und Ticket weg, Beläge bleiben auf der Pizza (am Ofen verkaufbar), nach dem Abstand klingelt es wieder.
 - [ ] Ohne Auftrag zum Lieferwagen → Toast „Kein Auftrag – geh ans Telefon!“.
@@ -513,15 +513,15 @@ Ohne Import läuft alles weiter: Pets bleiben farbige Kugeln mit Augen, die Bild
 
 **1. Pet-Modelle importieren** (42 Dateien in `assets/models/pets/`):
 
-- [ ] In **ReplicatedStorage → GameAssets → Models** (aus #15) einen **Folder** `Pets` anlegen.
-- [ ] **Home → Import 3D** → im Dateidialog in `assets/models/pets/` **alle 42 `.fbx` auf einmal markieren** (Strg+A) → Öffnen. Im Import-Fenster: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**. (Lässt Studio nur eine Datei zu: einzeln importieren, Reihenfolge egal.)
-- [ ] Die importierten Modelle erscheinen im Workspace, jeweils als **Model** mit dem Dateinamen (z. B. `DoughHamster`, `PizzaDragon`) und MeshParts namens `Pet_F2D49B`, `Pet_FF7A1A_Neon` … (Endungen wie `.001` sind in Ordnung). Alle markieren und in den Ordner `Models/Pets` ziehen. **Namen nicht ändern** – sie müssen exakt den Pet-IDs entsprechen (Liste: Dateinamen in `assets/models/pets/`). Größe, Farbe, Position egal; das Spiel skaliert und färbt nach den Teilnamen.
-- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Pets:GetChildren())` → **42**.
+- [x] In **ReplicatedStorage → GameAssets → Models** (aus #15) einen **Folder** `Pets` anlegen.
+- [x] **Home → Import 3D** → im Dateidialog in `assets/models/pets/` **alle 42 `.fbx` auf einmal markieren** (Strg+A) → Öffnen. Im Import-Fenster: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**. (Lässt Studio nur eine Datei zu: einzeln importieren, Reihenfolge egal.) _(Dateidialog lässt kein Strg+A zu → in 5 Gruppen über das Namensfeld)_
+- [x] Die importierten Modelle erscheinen im Workspace, jeweils als **Model** mit dem Dateinamen (z. B. `DoughHamster`, `PizzaDragon`) und MeshParts namens `Pet_F2D49B`, `Pet_FF7A1A_Neon` … (Endungen wie `.001` sind in Ordnung). Alle markieren und in den Ordner `Models/Pets` ziehen. **Namen nicht ändern** – sie müssen exakt den Pet-IDs entsprechen (Liste: Dateinamen in `assets/models/pets/`). Größe, Farbe, Position egal; das Spiel skaliert und färbt nach den Teilnamen.
+- [x] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Pets:GetChildren())` → **42**.
 
 **2. Deko-Modelle der Welten 2–7 importieren** (20 Dateien in `assets/models/`):
 
-- [ ] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Deco` anlegen.
-- [ ] Wie oben mit **Import 3D** (mehrere Dateien markieren) diese Dateien importieren und nach `Models/Deco` ziehen, Namen = Dateiname:
+- [x] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Deco` anlegen.
+- [x] Wie oben mit **Import 3D** (mehrere Dateien markieren) diese Dateien importieren und nach `Models/Deco` ziehen, Namen = Dateiname:
   | Welt | Dateien |
   | --- | --- |
   | Bauernhof | `Barn.fbx`, `HayBale.fbx`, `Sunflower.fbx`, `Fence.fbx` (+ `Tree` aus #15) |
@@ -530,8 +530,8 @@ Ohne Import läuft alles weiter: Pets bleiben farbige Kugeln mit Augen, die Bild
   | Vulkan | `LavaMountain.fbx`, `LavaRock.fbx`, `DeadTree.fbx` |
   | Süßigkeitenland | `Lollipop.fbx`, `CandyCane.fbx`, `Cupcake.fbx` |
   | Weltraum | `MoonRock.fbx`, `Planet.fbx`, `SpaceCrystal.fbx`, `Rocket.fbx` |
-- [ ] Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Deco:GetChildren())` → **20**.
-- [ ] Place speichern und **File → Publish to Roblox** (die Meshes gehören zum Place).
+- [x] Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Deco:GetChildren())` → **20**.
+- [x] Place speichern und **File → Publish to Roblox** (die Meshes gehören zum Place).
 
 **3. Musik der Welten 2–7** (IDs in `src/client/Sounds.luau`, starten leer = stumm; aus der Cloud war roblox.com gesperrt, deshalb keine geprüften IDs). **View → Toolbox → Creator Store → Audio**, Creator-Filter **Roblox**, Kategorie Musik, anhören, Rechtsklick → **Copy Asset ID**, als Zahl eintragen, Lautstärke ist schon leise (0,25):
 
@@ -545,9 +545,9 @@ Ohne Import läuft alles weiter: Pets bleiben farbige Kugeln mit Augen, die Bild
 
 **4. Test Pets** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11 zum schnellen Öffnen):
 
-- [ ] Output ohne rote Fehler.
-- [ ] Ei-Vorschau (Garten-Ei): jede Zeile zeigt links das kleine **3D-Pet** (Teig-Hamster mit Kochmütze, Basilikum-Hase, Tomaten-Katze …) statt eines Punkts. Lesbar, nichts abgeschnitten.
-- [ ] Ei öffnen: Die Pet-Karte zeigt das 3D-Pet vor dem Kreis in Seltenheitsfarbe.
+- [x] Output ohne rote Fehler.
+- [x] Ei-Vorschau (Garten-Ei): jede Zeile zeigt links das kleine **3D-Pet** (Teig-Hamster mit Kochmütze, Basilikum-Hase, Tomaten-Katze …) statt eines Punkts. Lesbar, nichts abgeschnitten.
+- [x] Ei öffnen: Die Pet-Karte zeigt das 3D-Pet vor dem Kreis in Seltenheitsfarbe.
 - [ ] Pet-Menü: Jede Karte zeigt das 3D-Pet im runden Feld. Menü mit vielen Pets (z. B. 30+) öffnet ohne spürbares Ruckeln (ViewportFrames). Falls doch: hier notieren.
 - [ ] Ausgerüstete Pets laufen als Modell hinter dem Spieler her, **mit dem Gesicht in Laufrichtung**, Füße knapp über dem Boden, Namensschild über dem Kopf. Zeigen sie nach hinten/zur Seite: in `src/shared/ModelLibrary.luau` `PET_YAW` (jetzt 180) auf 0/90/270 ändern. Schweben sie zu hoch/stecken im Boden: `MODEL_LIFT` in `src/server/PetService.luau` anpassen.
 - [ ] Seltene Pets sind etwas größer (Mythisch ≈ 4 Studs) als gewöhnliche (≈ 2,8 Studs); nichts überdeckt die Spielfigur.
