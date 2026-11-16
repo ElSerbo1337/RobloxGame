@@ -15,16 +15,35 @@ export type PlayerState = {
 	autoCollect: boolean,
 	-- Multiplies coins earned from selling; raised by rebirths (not built yet).
 	rebirthMultiplier: number,
+	-- Upgrade id -> bought level (missing = level 0).
+	upgrades: { [string]: number },
 }
 
 export type Result = {
 	ok: boolean,
 	-- Set when ok == false: "UnknownTopping" | "OutOfRange" | "PizzaFull" | "PizzaEmpty" | "AutoCollectOff"
+	-- | "UnknownShop" | "UnknownUpgrade" | "NotOffered" | "MaxLevel" | "ShopLevelLimit" | "NotEnoughCoins"
 	reason: string?,
 	state: PlayerState,
 }
 
 export type SellResult = Result & { coinsEarned: number }
+
+-- One upgrade as shown in a shop menu.
+export type ShopOffer = {
+	upgrade: string,
+	displayName: string,
+	-- Level the player owns, the highest level this shop sells, the highest level that exists.
+	level: number,
+	shopMaxLevel: number,
+	maxLevel: number,
+	-- Current effect (pizza space, studs, ...), and price/effect of the next level if there is one.
+	value: number,
+	nextPrice: number?,
+	nextValue: number?,
+	-- "Available" | "ShopLevelLimit" (next level only in a bigger shop) | "MaxLevel"
+	status: string,
+}
 
 -- Bump together with a migration step in SaveData when a field changes shape.
 local STATE_VERSION = 2
@@ -39,15 +58,48 @@ function GameRules.new(config: any)
 	end
 
 	function rules.newPlayerState(): PlayerState
-		return { version = STATE_VERSION, coins = 0, pizza = {}, autoCollect = false, rebirthMultiplier = 1 }
+		return {
+			version = STATE_VERSION,
+			coins = 0,
+			pizza = {},
+			autoCollect = false,
+			rebirthMultiplier = 1,
+			upgrades = {},
+		}
 	end
 
-	function rules.pizzaCapacity(_state: PlayerState): number
-		return config.pizza.startCapacity
+	function rules.upgradeLevel(state: PlayerState, upgradeId: string): number
+		return state.upgrades[upgradeId] or 0
 	end
 
-	function rules.collectRange(_state: PlayerState): number
-		return config.collect.range
+	-- Effect of each upgrade before the first purchase (level 0).
+	local baseValues: { [string]: number } = {
+		PizzaSpace = config.pizza.startCapacity,
+		CollectRange = config.collect.range,
+		Magnet = 0,
+	}
+
+	-- The effect an upgrade gives at the player's current level.
+	local function upgradeValue(state: PlayerState, upgradeId: string): number
+		local level = rules.upgradeLevel(state, upgradeId)
+		if level == 0 then
+			return baseValues[upgradeId] or 0
+		end
+		return config.upgrades[upgradeId].levels[level].value
+	end
+
+	function rules.pizzaCapacity(state: PlayerState): number
+		return upgradeValue(state, "PizzaSpace")
+	end
+
+	-- Max distance for clicking/tapping a topping.
+	function rules.collectRange(state: PlayerState): number
+		return upgradeValue(state, "CollectRange")
+	end
+
+	-- Radius in which auto-collect pulls toppings towards the player (0 = no magnet).
+	function rules.magnetRange(state: PlayerState): number
+		return upgradeValue(state, "Magnet")
 	end
 
 	function rules.isPizzaFull(state: PlayerState): boolean
@@ -111,6 +163,73 @@ function GameRules.new(config: any)
 		newState.pizza = {}
 		newState.coins = state.coins + earned
 		return { ok = true, state = newState, coinsEarned = earned }
+	end
+
+	-- Highest level of an upgrade the given shop sells (0 = not offered there).
+	local function shopMaxLevel(shopId: string, upgradeId: string): number
+		for _, offer in config.shops[shopId].offers do
+			if offer.upgrade == upgradeId then
+				return offer.maxLevel
+			end
+		end
+		return 0
+	end
+
+	-- Buys the next level of an upgrade in a shop. Each shop only sells up to its own max level.
+	function rules.buyUpgrade(state: PlayerState, shopId: string, upgradeId: string): Result
+		if config.shops[shopId] == nil then
+			return fail(state, "UnknownShop")
+		end
+		local upgrade = config.upgrades[upgradeId]
+		if upgrade == nil then
+			return fail(state, "UnknownUpgrade")
+		end
+		local shopMax = shopMaxLevel(shopId, upgradeId)
+		if shopMax == 0 then
+			return fail(state, "NotOffered")
+		end
+		local level = rules.upgradeLevel(state, upgradeId)
+		local nextLevel = upgrade.levels[level + 1]
+		if nextLevel == nil then
+			return fail(state, "MaxLevel")
+		end
+		if level >= shopMax then
+			return fail(state, "ShopLevelLimit")
+		end
+		if state.coins < nextLevel.price then
+			return fail(state, "NotEnoughCoins")
+		end
+
+		local newState = table.clone(state)
+		newState.upgrades = table.clone(state.upgrades)
+		newState.upgrades[upgradeId] = level + 1
+		newState.coins = state.coins - nextLevel.price
+		return { ok = true, state = newState }
+	end
+
+	-- Everything a shop menu shows, in the shop's configured order.
+	function rules.shopOffers(state: PlayerState, shopId: string): { ShopOffer }
+		local offers = {}
+		for _, offer in config.shops[shopId].offers do
+			local upgrade = config.upgrades[offer.upgrade]
+			local level = rules.upgradeLevel(state, offer.upgrade)
+			local nextLevel = upgrade.levels[level + 1]
+			table.insert(offers, {
+				upgrade = offer.upgrade,
+				displayName = upgrade.displayName,
+				level = level,
+				shopMaxLevel = offer.maxLevel,
+				maxLevel = #upgrade.levels,
+				value = upgradeValue(state, offer.upgrade),
+				nextPrice = nextLevel and nextLevel.price,
+				nextValue = nextLevel and nextLevel.value,
+				status = if nextLevel == nil
+					then "MaxLevel"
+					elseif level >= offer.maxLevel then "ShopLevelLimit"
+					else "Available",
+			})
+		end
+		return offers
 	end
 
 	return rules
