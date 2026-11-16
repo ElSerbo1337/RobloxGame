@@ -23,6 +23,7 @@ local function replicate(player: Player, state: PlayerState)
 	player:SetAttribute("Coins", state.coins)
 	player:SetAttribute("PizzaCount", #state.pizza)
 	player:SetAttribute("PizzaCapacity", PlayerStates.rules.pizzaCapacity(state))
+	player:SetAttribute("AutoCollect", state.autoCollect == true)
 end
 
 function PlayerStates.get(player: Player): PlayerState?

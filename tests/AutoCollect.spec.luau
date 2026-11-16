@@ -1,6 +1,7 @@
 local TestKit = require("./TestKit")
 local TestConfig = require("./fixtures/TestConfig")
 local GameRules = require("../src/shared/GameRules")
+local SaveData = require("../src/shared/SaveData")
 
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
@@ -99,5 +100,24 @@ describe("isPizzaFull", function()
 		state = rules.collectTopping(state, "Salami", 1).state
 
 		expect(rules.isPizzaFull(rules.sellPizza(state).state)).toBe(false)
+	end)
+end)
+
+describe("auto-collect switch in save data", function()
+	it("stays switched on after saving and loading", function()
+		local state = rules.setAutoCollect(rules.newPlayerState(), true).state
+
+		local loaded = SaveData.load(table.clone(state), rules.newPlayerState())
+
+		expect(loaded.ok).toBe(true)
+		expect(loaded.state.autoCollect).toBe(true)
+	end)
+
+	it("is off for saves from before the switch existed", function()
+		local loaded = SaveData.load({ version = 1, coins = 7, pizza = {} }, rules.newPlayerState())
+
+		expect(loaded.ok).toBe(true)
+		expect(loaded.state.autoCollect).toBe(false)
+		expect(loaded.state.coins).toBe(7)
 	end)
 end)

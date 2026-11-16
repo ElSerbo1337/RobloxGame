@@ -11,6 +11,7 @@ local World1Map = require(script.World1Map)
 
 -- Create remotes before any client asks for them.
 Net.event("CollectTopping")
+Net.event("SetAutoCollect")
 Net.event("Notify")
 
 local layout = World1Map.build()

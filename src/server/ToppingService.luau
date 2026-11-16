@@ -1,11 +1,14 @@
 --!strict
--- Shows the shared toppings of world 1 and handles collect requests from clients.
+-- Shows the shared toppings of world 1, handles collect requests from clients and
+-- picks up toppings players walk over while auto-collect is on.
 -- Every request is validated by the game rules (range, pizza capacity) and the
 -- ToppingField (topping still there), so a topping can only be taken once.
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local ToppingField = require(ReplicatedStorage.Shared.ToppingField)
 local PlayerStates = require(script.Parent.PlayerStates)
@@ -16,6 +19,12 @@ local WORLD_ID = "PizzeriaGarden"
 local DISC_DIAMETER = 3.5
 local DISC_THICKNESS = 0.6
 local RESPAWN_CHECK_SECONDS = 0.25
+local AUTO_COLLECT_CHECK_SECONDS = 0.1
+-- Toppings this far above/below the player's root part are not "walked over".
+local AUTO_COLLECT_MAX_HEIGHT = 6
+local FULL_NOTICE_SECONDS = 3
+
+type PlayerState = GameRules.PlayerState
 
 local ToppingService = {}
 
@@ -52,29 +61,108 @@ function ToppingService.start(layout: World1Map.Layout)
 	end
 
 	local notify = Net.event("Notify")
-	Net.event("CollectTopping").OnServerEvent:Connect(function(player: Player, slotId: unknown)
-		if typeof(slotId) ~= "number" then
-			return
+	local lastFullNotice: { [Player]: number } = {}
+
+	-- "Pizza voll!" at most every FULL_NOTICE_SECONDS, so walking over toppings doesn't spam it.
+	local function notifyFull(player: Player)
+		local now = os.clock()
+		if now - (lastFullNotice[player] or -math.huge) >= FULL_NOTICE_SECONDS then
+			lastFullNotice[player] = now
+			notify:FireClient(player, "PizzaFull")
 		end
+	end
+
+	-- Asks the game rules whether `player` may take the topping in `slotId` and takes it.
+	-- `distanceTo` measures the player's distance to the topping part for that rule.
+	local function tryCollect(
+		player: Player,
+		slotId: number,
+		rule: (PlayerState, string, number) -> GameRules.Result,
+		distanceTo: (BasePart, BasePart) -> number
+	): GameRules.Result?
 		local topping = field:get(slotId)
 		local state = PlayerStates.get(player)
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 		if topping == nil or state == nil or root == nil then
-			return -- already taken by someone else, or player not ready
+			return nil -- already taken by someone else, or player not ready
 		end
 
-		local distance = (root.Position - parts[slotId].Position).Magnitude
-		local result = PlayerStates.rules.collectTopping(state, topping.toppingId, distance)
-		if not result.ok then
-			notify:FireClient(player, result.reason)
+		local result = rule(state, topping.toppingId, distanceTo(root, parts[slotId]))
+		if result.ok then
+			-- No yield between the check above and here, so no other request can take it meanwhile.
+			field:take(slotId, os.clock())
+			PlayerStates.set(player, result.state)
+			render(slotId)
+			if PlayerStates.rules.isPizzaFull(result.state) then
+				notifyFull(player)
+			end
+		end
+		return result
+	end
+
+	local function directDistance(root: BasePart, part: BasePart): number
+		return (root.Position - part.Position).Magnitude
+	end
+
+	-- Walking over: only the horizontal distance counts, so jumping doesn't matter.
+	local function groundDistance(root: BasePart, part: BasePart): number
+		local offset = root.Position - part.Position
+		return Vector2.new(offset.X, offset.Z).Magnitude
+	end
+
+	Net.event("CollectTopping").OnServerEvent:Connect(function(player: Player, slotId: unknown)
+		if typeof(slotId) ~= "number" then
 			return
 		end
+		local result = tryCollect(player, slotId, PlayerStates.rules.collectTopping, directDistance)
+		if result and not result.ok then
+			if result.reason == "PizzaFull" then
+				notifyFull(player)
+			else
+				notify:FireClient(player, result.reason)
+			end
+		end
+	end)
 
-		-- No yield between the check above and here, so no other request can take it meanwhile.
-		field:take(slotId, os.clock())
-		PlayerStates.set(player, result.state)
-		render(slotId)
+	Net.event("SetAutoCollect").OnServerEvent:Connect(function(player: Player, enabled: unknown)
+		local state = PlayerStates.get(player)
+		if typeof(enabled) ~= "boolean" or state == nil then
+			return
+		end
+		PlayerStates.set(player, PlayerStates.rules.setAutoCollect(state, enabled).state)
+	end)
+
+	Players.PlayerRemoving:Connect(function(player)
+		lastFullNotice[player] = nil
+	end)
+
+	-- Auto-collect: every player with the switch on picks up toppings they walk over.
+	task.spawn(function()
+		while true do
+			task.wait(AUTO_COLLECT_CHECK_SECONDS)
+			for _, player in Players:GetPlayers() do
+				local state = PlayerStates.get(player)
+				local character = player.Character
+				local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+				if state and state.autoCollect and root then
+					local radius = PlayerStates.rules.autoCollectRadius(state)
+					for slotId, part in parts do
+						if
+							math.abs(root.Position.Y - part.Position.Y) <= AUTO_COLLECT_MAX_HEIGHT
+							and groundDistance(root, part) <= radius
+						then
+							local result =
+								tryCollect(player, slotId, PlayerStates.rules.autoCollectTopping, groundDistance)
+							if result and result.reason == "PizzaFull" then
+								notifyFull(player)
+								break
+							end
+						end
+					end
+				end
+			end
+		end
 	end)
 
 	task.spawn(function()

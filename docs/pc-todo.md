@@ -58,3 +58,34 @@ Fehlerfall „Laden fehlgeschlagen überschreibt nichts“:
 
 - [ ] Stand mit Münzen > 0 speichern (Play/Stop). Dann „Enable Studio Access to API Services“ **aus**schalten, Play: Warnung `[Save] Laden … fehlgeschlagen, es wird nicht gespeichert`, Münzen 0, ein paar Münzen verdienen, Stop.
 - [ ] API-Zugriff wieder **ein**schalten, Play: der **alte** Münzstand ist wieder da (nicht 0, nicht der Stand aus dem Fehler-Lauf).
+
+## #4 Auto-Sammeln und Pizza-HUD
+
+Vorher: `lune run test` → alle grün (inkl. `tests/AutoCollect.spec.luau`).
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler.
+- [ ] HUD unten: grauer Knopf „Auto-Sammeln: AUS“ direkt über `Pizza 0/2`.
+- [ ] Mit AUS über Beläge laufen → nichts wird eingesammelt (Anklicken geht weiterhin).
+- [ ] Knopf drücken → wird grün, „Auto-Sammeln: AN“, hüpft kurz. Im Explorer: `Players.<Name>` hat Attribut `AutoCollect = true`.
+- [ ] Mit AN über einen Belag laufen (ca. 4 Studs Radius) → Belag verschwindet, erscheint auf der Pizza in der Hand, HUD `Pizza 1/2`. Beläge daneben (> 4 Studs) bleiben liegen.
+- [ ] Zweiten Belag aufsammeln → Pizza `2/2` (rot), Meldung „Pizza voll! Ab zum Ofen.“ erscheint **einmal** sofort.
+- [ ] Mit voller Pizza weiter über Beläge laufen → Beläge bleiben liegen, Meldung höchstens alle ~3 s (kein Dauer-Spam).
+- [ ] Knopf erneut drücken → AUS (grau), Auto-Sammeln stoppt.
+- [ ] Mit Belägen in die Ofen-Zone laufen → **Animation**: eine Pizza fliegt vom Spieler in die glühende Ofenöffnung und schrumpft, danach fliegen mehrere goldene Münzen vom Ofen hoch zur Münzanzeige; Münzanzeige hüpft, „+X Münzen“. Beläge auf der Pizza in der Hand sind danach weg.
+- [ ] Ofen außerhalb des Bildschirms (Kamera wegdrehen) → Münzen starten aus der Bildschirmmitte, keine Fehler.
+- [ ] Nach Reset (Esc → Reset Character) bleibt der Schalter-Zustand erhalten.
+- [ ] Gespeichert: Schalter AN, Play beenden, neu starten → wieder AN. **Erst testbar, wenn #3 (Spielerstand speichern) umgesetzt ist** – der Schalter ist Teil des Spielerstands (`autoCollect`).
+
+**Mehrspieler** (Test → Clients and Servers → 2 Spieler):
+
+- [ ] A hat Auto-Sammeln AN, B AUS: A sammelt beim Drüberlaufen, B nicht; B sieht die Beläge bei A verschwinden.
+- [ ] Beide laufen gleichzeitig über denselben Belag → nur einer bekommt ihn.
+- [ ] Verkaufs-Animation sieht nur der Spieler, der verkauft.
+
+**Handy** (Device-Emulator, z. B. iPhone SE und ein Tablet):
+
+- [ ] Auto-Sammeln-Knopf mit dem Finger gut antippbar, nicht vom Joystick oder Sprung-Knopf verdeckt, Text lesbar.
+- [ ] Münz-Animation endet sichtbar an der Münzanzeige (auch bei kleiner Bildschirmgröße/HUD-Skalierung). Falls daneben: Zielpunkt in `src/client/SellAnimation.luau` (`flyCoins`) anpassen.
+

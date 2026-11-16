@@ -1,6 +1,8 @@
 --!strict
--- HUD: coins at the top, pizza fill level at the bottom, short messages in between.
--- Reads the replicated player attributes (Coins, PizzaCount, PizzaCapacity) and Notify events.
+-- HUD: coins at the top, pizza fill level and auto-collect switch at the bottom,
+-- short messages in between. Reads the replicated player attributes (Coins,
+-- PizzaCount, PizzaCapacity, AutoCollect) and Notify events. The switch only
+-- sends a wish to the server; its look follows the replicated attribute.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,6 +17,8 @@ local CREAM = Color3.fromRGB(255, 248, 230)
 local DARK = Color3.fromRGB(60, 35, 20)
 local COIN = Color3.fromRGB(255, 200, 40)
 local FULL = Color3.fromRGB(230, 70, 50)
+local ON = Color3.fromRGB(110, 200, 90)
+local OFF = Color3.fromRGB(190, 180, 170)
 
 local MESSAGES: { [string]: string } = {
 	PizzaFull = "Pizza voll! Ab zum Ofen.",
@@ -80,7 +84,8 @@ local function pop(target: GuiObject)
 	TweenService:Create(uiScale, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Scale = 1 }):Play()
 end
 
-function Hud.start()
+-- Returns the coins counter, so effects (e.g. flying coins) can aim at it.
+function Hud.start(): GuiObject
 	local player = Players.LocalPlayer
 	-- The pizza tool must stay in hand, so the hotbar is hidden.
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
@@ -139,6 +144,28 @@ function Hud.start()
 	pizzaText.Size = UDim2.new(1, -24, 1, -20)
 	pizzaText.ZIndex = 2
 
+	-- Auto-collect switch (bottom center, above the pizza fill). Big for thumbs.
+	local autoButton = Instance.new("TextButton")
+	autoButton.Name = "AutoCollect"
+	autoButton.AnchorPoint = Vector2.new(0.5, 1)
+	autoButton.Position = UDim2.new(0.5, 0, 1, -92)
+	autoButton.Size = UDim2.fromOffset(260, 64)
+	autoButton.BackgroundColor3 = OFF
+	autoButton.AutoButtonColor = true
+	autoButton.Font = FONT
+	autoButton.TextScaled = true
+	autoButton.TextColor3 = DARK
+	autoButton.Text = "Auto-Sammeln: AUS"
+	corner(autoButton, 32)
+	stroke(autoButton)
+	local padding = Instance.new("UIPadding")
+	padding.PaddingTop = UDim.new(0, 12)
+	padding.PaddingBottom = UDim.new(0, 12)
+	padding.PaddingLeft = UDim.new(0, 16)
+	padding.PaddingRight = UDim.new(0, 16)
+	padding.Parent = autoButton
+	autoButton.Parent = gui
+
 	-- Short messages (below the coins)
 	local toast = label(gui, "")
 	toast.Name = "Toast"
@@ -188,11 +215,25 @@ function Hud.start()
 		}):Play()
 	end
 
+	local function updateAutoCollect()
+		local enabled = player:GetAttribute("AutoCollect") == true
+		autoButton.Text = if enabled then "Auto-Sammeln: AN" else "Auto-Sammeln: AUS"
+		autoButton.BackgroundColor3 = if enabled then ON else OFF
+	end
+
+	local setAutoCollect = Net.event("SetAutoCollect")
+	autoButton.Activated:Connect(function()
+		setAutoCollect:FireServer(player:GetAttribute("AutoCollect") ~= true)
+		pop(autoButton)
+	end)
+
+	player:GetAttributeChangedSignal("AutoCollect"):Connect(updateAutoCollect)
 	player:GetAttributeChangedSignal("Coins"):Connect(updateCoins)
 	player:GetAttributeChangedSignal("PizzaCount"):Connect(updatePizza)
 	player:GetAttributeChangedSignal("PizzaCapacity"):Connect(updatePizza)
 	updateCoins()
 	updatePizza()
+	updateAutoCollect()
 
 	Net.event("Notify").OnClientEvent:Connect(function(kind: string, amount: number?)
 		if kind == "Sold" and amount then
@@ -201,6 +242,8 @@ function Hud.start()
 			showToast(MESSAGES[kind], if kind == "PizzaFull" then FULL else nil)
 		end
 	end)
+
+	return coins
 end
 
 return Hud

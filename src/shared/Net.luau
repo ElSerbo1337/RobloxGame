@@ -2,10 +2,11 @@
 -- RemoteEvents between client and server. The server creates them, the client waits for them.
 --
 -- CollectTopping  client -> server  (slotId: number)            "I tapped this topping"
+-- SetAutoCollect  client -> server  (enabled: boolean)          "switch auto-collect on/off"
 -- Notify          server -> client  (kind: string, amount: number?)  feedback, e.g. "PizzaFull", "Sold"
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
--- Coins, PizzaCount, PizzaCapacity.
+-- Coins, PizzaCount, PizzaCapacity, AutoCollect.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -13,6 +14,7 @@ local RunService = game:GetService("RunService")
 local FOLDER_NAME = "Remotes"
 local EVENTS = {
 	CollectTopping = true,
+	SetAutoCollect = true,
 	Notify = true,
 }
 
