@@ -27,6 +27,7 @@ local MESSAGES: { [string]: string } = {
 	WorldLocked = "Diese Welt ist noch gesperrt!",
 	PreviousWorldLocked = "Erst die vorige Welt freischalten!",
 	WorldUnlocked = "Neue Welt freigeschaltet!",
+	InventoryFull = "Pet-Inventar voll! Lösche erst ein Pet.",
 }
 
 local Hud = {}
@@ -246,6 +247,7 @@ function Hud.start(): GuiObject
 			local color = if kind == "PizzaFull"
 					or kind == "NotEnoughCoins"
 					or kind == "WorldLocked"
+					or kind == "InventoryFull"
 				then FULL
 				elseif kind == "WorldUnlocked" then COIN
 				else nil

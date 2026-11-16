@@ -128,9 +128,13 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 		if os.clock() - lastRequest > 2 or not billboard.Enabled then
 			return
 		end
-		if kind == "NotEnoughCoins" then
+		local message = if kind == "NotEnoughCoins"
+			then "Zu wenig Münzen!"
+			elseif kind == "InventoryFull" then "Inventar voll!"
+			else nil
+		if message then
 			busyUntil = 0
-			button.Text = "Zu wenig Münzen!"
+			button.Text = message
 			button.BackgroundColor3 = UiKit.RED
 			UiKit.pop(button)
 			task.delay(1.5, function()

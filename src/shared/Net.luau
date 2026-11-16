@@ -17,10 +17,12 @@
 -- PortalOpen      server -> client  (worldId: string, entries: { GameRules.PortalEntry })  player stands in this world's portal
 -- PortalClose     server -> client  ()                           player left the portal (or was teleported)
 -- Teleport        client -> server  (worldId: string)            "send me to this world" (only from inside a portal)
+-- EquipBest       client -> server  ()                           "equip my pets with the highest bonus"
+-- DeletePet       client -> server  (uid: number)               "delete this pet for good" (client asked to confirm)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought).
--- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, CoinMultiplier.
+-- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, InventorySlots, CoinMultiplier.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -43,6 +45,8 @@ local EVENTS = {
 	PortalOpen = true,
 	PortalClose = true,
 	Teleport = true,
+	EquipBest = true,
+	DeletePet = true,
 }
 
 local Net = {}

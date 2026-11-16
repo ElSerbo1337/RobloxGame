@@ -1,7 +1,9 @@
 --!strict
 -- Pet menu: big "Pets" button on the left side of the screen opens the inventory.
 -- Tapping a pet card equips or puts it away (only sends the wish; the server decides).
--- Reads the player attributes Pets (JSON), PetSlots and CoinMultiplier (see PetService).
+-- "Beste ausrüsten" asks the server to equip the strongest pets. "Löschen" switches the
+-- menu into delete mode: tapping a card then asks for confirmation before deleting it.
+-- Reads the player attributes Pets (JSON), PetSlots, InventorySlots and CoinMultiplier (see PetService).
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -60,7 +62,7 @@ function PetMenu.start()
 	panel.Name = "Panel"
 	panel.AnchorPoint = Vector2.new(0.5, 0.5)
 	panel.Position = UDim2.fromScale(0.5, 0.5)
-	panel.Size = UDim2.fromOffset(640, 480)
+	panel.Size = UDim2.fromOffset(640, 560)
 	panel.BackgroundColor3 = UiKit.CREAM
 	panel.Visible = false
 	UiKit.corner(panel, 28)
@@ -82,9 +84,20 @@ function PetMenu.start()
 	closeButton.Position = UDim2.new(1, -14, 0, 14)
 	closeButton.Size = UDim2.fromOffset(72, 72)
 
+	-- Action row: big buttons, easy to tap on a phone.
+	local bestButton = UiKit.button(panel, "Beste ausrüsten", UiKit.GREEN)
+	bestButton.Name = "EquipBestButton"
+	bestButton.Position = UDim2.fromOffset(24, 100)
+	bestButton.Size = UDim2.fromOffset(260, 64)
+
+	local deleteButton = UiKit.button(panel, "Löschen", UiKit.RED)
+	deleteButton.Name = "DeleteModeButton"
+	deleteButton.Position = UDim2.fromOffset(300, 100)
+	deleteButton.Size = UDim2.fromOffset(180, 64)
+
 	local list = Instance.new("ScrollingFrame")
-	list.Position = UDim2.fromOffset(16, 104)
-	list.Size = UDim2.new(1, -32, 1, -120)
+	list.Position = UDim2.fromOffset(16, 180)
+	list.Size = UDim2.new(1, -32, 1, -196)
 	list.BackgroundTransparency = 1
 	list.BorderSizePixel = 0
 	list.ScrollBarThickness = 10
@@ -101,6 +114,77 @@ function PetMenu.start()
 	local empty = UiKit.label(list, "Noch keine Pets – öffne ein Ei!")
 	empty.Size = UDim2.fromOffset(560, 60)
 	empty.Visible = false
+
+	-- Confirmation dialog for deleting, covers the whole panel.
+	local confirm = Instance.new("Frame")
+	confirm.Name = "ConfirmDelete"
+	confirm.Size = UDim2.fromScale(1, 1)
+	confirm.BackgroundColor3 = UiKit.DARK
+	confirm.BackgroundTransparency = 0.35
+	confirm.Active = true
+	confirm.ZIndex = 10
+	confirm.Visible = false
+	UiKit.corner(confirm, 28)
+	confirm.Parent = panel
+
+	local dialog = Instance.new("Frame")
+	dialog.AnchorPoint = Vector2.new(0.5, 0.5)
+	dialog.Position = UDim2.fromScale(0.5, 0.5)
+	dialog.Size = UDim2.fromOffset(460, 250)
+	dialog.BackgroundColor3 = UiKit.CREAM
+	dialog.ZIndex = 11
+	UiKit.corner(dialog, 24)
+	UiKit.stroke(dialog, 4)
+	dialog.Parent = confirm
+
+	local question = UiKit.label(dialog, "")
+	question.Position = UDim2.fromOffset(20, 20)
+	question.Size = UDim2.new(1, -40, 0, 110)
+	question.TextWrapped = true
+	question.ZIndex = 12
+
+	local yesButton = UiKit.button(dialog, "Löschen", UiKit.RED)
+	yesButton.Position = UDim2.new(0, 20, 1, -96)
+	yesButton.Size = UDim2.new(0.5, -30, 0, 76)
+	yesButton.ZIndex = 12
+
+	local noButton = UiKit.button(dialog, "Behalten", UiKit.GREEN)
+	noButton.AnchorPoint = Vector2.new(1, 0)
+	noButton.Position = UDim2.new(1, -20, 1, -96)
+	noButton.Size = UDim2.new(0.5, -30, 0, 76)
+	noButton.ZIndex = 12
+
+	for _, descendant in dialog:GetDescendants() do
+		if descendant:IsA("GuiObject") then
+			descendant.ZIndex = 12
+		end
+	end
+
+	local deleteMode = false
+	local pendingDelete: number? = nil
+
+	local function askDelete(entry: PetEntry)
+		local pet = GameConfig.pets[entry.petId]
+		pendingDelete = entry.uid
+		question.Text = if entry.equipped
+			then `{pet.displayName} ({UiKit.bonusText(pet.bonus)}) wirklich löschen? Es wird dabei abgelegt.`
+			else `{pet.displayName} ({UiKit.bonusText(pet.bonus)}) wirklich löschen?`
+		confirm.Visible = true
+		UiKit.pop(dialog, 0.8)
+	end
+
+	local function closeConfirm()
+		pendingDelete = nil
+		confirm.Visible = false
+	end
+
+	yesButton.Activated:Connect(function()
+		if pendingDelete then
+			Net.event("DeletePet"):FireServer(pendingDelete)
+		end
+		closeConfirm()
+	end)
+	noButton.Activated:Connect(closeConfirm)
 
 	gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -149,16 +233,21 @@ function PetMenu.start()
 		bonus.TextStrokeColor3 = UiKit.DARK
 		bonus.TextStrokeTransparency = 0
 
-		local state = UiKit.label(button, if entry.equipped then "Ablegen" else "Ausrüsten")
+		local actionText = if deleteMode then "Löschen" elseif entry.equipped then "Ablegen" else "Ausrüsten"
+		local state = UiKit.label(button, actionText)
 		state.Position = UDim2.new(0, 10, 1, -38)
 		state.Size = UDim2.new(1, -20, 0, 30)
 		state.BackgroundTransparency = 0
-		state.BackgroundColor3 = if entry.equipped then UiKit.DARK else UiKit.GREEN
+		state.BackgroundColor3 = if deleteMode then UiKit.RED elseif entry.equipped then UiKit.DARK else UiKit.GREEN
 		state.TextColor3 = UiKit.CREAM
 		UiKit.corner(state, 12)
 
 		button.Activated:Connect(function()
-			Net.event(if entry.equipped then "UnequipPet" else "EquipPet"):FireServer(entry.uid)
+			if deleteMode then
+				askDelete(entry)
+			else
+				Net.event(if entry.equipped then "UnequipPet" else "EquipPet"):FireServer(entry.uid)
+			end
 		end)
 	end
 
@@ -179,12 +268,34 @@ function PetMenu.start()
 		end
 		empty.Visible = #pets == 0
 		local slots = (player:GetAttribute("PetSlots") :: number?) or 0
+		local inventorySlots = (player:GetAttribute("InventorySlots") :: number?) or 0
 		local multiplier = (player:GetAttribute("CoinMultiplier") :: number?) or 1
-		summary.Text = `Ausgerüstet {equippedCount}/{slots}   ·   Münz-Bonus {UiKit.bonusText(multiplier - 1)}`
+		local bonusText = UiKit.bonusText(multiplier - 1)
+		summary.Text =
+			`Ausgerüstet {equippedCount}/{slots}  ·  Inventar {#pets}/{inventorySlots}  ·  Bonus {bonusText}`
+		summary.TextColor3 = if #pets >= inventorySlots and inventorySlots > 0 then UiKit.RED else UiKit.DARK
 	end
+
+	local function setDeleteMode(enabled: boolean)
+		deleteMode = enabled
+		deleteButton.Text = if enabled then "Fertig" else "Löschen"
+		deleteButton.BackgroundColor3 = if enabled then UiKit.DARK else UiKit.RED
+		bestButton.Visible = not enabled
+		title.Text = if enabled then "Pet zum Löschen antippen" else "Meine Pets"
+		refresh()
+	end
+
+	bestButton.Activated:Connect(function()
+		Net.event("EquipBest"):FireServer()
+		UiKit.pop(bestButton)
+	end)
+	deleteButton.Activated:Connect(function()
+		setDeleteMode(not deleteMode)
+	end)
 
 	player:GetAttributeChangedSignal("Pets"):Connect(refresh)
 	player:GetAttributeChangedSignal("PetSlots"):Connect(refresh)
+	player:GetAttributeChangedSignal("InventorySlots"):Connect(refresh)
 	player:GetAttributeChangedSignal("CoinMultiplier"):Connect(refresh)
 	refresh()
 
@@ -192,17 +303,26 @@ function PetMenu.start()
 		panel.Visible = not panel.Visible
 		if panel.Visible then
 			UiKit.pop(panel, 0.8)
+		else
+			closeConfirm()
+			setDeleteMode(false)
 		end
 	end)
 	closeButton.Activated:Connect(function()
 		panel.Visible = false
+		closeConfirm()
+		setDeleteMode(false)
 	end)
 
 	-- "All slots taken" feedback right in the menu.
 	Net.event("Notify").OnClientEvent:Connect(function(kind: string)
-		if kind == "PetSlotsFull" and panel.Visible then
+		local message = if kind == "PetSlotsFull"
+			then "Alle Pet-Plätze belegt – erst ein Pet ablegen!"
+			elseif kind == "NoPets" then "Noch keine Pets – öffne ein Ei!"
+			else nil
+		if message and panel.Visible then
 			local old = summary.Text
-			summary.Text = "Alle Pet-Plätze belegt – erst ein Pet ablegen!"
+			summary.Text = message
 			summary.TextColor3 = UiKit.RED
 			task.delay(1.8, function()
 				if summary.Text ~= old then

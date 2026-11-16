@@ -6,6 +6,7 @@
 -- Replicated player attributes:
 --   Pets            JSON list of { uid, petId, equipped }
 --   PetSlots        how many pets can be equipped
+--   InventorySlots  how many pets can be owned (full inventory blocks opening eggs)
 --   CoinMultiplier  1 + sum of equipped pet bonuses
 
 local HttpService = game:GetService("HttpService")
@@ -142,6 +143,7 @@ function PetService.start()
 		end
 		player:SetAttribute("Pets", HttpService:JSONEncode(list))
 		player:SetAttribute("PetSlots", rules.petSlots(state))
+		player:SetAttribute("InventorySlots", rules.inventorySlots(state))
 		player:SetAttribute("CoinMultiplier", rules.coinMultiplier(state))
 		syncModels(player, state)
 	end
@@ -173,6 +175,19 @@ function PetService.start()
 	end
 	Net.event("EquipPet").OnServerEvent:Connect(handle(rules.equipPet))
 	Net.event("UnequipPet").OnServerEvent:Connect(handle(rules.unequipPet))
+	Net.event("DeletePet").OnServerEvent:Connect(handle(rules.deletePet))
+	Net.event("EquipBest").OnServerEvent:Connect(function(player: Player)
+		local state = PlayerStates.get(player)
+		if state == nil then
+			return
+		end
+		local result = rules.equipBest(state)
+		if result.ok then
+			PlayerStates.set(player, result.state)
+		else
+			notify:FireClient(player, result.reason)
+		end
+	end)
 
 	Players.PlayerRemoving:Connect(function(player)
 		local folder = petsFolder:FindFirstChild(tostring(player.UserId))
