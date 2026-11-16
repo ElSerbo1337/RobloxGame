@@ -64,3 +64,6 @@ Kein Shop- und kein Teleport-Knopf im HUD – Shops und Portale betritt man in d
 - Low-Poly mit flachen Flächen, kräftige, warme Farben, keine Texturen.
 - Modelle entstehen mit `tools/blender/build_models.py` (Vorschau-Renders in `assets/previews/`). Jedes Modell besteht aus Teilen mit genau einer Farbe; der Teilname bestimmt Farbe und Material (`PALETTE` in `src/shared/ModelLibrary.luau`).
 - Licht, Atmosphäre, Post-Processing und Musik pro Welt: `src/shared/WorldLooks.luau`.
+- Pets entstehen mit `tools/blender/build_pets.py` (Chibi-Stil: großer Kopf, große glänzende Augen, rosa Wangen; Vorschau in `assets/previews/pets/`). Bei Pets steht die Farbe im Teilnamen (`Pet_F2D49B`, optional `_Neon`/`_Glass`/`_Metal`).
+- Pet-Bilder in der UI sind 3D-Ansichten der importierten Modelle (`src/client/PetIcon.luau`, ViewportFrame) – kein Bild-Upload nötig; ohne Import bleibt der Punkt in Seltenheitsfarbe.
+- Deko der Welten 2–7 (Daten in `src/server/WorldDeco.luau`, `SPECS`): Weg vor den Stationen, große Teile an den Rändern, kleine Akzente, ein Wahrzeichen hinten links.

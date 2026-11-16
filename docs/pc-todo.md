@@ -504,3 +504,71 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 - [ ] Telefon-Panel passt auf den Bildschirm, „Annehmen“/„Ablehnen“ sind groß und per Antippen bedienbar.
 - [ ] Auftragskarte rechts ist lesbar, überdeckt weder Trank-Anzeigen (bei 3 aktiven Tränken) noch den Sprung-Knopf unten rechts. Falls doch: `CARD_TOP` in `src/client/DeliveryMenu.luau` anpassen.
+
+## #16 Pet-Modelle und Welt-Optik 2–7
+
+Vorher: `git pull`, `lune run test` → alle grün. Vorschau: Pets pro Ei in `assets/previews/pets/<Ei>.png` (z. B. `GardenEgg.png`), einzeln `assets/previews/pets/<PetId>.png`; Deko pro Welt in `assets/previews/World_<Welt>.png`.
+
+Ohne Import läuft alles weiter: Pets bleiben farbige Kugeln mit Augen, die Bilder in Ei-Vorschau/Pet-Menü bleiben farbige Punkte, die Deko der Welten 2–7 besteht aus einfachen Ersatzteilen (Kugeln/Zylinder). Wege, Licht, Atmosphäre, Lava-Pools und das Meer am Strand sind schon ohne Import da.
+
+**1. Pet-Modelle importieren** (42 Dateien in `assets/models/pets/`):
+
+- [ ] In **ReplicatedStorage → GameAssets → Models** (aus #15) einen **Folder** `Pets` anlegen.
+- [ ] **Home → Import 3D** → im Dateidialog in `assets/models/pets/` **alle 42 `.fbx` auf einmal markieren** (Strg+A) → Öffnen. Im Import-Fenster: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**. (Lässt Studio nur eine Datei zu: einzeln importieren, Reihenfolge egal.)
+- [ ] Die importierten Modelle erscheinen im Workspace, jeweils als **Model** mit dem Dateinamen (z. B. `DoughHamster`, `PizzaDragon`) und MeshParts namens `Pet_F2D49B`, `Pet_FF7A1A_Neon` … (Endungen wie `.001` sind in Ordnung). Alle markieren und in den Ordner `Models/Pets` ziehen. **Namen nicht ändern** – sie müssen exakt den Pet-IDs entsprechen (Liste: Dateinamen in `assets/models/pets/`). Größe, Farbe, Position egal; das Spiel skaliert und färbt nach den Teilnamen.
+- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Pets:GetChildren())` → **42**.
+
+**2. Deko-Modelle der Welten 2–7 importieren** (20 Dateien in `assets/models/`):
+
+- [ ] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Deco` anlegen.
+- [ ] Wie oben mit **Import 3D** (mehrere Dateien markieren) diese Dateien importieren und nach `Models/Deco` ziehen, Namen = Dateiname:
+  | Welt | Dateien |
+  | --- | --- |
+  | Bauernhof | `Barn.fbx`, `HayBale.fbx`, `Sunflower.fbx`, `Fence.fbx` (+ `Tree` aus #15) |
+  | Strand | `PalmTree.fbx`, `BeachUmbrella.fbx`, `BeachRock.fbx` |
+  | Eisberge | `SnowPine.fbx`, `IceCrystal.fbx`, `Snowman.fbx` |
+  | Vulkan | `LavaMountain.fbx`, `LavaRock.fbx`, `DeadTree.fbx` |
+  | Süßigkeitenland | `Lollipop.fbx`, `CandyCane.fbx`, `Cupcake.fbx` |
+  | Weltraum | `MoonRock.fbx`, `Planet.fbx`, `SpaceCrystal.fbx`, `Rocket.fbx` |
+- [ ] Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Deco:GetChildren())` → **20**.
+- [ ] Place speichern und **File → Publish to Roblox** (die Meshes gehören zum Place).
+
+**3. Musik der Welten 2–7** (IDs in `src/client/Sounds.luau`, starten leer = stumm; aus der Cloud war roblox.com gesperrt, deshalb keine geprüften IDs). **View → Toolbox → Creator Store → Audio**, Creator-Filter **Roblox**, Kategorie Musik, anhören, Rechtsklick → **Copy Asset ID**, als Zahl eintragen, Lautstärke ist schon leise (0,25):
+
+- [ ] `Music_Farm` – fröhlich-ländlich (Suche: *country*, *banjo*, *farm*, *folk*).
+- [ ] `Music_Beach` – sommerlich (Suche: *tropical*, *beach*, *ukulele*, *reggae*).
+- [ ] `Music_Icebergs` – ruhig-funkelnd (Suche: *winter*, *snow*, *bells*, *calm*).
+- [ ] `Music_Volcano` – spannend, Trommeln (Suche: *volcano*, *drums*, *adventure*, *tribal*).
+- [ ] `Music_CandyLand` – verspielt-süß (Suche: *candy*, *cute*, *bubbly*, *playful*).
+- [ ] `Music_Space` – sphärisch (Suche: *space*, *synth*, *ambient*, *cosmic*).
+- [ ] Eingetragene IDs hier mit Namen notieren, committen (`Add world music IDs (#16)`), pushen.
+
+**4. Test Pets** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11 zum schnellen Öffnen):
+
+- [ ] Output ohne rote Fehler.
+- [ ] Ei-Vorschau (Garten-Ei): jede Zeile zeigt links das kleine **3D-Pet** (Teig-Hamster mit Kochmütze, Basilikum-Hase, Tomaten-Katze …) statt eines Punkts. Lesbar, nichts abgeschnitten.
+- [ ] Ei öffnen: Die Pet-Karte zeigt das 3D-Pet vor dem Kreis in Seltenheitsfarbe.
+- [ ] Pet-Menü: Jede Karte zeigt das 3D-Pet im runden Feld. Menü mit vielen Pets (z. B. 30+) öffnet ohne spürbares Ruckeln (ViewportFrames). Falls doch: hier notieren.
+- [ ] Ausgerüstete Pets laufen als Modell hinter dem Spieler her, **mit dem Gesicht in Laufrichtung**, Füße knapp über dem Boden, Namensschild über dem Kopf. Zeigen sie nach hinten/zur Seite: in `src/shared/ModelLibrary.luau` `PET_YAW` (jetzt 180) auf 0/90/270 ändern. Schweben sie zu hoch/stecken im Boden: `MODEL_LIFT` in `src/server/PetService.luau` anpassen.
+- [ ] Seltene Pets sind etwas größer (Mythisch ≈ 4 Studs) als gewöhnliche (≈ 2,8 Studs); nichts überdeckt die Spielfigur.
+- [ ] Neon-Teile leuchten (Lava-Echse, Galaxie-Drache, Sternen-Katze), Glas ist durchsichtig (Raketen-Hund-Helm, Gummi-Wurm), Goldener Hahn glänzt.
+- [ ] Je ein Pet pro Ei ansehen (Bauernhof bis Weltraum): Farben wie in den Vorschau-Renders.
+- [ ] **Mehrspieler** (2 Spieler): B sieht A's Pets als Modelle hinter A herlaufen.
+
+**5. Test Welten 2–7** (Münz-Tipp aus #11; mit dem Portal schnell wechseln):
+
+- [ ] Beim Betreten jeder Welt wechseln Licht, Dunst und Musik (sobald IDs eingetragen) innerhalb ~1 s:
+  - Bauernhof: goldener Morgen, warmer Dunst. Scheune (Ecke hinten links), Heuballen, Sonnenblumen, Zäune, Bäume, Erdweg vor den Stationen.
+  - Strand: helle Mittagssonne, blaue Luft. Palmen, Sonnenschirme, Felsen, Holzsteg vor den Stationen, Meer links außerhalb der Welt.
+  - Eisberge: kühles bläuliches Licht, viel weißer Dunst. Verschneite Tannen, Eiskristalle (zwei große in den hinteren Ecken), Schneemänner, Eisweg.
+  - Vulkan: roter Abendhimmel, rauchiger Dunst. Großer Vulkan mit Lava (hinten links), Lavafelsen, tote Bäume, leuchtende Lava-Pools.
+  - Süßigkeitenland: rosa Pastell-Licht, rosa Wolken. Lollis, Zuckerstangen, Cupcakes (ein riesiger hinten links), Schoko-Weg.
+  - Weltraum: Nacht mit Sternen und Mond, lila Licht, leuchtende Kristalle, Mondfelsen, Rakete (hinten links), großer Planet am Himmel. Trotz Nacht ist alles gut erkennbar (sonst `ambient`/`outdoorAmbient` in `src/shared/WorldLooks.luau` erhöhen).
+- [ ] Keine Deko steht in der Belag-Fläche, im Ofen, Ei, Portal, Shop (Welt 4 und 7 sind die Shops größer!), Telefon oder Lieferwagen, und nichts versperrt die Barriere zur nächsten Welt. Große Deko (Bäume, Scheune, Vulkan, Rakete) ist fest, kleine kann man durchlaufen.
+- [ ] Nichts ist überstrahlt (Vulkan/Weltraum haben stärkeres Bloom); Bildrate bleibt flüssig.
+- [ ] Zurück in Welt 1 → wieder das warme Nachmittagslicht aus #15.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Ei-Vorschau: 3D-Pets sind auch klein erkennbar; Pet-Menü-Karten bleiben gut antippbar (das 3D-Bild fängt keine Eingaben ab – Antippen rüstet aus/ab).
+- [ ] Bildrate in Vulkan und Weltraum (Licht-Effekte) bleibt flüssig; falls nicht, hier notieren.
