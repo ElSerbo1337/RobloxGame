@@ -36,3 +36,25 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] HUD-Elemente sind gut lesbar, nicht abgeschnitten, nicht vom Joystick/Sprung-Knopf verdeckt.
 
 Fehler gefunden? Beheben, `lune run test` erneut ausführen, hier abhaken, committen, pushen.
+
+## #3 Spielerstand speichern
+
+Vorher: `lune run test` → alle grün (inkl. `tests/SaveData.spec.luau`).
+
+Einmalig einrichten (ohne das funktioniert in Studio kein DataStore):
+
+- [ ] Place veröffentlichen: **File → Publish to Roblox** (falls noch nicht geschehen).
+- [ ] **Home → Game Settings → Security → „Enable Studio Access to API Services“** einschalten, **Save**.
+
+Test (1 Spieler, Rojo verbunden):
+
+- [ ] **Play**: Output ohne `[Save]`-Warnungen. (Eine Warnung `Laden für … fehlgeschlagen` / `StudioAccessToApisNotAllowed` heißt: API-Zugriff ist noch aus – oben einschalten.)
+- [ ] Ein paar Beläge sammeln und verkaufen, Münzstand merken (z. B. 12), eine Pizza mit 1 Belag halten. **Stop**.
+- [ ] Erneut **Play**: Münzen zeigen denselben Stand, Pizza-Füllstand im HUD ist wie vorher (`Pizza 1/2`).
+- [ ] Mit **Test → Clients and Servers** (1 Spieler) den Client-Fenster schließen (Spieler verlässt), danach neu starten → Münzen erhalten (Speichern beim Verlassen).
+- [ ] Optional periodisch: Play, Münzen verdienen, > 2 Minuten warten, dann Studio-Prozess hart beenden (Task-Manager) → beim nächsten Play ist mindestens der Stand von vor 2 Minuten da.
+
+Fehlerfall „Laden fehlgeschlagen überschreibt nichts“:
+
+- [ ] Stand mit Münzen > 0 speichern (Play/Stop). Dann „Enable Studio Access to API Services“ **aus**schalten, Play: Warnung `[Save] Laden … fehlgeschlagen, es wird nicht gespeichert`, Münzen 0, ein paar Münzen verdienen, Stop.
+- [ ] API-Zugriff wieder **ein**schalten, Play: der **alte** Münzstand ist wieder da (nicht 0, nicht der Stand aus dem Fehler-Lauf).

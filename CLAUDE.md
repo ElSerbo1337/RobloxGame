@@ -18,7 +18,8 @@ Dateinamen-Konventionen (Rojo): `Foo.server.luau` = Script, `Foo.client.luau` = 
 
 ## Architektur: Spielregeln vs. Roblox-Schicht
 
-- **Spielregeln** (`src/shared/GameRules.luau`, `src/shared/ToppingField.luau`): reines Luau **ohne Roblox-API** (kein `game`, `Instance`, `script`, kein `require` anderer Module). Arbeiten auf einem `PlayerState` (reine Tabelle); jede Aktion liefert `{ ok, reason?, state }` und verändert den alten Stand nicht. Zeit (`now`) und Zufall (`random: () -> number`) werden als Parameter übergeben, die Konfiguration per `GameRules.new(config)`.
+- **Spielregeln** (`src/shared/GameRules.luau`, `src/shared/ToppingField.luau`, `src/shared/SaveData.luau`): reines Luau **ohne Roblox-API** (kein `game`, `Instance`, `script`, kein `require` anderer Module). Arbeiten auf einem `PlayerState` (reine Tabelle); jede Aktion liefert `{ ok, reason?, state }` und verändert den alten Stand nicht. Zeit (`now`) und Zufall (`random: () -> number`) werden als Parameter übergeben, die Konfiguration per `GameRules.new(config)`.
+- **Speichern** (`src/shared/SaveData.luau` + `src/server/SaveService.luau`): Neue PlayerState-Felder nur in `rules.newPlayerState()` ergänzen – alte Spielstände bekommen sie beim Laden automatisch. Nur wenn ein bestehendes Feld seine Form/Bedeutung ändert: `STATE_VERSION` in `GameRules` erhöhen und einen Migrationsschritt in `SaveData` (mit Test) ergänzen. Schlägt das Laden fehl, wird für diesen Spieler nie gespeichert.
 - **Zentrale Konfiguration** (`src/shared/GameConfig.luau`): alle Balancing-Zahlen, reine Daten. Neue Welten/Beläge nur hier ergänzen.
 - **Roblox-Schicht** (`src/server/*`, `src/client/*`): Server-Dienste rufen ausschließlich die Spielregeln auf (`PlayerStates.set` nur mit Regel-Ergebnissen) und replizieren den Stand als Player-Attribute. Client sendet nur Wünsche über RemoteEvents aus `src/shared/Net.luau`.
 
