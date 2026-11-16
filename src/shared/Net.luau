@@ -14,6 +14,9 @@
 -- EggOpened       server -> client  (eggId: string, petId: string)  plays the hatch animation
 -- EquipPet        client -> server  (uid: number)               "equip this pet"
 -- UnequipPet      client -> server  (uid: number)               "put this pet away"
+-- PortalOpen      server -> client  (worldId: string, entries: { GameRules.PortalEntry })  player stands in this world's portal
+-- PortalClose     server -> client  ()                           player left the portal (or was teleported)
+-- Teleport        client -> server  (worldId: string)            "send me to this world" (only from inside a portal)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought).
@@ -37,6 +40,9 @@ local EVENTS = {
 	EggOpened = true,
 	EquipPet = true,
 	UnequipPet = true,
+	PortalOpen = true,
+	PortalClose = true,
+	Teleport = true,
 }
 
 local Net = {}

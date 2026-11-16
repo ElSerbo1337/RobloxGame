@@ -10,6 +10,7 @@ local OvenService = require(script.OvenService)
 local PetService = require(script.PetService)
 local PizzaVisual = require(script.PizzaVisual)
 local PlayerStates = require(script.PlayerStates)
+local PortalService = require(script.PortalService)
 local ShopService = require(script.ShopService)
 local ToppingService = require(script.ToppingService)
 local World1Map = require(script.World1Map)
@@ -21,6 +22,9 @@ Net.event("SetAutoCollect")
 Net.event("Notify")
 Net.event("UnlockWorld")
 for _, name in { "OpenEgg", "EggOpened", "EquipPet", "UnequipPet" } do
+	Net.event(name)
+end
+for _, name in { "PortalOpen", "PortalClose", "Teleport" } do
 	Net.event(name)
 end
 for _, name in { "ShopOpen", "ShopUpdate", "ShopClose", "BuyUpgrade", "ShopPurchase" } do
@@ -52,5 +56,7 @@ for _, world in laterWorlds do
 end
 EggService.start(eggSpots)
 PetService.start()
+-- One teleport portal per configured world (same spot in each world).
+PortalService.start(PortalService.buildAll())
 
 print(`[{Constants.GAME_NAME}] Server gestartet`)

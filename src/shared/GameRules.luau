@@ -67,7 +67,7 @@ export type EggPreview = {
 -- One world as shown in the portal menu; locked worlds are greyed out with their price.
 export type PortalEntry = { worldId: string, displayName: string, unlockPrice: number, unlocked: boolean }
 
-export type OpenEggResult =Result & { pet: OwnedPet? }
+export type OpenEggResult = Result & { pet: OwnedPet? }
 
 -- Bump together with a migration step in SaveData when a field changes shape.
 local STATE_VERSION = 2
