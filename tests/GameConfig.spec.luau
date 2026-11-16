@@ -372,6 +372,24 @@ describe("GameConfig gems", function()
 		expect(rules.buyUpgrade(state, "World1Shop", "PetSlots").reason).toBe("ShopLevelLimit")
 	end)
 
+	it("lets shop 2 in world 4 sell pet slots up to 7, leaving 8 for shop 3", function()
+		local state = rules.newPlayerState()
+		state.gems = 1e9
+		state.unlockedWorlds = { "Farm", "Beach", "Icebergs" }
+		local reason
+		repeat
+			local result = rules.buyUpgrade(state, "World4Shop", "PetSlots")
+			state = result.state
+			reason = result.reason
+		until not result.ok
+
+		expect(rules.petSlots(state)).toBe(7)
+		expect(reason).toBe("ShopLevelLimit")
+		for _, upgradeId in { "InventorySpace", "WalkSpeed", "TripleOpen" } do
+			expect(rules.buyUpgrade(state, "World4Shop", upgradeId).ok).toBe(true)
+		end
+	end)
+
 	it("lets the world 1 shop sell every gem upgrade, opening 3 eggs at once included", function()
 		local state = rules.newPlayerState()
 		state.gems = 1e9

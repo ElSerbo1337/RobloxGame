@@ -284,6 +284,11 @@ local GameConfig = {
 				{ upgrade = "PizzaSpace", maxLevel = 6 },
 				{ upgrade = "CollectRange", maxLevel = 6 },
 				{ upgrade = "Magnet", maxLevel = 3 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 4 },
+				{ upgrade = "InventorySpace", maxLevel = 4 },
+				{ upgrade = "WalkSpeed", maxLevel = 4 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
 			},
 		},
 	},
