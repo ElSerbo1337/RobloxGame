@@ -33,6 +33,14 @@ local GameConfig = {
 		BellPepper = { displayName = "Paprika", value = 8 },
 		Corn = { displayName = "Mais", value = 12 },
 		Ham = { displayName = "Schinken", value = 20 },
+		-- World 3 (Strand): about 4x world 2.
+		Tuna = { displayName = "Thunfisch", value = 25 },
+		Shrimp = { displayName = "Garnele", value = 45 },
+		Pineapple = { displayName = "Ananas", value = 65 },
+		-- World 4 (Eisberge): about 4x world 3.
+		FrozenPeas = { displayName = "Gefrorene Erbsen", value = 100 },
+		Salmon = { displayName = "Lachs", value = 180 },
+		IcebergLettuce = { displayName = "Eisberg-Salat", value = 260 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -115,6 +123,20 @@ local GameConfig = {
 		OnionCow = { displayName = "Zwiebel-Kuh", rarity = "Epic", bonus = 0.8 },
 		HayHorse = { displayName = "Heu-Pferd", rarity = "Legendary", bonus = 1.5 },
 		GoldenRooster = { displayName = "Goldener Hahn", rarity = "Mythic", bonus = 3 },
+		-- World 3 (Strand): about 2x world 2.
+		SandCrab = { displayName = "Sand-Krabbe", rarity = "Common", bonus = 0.4 },
+		ShellTurtle = { displayName = "Muschel-Schildkröte", rarity = "Uncommon", bonus = 0.6 },
+		ShrimpSeal = { displayName = "Garnelen-Robbe", rarity = "Rare", bonus = 1 },
+		PineappleParrot = { displayName = "Ananas-Papagei", rarity = "Epic", bonus = 1.6 },
+		TunaDolphin = { displayName = "Thunfisch-Delfin", rarity = "Legendary", bonus = 3 },
+		CoralKraken = { displayName = "Korallen-Krake", rarity = "Mythic", bonus = 6 },
+		-- World 4 (Eisberge): about 2x world 3.
+		IcePenguin = { displayName = "Eis-Pinguin", rarity = "Common", bonus = 0.8 },
+		SnowFox = { displayName = "Schnee-Fuchs", rarity = "Uncommon", bonus = 1.2 },
+		PeaWalrus = { displayName = "Erbsen-Walross", rarity = "Rare", bonus = 2 },
+		SalmonBear = { displayName = "Lachs-Bär", rarity = "Epic", bonus = 3.2 },
+		LettuceYeti = { displayName = "Salat-Yeti", rarity = "Legendary", bonus = 6 },
+		FrostPhoenix = { displayName = "Frost-Phönix", rarity = "Mythic", bonus = 12 },
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -143,6 +165,30 @@ local GameConfig = {
 				{ pet = "GoldenRooster", chance = 0.5 },
 			},
 		},
+		BeachEgg = {
+			displayName = "Strand-Ei",
+			price = 1500,
+			pets = {
+				{ pet = "SandCrab", chance = 50 },
+				{ pet = "ShellTurtle", chance = 28 },
+				{ pet = "ShrimpSeal", chance = 15 },
+				{ pet = "PineappleParrot", chance = 5.5 },
+				{ pet = "TunaDolphin", chance = 1 },
+				{ pet = "CoralKraken", chance = 0.5 },
+			},
+		},
+		IceEgg = {
+			displayName = "Eis-Ei",
+			price = 12000,
+			pets = {
+				{ pet = "IcePenguin", chance = 50 },
+				{ pet = "SnowFox", chance = 28 },
+				{ pet = "PeaWalrus", chance = 15 },
+				{ pet = "SalmonBear", chance = 5.5 },
+				{ pet = "LettuceYeti", chance = 1 },
+				{ pet = "FrostPhoenix", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -155,6 +201,16 @@ local GameConfig = {
 				{ upgrade = "PizzaSpace", maxLevel = 3 },
 				{ upgrade = "CollectRange", maxLevel = 3 },
 				{ upgrade = "Magnet", maxLevel = 1 },
+			},
+		},
+		-- Shop 2: everything from shop 1 plus higher levels; a bigger building in world 4.
+		World4Shop = {
+			worldId = "Icebergs",
+			displayName = "Großer Münz-Tresen",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 6 },
+				{ upgrade = "CollectRange", maxLevel = 6 },
+				{ upgrade = "Magnet", maxLevel = 3 },
 			},
 		},
 	},
@@ -185,6 +241,28 @@ local GameConfig = {
 				{ topping = "Ham", weight = 8 },
 			},
 			eggs = { "FarmEgg" },
+		},
+		{
+			id = "Beach",
+			displayName = "Strand",
+			unlockPrice = 15000,
+			toppingSpawns = {
+				{ topping = "Tuna", weight = 55 },
+				{ topping = "Shrimp", weight = 30 },
+				{ topping = "Pineapple", weight = 15 },
+			},
+			eggs = { "BeachEgg" },
+		},
+		{
+			id = "Icebergs",
+			displayName = "Eisberge",
+			unlockPrice = 150000,
+			toppingSpawns = {
+				{ topping = "FrozenPeas", weight = 55 },
+				{ topping = "Salmon", weight = 30 },
+				{ topping = "IcebergLettuce", weight = 15 },
+			},
+			eggs = { "IceEgg" },
 		},
 	},
 }

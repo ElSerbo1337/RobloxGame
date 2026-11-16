@@ -64,6 +64,47 @@ describe("GameConfig", function()
 		expect(toppings).toEqual({ "Mais", "Paprika", "Schinken", "Zwiebel" })
 	end)
 
+	local function toppingNames(world): { string }
+		local names = {}
+		for _, spawn in world.toppingSpawns do
+			table.insert(names, GameConfig.toppings[spawn.topping].displayName)
+		end
+		table.sort(names)
+		return names
+	end
+
+	it("puts world 3 (Strand) behind a 15.000 coin barrier with tuna, shrimp and pineapple", function()
+		local beach = GameConfig.worlds[3]
+
+		expect(beach.id).toBe("Beach")
+		expect(beach.displayName).toBe("Strand")
+		expect(beach.unlockPrice).toBe(15000)
+		expect(toppingNames(beach)).toEqual({ "Ananas", "Garnele", "Thunfisch" })
+	end)
+
+	it("puts world 4 (Eisberge) behind a 150.000 coin barrier with frozen peas, salmon and iceberg lettuce", function()
+		local icebergs = GameConfig.worlds[4]
+
+		expect(icebergs.id).toBe("Icebergs")
+		expect(icebergs.displayName).toBe("Eisberge")
+		expect(icebergs.unlockPrice).toBe(150000)
+		expect(toppingNames(icebergs)).toEqual({ "Eisberg-Salat", "Gefrorene Erbsen", "Lachs" })
+	end)
+
+	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+		state.coins = 1500 + 15000 + 150000
+		for index = 2, 4 do
+			local result = rules.unlockWorld(state, GameConfig.worlds[index].id)
+			expect(result.ok).toBe(true)
+			state = result.state
+		end
+
+		expect(state.coins).toBe(0)
+		expect(rules.isWorldUnlocked(state, "Icebergs")).toBe(true)
+	end)
+
 	it("makes every world cost more to unlock than the one before, starting free", function()
 		expect(GameConfig.worlds[1].unlockPrice).toBe(0)
 		for i = 2, #GameConfig.worlds do
@@ -126,6 +167,41 @@ describe("GameConfig shops", function()
 		expect(#magnet).toBe(1)
 		expect(magnet[1] > GameConfig.collect.autoRadius).toBe(true)
 		expect(magnetReason).toBe("ShopLevelLimit")
+	end)
+
+	it("shop 2 in world 4 sells everything shop 1 does, up to pizza 12, range level 6 and magnet level 3", function()
+		local shop2 = GameConfig.shops.World4Shop
+		local state = rules.newPlayerState()
+		state.coins = 1e12
+		state.unlockedWorlds = { "Farm", "Beach", "Icebergs" }
+		local function buyAll(shopId: string, upgradeId: string): string?
+			while true do
+				local result = rules.buyUpgrade(state, shopId, upgradeId)
+				if not result.ok then
+					return result.reason
+				end
+				state = result.state
+			end
+		end
+
+		expect(shop2.worldId).toBe("Icebergs")
+		local reasons = {}
+		for _, offer in GameConfig.shops.World1Shop.offers do
+			buyAll("World1Shop", offer.upgrade)
+			reasons[offer.upgrade] = buyAll("World4Shop", offer.upgrade)
+		end
+		-- Pizza 15 and 20 are left for shop 3 in world 7.
+		expect(reasons.PizzaSpace).toBe("ShopLevelLimit")
+		expect(rules.pizzaCapacity(state)).toBe(12)
+		expect(rules.upgradeLevel(state, "CollectRange")).toBe(6)
+		expect(rules.upgradeLevel(state, "Magnet")).toBe(3)
+	end)
+
+	it("shop 2 only sells to players who unlocked world 4", function()
+		local state = rules.newPlayerState()
+		state.coins = 1e6
+
+		expect(rules.buyUpgrade(state, "World4Shop", "PizzaSpace").reason).toBe("WorldLocked")
 	end)
 
 	it("only has pizza space, range and magnet upgrades (no sell value upgrade)", function()
