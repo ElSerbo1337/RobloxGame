@@ -2,8 +2,8 @@
 
 Aufgaben, die nur auf einem Rechner mit Roblox Studio erledigt werden können. Die lokale Claude-Sitzung arbeitet diese Liste bei „sync“ ab und streicht erledigte Punkte.
 
-- [ ] Rojo-Verbindung testen: Play drücken, im Output müssen `[RobloxGame] Server gestartet` und `[RobloxGame] Client gestartet` stehen.
-- [ ] Baseplate per File → Publish to Roblox veröffentlichen (falls noch nicht geschehen).
+- [x] Rojo-Verbindung testen: Play drücken, im Output müssen `[RobloxGame] Server gestartet` und `[RobloxGame] Client gestartet` stehen.
+- [x] Baseplate per File → Publish to Roblox veröffentlichen (falls noch nicht geschehen). _(16.11.2026: neue Experience „Pizza Topping Simulator“, privat)_
 
 ## #2 Kern-Schleife: Belag einsammeln und am Ofen verkaufen
 
@@ -11,19 +11,19 @@ Vorher: `rokit install` (installiert jetzt auch Lune) und `lune run test` → mu
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler; `[RobloxGame] Server gestartet` / `Client gestartet` erscheinen.
-- [ ] Im Workspace gibt es `World1_PizzeriaGarden` mit Wiese, hellerer Sammelfläche, Spawn (gelb), Ofen mit Schild „Ofen – hier verkaufen“ und oranger Verkaufszone davor.
-- [ ] Unter `World1_PizzeriaGarden.Toppings` liegen genau **60** Beläge (rot = Salami, beige = Pilz, weiß = Mozzarella; Salami am häufigsten, Mozzarella selten).
-- [ ] Falls die Baseplate-Vorlage einen eigenen `SpawnLocation` mitten im Feld hat: diesen löschen und Place speichern/publishen, damit man am gelben Spawn startet.
-- [ ] Spielfigur hält eine Pizza in der Hand, **flach** liegend. Falls sie hochkant/verdreht/im Arm steckt: `GRIP` in `src/server/PizzaVisual.luau` anpassen.
-- [ ] Hotbar (Backpack) ist ausgeblendet, die Pizza lässt sich nicht weglegen.
-- [ ] HUD: oben Münzen-Anzeige `0`, unten `Pizza 0/2` mit Balken.
-- [ ] Belag in der Nähe (< 10 Studs) anklicken → verschwindet, erscheint klein auf der Pizza, HUD `Pizza 1/2`.
-- [ ] Belag weit weg anklicken (ca. 15–40 Studs) → bleibt liegen, Meldung „Zu weit weg!“.
-- [ ] Bei `Pizza 2/2` (Balken rot, „VOLL“) dritten Belag anklicken → bleibt liegen, Meldung „Pizza voll! Ab zum Ofen.“.
-- [ ] Eingesammelter Belag erscheint nach ca. 5 s an einer anderen Stelle neu (Anzahl bleibt 60).
-- [ ] In die orange Ofen-Zone laufen → Pizza leer, Münzen steigen um die Belagwerte (Salami 1, Pilz 2, Mozzarella 5), Meldung „+X Münzen“, Münzanzeige hüpft kurz.
-- [ ] Nach Tod/Reset (Esc → Reset Character) hat die Figur wieder die Pizza mit den gleichen Belägen.
+- [x] Output ohne rote Fehler; `[RobloxGame] Server gestartet` / `Client gestartet` erscheinen. _(nur erwartete `[Save]`/DataStore-Warnungen, solange API-Zugriff aus ist – siehe #3)_
+- [x] Im Workspace gibt es `World1_PizzeriaGarden` mit Wiese, hellerer Sammelfläche, Spawn (gelb), Ofen mit Schild „Ofen – hier verkaufen“ und oranger Verkaufszone davor.
+- [x] Unter `World1_PizzeriaGarden.Toppings` liegen genau **60** Beläge (rot = Salami, beige = Pilz, weiß = Mozzarella; Salami am häufigsten, Mozzarella selten). _(2 Läufe: 25/31/4 und 37/20/3 Salami/Pilz/Mozzarella – erster Lauf Zufall)_
+- [x] Falls die Baseplate-Vorlage einen eigenen `SpawnLocation` mitten im Feld hat: diesen löschen und Place speichern/publishen, damit man am gelben Spawn startet.
+- [x] Spielfigur hält eine Pizza in der Hand, **flach** liegend. Falls sie hochkant/verdreht/im Arm steckt: `GRIP` in `src/server/PizzaVisual.luau` anpassen.
+- [x] Hotbar (Backpack) ist ausgeblendet, die Pizza lässt sich nicht weglegen.
+- [x] HUD: oben Münzen-Anzeige `0`, unten `Pizza 0/2` mit Balken.
+- [x] Belag in der Nähe (< 10 Studs) anklicken → verschwindet, erscheint klein auf der Pizza, HUD `Pizza 1/2`.
+- [x] Belag weit weg anklicken (ca. 15–40 Studs) → bleibt liegen, Meldung „Zu weit weg!“.
+- [x] Bei `Pizza 2/2` (Balken rot, „VOLL“) dritten Belag anklicken → bleibt liegen, Meldung „Pizza voll! Ab zum Ofen.“. _(Meldung kommt max. alle 3 s)_
+- [x] Eingesammelter Belag erscheint nach ca. 5 s an einer anderen Stelle neu (Anzahl bleibt 60). _(Anzahl bleibt 60)_
+- [x] In die orange Ofen-Zone laufen → Pizza leer, Münzen steigen um die Belagwerte (Salami 1, Pilz 2, Mozzarella 5), Meldung „+X Münzen“, Münzanzeige hüpft kurz. _(Salami/Pilz geprüft. Auffällig: Kamera wird in der Zone vom Ofen nach vorn an den Kopf gedrückt)_
+- [x] Nach Tod/Reset (Esc → Reset Character) hat die Figur wieder die Pizza mit den gleichen Belägen.
 
 **Mehrspieler** (Test → Clients and Servers → 2 Spieler):
 
@@ -66,16 +66,16 @@ Vorher: `lune run test` → alle grün (inkl. `tests/AutoCollect.spec.luau`).
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 - [ ] Output ohne rote Fehler.
-- [ ] HUD unten: grauer Knopf „Auto-Sammeln: AUS“ direkt über `Pizza 0/2`.
-- [ ] Mit AUS über Beläge laufen → nichts wird eingesammelt (Anklicken geht weiterhin).
+- [x] HUD unten: grauer Knopf „Auto-Sammeln: AUS“ direkt über `Pizza 0/2`.
+- [x] Mit AUS über Beläge laufen → nichts wird eingesammelt (Anklicken geht weiterhin).
 - [ ] Knopf drücken → wird grün, „Auto-Sammeln: AN“, hüpft kurz. Im Explorer: `Players.<Name>` hat Attribut `AutoCollect = true`.
-- [ ] Mit AN über einen Belag laufen (ca. 4 Studs Radius) → Belag verschwindet, erscheint auf der Pizza in der Hand, HUD `Pizza 1/2`. Beläge daneben (> 4 Studs) bleiben liegen.
-- [ ] Zweiten Belag aufsammeln → Pizza `2/2` (rot), Meldung „Pizza voll! Ab zum Ofen.“ erscheint **einmal** sofort.
+- [x] Mit AN über einen Belag laufen (ca. 4 Studs Radius) → Belag verschwindet, erscheint auf der Pizza in der Hand, HUD `Pizza 1/2`. Beläge daneben (> 4 Studs) bleiben liegen.
+- [x] Zweiten Belag aufsammeln → Pizza `2/2` (rot), Meldung „Pizza voll! Ab zum Ofen.“ erscheint **einmal** sofort.
 - [ ] Mit voller Pizza weiter über Beläge laufen → Beläge bleiben liegen, Meldung höchstens alle ~3 s (kein Dauer-Spam).
 - [ ] Knopf erneut drücken → AUS (grau), Auto-Sammeln stoppt.
 - [ ] Mit Belägen in die Ofen-Zone laufen → **Animation**: eine Pizza fliegt vom Spieler in die glühende Ofenöffnung und schrumpft, danach fliegen mehrere goldene Münzen vom Ofen hoch zur Münzanzeige; Münzanzeige hüpft, „+X Münzen“. Beläge auf der Pizza in der Hand sind danach weg.
 - [ ] Ofen außerhalb des Bildschirms (Kamera wegdrehen) → Münzen starten aus der Bildschirmmitte, keine Fehler.
-- [ ] Nach Reset (Esc → Reset Character) bleibt der Schalter-Zustand erhalten.
+- [x] Nach Reset (Esc → Reset Character) bleibt der Schalter-Zustand erhalten.
 - [ ] Gespeichert: Schalter AN, Play beenden, neu starten → wieder AN. **Erst testbar, wenn #3 (Spielerstand speichern) umgesetzt ist** – der Schalter ist Teil des Spielerstands (`autoCollect`).
 
 **Mehrspieler** (Test → Clients and Servers → 2 Spieler):
