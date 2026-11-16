@@ -28,17 +28,35 @@ local GameConfig = {
 		Salami = { displayName = "Salami", value = 1 },
 		Mushroom = { displayName = "Pilz", value = 2 },
 		Mozzarella = { displayName = "Mozzarella", value = 5 },
+		-- World 2 (Bauernhof): about 4x world 1.
+		Onion = { displayName = "Zwiebel", value = 4 },
+		BellPepper = { displayName = "Paprika", value = 8 },
+		Corn = { displayName = "Mais", value = 12 },
+		Ham = { displayName = "Schinken", value = 20 },
 	},
 
-	-- Worlds in unlock order. `toppingSpawns` weights are relative chances.
+	-- Worlds in unlock order. `unlockPrice` is paid once per player at the barrier in
+	-- front of the world (0 = open from the start). `toppingSpawns` weights are relative chances.
 	worlds = {
 		{
 			id = "PizzeriaGarden",
 			displayName = "Pizzeria-Garten",
+			unlockPrice = 0,
 			toppingSpawns = {
 				{ topping = "Salami", weight = 60 },
 				{ topping = "Mushroom", weight = 30 },
 				{ topping = "Mozzarella", weight = 10 },
+			},
+		},
+		{
+			id = "Farm",
+			displayName = "Bauernhof",
+			unlockPrice = 1500,
+			toppingSpawns = {
+				{ topping = "Onion", weight = 45 },
+				{ topping = "BellPepper", weight = 30 },
+				{ topping = "Corn", weight = 17 },
+				{ topping = "Ham", weight = 8 },
 			},
 		},
 	},

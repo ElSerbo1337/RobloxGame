@@ -17,12 +17,15 @@ export type PlayerState = {
 	rebirthMultiplier: number,
 	-- Upgrade id -> bought level (missing = level 0).
 	upgrades: { [string]: number },
+	-- Ids of the worlds this player bought. Free worlds (unlockPrice 0) count as unlocked without being listed.
+	unlockedWorlds: { string },
 }
 
 export type Result = {
 	ok: boolean,
 	-- Set when ok == false: "UnknownTopping" | "OutOfRange" | "PizzaFull" | "PizzaEmpty" | "AutoCollectOff"
 	-- | "UnknownShop" | "UnknownUpgrade" | "NotOffered" | "MaxLevel" | "ShopLevelLimit" | "NotEnoughCoins"
+	-- | "UnknownWorld" | "AlreadyUnlocked" | "PreviousWorldLocked" | "WorldLocked"
 	reason: string?,
 	state: PlayerState,
 }
@@ -65,7 +68,67 @@ function GameRules.new(config: any)
 			autoCollect = false,
 			rebirthMultiplier = 1,
 			upgrades = {},
+			unlockedWorlds = {},
 		}
+	end
+
+	-- Returns the world's config entry and its position in the unlock order.
+	local function findWorld(worldId: string): (any, number)
+		for index, world in config.worlds do
+			if world.id == worldId then
+				return world, index
+			end
+		end
+		return nil, 0
+	end
+
+	function rules.isWorldUnlocked(state: PlayerState, worldId: string): boolean
+		local world = findWorld(worldId)
+		if world == nil then
+			return false
+		end
+		if (world.unlockPrice or 0) == 0 then
+			return true
+		end
+		return table.find(state.unlockedWorlds, worldId) ~= nil
+	end
+
+	-- A topping can be collected if at least one world it spawns in is unlocked.
+	local function isToppingReachable(state: PlayerState, toppingId: string): boolean
+		local spawnsSomewhere = false
+		for _, world in config.worlds do
+			for _, spawn in world.toppingSpawns do
+				if spawn.topping == toppingId then
+					spawnsSomewhere = true
+					if rules.isWorldUnlocked(state, world.id) then
+						return true
+					end
+				end
+			end
+		end
+		return not spawnsSomewhere
+	end
+
+	-- Buys access to a world (the barrier in front of it) for this player only.
+	function rules.unlockWorld(state: PlayerState, worldId: string): Result
+		local world, index = findWorld(worldId)
+		if world == nil then
+			return fail(state, "UnknownWorld")
+		end
+		if rules.isWorldUnlocked(state, worldId) then
+			return fail(state, "AlreadyUnlocked")
+		end
+		if not rules.isWorldUnlocked(state, config.worlds[index - 1].id) then
+			return fail(state, "PreviousWorldLocked")
+		end
+		if state.coins < world.unlockPrice then
+			return fail(state, "NotEnoughCoins")
+		end
+		local newState = table.clone(state)
+		newState.coins = state.coins - world.unlockPrice
+		newState.unlockedWorlds = table.clone(state.unlockedWorlds)
+		table.insert(newState.unlockedWorlds, worldId)
+		return { ok = true, state = newState }
 	end
 
 	function rules.upgradeLevel(state: PlayerState, upgradeId: string): number
@@ -114,6 +177,9 @@ function GameRules.new(config: any)
 	local function addTopping(state: PlayerState, toppingId: string, distance: number, range: number): Result
 		if config.toppings[toppingId] == nil then
 			return fail(state, "UnknownTopping")
+		end
+		if not isToppingReachable(state, toppingId) then
+			return fail(state, "WorldLocked")
 		end
 		if distance > range then
 			return fail(state, "OutOfRange")

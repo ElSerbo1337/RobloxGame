@@ -7,6 +7,8 @@ return {
 		Salami = { displayName = "Salami", value = 1 },
 		Mushroom = { displayName = "Pilz", value = 2 },
 		Mozzarella = { displayName = "Mozzarella", value = 5 },
+		Onion = { displayName = "Zwiebel", value = 4 },
+		Ham = { displayName = "Schinken", value = 20 },
 	},
 	-- Upgrade levels in buy order; `value` is the stat at that level (level 0 = base value).
 	upgrades = {
@@ -44,11 +46,27 @@ return {
 		{
 			id = "PizzeriaGarden",
 			displayName = "Pizzeria-Garten",
+			unlockPrice = 0,
 			toppingSpawns = {
 				{ topping = "Salami", weight = 6 },
 				{ topping = "Mushroom", weight = 3 },
 				{ topping = "Mozzarella", weight = 1 },
 			},
+		},
+		{
+			id = "Farm",
+			displayName = "Bauernhof",
+			unlockPrice = 1500,
+			toppingSpawns = {
+				{ topping = "Onion", weight = 3 },
+				{ topping = "Ham", weight = 1 },
+			},
+		},
+		{
+			id = "Beach",
+			displayName = "Strand",
+			unlockPrice = 15000,
+			toppingSpawns = {},
 		},
 	},
 }

@@ -50,4 +50,38 @@ describe("GameConfig", function()
 			end
 		end
 	end)
+
+	it("puts world 2 (Bauernhof) behind a 1.500 coin barrier with its own four toppings", function()
+		local farm = GameConfig.worlds[2]
+
+		expect(farm.id).toBe("Farm")
+		expect(farm.unlockPrice).toBe(1500)
+		local toppings = {}
+		for _, spawn in farm.toppingSpawns do
+			table.insert(toppings, GameConfig.toppings[spawn.topping].displayName)
+		end
+		table.sort(toppings)
+		expect(toppings).toEqual({ "Mais", "Paprika", "Schinken", "Zwiebel" })
+	end)
+
+	it("makes every world cost more to unlock than the one before, starting free", function()
+		expect(GameConfig.worlds[1].unlockPrice).toBe(0)
+		for i = 2, #GameConfig.worlds do
+			expect(GameConfig.worlds[i].unlockPrice > GameConfig.worlds[i - 1].unlockPrice).toBe(true)
+		end
+	end)
+
+	it("makes toppings of a later world worth about 4x those of the world before", function()
+		local function averageValue(world): number
+			local total = 0
+			for _, spawn in world.toppingSpawns do
+				total += GameConfig.toppings[spawn.topping].value
+			end
+			return total / #world.toppingSpawns
+		end
+		for i = 2, #GameConfig.worlds do
+			local ratio = averageValue(GameConfig.worlds[i]) / averageValue(GameConfig.worlds[i - 1])
+			expect(ratio >= 3 and ratio <= 5).toBe(true)
+		end
+	end)
 end)
