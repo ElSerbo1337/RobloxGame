@@ -11,11 +11,13 @@ export type PlayerState = {
 	coins: number,
 	-- Topping ids currently on the pizza, in collection order.
 	pizza: { string },
+	-- HUD switch: collect toppings by walking over them. Free from the start.
+	autoCollect: boolean,
 }
 
 export type Result = {
 	ok: boolean,
-	-- Set when ok == false: "UnknownTopping" | "OutOfRange" | "PizzaFull" | "PizzaEmpty"
+	-- Set when ok == false: "UnknownTopping" | "OutOfRange" | "PizzaFull" | "PizzaEmpty" | "AutoCollectOff"
 	reason: string?,
 	state: PlayerState,
 }
@@ -34,7 +36,7 @@ function GameRules.new(config: any)
 	end
 
 	function rules.newPlayerState(): PlayerState
-		return { version = STATE_VERSION, coins = 0, pizza = {} }
+		return { version = STATE_VERSION, coins = 0, pizza = {}, autoCollect = false }
 	end
 
 	function rules.pizzaCapacity(_state: PlayerState): number
@@ -45,21 +47,49 @@ function GameRules.new(config: any)
 		return config.collect.range
 	end
 
-	-- `distance` is measured by the server between the player and the topping.
-	function rules.collectTopping(state: PlayerState, toppingId: string, distance: number): Result
+	function rules.isPizzaFull(state: PlayerState): boolean
+		return #state.pizza >= rules.pizzaCapacity(state)
+	end
+
+	-- Pickup radius around the player while auto-collect is on (the magnet will grow it later).
+	function rules.autoCollectRadius(_state: PlayerState): number
+		return config.collect.autoRadius
+	end
+
+	local function addTopping(state: PlayerState, toppingId: string, distance: number, range: number): Result
 		if config.toppings[toppingId] == nil then
 			return fail(state, "UnknownTopping")
 		end
-		if distance > rules.collectRange(state) then
+		if distance > range then
 			return fail(state, "OutOfRange")
 		end
-		if #state.pizza >= rules.pizzaCapacity(state) then
+		if rules.isPizzaFull(state) then
 			return fail(state, "PizzaFull")
 		end
 
 		local newState = table.clone(state)
 		newState.pizza = table.clone(state.pizza)
 		table.insert(newState.pizza, toppingId)
+		return { ok = true, state = newState }
+	end
+
+	-- Player clicked/tapped a topping. `distance` is measured by the server
+	-- between the player and the topping.
+	function rules.collectTopping(state: PlayerState, toppingId: string, distance: number): Result
+		return addTopping(state, toppingId, distance, rules.collectRange(state))
+	end
+
+	-- Player walked over a topping with auto-collect switched on.
+	function rules.autoCollectTopping(state: PlayerState, toppingId: string, distance: number): Result
+		if not state.autoCollect then
+			return fail(state, "AutoCollectOff")
+		end
+		return addTopping(state, toppingId, distance, rules.autoCollectRadius(state))
+	end
+
+	function rules.setAutoCollect(state: PlayerState, enabled: boolean): Result
+		local newState = table.clone(state)
+		newState.autoCollect = enabled
 		return { ok = true, state = newState }
 	end
 

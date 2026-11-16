@@ -1,7 +1,7 @@
 -- Small, stable game config for tests, so balancing changes in GameConfig don't break them.
 return {
 	pizza = { startCapacity = 2 },
-	collect = { range = 10 },
+	collect = { range = 10, autoRadius = 3 },
 	toppingField = { count = 4, respawnSeconds = 5 },
 	toppings = {
 		Salami = { displayName = "Salami", value = 1 },

@@ -12,6 +12,8 @@ local GameConfig = {
 	collect = {
 		-- Max distance (studs) between player and topping for clicking/tapping it.
 		range = 10,
+		-- Pickup radius (studs, horizontal) when walking over toppings with auto-collect on.
+		autoRadius = 4,
 	},
 
 	toppingField = {

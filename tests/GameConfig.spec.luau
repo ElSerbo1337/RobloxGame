@@ -21,6 +21,14 @@ describe("GameConfig", function()
 		expect(rules.collectRange(state)).toBe(10)
 	end)
 
+	it("gives auto-collect a pickup radius smaller than the click range", function()
+		local rules = GameRules.new(GameConfig)
+		local radius = rules.autoCollectRadius(rules.newPlayerState())
+
+		expect(radius > 0).toBe(true)
+		expect(radius < rules.collectRange(rules.newPlayerState())).toBe(true)
+	end)
+
 	it("only spawns toppings that exist in the topping list", function()
 		for _, world in GameConfig.worlds do
 			for _, spawn in world.toppingSpawns do
