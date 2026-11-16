@@ -16,6 +16,7 @@ local ShopService = require(script.ShopService)
 local ToppingService = require(script.ToppingService)
 local TutorialService = require(script.TutorialService)
 local World1Map = require(script.World1Map)
+local WorldDeco = require(script.WorldDeco)
 local WorldMap = require(script.WorldMap)
 
 -- Create remotes before any client asks for them.
@@ -57,6 +58,11 @@ for index, world in laterWorlds do
 	end
 end
 ShopService.start(shopStands)
+-- Look pass (#15): models, trees and paths for world 1, dome ovens everywhere.
+WorldDeco.decorateWorld1(layout.folder)
+for _, world in laterWorlds do
+	WorldDeco.dressOven(world.folder)
+end
 -- Eggs: world 1 gets its own stand (x = -30 next to the spawn), later worlds use their egg stand.
 local eggSpots = {
 	{ eggId = GameConfig.worlds[1].eggs[1], stand = EggService.buildStand(layout.folder, Vector3.new(-30, 0.1, 66)) },

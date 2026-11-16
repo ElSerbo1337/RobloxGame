@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 
 local PIZZA_FLIGHT_SECONDS = 0.45
@@ -50,6 +51,10 @@ local function flyPizza(from: CFrame, to: Vector3)
 	local flat = CFrame.Angles(0, 0, math.rad(90))
 	crust.CFrame = from * flat
 	crust.Parent = Workspace
+	-- Imported Blender pizza if available (#15); welded so it flies along.
+	if ModelLibrary.dressDisc(crust, "Pizza") then
+		ModelLibrary.weldLook(crust)
+	end
 
 	local info = TweenInfo.new(PIZZA_FLIGHT_SECONDS, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 	TweenService:Create(crust, info, {

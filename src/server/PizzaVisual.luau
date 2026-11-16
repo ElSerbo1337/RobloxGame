@@ -3,6 +3,9 @@
 -- Purely visual: the toppings shown always mirror the server's PlayerState.
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 
 local PlayerStates = require(script.Parent.PlayerStates)
 local ToppingLook = require(script.Parent.ToppingLook)
@@ -44,6 +47,10 @@ local function buildTool(): Tool
 	local sauce = ToppingLook.createDisc("Sauce", PIZZA_DIAMETER - 0.5, 0.1)
 	sauce.Color = Color3.fromRGB(200, 55, 35)
 	weldedDisc(handle, CFrame.new(PIZZA_THICKNESS / 2, 0, 0), sauce, tool)
+	-- Imported Blender pizza if available (#15): it replaces crust and sauce visually.
+	if ModelLibrary.dressDisc(handle, "Pizza") then
+		sauce.Transparency = 1
+	end
 
 	local toppings = Instance.new("Folder")
 	toppings.Name = "Toppings"
@@ -67,7 +74,9 @@ local function showToppings(player: Player, pizza: { string })
 		local angle = 2 * math.pi * index / count
 		local radius = if count == 1 then 0 else TOPPING_RING_RADIUS
 		local offset = CFrame.new(PIZZA_THICKNESS / 2 + 0.15, radius * math.cos(angle), radius * math.sin(angle))
-		weldedDisc(handle, offset, ToppingLook.createDisc(toppingId, TOPPING_DIAMETER, 0.15), folder)
+		local disc = ToppingLook.createDisc(toppingId, TOPPING_DIAMETER, 0.15)
+		weldedDisc(handle, offset, disc, folder)
+		ModelLibrary.dressDisc(disc, toppingId)
 	end
 end
 

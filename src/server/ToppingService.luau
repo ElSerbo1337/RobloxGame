@@ -16,6 +16,7 @@ local ToppingField = require(ReplicatedStorage.Shared.ToppingField)
 local PlayerStates = require(script.Parent.PlayerStates)
 local MagnetPull = require(script.Parent.MagnetPull)
 local ToppingLook = require(script.Parent.ToppingLook)
+local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local DISC_DIAMETER = 3.5
 local DISC_THICKNESS = 0.6
 local RESPAWN_CHECK_SECONDS = 0.25
@@ -67,6 +68,8 @@ function ToppingService.start(worldId: string, layout: Layout)
 		else
 			disc = ToppingLook.createDisc(topping.toppingId, DISC_DIAMETER, DISC_THICKNESS)
 			disc.CFrame = CFrame.new(worldPosition(topping.x, topping.z)) * ToppingLook.FLAT
+			-- Imported Blender model if available (#15), otherwise the coloured disc stays.
+			ModelLibrary.dressDisc(disc, topping.toppingId)
 		end
 		disc:SetAttribute("SlotId", slotId)
 		disc:SetAttribute("WorldId", worldId)

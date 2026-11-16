@@ -9,6 +9,7 @@ local TweenService = game:GetService("TweenService")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Sounds = require(script.Parent.Sounds)
 local UiKit = require(script.Parent.UiKit)
 
 local CARD_WIDTH = 300
@@ -177,6 +178,7 @@ function EggAnimation.start()
 		end
 		tween(egg, 0.08, { Rotation = 0 })
 		crack.Visible = true
+		Sounds.play("EggCrack")
 		tween(egg, 0.25, { Size = UDim2.fromOffset(200, 250) }, Enum.EasingStyle.Back).Completed:Wait()
 		if myId ~= playId then
 			return
