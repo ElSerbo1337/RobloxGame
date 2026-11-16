@@ -24,6 +24,16 @@ Dateinamen-Konventionen (Rojo): `Foo.server.luau` = Script, `Foo.client.luau` = 
 - Assets, Terrain und gebaute Maps leben in Studio; wenn sie versioniert werden sollen, als `.rbxm` explizit in `assets/` ablegen und in `.gitignore` freigeben.
 - Arbeiten in einem Cloud-Container: Roblox Studio ist dort nicht verfügbar. Änderungen werden gepusht, der User zieht sie (`git pull`) auf seinem PC und testet in Studio.
 
+## Arbeitsweise: Cloud bereitet vor, lokal wird ausgeführt
+
+- **Cloud-Sitzung** (User nicht am PC): baut Code, Maps, UI und 3D-Modelle (Blender headless via `pip install bpy`, Export nach `assets/`), rendert Vorschaubilder, pusht alles nach `main`. Was nur in Studio geht, kommt als Checkliste in `docs/pc-todo.md`.
+- **Lokale Sitzung** (Claude-Desktop-App auf dem Windows-PC/Laptop mit Roblox Studio): Wenn der User „sync“ schreibt:
+  1. `git pull`, dann `rokit install` (falls Rokit fehlt: `setup.ps1` ausführen).
+  2. `rojo serve` im Hintergrund starten.
+  3. `docs/pc-todo.md` abarbeiten. Wenn Bildschirmsteuerung (computer use) verfügbar ist: Studio öffnen, Plugins → Rojo → Connect, Play drücken, Output lesen, Screenshots machen. Sonst dem User die Klicks Schritt für Schritt nennen.
+  4. Gefundene Fehler beheben, erledigte Punkte aus `docs/pc-todo.md` streichen, committen und pushen.
+  5. Dem User kurz berichten (mit Screenshots, falls vorhanden).
+
 ## Agent skills
 
 ### Issue tracker
