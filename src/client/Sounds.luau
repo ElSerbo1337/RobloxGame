@@ -7,8 +7,8 @@
 -- by the creator "Roblox" (those stay public), copy the asset ID, enter it below.
 --
 -- Played automatically here: Collect (pizza count goes up), Sell ("Sold"),
--- Gem (gem topping / gem reward). EggCrack is played by EggAnimation; PhoneRing is
--- for the delivery phone (#13): call `Sounds.play("PhoneRing")`.
+-- Gem (gem topping / gem reward), Sell also for a delivered order. EggCrack is played by
+-- EggAnimation; PhoneRing by DeliveryMenu while the delivery phone rings (#14).
 -- Music: `Sounds.playMusic(key)` (WorldAmbience picks the key per world).
 
 local Players = game:GetService("Players")
@@ -100,7 +100,7 @@ function Sounds.start()
 	end)
 
 	Net.event("Notify").OnClientEvent:Connect(function(kind: string)
-		if kind == "Sold" then
+		if kind == "Sold" or kind == "Delivered" then
 			Sounds.play("Sell")
 		elseif kind == "Gems" or kind == "PlaytimeGems" then
 			Sounds.play("Gem")

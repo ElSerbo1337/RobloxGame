@@ -32,6 +32,13 @@ local MESSAGES: { [string]: string } = {
 	WorldUnlocked = "Neue Welt freigeschaltet!",
 	InventoryFull = "Pet-Inventar voll! Lösche erst ein Pet.",
 	NotEnoughGems = "Nicht genug Gems!",
+	-- Delivery service
+	PhoneRinging = "📞 Das Telefon klingelt!",
+	OrderAccepted = "Auftrag angenommen! Beläge sammeln, dann zum 🚚.",
+	OrderDeclined = "Auftrag abgelehnt.",
+	OrderExpired = "Zeit um – der Auftrag ist verfallen.",
+	WrongToppings = "Falsche Beläge! Überzählige am Ofen verkaufen.",
+	NoOrder = "Kein Auftrag – geh ans Telefon!",
 }
 
 local Hud = {}
@@ -278,8 +285,17 @@ function Hud.start(): GuiObject
 	updatePizza()
 	updateAutoCollect()
 
-	Net.event("Notify").OnClientEvent:Connect(function(kind: string, amount: number?)
-		if kind == "Sold" and amount then
+	local function onNotify(kind: string, amount: number?, rewardKind: string?, potionId: string?)
+		if kind == "Delivered" and amount then
+			local potion = potionId and GameConfig.potions[potionId]
+			if rewardKind == "Gems" then
+				showToast(`Geliefert! +{formatNumber(amount)} Gems`, GEM)
+			elseif rewardKind == "Potion" and potion then
+				showToast(`Geliefert! +{amount}× {potion.displayName}`, ON)
+			else
+				showToast(`Geliefert! +{formatNumber(amount)} Münzen`, COIN)
+			end
+		elseif kind == "Sold" and amount then
 			showToast(`+{formatNumber(amount)} Münzen`, COIN)
 		elseif kind == "Gems" and amount then
 			showToast(`+{formatNumber(amount)} Gems!`, GEM)
@@ -291,12 +307,15 @@ function Hud.start(): GuiObject
 					or kind == "WorldLocked"
 					or kind == "InventoryFull"
 					or kind == "NotEnoughGems"
+					or kind == "WrongToppings"
+					or kind == "OrderExpired"
 				then FULL
 				elseif kind == "WorldUnlocked" then COIN
 				else nil
 			showToast(MESSAGES[kind], color)
 		end
-	end)
+	end
+	Net.event("Notify").OnClientEvent:Connect(onNotify)
 
 	-- A potion ran out (the potion menu may be closed, so say it here).
 	Net.event("PotionNotify").OnClientEvent:Connect(function(kind: string, potionId: string)

@@ -1,6 +1,7 @@
 --!strict
 -- The pizza every player holds in their hand (a Tool), showing the collected toppings.
--- Purely visual: the toppings shown always mirror the server's PlayerState.
+-- Purely visual: the toppings shown always mirror the server's PlayerState; during a
+-- delivery order the pizza carries an order ticket ("Bestell-Pizza").
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -59,13 +60,46 @@ local function buildTool(): Tool
 	return tool
 end
 
-local function showToppings(player: Player, pizza: { string })
+-- An accepted delivery order turns the pizza into an order pizza: a ticket floats above it.
+local function showOrderTicket(handle: BasePart, isOrder: boolean)
+	local ticket = handle:FindFirstChild("OrderTicket")
+	if not isOrder then
+		if ticket then
+			ticket:Destroy()
+		end
+		return
+	end
+	if ticket then
+		return
+	end
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "OrderTicket"
+	billboard.Size = UDim2.fromOffset(150, 36)
+	billboard.StudsOffsetWorldSpace = Vector3.new(0, 1.6, 0)
+	billboard.MaxDistance = 60
+	billboard.Adornee = handle
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundColor3 = Color3.fromRGB(255, 248, 230)
+	label.Text = "🧾 Bestellung"
+	label.TextScaled = true
+	label.Font = Enum.Font.FredokaOne
+	label.TextColor3 = Color3.fromRGB(230, 70, 50)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 10)
+	corner.Parent = label
+	label.Parent = billboard
+	billboard.Parent = handle
+end
+
+local function showToppings(player: Player, pizza: { string }, isOrder: boolean)
 	local character = player.Character
 	local tool = character and character:FindFirstChild("Pizza")
 	if tool == nil then
 		return
 	end
 	local handle = tool:FindFirstChild("Handle") :: BasePart
+	showOrderTicket(handle, isOrder)
 	local folder = tool:FindFirstChild("Toppings") :: Folder
 	folder:ClearAllChildren()
 
@@ -88,7 +122,7 @@ function PizzaVisual.start()
 		humanoid:EquipTool(tool)
 		local state = PlayerStates.get(player)
 		if state then
-			showToppings(player, state.pizza)
+			showToppings(player, state.pizza, state.delivery.order ~= nil)
 		end
 	end
 
@@ -107,7 +141,7 @@ function PizzaVisual.start()
 	end
 
 	PlayerStates.onChanged(function(player, state)
-		showToppings(player, state.pizza)
+		showToppings(player, state.pizza, state.delivery.order ~= nil)
 	end)
 end
 

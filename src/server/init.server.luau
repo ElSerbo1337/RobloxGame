@@ -4,6 +4,7 @@ local Constants = require(ReplicatedStorage.Shared.Constants)
 local Net = require(ReplicatedStorage.Shared.Net)
 
 local BarrierService = require(script.BarrierService)
+local DeliveryService = require(script.DeliveryService)
 local EggService = require(script.EggService)
 local GemService = require(script.GemService)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
@@ -35,6 +36,9 @@ for _, name in { "ShopOpen", "ShopUpdate", "ShopClose", "BuyUpgrade", "ShopPurch
 	Net.event(name)
 end
 for _, name in { "DrinkPotion", "PotionNotify" } do
+	Net.event(name)
+end
+for _, name in { "PhoneOpen", "PhoneClose", "AnswerPhone" } do
 	Net.event(name)
 end
 
@@ -88,6 +92,8 @@ TutorialService.start({
 PetService.start()
 GemService.start()
 PotionService.start()
+-- Delivery service: a phone and a delivery van in every world (same spot in each world).
+DeliveryService.start(DeliveryService.buildAll())
 -- One teleport portal per configured world (same spot in each world).
 PortalService.start(PortalService.buildAll())
 

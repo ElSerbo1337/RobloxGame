@@ -24,6 +24,10 @@
 -- Teleport        client -> server  (worldId: string)            "send me to this world" (only from inside a portal)
 -- EquipBest       client -> server  ()                           "equip my pets with the highest bonus"
 -- DeletePet       client -> server  (uid: number)               "delete this pet for good" (client asked to confirm)
+-- PhoneOpen       server -> client  (order: GameRules.Order, maxReward: GameRules.DeliveryReward, seconds: number)
+--                                    player stands at a ringing phone: show the order with accept/decline
+-- PhoneClose      server -> client  ()                           player left the phone (or answered)
+-- AnswerPhone     client -> server  (accept: boolean)            "take / turn down this order" (only at a phone)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -32,6 +36,11 @@
 -- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, InventorySlots, CoinMultiplier.
 -- Potions (see PotionService): Potions (JSON { [potionId]: count owned }),
 -- ActivePotions (JSON { [potionId]: seconds left when the attribute was set; the client counts down from there }).
+-- Delivery (see DeliveryService): PhoneRinging (boolean), DeliveryOrder (JSON, "" = no order:
+-- { toppings = { [id]: count }, have = { [id]: count on the pizza }, reward, potionId?, secondsLeft,
+--   rewardNow = amount if delivered now }; the client counts secondsLeft down until the next update).
+-- Notify kinds of the delivery: PhoneRinging, OrderAccepted, OrderDeclined, OrderExpired, WrongToppings,
+-- NoOrder, Delivered (amount, rewardKind "Coins" | "Gems" | "Potion", potionId?).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -59,6 +68,9 @@ local EVENTS = {
 	BuyPotion = true,
 	DrinkPotion = true,
 	PotionNotify = true,
+	PhoneOpen = true,
+	PhoneClose = true,
+	AnswerPhone = true,
 }
 
 local Net = {}
