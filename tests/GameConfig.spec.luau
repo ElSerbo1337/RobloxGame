@@ -91,6 +91,57 @@ describe("GameConfig", function()
 		expect(toppingNames(icebergs)).toEqual({ "Eisberg-Salat", "Gefrorene Erbsen", "Lachs" })
 	end)
 
+	it("puts world 5 (Vulkan) behind a 1,5 Mio coin barrier with chili, pepperoni and jalapeño", function()
+		local volcano = GameConfig.worlds[5]
+
+		expect(volcano.id).toBe("Volcano")
+		expect(volcano.displayName).toBe("Vulkan")
+		expect(volcano.unlockPrice).toBe(1500000)
+		expect(toppingNames(volcano)).toEqual({ "Chili", "Jalapeño", "Peperoni" })
+	end)
+
+	it(
+		"puts world 6 (Süßigkeitenland) behind a 15 Mio coin barrier with chocolate chips, gummy bears and marshmallow",
+		function()
+			local candy = GameConfig.worlds[6]
+
+			expect(candy.id).toBe("CandyLand")
+			expect(candy.displayName).toBe("Süßigkeitenland")
+			expect(candy.unlockPrice).toBe(15000000)
+			expect(toppingNames(candy)).toEqual({ "Gummibärchen", "Marshmallow", "Schoko-Stücke" })
+		end
+	)
+
+	it(
+		"puts world 7 (Weltraum) behind a 150 Mio coin barrier with moon cheese, star olives and alien mushroom",
+		function()
+			local space = GameConfig.worlds[7]
+
+			expect(#GameConfig.worlds).toBe(7)
+			expect(space.id).toBe("Space")
+			expect(space.displayName).toBe("Weltraum")
+			expect(space.unlockPrice).toBe(150000000)
+			expect(toppingNames(space)).toEqual({ "Alien-Pilz", "Mond-Käse", "Sternen-Oliven" })
+		end
+	)
+
+	it("lets a player unlock worlds 5-7 one after another and teleport to all of them", function()
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+		state.unlockedWorlds = { "Farm", "Beach", "Icebergs" }
+		state.coins = 1500000 + 15000000 + 150000000
+		for index = 5, 7 do
+			local result = rules.unlockWorld(state, GameConfig.worlds[index].id)
+			expect(result.ok).toBe(true)
+			state = result.state
+		end
+
+		expect(state.coins).toBe(0)
+		for _, world in GameConfig.worlds do
+			expect(rules.teleport(state, world.id).ok).toBe(true)
+		end
+	end)
+
 	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()

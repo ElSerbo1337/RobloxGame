@@ -41,6 +41,18 @@ local GameConfig = {
 		FrozenPeas = { displayName = "Gefrorene Erbsen", value = 100 },
 		Salmon = { displayName = "Lachs", value = 180 },
 		IcebergLettuce = { displayName = "Eisberg-Salat", value = 260 },
+		-- World 5 (Vulkan): about 4.8x world 4 (the pizza stays at 12 until shop 3).
+		Chili = { displayName = "Chili", value = 500 },
+		Pepperoni = { displayName = "Peperoni", value = 850 },
+		Jalapeno = { displayName = "Jalapeño", value = 1250 },
+		-- World 6 (Süßigkeitenland): about 4.8x world 5.
+		ChocolateChips = { displayName = "Schoko-Stücke", value = 2400 },
+		GummyBears = { displayName = "Gummibärchen", value = 4100 },
+		Marshmallow = { displayName = "Marshmallow", value = 6000 },
+		-- World 7 (Weltraum): about 4.8x world 6.
+		MoonCheese = { displayName = "Mond-Käse", value = 11500 },
+		StarOlives = { displayName = "Sternen-Oliven", value = 20000 },
+		AlienMushroom = { displayName = "Alien-Pilz", value = 29000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -240,6 +252,27 @@ local GameConfig = {
 		SalmonBear = { displayName = "Lachs-Bär", rarity = "Epic", bonus = 3.2 },
 		LettuceYeti = { displayName = "Salat-Yeti", rarity = "Legendary", bonus = 6 },
 		FrostPhoenix = { displayName = "Frost-Phönix", rarity = "Mythic", bonus = 12 },
+		-- World 5 (Vulkan): about 2x world 4.
+		LavaLizard = { displayName = "Lava-Echse", rarity = "Common", bonus = 1.6 },
+		ChiliSalamander = { displayName = "Chili-Salamander", rarity = "Uncommon", bonus = 2.4 },
+		MagmaMole = { displayName = "Magma-Maulwurf", rarity = "Rare", bonus = 4 },
+		JalapenoGolem = { displayName = "Jalapeño-Golem", rarity = "Epic", bonus = 6.4 },
+		FireWolf = { displayName = "Feuer-Wolf", rarity = "Legendary", bonus = 12 },
+		LavaTitan = { displayName = "Lava-Titan", rarity = "Mythic", bonus = 24 },
+		-- World 6 (Süßigkeitenland): about 2x world 5.
+		GummyWorm = { displayName = "Gummi-Wurm", rarity = "Common", bonus = 3.2 },
+		LollipopPoodle = { displayName = "Lolli-Pudel", rarity = "Uncommon", bonus = 4.8 },
+		MarshmallowSheep = { displayName = "Marshmallow-Schaf", rarity = "Rare", bonus = 8 },
+		ChocoBear = { displayName = "Schoko-Bär", rarity = "Epic", bonus = 12.8 },
+		CottonCandyUnicorn = { displayName = "Zuckerwatte-Einhorn", rarity = "Legendary", bonus = 24 },
+		CaramelGriffin = { displayName = "Karamell-Greif", rarity = "Mythic", bonus = 48 },
+		-- World 7 (Weltraum): about 2x world 6.
+		MoonMouse = { displayName = "Mond-Maus", rarity = "Common", bonus = 6.4 },
+		StarCat = { displayName = "Sternen-Katze", rarity = "Uncommon", bonus = 9.6 },
+		AlienFrog = { displayName = "Alien-Frosch", rarity = "Rare", bonus = 16 },
+		RocketDog = { displayName = "Raketen-Hund", rarity = "Epic", bonus = 25.6 },
+		CometWhale = { displayName = "Kometen-Wal", rarity = "Legendary", bonus = 48 },
+		GalaxyDragon = { displayName = "Galaxie-Drache", rarity = "Mythic", bonus = 96 },
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -290,6 +323,42 @@ local GameConfig = {
 				{ pet = "SalmonBear", chance = 5.5 },
 				{ pet = "LettuceYeti", chance = 1 },
 				{ pet = "FrostPhoenix", chance = 0.5 },
+			},
+		},
+		VolcanoEgg = {
+			displayName = "Vulkan-Ei",
+			price = 100000,
+			pets = {
+				{ pet = "LavaLizard", chance = 50 },
+				{ pet = "ChiliSalamander", chance = 28 },
+				{ pet = "MagmaMole", chance = 15 },
+				{ pet = "JalapenoGolem", chance = 5.5 },
+				{ pet = "FireWolf", chance = 1 },
+				{ pet = "LavaTitan", chance = 0.5 },
+			},
+		},
+		CandyEgg = {
+			displayName = "Süßigkeiten-Ei",
+			price = 800000,
+			pets = {
+				{ pet = "GummyWorm", chance = 50 },
+				{ pet = "LollipopPoodle", chance = 28 },
+				{ pet = "MarshmallowSheep", chance = 15 },
+				{ pet = "ChocoBear", chance = 5.5 },
+				{ pet = "CottonCandyUnicorn", chance = 1 },
+				{ pet = "CaramelGriffin", chance = 0.5 },
+			},
+		},
+		SpaceEgg = {
+			displayName = "Weltraum-Ei",
+			price = 6400000,
+			pets = {
+				{ pet = "MoonMouse", chance = 50 },
+				{ pet = "StarCat", chance = 28 },
+				{ pet = "AlienFrog", chance = 15 },
+				{ pet = "RocketDog", chance = 5.5 },
+				{ pet = "CometWhale", chance = 1 },
+				{ pet = "GalaxyDragon", chance = 0.5 },
 			},
 		},
 	},
@@ -380,6 +449,39 @@ local GameConfig = {
 				{ topping = "IcebergLettuce", weight = 15 },
 			},
 			eggs = { "IceEgg" },
+		},
+		{
+			id = "Volcano",
+			displayName = "Vulkan",
+			unlockPrice = 1500000,
+			toppingSpawns = {
+				{ topping = "Chili", weight = 55 },
+				{ topping = "Pepperoni", weight = 30 },
+				{ topping = "Jalapeno", weight = 15 },
+			},
+			eggs = { "VolcanoEgg" },
+		},
+		{
+			id = "CandyLand",
+			displayName = "Süßigkeitenland",
+			unlockPrice = 15000000,
+			toppingSpawns = {
+				{ topping = "ChocolateChips", weight = 55 },
+				{ topping = "GummyBears", weight = 30 },
+				{ topping = "Marshmallow", weight = 15 },
+			},
+			eggs = { "CandyEgg" },
+		},
+		{
+			id = "Space",
+			displayName = "Weltraum",
+			unlockPrice = 150000000,
+			toppingSpawns = {
+				{ topping = "MoonCheese", weight = 55 },
+				{ topping = "StarOlives", weight = 30 },
+				{ topping = "AlienMushroom", weight = 15 },
+			},
+			eggs = { "SpaceEgg" },
 		},
 	},
 }
