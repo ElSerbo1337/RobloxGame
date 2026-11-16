@@ -255,6 +255,54 @@ describe("GameConfig shops", function()
 		expect(rules.buyUpgrade(state, "World4Shop", "PizzaSpace").reason).toBe("WorldLocked")
 	end)
 
+	it("shop 3 in world 7 sells every upgrade up to its last level, with pizza space up to 20", function()
+		local shop3 = GameConfig.shops.World7Shop
+		local state = rules.newPlayerState()
+		state.coins = 1e15
+		state.gems = 1e9
+		state.unlockedWorlds = { "Farm", "Beach", "Icebergs", "Volcano", "CandyLand", "Space" }
+
+		expect(shop3.worldId).toBe("Space")
+		for upgradeId, upgrade in GameConfig.upgrades do
+			local reason
+			repeat
+				local result = rules.buyUpgrade(state, "World7Shop", upgradeId)
+				state = result.state
+				reason = result.reason
+			until not result.ok
+			expect(reason).toBe("MaxLevel")
+			expect(rules.upgradeLevel(state, upgradeId)).toBe(#upgrade.levels)
+		end
+		expect(rules.pizzaCapacity(state)).toBe(20)
+		expect(rules.petSlots(state)).toBe(8)
+	end)
+
+	it("gives shop 3 higher range and magnet levels than shop 2", function()
+		local function maxLevel(shopId: string, upgradeId: string): number
+			for _, offer in GameConfig.shops[shopId].offers do
+				if offer.upgrade == upgradeId then
+					return offer.maxLevel
+				end
+			end
+			return 0
+		end
+
+		for upgradeId in GameConfig.upgrades do
+			expect(maxLevel("World7Shop", upgradeId) >= maxLevel("World4Shop", upgradeId)).toBe(true)
+		end
+		for _, upgradeId in { "PizzaSpace", "CollectRange", "Magnet" } do
+			expect(maxLevel("World7Shop", upgradeId) > maxLevel("World4Shop", upgradeId)).toBe(true)
+		end
+	end)
+
+	it("shop 3 only sells to players who unlocked world 7", function()
+		local state = rules.newPlayerState()
+		state.coins = 1e12
+		state.unlockedWorlds = { "Farm", "Beach", "Icebergs", "Volcano", "CandyLand" }
+
+		expect(rules.buyUpgrade(state, "World7Shop", "PizzaSpace").reason).toBe("WorldLocked")
+	end)
+
 	it("only has pizza space, range and magnet as coin upgrades (no sell value upgrade)", function()
 		for upgradeId, upgrade in GameConfig.upgrades do
 			if upgrade.currency ~= "Gems" then

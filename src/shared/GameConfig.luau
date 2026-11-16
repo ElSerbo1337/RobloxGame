@@ -72,9 +72,9 @@ local GameConfig = {
 				{ price = 5000, value = 8 },
 				{ price = 15000, value = 10 },
 				{ price = 40000, value = 12 },
-				-- Shop 3 (world 7)
-				{ price = 400000, value = 15 },
-				{ price = 2000000, value = 20 },
+				-- Shop 3 (world 7): priced for world 7 toppings (about 300 / 1.200 of them).
+				{ price = 5000000, value = 15 },
+				{ price = 20000000, value = 20 },
 			},
 		},
 		CollectRange = {
@@ -87,6 +87,9 @@ local GameConfig = {
 				{ price = 8000, value = 26 },
 				{ price = 25000, value = 30 },
 				{ price = 60000, value = 35 },
+				-- Shop 3 (world 7)
+				{ price = 5000000, value = 40 },
+				{ price = 15000000, value = 45 },
 			},
 		},
 		Magnet = {
@@ -96,6 +99,9 @@ local GameConfig = {
 				{ price = 600, value = 12 },
 				{ price = 30000, value = 18 },
 				{ price = 100000, value = 25 },
+				-- Shop 3 (world 7)
+				{ price = 8000000, value = 32 },
+				{ price = 25000000, value = 40 },
 			},
 		},
 
@@ -398,6 +404,21 @@ local GameConfig = {
 			},
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },
+		},
+		-- Shop 3: the biggest shop with every upgrade up to its last level; a 2x building in world 7.
+		World7Shop = {
+			worldId = "Space",
+			displayName = "Riesiger Pizza-Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+			},
 		},
 	},
 
