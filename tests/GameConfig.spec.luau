@@ -204,10 +204,12 @@ describe("GameConfig shops", function()
 		expect(rules.buyUpgrade(state, "World4Shop", "PizzaSpace").reason).toBe("WorldLocked")
 	end)
 
-	it("only has pizza space, range and magnet upgrades (no sell value upgrade)", function()
-		for upgradeId in GameConfig.upgrades do
-			local known = upgradeId == "PizzaSpace" or upgradeId == "CollectRange" or upgradeId == "Magnet"
-			expect(known).toBe(true)
+	it("only has pizza space, range and magnet as coin upgrades (no sell value upgrade)", function()
+		for upgradeId, upgrade in GameConfig.upgrades do
+			if upgrade.currency ~= "Gems" then
+				local known = upgradeId == "PizzaSpace" or upgradeId == "CollectRange" or upgradeId == "Magnet"
+				expect(known).toBe(true)
+			end
 		end
 	end)
 
@@ -322,5 +324,63 @@ describe("GameConfig worlds and eggs", function()
 			expect(ratio >= 1.5 and ratio <= 2.5).toBe(true)
 			expect(GameConfig.eggs[current].price > GameConfig.eggs[previous].price).toBe(true)
 		end
+	end)
+end)
+
+describe("GameConfig gems", function()
+	local rules = GameRules.new(GameConfig)
+
+	it("makes about 1 in 150 toppings a gem topping worth 1-3 gems", function()
+		expect(math.abs(GameConfig.gems.toppingChance - 1 / 150) < 1e-9).toBe(true)
+		expect(GameConfig.gems.toppingMin).toBe(1)
+		expect(GameConfig.gems.toppingMax).toBe(3)
+		expect(GameConfig.toppings[GameConfig.gems.toppingId]).toBeNil()
+	end)
+
+	it("gives 1 gem per 15 minutes of play time", function()
+		local state = rules.addPlayTime(rules.newPlayerState(), 15 * 60).state
+
+		expect(state.gems).toBe(1)
+	end)
+
+	it("has a gem counter for pet slots, inventory, walk speed and opening 3 eggs", function()
+		for _, upgradeId in { "PetSlots", "InventorySpace", "WalkSpeed", "TripleOpen" } do
+			expect(GameConfig.upgrades[upgradeId].currency).toBe("Gems")
+		end
+	end)
+
+	it("sells pet slots 3 -> 8 for about 50 / 150 / 400 / 1.000 gems, staged per shop", function()
+		local levels = GameConfig.upgrades.PetSlots.levels
+		local prices, slots = {}, {}
+		for _, level in levels do
+			table.insert(prices, level.price)
+			table.insert(slots, level.value)
+		end
+
+		expect(GameConfig.petSlots.start).toBe(3)
+		expect(slots).toEqual({ 4, 5, 6, 7, 8 })
+		expect(prices[1]).toBe(50)
+		expect(prices[2]).toBe(150)
+		expect(prices[3]).toBe(400)
+		expect(prices[4]).toBe(1000)
+
+		local state = rules.newPlayerState()
+		state.gems = 1e9
+		state = rules.buyUpgrade(state, "World1Shop", "PetSlots").state
+		state = rules.buyUpgrade(state, "World1Shop", "PetSlots").state
+		expect(rules.petSlots(state)).toBe(5)
+		expect(rules.buyUpgrade(state, "World1Shop", "PetSlots").reason).toBe("ShopLevelLimit")
+	end)
+
+	it("lets the world 1 shop sell every gem upgrade, opening 3 eggs at once included", function()
+		local state = rules.newPlayerState()
+		state.gems = 1e9
+		for _, upgradeId in { "InventorySpace", "WalkSpeed", "TripleOpen" } do
+			state = rules.buyUpgrade(state, "World1Shop", upgradeId).state
+		end
+
+		expect(rules.inventorySlots(state) > GameConfig.inventory.start).toBe(true)
+		expect(rules.walkSpeed(state) > GameConfig.movement.walkSpeed).toBe(true)
+		expect(rules.eggsPerOpen(state)).toBe(3)
 	end)
 end)

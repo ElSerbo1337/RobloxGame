@@ -25,6 +25,10 @@ export type PlayerState = {
 	nextPetUid: number,
 	-- Uids of equipped pets (follow the player and add their coin bonus).
 	equipped: { number },
+	-- Second currency: from gem toppings and play time, spent at the gem counter.
+	gems: number,
+	-- Play time not yet turned into gems (seconds).
+	playtimeSeconds: number,
 }
 
 export type OwnedPet = { uid: number, petId: string }
@@ -35,12 +39,15 @@ export type Result = {
 	-- | "UnknownShop" | "UnknownUpgrade" | "NotOffered" | "MaxLevel" | "ShopLevelLimit" | "NotEnoughCoins"
 	-- | "UnknownWorld" | "AlreadyUnlocked" | "PreviousWorldLocked" | "WorldLocked"
 	-- | "UnknownEgg" | "UnknownPet" | "AlreadyEquipped" | "PetSlotsFull" | "NotEquipped"
-	-- | "InventoryFull" | "NoPets"
+	-- | "InventoryFull" | "NoPets" | "NotEnoughGems" | "InvalidTime" | "MultiOpenLocked" | "InvalidCount"
 	reason: string?,
 	state: PlayerState,
 }
 
 export type SellResult = Result & { coinsEarned: number }
+
+-- Collecting a gem topping or adding play time can earn gems (0 otherwise).
+export type GemResult = Result & { gemsEarned: number }
 
 -- One upgrade as shown in a shop menu.
 export type ShopOffer = {
@@ -50,6 +57,8 @@ export type ShopOffer = {
 	level: number,
 	shopMaxLevel: number,
 	maxLevel: number,
+	-- "Coins" (coin counter) or "Gems" (gem counter): what the price is paid with.
+	currency: string,
 	-- Current effect (pizza space, studs, ...), and price/effect of the next level if there is one.
 	value: number,
 	nextPrice: number?,
@@ -68,6 +77,9 @@ export type EggPreview = {
 export type PortalEntry = { worldId: string, displayName: string, unlockPrice: number, unlocked: boolean }
 
 export type OpenEggResult = Result & { pet: OwnedPet? }
+
+-- Opening several eggs at once: the drawn pets in order (empty on failure).
+export type OpenEggsResult = Result & { pets: { OwnedPet } }
 
 -- Bump together with a migration step in SaveData when a field changes shape.
 local STATE_VERSION = 2
@@ -93,6 +105,8 @@ function GameRules.new(config: any)
 			pets = {},
 			nextPetUid = 1,
 			equipped = {},
+			gems = 0,
+			playtimeSeconds = 0,
 		}
 	end
 
@@ -203,6 +217,11 @@ function GameRules.new(config: any)
 		PizzaSpace = config.pizza.startCapacity,
 		CollectRange = config.collect.range,
 		Magnet = 0,
+		PetSlots = config.petSlots.start,
+		InventorySpace = config.inventory.start,
+		WalkSpeed = config.movement.walkSpeed,
+		-- Eggs opened per press; the TripleOpen level sets it to 3.
+		TripleOpen = 1,
 	}
 
 	-- The effect an upgrade gives at the player's current level.
@@ -228,6 +247,16 @@ function GameRules.new(config: any)
 		return upgradeValue(state, "Magnet")
 	end
 
+	-- Humanoid walk speed (studs per second).
+	function rules.walkSpeed(state: PlayerState): number
+		return upgradeValue(state, "WalkSpeed")
+	end
+
+	-- Most eggs the player may open with one press (1, or 3 after the gem upgrade).
+	function rules.eggsPerOpen(state: PlayerState): number
+		return upgradeValue(state, "TripleOpen")
+	end
+
 	function rules.isPizzaFull(state: PlayerState): boolean
 		return #state.pizza >= rules.pizzaCapacity(state)
 	end
@@ -235,6 +264,18 @@ function GameRules.new(config: any)
 	-- Pickup radius around the player while auto-collect is on; a magnet grows it.
 	function rules.autoCollectRadius(state: PlayerState): number
 		return math.max(config.collect.autoRadius, rules.magnetRange(state))
+	end
+
+	-- A gem topping goes straight into the gem counter, not onto the pizza (works with a full pizza).
+	-- `gems` comes from the ToppingField spawn; it is clamped to the configured range.
+	local function addGems(state: PlayerState, gems: number?, distance: number, range: number): GemResult
+		if distance > range then
+			return { ok = false, reason = "OutOfRange", state = state, gemsEarned = 0 }
+		end
+		local amount = math.clamp(math.floor(gems or 0), config.gems.toppingMin, config.gems.toppingMax)
+		local newState = table.clone(state)
+		newState.gems = state.gems + amount
+		return { ok = true, state = newState, gemsEarned = amount }
 	end
 
 	local function addTopping(state: PlayerState, toppingId: string, distance: number, range: number): Result
@@ -257,18 +298,42 @@ function GameRules.new(config: any)
 		return { ok = true, state = newState }
 	end
 
+	local function collectWithin(state: PlayerState, toppingId: string, distance: number, range: number, gems: number?)
+		if toppingId == config.gems.toppingId then
+			return addGems(state, gems, distance, range)
+		end
+		local result: any = addTopping(state, toppingId, distance, range)
+		result.gemsEarned = 0
+		return result
+	end
+
 	-- Player clicked/tapped a topping. `distance` is measured by the server
-	-- between the player and the topping.
-	function rules.collectTopping(state: PlayerState, toppingId: string, distance: number): Result
-		return addTopping(state, toppingId, distance, rules.collectRange(state))
+	-- between the player and the topping. `gems`: amount of a gem topping (from the ToppingField).
+	function rules.collectTopping(state: PlayerState, toppingId: string, distance: number, gems: number?): GemResult
+		return collectWithin(state, toppingId, distance, rules.collectRange(state), gems)
 	end
 
 	-- Player walked over a topping with auto-collect switched on.
-	function rules.autoCollectTopping(state: PlayerState, toppingId: string, distance: number): Result
+	function rules.autoCollectTopping(state: PlayerState, toppingId: string, distance: number, gems: number?): GemResult
 		if not state.autoCollect then
-			return fail(state, "AutoCollectOff")
+			return { ok = false, reason = "AutoCollectOff", state = state, gemsEarned = 0 }
 		end
-		return addTopping(state, toppingId, distance, rules.autoCollectRadius(state))
+		return collectWithin(state, toppingId, distance, rules.autoCollectRadius(state), gems)
+	end
+
+	-- Credits play time; every full `gems.playtimeSeconds` gives `gems.playtimeGems`.
+	-- The rest is kept in the state (and saved), so no play time is lost between sessions.
+	function rules.addPlayTime(state: PlayerState, seconds: number): GemResult
+		if not (seconds > 0 and seconds < math.huge) then
+			return { ok = false, reason = "InvalidTime", state = state, gemsEarned = 0 }
+		end
+		local total = state.playtimeSeconds + seconds
+		local periods = math.floor(total / config.gems.playtimeSeconds)
+		local earned = periods * config.gems.playtimeGems
+		local newState = table.clone(state)
+		newState.playtimeSeconds = total - periods * config.gems.playtimeSeconds
+		newState.gems = state.gems + earned
+		return { ok = true, state = newState, gemsEarned = earned }
 	end
 
 	function rules.setAutoCollect(state: PlayerState, enabled: boolean): Result
@@ -345,14 +410,21 @@ function GameRules.new(config: any)
 		if level >= shopMax then
 			return fail(state, "ShopLevelLimit")
 		end
-		if state.coins < nextLevel.price then
+		local paysWithGems = upgrade.currency == "Gems"
+		if paysWithGems and state.gems < nextLevel.price then
+			return fail(state, "NotEnoughGems")
+		elseif not paysWithGems and state.coins < nextLevel.price then
 			return fail(state, "NotEnoughCoins")
 		end
 
 		local newState = table.clone(state)
 		newState.upgrades = table.clone(state.upgrades)
 		newState.upgrades[upgradeId] = level + 1
-		newState.coins = state.coins - nextLevel.price
+		if paysWithGems then
+			newState.gems = state.gems - nextLevel.price
+		else
+			newState.coins = state.coins - nextLevel.price
+		end
 		return { ok = true, state = newState }
 	end
 
@@ -366,6 +438,7 @@ function GameRules.new(config: any)
 			table.insert(offers, {
 				upgrade = offer.upgrade,
 				displayName = upgrade.displayName,
+				currency = upgrade.currency or "Coins",
 				level = level,
 				shopMaxLevel = offer.maxLevel,
 				maxLevel = #upgrade.levels,
@@ -420,38 +493,67 @@ function GameRules.new(config: any)
 		return { price = egg.price, pets = pets }
 	end
 
-	-- Pays the egg price and adds a randomly drawn pet to the inventory.
-	function rules.openEgg(state: PlayerState, eggId: string, random: () -> number): OpenEggResult
-		local egg = config.eggs[eggId]
-		if egg == nil then
-			return fail(state, "UnknownEgg")
+	-- Whether `count` eggs per press is a size the multi-open upgrade can unlock at all.
+	local function isMultiOpenSize(count: number): boolean
+		for _, level in config.upgrades.TripleOpen.levels do
+			if level.value == count then
+				return true
+			end
 		end
-		if not isEggReachable(state, eggId) then
-			return fail(state, "WorldLocked")
-		end
-		if #state.pets >= rules.inventorySlots(state) then
-			return fail(state, "InventoryFull")
-		end
-		if state.coins < egg.price then
-			return fail(state, "NotEnoughCoins")
-		end
-
-		local pet: OwnedPet = { uid = state.nextPetUid, petId = drawPet(egg, random) }
-		local newState = table.clone(state)
-		newState.coins = state.coins - egg.price
-		newState.pets = table.clone(state.pets)
-		table.insert(newState.pets, pet)
-		newState.nextPetUid = state.nextPetUid + 1
-		return { ok = true, state = newState, pet = pet }
+		return false
 	end
 
-	function rules.petSlots(_state: PlayerState): number
-		return config.petSlots.start
+	-- Opens `count` eggs at once (1, or 3 after the "TripleOpen" gem upgrade): pays
+	-- count x price and adds count randomly drawn pets. All or nothing.
+	function rules.openEggs(state: PlayerState, eggId: string, count: number, random: () -> number): OpenEggsResult
+		local function reject(reason: string): OpenEggsResult
+			return { ok = false, reason = reason, state = state, pets = {} }
+		end
+		local egg = config.eggs[eggId]
+		if egg == nil then
+			return reject("UnknownEgg")
+		end
+		if count ~= 1 and count ~= rules.eggsPerOpen(state) then
+			return reject(if isMultiOpenSize(count) then "MultiOpenLocked" else "InvalidCount")
+		end
+		if not isEggReachable(state, eggId) then
+			return reject("WorldLocked")
+		end
+		if #state.pets + count > rules.inventorySlots(state) then
+			return reject("InventoryFull")
+		end
+		if state.coins < egg.price * count then
+			return reject("NotEnoughCoins")
+		end
+
+		local newState = table.clone(state)
+		newState.coins = state.coins - egg.price * count
+		newState.pets = table.clone(state.pets)
+		local drawn = {}
+		for i = 1, count do
+			local pet: OwnedPet = { uid = state.nextPetUid + i - 1, petId = drawPet(egg, random) }
+			table.insert(newState.pets, pet)
+			table.insert(drawn, pet)
+		end
+		newState.nextPetUid = state.nextPetUid + count
+		return { ok = true, state = newState, pets = drawn }
+	end
+
+	-- Pays the egg price and adds a randomly drawn pet to the inventory.
+	function rules.openEgg(state: PlayerState, eggId: string, random: () -> number): OpenEggResult
+		local result = rules.openEggs(state, eggId, 1, random)
+		return { ok = result.ok, reason = result.reason, state = result.state, pet = result.pets[1] }
+	end
+
+	-- How many pets can be equipped at once; grows with the "PetSlots" gem upgrade.
+	function rules.petSlots(state: PlayerState): number
+		return upgradeValue(state, "PetSlots")
 	end
 
 	-- How many pets the player can own; opening an egg needs a free slot.
-	function rules.inventorySlots(_state: PlayerState): number
-		return config.inventory.start
+	-- Grows with the "InventorySpace" gem upgrade.
+	function rules.inventorySlots(state: PlayerState): number
+		return upgradeValue(state, "InventorySpace")
 	end
 
 	local function ownsPet(state: PlayerState, uid: number): boolean

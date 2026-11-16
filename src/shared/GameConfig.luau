@@ -86,6 +86,56 @@ local GameConfig = {
 				{ price = 100000, value = 25 },
 			},
 		},
+
+		-- Gem counter: same shape, but `currency = "Gems"` (paid with gems). Staged per shop like coin upgrades.
+		PetSlots = {
+			displayName = "Pet-Plätze",
+			description = "Mehr Pets gleichzeitig ausrüsten",
+			currency = "Gems",
+			levels = {
+				-- Shop 1 (world 1)
+				{ price = 50, value = 4 },
+				{ price = 150, value = 5 },
+				-- Shop 2 (world 4)
+				{ price = 400, value = 6 },
+				{ price = 1000, value = 7 },
+				-- Shop 3 (world 7)
+				{ price = 2500, value = 8 },
+			},
+		},
+		InventorySpace = {
+			displayName = "Inventar",
+			description = "Mehr Platz für Pets",
+			currency = "Gems",
+			levels = {
+				{ price = 30, value = 75 },
+				{ price = 100, value = 100 },
+				{ price = 300, value = 150 },
+				{ price = 800, value = 200 },
+				{ price = 2000, value = 300 },
+			},
+		},
+		WalkSpeed = {
+			displayName = "Laufgeschwindigkeit",
+			description = "Schneller laufen",
+			currency = "Gems",
+			levels = {
+				{ price = 40, value = 19 },
+				{ price = 120, value = 22 },
+				{ price = 350, value = 25 },
+				{ price = 900, value = 28 },
+				{ price = 2000, value = 32 },
+			},
+		},
+		TripleOpen = {
+			displayName = "3 Eier auf einmal",
+			description = "Schaltet „3 öffnen“ an jedem Ei frei",
+			currency = "Gems",
+			-- value = eggs per press.
+			levels = {
+				{ price = 150, value = 3 },
+			},
+		},
 	},
 
 	petSlots = {
@@ -96,6 +146,24 @@ local GameConfig = {
 	inventory = {
 		-- Pets a new player can own. A full inventory blocks opening eggs.
 		start = 50,
+	},
+
+	movement = {
+		-- Walk speed (studs/s) before the WalkSpeed gem upgrade (Roblox default).
+		walkSpeed = 16,
+	},
+
+	-- Second currency. Target: about 20-40 gems per hour.
+	gems = {
+		-- Id of the gem topping in a ToppingField (not a config.toppings entry: it never goes on the pizza).
+		toppingId = "Gem",
+		-- Chance that a spawning topping is a gem topping instead, and how many gems it gives.
+		toppingChance = 1 / 150,
+		toppingMin = 1,
+		toppingMax = 3,
+		-- `playtimeGems` per full `playtimeSeconds` of play time (1 per 15 min).
+		playtimeSeconds = 900,
+		playtimeGems = 1,
 	},
 
 	-- Pet rarities. `order` sorts from common (1) to rarest; `color` is RGB 0-255.
@@ -201,6 +269,11 @@ local GameConfig = {
 				{ upgrade = "PizzaSpace", maxLevel = 3 },
 				{ upgrade = "CollectRange", maxLevel = 3 },
 				{ upgrade = "Magnet", maxLevel = 1 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 2 },
+				{ upgrade = "InventorySpace", maxLevel = 2 },
+				{ upgrade = "WalkSpeed", maxLevel = 2 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
 			},
 		},
 		-- Shop 2: everything from shop 1 plus higher levels; a bigger building in world 4.

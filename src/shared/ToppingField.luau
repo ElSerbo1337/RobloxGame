@@ -3,7 +3,10 @@
 -- Pure Luau, no Roblox API: randomness is injected, and time is passed in.
 
 export type Topping = {
+	-- A topping id from config.toppings, or config.gems.toppingId for a gem topping.
 	toppingId: string,
+	-- Gems a gem topping gives (nil for normal toppings).
+	gems: number?,
 	-- Spawn position inside the world's topping area, each axis normalized to [0, 1).
 	x: number,
 	z: number,
@@ -37,7 +40,12 @@ local function findWorld(config: any, worldId: string): any
 	error(`unknown world "{worldId}"`)
 end
 
-local function rollTopping(spawns: { any }, totalWeight: number, random: () -> number): Topping
+local function rollTopping(spawns: { any }, totalWeight: number, gems: any, random: () -> number): Topping
+	-- Rarely a gem topping instead (no extra draw when gem toppings are off).
+	if gems and gems.toppingChance > 0 and random() < gems.toppingChance then
+		local amount = gems.toppingMin + math.floor(random() * (gems.toppingMax - gems.toppingMin + 1))
+		return { toppingId = gems.toppingId, gems = math.min(amount, gems.toppingMax), x = random(), z = random() }
+	end
 	local roll = random() * totalWeight
 	local chosen = spawns[#spawns].topping
 	for _, spawn in spawns do
@@ -63,7 +71,7 @@ function ToppingField.new(config: any, worldId: string, random: () -> number): T
 		_slots = {},
 		_respawnSeconds = config.toppingField.respawnSeconds,
 		_spawn = function()
-			return rollTopping(spawns, totalWeight, random)
+			return rollTopping(spawns, totalWeight, config.gems, random)
 		end,
 	}, ToppingField)
 	for slotId = 1, self.slotCount do

@@ -24,6 +24,27 @@ return {
 			displayName = "Magnet",
 			levels = { { price = 100, value = 8 }, { price = 1000, value = 12 } },
 		},
+		-- Gem upgrades: same shape, paid with gems.
+		PetSlots = {
+			displayName = "Pet-Plätze",
+			currency = "Gems",
+			levels = { { price = 50, value = 4 }, { price = 150, value = 5 } },
+		},
+		InventorySpace = {
+			displayName = "Inventar",
+			currency = "Gems",
+			levels = { { price = 30, value = 7 }, { price = 100, value = 10 } },
+		},
+		WalkSpeed = {
+			displayName = "Laufgeschwindigkeit",
+			currency = "Gems",
+			levels = { { price = 40, value = 20 }, { price = 120, value = 24 } },
+		},
+		TripleOpen = {
+			displayName = "3 Eier auf einmal",
+			currency = "Gems",
+			levels = { { price = 150, value = 3 } },
+		},
 	},
 	shops = {
 		SmallShop = {
@@ -39,6 +60,17 @@ return {
 			offers = {
 				{ upgrade = "PizzaSpace", maxLevel = 3 },
 				{ upgrade = "Magnet", maxLevel = 2 },
+				{ upgrade = "PetSlots", maxLevel = 2 },
+			},
+		},
+		GemShop = {
+			worldId = "PizzeriaGarden",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 1 },
+				{ upgrade = "PetSlots", maxLevel = 1 },
+				{ upgrade = "InventorySpace", maxLevel = 1 },
+				{ upgrade = "WalkSpeed", maxLevel = 1 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
 			},
 		},
 		-- Stands in a world that must be unlocked first.
@@ -51,6 +83,18 @@ return {
 	},
 	petSlots = { start = 3 },
 	inventory = { start = 5 },
+	movement = { walkSpeed = 16 },
+	gems = {
+		toppingId = "Gem",
+		-- Chance that a spawning topping is a gem topping, and how many gems it gives.
+		-- 0 here keeps the ToppingField draw order of other tests; Gems.spec sets its own chance.
+		toppingChance = 0,
+		toppingMin = 1,
+		toppingMax = 3,
+		-- One gem per this many seconds of play time.
+		playtimeSeconds = 900,
+		playtimeGems = 1,
+	},
 	rarities = {
 		Common = { displayName = "Gewöhnlich", order = 1, color = { 200, 200, 200 } },
 		Rare = { displayName = "Selten", order = 3, color = { 80, 150, 255 } },

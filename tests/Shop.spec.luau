@@ -134,6 +134,7 @@ describe("shopOffers", function()
 		expect(offers[1]).toEqual({
 			upgrade = "PizzaSpace",
 			displayName = "Pizza-Platz",
+			currency = "Coins",
 			level = 0,
 			shopMaxLevel = 2,
 			maxLevel = 3,
