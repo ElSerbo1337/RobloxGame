@@ -13,6 +13,8 @@ export type PlayerState = {
 	pizza: { string },
 	-- HUD switch: collect toppings by walking over them. Free from the start.
 	autoCollect: boolean,
+	-- Multiplies coins earned from selling; raised by rebirths (not built yet).
+	rebirthMultiplier: number,
 }
 
 export type Result = {
@@ -24,7 +26,8 @@ export type Result = {
 
 export type SellResult = Result & { coinsEarned: number }
 
-local STATE_VERSION = 1
+-- Bump together with a migration step in SaveData when a field changes shape.
+local STATE_VERSION = 2
 
 local GameRules = {}
 
@@ -36,7 +39,7 @@ function GameRules.new(config: any)
 	end
 
 	function rules.newPlayerState(): PlayerState
-		return { version = STATE_VERSION, coins = 0, pizza = {}, autoCollect = false }
+		return { version = STATE_VERSION, coins = 0, pizza = {}, autoCollect = false, rebirthMultiplier = 1 }
 	end
 
 	function rules.pizzaCapacity(_state: PlayerState): number
