@@ -42,6 +42,28 @@ return {
 			},
 		},
 	},
+	petSlots = { start = 3 },
+	rarities = {
+		Common = { displayName = "Gewöhnlich", order = 1, color = { 200, 200, 200 } },
+		Rare = { displayName = "Selten", order = 3, color = { 80, 150, 255 } },
+		Mythic = { displayName = "Mythisch", order = 6, color = { 255, 60, 120 } },
+	},
+	pets = {
+		Hamster = { displayName = "Hamster", rarity = "Common", bonus = 0.1 },
+		Cat = { displayName = "Katze", rarity = "Rare", bonus = 0.2 },
+		Dragon = { displayName = "Drache", rarity = "Mythic", bonus = 1.5 },
+	},
+	eggs = {
+		TestEgg = {
+			displayName = "Test-Ei",
+			price = 10,
+			pets = {
+				{ pet = "Hamster", chance = 70 },
+				{ pet = "Cat", chance = 29.5 },
+				{ pet = "Dragon", chance = 0.5 },
+			},
+		},
+	},
 	worlds = {
 		{
 			id = "PizzeriaGarden",

@@ -154,3 +154,61 @@ describe("GameConfig shops", function()
 		end
 	end)
 end)
+
+describe("GameConfig pets and eggs", function()
+	local RARITIES = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic" }
+
+	it("has the 6 rarities from Gewöhnlich to Mythisch, each with its own color", function()
+		for order, rarityId in RARITIES do
+			local rarity = GameConfig.rarities[rarityId]
+			expect(rarity ~= nil).toBe(true)
+			expect(rarity.order).toBe(order)
+			expect(#rarity.color).toBe(3)
+		end
+		expect(GameConfig.rarities.Common.displayName).toBe("Gewöhnlich")
+		expect(GameConfig.rarities.Mythic.displayName).toBe("Mythisch")
+	end)
+
+	it("starts players with 3 pet slots", function()
+		local rules = GameRules.new(GameConfig)
+		expect(rules.petSlots(rules.newPlayerState())).toBe(3)
+	end)
+
+	it("gives world 1 an egg", function()
+		local world1 = GameConfig.worlds[1]
+		expect(#world1.eggs >= 1).toBe(true)
+		expect(GameConfig.eggs[world1.eggs[1]] ~= nil).toBe(true)
+	end)
+
+	it("fills every egg with 5-6 known pets whose chances add up to 100 %, one of them a ~0.5 % dream drop", function()
+		for _, egg in GameConfig.eggs do
+			expect(#egg.pets >= 5 and #egg.pets <= 6).toBe(true)
+			expect(egg.price > 0).toBe(true)
+			local total, rarest = 0, math.huge
+			for _, entry in egg.pets do
+				local pet = GameConfig.pets[entry.pet]
+				expect(pet ~= nil).toBe(true)
+				expect(GameConfig.rarities[pet.rarity] ~= nil).toBe(true)
+				expect(pet.bonus > 0).toBe(true)
+				total += entry.chance
+				rarest = math.min(rarest, entry.chance)
+			end
+			expect(math.abs(total - 100) < 1e-9).toBe(true)
+			expect(rarest <= 0.5).toBe(true)
+		end
+	end)
+
+	it("makes rarer pets in an egg give a bigger bonus", function()
+		for _, egg in GameConfig.eggs do
+			local entries = table.clone(egg.pets)
+			table.sort(entries, function(a, b)
+				return a.chance > b.chance
+			end)
+			for i = 2, #entries do
+				local commoner = GameConfig.pets[entries[i - 1].pet].bonus
+				local rarer = GameConfig.pets[entries[i].pet].bonus
+				expect(rarer > commoner).toBe(true)
+			end
+		end
+	end)
+end)

@@ -19,13 +19,22 @@ export type PlayerState = {
 	upgrades: { [string]: number },
 	-- Ids of the worlds this player bought. Free worlds (unlockPrice 0) count as unlocked without being listed.
 	unlockedWorlds: { string },
+	-- Owned pets. `uid` is unique per player, `petId` refers to config.pets.
+	pets: { OwnedPet },
+	-- Next uid handed out when a pet is added.
+	nextPetUid: number,
+	-- Uids of equipped pets (follow the player and add their coin bonus).
+	equipped: { number },
 }
+
+export type OwnedPet = { uid: number, petId: string }
 
 export type Result = {
 	ok: boolean,
 	-- Set when ok == false: "UnknownTopping" | "OutOfRange" | "PizzaFull" | "PizzaEmpty" | "AutoCollectOff"
 	-- | "UnknownShop" | "UnknownUpgrade" | "NotOffered" | "MaxLevel" | "ShopLevelLimit" | "NotEnoughCoins"
 	-- | "UnknownWorld" | "AlreadyUnlocked" | "PreviousWorldLocked" | "WorldLocked"
+	-- | "UnknownEgg" | "UnknownPet" | "AlreadyEquipped" | "PetSlotsFull" | "NotEquipped"
 	reason: string?,
 	state: PlayerState,
 }
@@ -48,6 +57,14 @@ export type ShopOffer = {
 	status: string,
 }
 
+export type EggPreview = {
+	price: number,
+	-- Sorted from most common to rarest.
+	pets: { { petId: string, rarity: string, chancePercent: number, bonus: number } },
+}
+
+export type OpenEggResult = Result & { pet: OwnedPet? }
+
 -- Bump together with a migration step in SaveData when a field changes shape.
 local STATE_VERSION = 2
 
@@ -69,6 +86,9 @@ function GameRules.new(config: any)
 			rebirthMultiplier = 1,
 			upgrades = {},
 			unlockedWorlds = {},
+			pets = {},
+			nextPetUid = 1,
+			equipped = {},
 		}
 	end
 
@@ -214,16 +234,31 @@ function GameRules.new(config: any)
 		return { ok = true, state = newState }
 	end
 
-	-- Sells every topping on the pizza at once.
+	-- 1 + sum of the coin bonuses of all equipped pets (bonuses are additive).
+	function rules.coinMultiplier(state: PlayerState): number
+		local bonus = 0
+		for _, pet in state.pets do
+			if table.find(state.equipped, pet.uid) then
+				bonus += config.pets[pet.petId].bonus
+			end
+		end
+		-- Round to 6 decimals so 0.2 + 0.2 + 0.2 reads as 0.6 in the HUD and tests.
+		return math.round((1 + bonus) * 1e6) / 1e6
+	end
+
+	-- Sells every topping on the pizza at once:
+	-- earned = sum of topping values x coinMultiplier (rounded down).
 	function rules.sellPizza(state: PlayerState): SellResult
 		if #state.pizza == 0 then
 			return { ok = false, reason = "PizzaEmpty", state = state, coinsEarned = 0 }
 		end
 
-		local earned = 0
+		local toppingValue = 0
 		for _, toppingId in state.pizza do
-			earned += config.toppings[toppingId].value
+			toppingValue += config.toppings[toppingId].value
 		end
+		-- Rounded down; the epsilon guards against float noise like 7 * 1.6 = 11.19999.
+		local earned = math.floor(toppingValue * rules.coinMultiplier(state) + 1e-6)
 
 		local newState = table.clone(state)
 		newState.pizza = {}
@@ -296,6 +331,106 @@ function GameRules.new(config: any)
 			})
 		end
 		return offers
+	end
+
+	-- Picks a pet id from the egg's chance table. `random` returns a number in [0, 1).
+	local function drawPet(egg: any, random: () -> number): string
+		local total = 0
+		for _, entry in egg.pets do
+			total += entry.chance
+		end
+		local roll = random() * total
+		for _, entry in egg.pets do
+			roll -= entry.chance
+			if roll < 0 then
+				return entry.pet
+			end
+		end
+		return egg.pets[#egg.pets].pet
+	end
+
+	-- What the egg can contain, for the floating preview above the egg.
+	function rules.eggPreview(eggId: string): EggPreview
+		local egg = config.eggs[eggId]
+		local total = 0
+		for _, entry in egg.pets do
+			total += entry.chance
+		end
+		local pets = {}
+		for _, entry in egg.pets do
+			local pet = config.pets[entry.pet]
+			table.insert(pets, {
+				petId = entry.pet,
+				rarity = pet.rarity,
+				chancePercent = math.round(entry.chance / total * 100 * 1e4) / 1e4,
+				bonus = pet.bonus,
+			})
+		end
+		table.sort(pets, function(a, b)
+			return a.chancePercent > b.chancePercent
+		end)
+		return { price = egg.price, pets = pets }
+	end
+
+	-- Pays the egg price and adds a randomly drawn pet to the inventory.
+	function rules.openEgg(state: PlayerState, eggId: string, random: () -> number): OpenEggResult
+		local egg = config.eggs[eggId]
+		if egg == nil then
+			return fail(state, "UnknownEgg")
+		end
+		if state.coins < egg.price then
+			return fail(state, "NotEnoughCoins")
+		end
+
+		local pet: OwnedPet = { uid = state.nextPetUid, petId = drawPet(egg, random) }
+		local newState = table.clone(state)
+		newState.coins = state.coins - egg.price
+		newState.pets = table.clone(state.pets)
+		table.insert(newState.pets, pet)
+		newState.nextPetUid = state.nextPetUid + 1
+		return { ok = true, state = newState, pet = pet }
+	end
+
+	function rules.petSlots(_state: PlayerState): number
+		return config.petSlots.start
+	end
+
+	local function ownsPet(state: PlayerState, uid: number): boolean
+		for _, pet in state.pets do
+			if pet.uid == uid then
+				return true
+			end
+		end
+		return false
+	end
+
+	function rules.equipPet(state: PlayerState, uid: number): Result
+		if not ownsPet(state, uid) then
+			return fail(state, "UnknownPet")
+		end
+		if table.find(state.equipped, uid) then
+			return fail(state, "AlreadyEquipped")
+		end
+		if #state.equipped >= rules.petSlots(state) then
+			return fail(state, "PetSlotsFull")
+		end
+
+		local newState = table.clone(state)
+		newState.equipped = table.clone(state.equipped)
+		table.insert(newState.equipped, uid)
+		return { ok = true, state = newState }
+	end
+
+	function rules.unequipPet(state: PlayerState, uid: number): Result
+		local index = table.find(state.equipped, uid)
+		if index == nil then
+			return fail(state, "NotEquipped")
+		end
+
+		local newState = table.clone(state)
+		newState.equipped = table.clone(state.equipped)
+		table.remove(newState.equipped, index)
+		return { ok = true, state = newState }
 	end
 
 	return rules

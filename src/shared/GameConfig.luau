@@ -80,6 +80,47 @@ local GameConfig = {
 		},
 	},
 
+	petSlots = {
+		-- Pets a new player can equip at the same time.
+		start = 3,
+	},
+
+	-- Pet rarities. `order` sorts from common (1) to rarest; `color` is RGB 0-255.
+	rarities = {
+		Common = { displayName = "Gewöhnlich", order = 1, color = { 190, 190, 190 } },
+		Uncommon = { displayName = "Ungewöhnlich", order = 2, color = { 90, 200, 90 } },
+		Rare = { displayName = "Selten", order = 3, color = { 70, 150, 255 } },
+		Epic = { displayName = "Episch", order = 4, color = { 170, 80, 240 } },
+		Legendary = { displayName = "Legendär", order = 5, color = { 255, 170, 30 } },
+		Mythic = { displayName = "Mythisch", order = 6, color = { 255, 60, 120 } },
+	},
+
+	-- Pet id -> display name, rarity and coin bonus (0.1 = +10 % sell value; bonuses add up).
+	pets = {
+		DoughHamster = { displayName = "Teig-Hamster", rarity = "Common", bonus = 0.1 },
+		BasilBunny = { displayName = "Basilikum-Hase", rarity = "Uncommon", bonus = 0.15 },
+		TomatoCat = { displayName = "Tomaten-Katze", rarity = "Rare", bonus = 0.25 },
+		CheeseMouse = { displayName = "Käse-Maus", rarity = "Epic", bonus = 0.4 },
+		OliveOwl = { displayName = "Oliven-Eule", rarity = "Legendary", bonus = 0.75 },
+		PizzaDragon = { displayName = "Pizza-Drache", rarity = "Mythic", bonus = 1.5 },
+	},
+
+	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
+	eggs = {
+		GardenEgg = {
+			displayName = "Garten-Ei",
+			price = 25,
+			pets = {
+				{ pet = "DoughHamster", chance = 50 },
+				{ pet = "BasilBunny", chance = 28 },
+				{ pet = "TomatoCat", chance = 15 },
+				{ pet = "CheeseMouse", chance = 5.5 },
+				{ pet = "OliveOwl", chance = 1 },
+				{ pet = "PizzaDragon", chance = 0.5 },
+			},
+		},
+	},
+
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
 	-- worlds offer the same upgrades with higher max levels (config only).
 	shops = {
@@ -106,6 +147,8 @@ local GameConfig = {
 				{ topping = "Mushroom", weight = 30 },
 				{ topping = "Mozzarella", weight = 10 },
 			},
+			-- Eggs standing in this world.
+			eggs = { "GardenEgg" },
 		},
 		{
 			id = "Farm",
