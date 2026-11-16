@@ -1,5 +1,5 @@
 --!strict
--- HUD: coins at the top, pizza fill level and auto-collect switch at the bottom,
+-- HUD: coins and gems at the top, pizza fill level and auto-collect switch at the bottom,
 -- short messages in between. Reads the replicated player attributes (Coins,
 -- PizzaCount, PizzaCapacity, AutoCollect) and Notify events. The switch only
 -- sends a wish to the server; its look follows the replicated attribute.
@@ -16,6 +16,7 @@ local FONT = Enum.Font.FredokaOne
 local CREAM = Color3.fromRGB(255, 248, 230)
 local DARK = Color3.fromRGB(60, 35, 20)
 local COIN = Color3.fromRGB(255, 200, 40)
+local GEM = Color3.fromRGB(60, 230, 255)
 local FULL = Color3.fromRGB(230, 70, 50)
 local ON = Color3.fromRGB(110, 200, 90)
 local OFF = Color3.fromRGB(190, 180, 170)
@@ -28,6 +29,7 @@ local MESSAGES: { [string]: string } = {
 	PreviousWorldLocked = "Erst die vorige Welt freischalten!",
 	WorldUnlocked = "Neue Welt freigeschaltet!",
 	InventoryFull = "Pet-Inventar voll! Lösche erst ein Pet.",
+	NotEnoughGems = "Nicht genug Gems!",
 }
 
 local Hud = {}
@@ -101,11 +103,11 @@ function Hud.start(): GuiObject
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	autoScale(gui)
 
-	-- Coins (top center)
+	-- Coins (top center, left of the middle)
 	local coins = Instance.new("Frame")
 	coins.Name = "Coins"
-	coins.AnchorPoint = Vector2.new(0.5, 0)
-	coins.Position = UDim2.new(0.5, 0, 0, 12)
+	coins.AnchorPoint = Vector2.new(1, 0)
+	coins.Position = UDim2.new(0.5, -6, 0, 12)
 	coins.Size = UDim2.fromOffset(240, 60)
 	coins.BackgroundColor3 = CREAM
 	corner(coins, 30)
@@ -124,6 +126,31 @@ function Hud.start(): GuiObject
 	coinsText.Position = UDim2.fromOffset(62, 8)
 	coinsText.Size = UDim2.new(1, -78, 0, 44)
 	coinsText.TextXAlignment = Enum.TextXAlignment.Left
+
+	-- Gems (top center, right of the middle): a turquoise diamond icon.
+	local gems = Instance.new("Frame")
+	gems.Name = "Gems"
+	gems.AnchorPoint = Vector2.new(0, 0)
+	gems.Position = UDim2.new(0.5, 6, 0, 12)
+	gems.Size = UDim2.fromOffset(190, 60)
+	gems.BackgroundColor3 = CREAM
+	corner(gems, 30)
+	stroke(gems)
+	gems.Parent = gui
+
+	local gemIcon = Instance.new("Frame")
+	gemIcon.Size = UDim2.fromOffset(32, 32)
+	gemIcon.Position = UDim2.fromOffset(14, 14)
+	gemIcon.Rotation = 45
+	gemIcon.BackgroundColor3 = GEM
+	corner(gemIcon, 6)
+	stroke(gemIcon)
+	gemIcon.Parent = gems
+
+	local gemsText = label(gems, "0")
+	gemsText.Position = UDim2.fromOffset(58, 8)
+	gemsText.Size = UDim2.new(1, -74, 0, 44)
+	gemsText.TextXAlignment = Enum.TextXAlignment.Left
 
 	-- Pizza fill level (bottom center)
 	local pizza = Instance.new("Frame")
@@ -209,6 +236,16 @@ function Hud.start(): GuiObject
 		lastCoins = value
 	end
 
+	local lastGems = 0
+	local function updateGems()
+		local value = (player:GetAttribute("Gems") :: number?) or 0
+		gemsText.Text = formatNumber(value)
+		if value ~= lastGems then
+			pop(gems)
+		end
+		lastGems = value
+	end
+
 	local function updatePizza()
 		local count = (player:GetAttribute("PizzaCount") :: number?) or 0
 		local capacity = (player:GetAttribute("PizzaCapacity") :: number?) or 1
@@ -234,20 +271,27 @@ function Hud.start(): GuiObject
 
 	player:GetAttributeChangedSignal("AutoCollect"):Connect(updateAutoCollect)
 	player:GetAttributeChangedSignal("Coins"):Connect(updateCoins)
+	player:GetAttributeChangedSignal("Gems"):Connect(updateGems)
 	player:GetAttributeChangedSignal("PizzaCount"):Connect(updatePizza)
 	player:GetAttributeChangedSignal("PizzaCapacity"):Connect(updatePizza)
 	updateCoins()
+	updateGems()
 	updatePizza()
 	updateAutoCollect()
 
 	Net.event("Notify").OnClientEvent:Connect(function(kind: string, amount: number?)
 		if kind == "Sold" and amount then
 			showToast(`+{formatNumber(amount)} Münzen`, COIN)
+		elseif kind == "Gems" and amount then
+			showToast(`+{formatNumber(amount)} Gems!`, GEM)
+		elseif kind == "PlaytimeGems" and amount then
+			showToast(`+{formatNumber(amount)} Gem fürs Spielen!`, GEM)
 		elseif MESSAGES[kind] then
 			local color = if kind == "PizzaFull"
 					or kind == "NotEnoughCoins"
 					or kind == "WorldLocked"
 					or kind == "InventoryFull"
+					or kind == "NotEnoughGems"
 				then FULL
 				elseif kind == "WorldUnlocked" then COIN
 				else nil

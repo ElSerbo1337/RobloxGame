@@ -42,6 +42,32 @@ function ToppingLook.createDisc(toppingId: string, diameter: number, thickness: 
 	return part
 end
 
+-- A gem topping: a glowing turquoise diamond standing on its tip, bigger for more gems.
+function ToppingLook.createGem(gems: number): Part
+	local size = 1.6 + 0.4 * gems
+	local part = Instance.new("Part")
+	part.Name = "Gem"
+	part.Size = Vector3.new(size, size, size)
+	part.Color = Color3.fromRGB(60, 230, 255)
+	part.Material = Enum.Material.Neon
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanTouch = false
+	part.CastShadow = false
+	local light = Instance.new("PointLight")
+	light.Color = part.Color
+	light.Range = 10
+	light.Brightness = 2
+	light.Parent = part
+	local sparkles = Instance.new("Sparkles")
+	sparkles.SparkleColor = Color3.fromRGB(200, 250, 255)
+	sparkles.Parent = part
+	return part
+end
+
+-- Tilts a cube so it stands on a corner, like a diamond.
+ToppingLook.GEM_TILT = CFrame.Angles(math.rad(45), 0, math.rad(35))
+
 -- Rotation that turns a cylinder (axis = X) into a flat disc (axis = Y).
 ToppingLook.FLAT = CFrame.Angles(0, 0, math.rad(90))
 

@@ -99,7 +99,7 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozz
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 - [ ] Output ohne rote Fehler.
-- [ ] Links hinten vom Spawn (bei x = -60, z = 72, außerhalb der Sammelfläche) steht ein Holz-Stand mit rot-weißer Markise, Schild „Münz-Tresen – Upgrades“ und grüner Zone davor. Im HUD gibt es **keinen** Shop-Knopf.
+- [ ] Links hinten vom Spawn (bei x = -60, z = 72, außerhalb der Sammelfläche) steht ein Holz-Stand mit rot-weißer Markise, Schild „Pizza-Shop – Upgrades“ (seit #12; vorher „Münz-Tresen“) und grüner Zone davor. Im HUD gibt es **keinen** Shop-Knopf.
 - [ ] In die grüne Zone laufen → Shop-Menü öffnet sich (kurzes Aufploppen) mit 3 Karten: Pizza-Platz, Reichweite, Magnet. Jede zeigt Name, Beschreibung, „Stufe 0 von N“, Wirkung `jetzt → nächste` (z. B. `2 Beläge → 3 Beläge`, `10 Studs → 14 Studs`, `aus → 12 Studs`) und einen Kaufknopf mit Preis (25 / 40 / 600 Münzen).
 - [ ] Aus der Zone laufen → Menü schließt. Wieder rein → öffnet erneut. Mit „X“ schließen, in der Zone stehen bleiben → bleibt zu, bis man raus- und wieder reinläuft.
 - [ ] Mit 0 Münzen „25 Münzen“ drücken → Knopf ist grau, rote Meldung „Nicht genug Münzen!“, Münzen und Stufe unverändert.
@@ -264,7 +264,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Einsammeln und am Ofen der jeweiligen Welt verkaufen funktioniert; Werte: Thunfisch 25, Garnele 45, Ananas 65, Erbsen 100, Lachs 180, Eisberg-Salat 260 (× Pet-Bonus).
 - [ ] Ei-Sockel jeder Welt: Strand-Ei (1.500 Münzen) bzw. Eis-Ei (12.000 Münzen) mit Vorschau (6 Pets, 0,5 % Mythisch). Öffnen gibt ein Pet der Welt (z. B. Sand-Krabbe +40 %, Eis-Pinguin +80 %); es folgt nach dem Ausrüsten.
 - [ ] Portal-Menü listet „Strand“ und „Eisberge“; nach dem Freischalten anwählbar, Teleport landet vor dem Portal der Welt.
-- [ ] **Shop 2** in den Eisbergen links vom Ei (ca. x = −72, z = −528): sichtbar größer als der Shop in Welt 1 (ca. 1,5×), Schild „Großer Münz-Tresen – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche).
+- [ ] **Shop 2** in den Eisbergen links vom Ei (ca. x = −72, z = −528): sichtbar größer als der Shop in Welt 1 (ca. 1,5×), Schild „Großer Pizza-Shop – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche).
 - [ ] In die grüne Zone laufen → Menü zeigt Pizza-Platz „Stufe x von 8“, kaufbar bis 12 (danach „Im größeren Shop erhältlich“), Reichweite bis Stufe 6 (dann „MAX“), Magnet bis Stufe 3 („MAX“).
 - [ ] Zurück in Welt 1 im kleinen Shop: Pizza-Platz über 6 bzw. Magnet über Stufe 1 weiterhin nicht kaufbar („Im größeren Shop erhältlich“ bzw. bereits höhere Stufe angezeigt, kein Kauf).
 
@@ -307,3 +307,43 @@ Studio: Rojo verbinden, dann **Play** als neuer Spieler (1 Spieler):
 - [ ] Die Tutorial-Karte ist komplett sichtbar, Text lesbar und nicht abgeschnitten; sie überdeckt weder Münzanzeige noch Meldungen („Pizza voll!“) noch den Auto-Sammeln-Knopf.
 - [ ] Die Karte blockiert keine Eingaben: Beläge, die hinter der Karte liegen, lassen sich antippen; Kamera-Wischen über der Karte funktioniert.
 - [ ] Pfeil und Linie sind auf dem kleinen Bildschirm gut zu erkennen.
+
+- [ ] Freischalt-Knöpfe für Strand/Eisberge und das Menü von Shop 2 sind groß, lesbar und per Antippen bedienbar; die längeren Namen („Gefrorene Erbsen“, „Großer Pizza-Shop“) werden nicht abgeschnitten.
+
+## #12 Gems und Gem-Tresen
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Gems.spec.luau` und `GameConfig gems`).
+
+Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `gems.toppingChance = 0.2`, `gems.playtimeSeconds = 30` und `gems.playtimeGems = 500` setzen (Rojo synchronisiert live; Server neu starten). Dann liegen viele Gem-Beläge herum und alle 30 s gibt es 500 Gems. **Danach zurücksetzen, nicht committen.**
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler. Oben in der Mitte stehen **zwei** Anzeigen nebeneinander: links Münzen (gelbe Münze), rechts Gems (türkiser Diamant, Start 0).
+- [ ] Gem-Beläge: zwischen den Belag-Scheiben liegen selten (normal ca. 1 von 150 Spawns, mit Tipp oben oft) **leuchtende türkise Diamanten** mit Glitzern, je nach Wert (1–3) etwas größer.
+- [ ] Gem-Belag antippen (in Reichweite) → verschwindet, Toast „+n Gems!“ (türkis), Gem-Anzeige springt hoch; die Pizza bleibt unverändert. Funktioniert auch mit **voller** Pizza.
+- [ ] Mit Auto-Sammeln drüberlaufen sammelt Gem-Beläge ebenfalls ein (auch mit voller Pizza); normale Beläge bleiben dann liegen.
+- [ ] Spielzeit: nach 15 Min. (mit Tipp: 30 s) Toast „+1 Gem fürs Spielen!“ und die Anzeige steigt. Nach Rejoin zählt die angefangene Zeit weiter (wird mitgespeichert).
+- [ ] Shop in Welt 1 (Schild jetzt „Pizza-Shop – Upgrades“): Menü hat die Abschnitte **„Münz-Tresen“** (gelb) und darunter **„Gem-Tresen“** (türkis) mit Pet-Plätze, Inventar, Laufgeschwindigkeit, 3 Eier auf einmal. Gem-Preise stehen als „50 Gems“ usw. auf türkisen Knöpfen (grau, wenn zu wenig Gems).
+- [ ] Mit zu wenig Gems kaufen → „Nicht genug Gems!“, nichts ändert sich. Münzen werden für Gem-Upgrades **nie** abgezogen.
+- [ ] **Pet-Plätze**: 3 → 4 (50 Gems) → 5 (150 Gems), dann „Im größeren Shop erhältlich“. Im Pet-Menü lassen sich danach 4 bzw. 5 Pets ausrüsten, alle folgen.
+- [ ] **Inventar**: 50 → 75 (30 Gems) → 100 (100 Gems); Pet-Menü zeigt die neue Grenze, Eier lassen sich wieder öffnen, wenn das Inventar vorher voll war.
+- [ ] **Laufgeschwindigkeit**: 16 → 19 → 22; man läuft sichtbar schneller, auch nach Respawn (Reset) und nach Rejoin.
+- [ ] **3 Eier auf einmal** (150 Gems): an jeder Ei-Vorschau erscheint neben „1 öffnen – 25“ ein gelber Knopf „3 öffnen – 75“. Antippen → 3× Preis weg, Animation zeigt **3 Pet-Karten nebeneinander**, alle 3 Pets im Pet-Menü.
+- [ ] „3 öffnen“ mit zu wenig Münzen → Knopf zeigt kurz „Zu wenig Münzen!“; mit nur 1–2 freien Inventarplätzen → „Inventar voll!“, nichts wird abgezogen.
+- [ ] Shop 2 (Eisberge): Gem-Tresen verkauft Pet-Plätze bis 7 (400/1.000 Gems), Inventar und Tempo bis Stufe 4.
+
+**Server-Schutz** (Command Bar im Client-Fenster):
+
+- [ ] Ohne „3 Eier auf einmal“ gekauft, neben einem Ei: `game.ReplicatedStorage.Remotes.OpenEgg:FireServer("GardenEgg", 3)` → nichts wird geöffnet, Münzen unverändert. Mit `…:FireServer("GardenEgg", 5)` ebenso.
+- [ ] `game.ReplicatedStorage.Remotes.BuyUpgrade:FireServer("World1Shop", "PetSlots")` außerhalb der Shop-Zone → nichts passiert.
+
+**Mehrspieler** (2 Spieler):
+
+- [ ] Ein Gem-Belag kann nur von einem Spieler genommen werden; der andere sieht ihn verschwinden. Gems und Gem-Upgrades sind pro Spieler.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Münz- und Gem-Anzeige passen nebeneinander, ohne die Roblox-Knöpfe oben zu überdecken.
+- [ ] „1 öffnen“ und „3 öffnen“ sind nebeneinander groß genug zum Antippen, der Text ist lesbar.
+- [ ] Die 3 Pet-Karten passen auf den Bildschirm (ggf. verkleinert); Antippen schließt.
+- [ ] Gem-Tresen im Shop-Menü scrollt per Wischen, Kaufknöpfe sind gut antippbar.

@@ -1,7 +1,8 @@
 --!strict
 -- Shop menu: opens when the server says the player entered a shop stand, closes when
 -- they walk out (or tap X). Shows price, effect and level of every upgrade the shop
--- sells; levels only a bigger shop sells are shown as "im größeren Shop erhältlich".
+-- sells, split into the coin counter ("Münz-Tresen") and the gem counter ("Gem-Tresen");
+-- levels only a bigger shop sells are shown as "im größeren Shop erhältlich".
 -- Buttons only send wishes (BuyUpgrade); the server decides and answers ShopPurchase.
 
 local Players = game:GetService("Players")
@@ -20,15 +21,18 @@ local CREAM = Color3.fromRGB(255, 248, 230)
 local CARD = Color3.fromRGB(255, 236, 200)
 local DARK = Color3.fromRGB(60, 35, 20)
 local COIN = Color3.fromRGB(255, 200, 40)
+local GEM = Color3.fromRGB(60, 230, 255)
 local GREEN = Color3.fromRGB(90, 200, 100)
 local GREY = Color3.fromRGB(190, 180, 165)
 local RED = Color3.fromRGB(230, 70, 50)
 
 local PANEL_SIZE = Vector2.new(680, 460)
 local CARD_HEIGHT = 104
+local HEADER_HEIGHT = 44
 
 local MESSAGES: { [string]: string } = {
 	NotEnoughCoins = "Nicht genug Münzen!",
+	NotEnoughGems = "Nicht genug Gems!",
 	ShopLevelLimit = "Diese Stufe gibt es nur im größeren Shop.",
 	MaxLevel = "Schon auf höchster Stufe!",
 	WorldLocked = "Diese Welt ist noch gesperrt!",
@@ -50,6 +54,14 @@ local function effectText(upgradeId: string, value: number): string
 		return `{value} Studs`
 	elseif upgradeId == "Magnet" then
 		return if value > 0 then `{value} Studs` else "aus"
+	elseif upgradeId == "PetSlots" then
+		return `{value} Pets`
+	elseif upgradeId == "InventorySpace" then
+		return `{value} Plätze`
+	elseif upgradeId == "WalkSpeed" then
+		return `Tempo {value}`
+	elseif upgradeId == "TripleOpen" then
+		return if value >= 3 then "an" else "aus"
 	end
 	return tostring(value)
 end
@@ -202,13 +214,36 @@ function ShopMenu.start()
 				child:Destroy()
 			end
 		end
-		local coins = (player:GetAttribute("Coins") :: number?) or 0
+		local balance = {
+			Coins = (player:GetAttribute("Coins") :: number?) or 0,
+			Gems = (player:GetAttribute("Gems") :: number?) or 0,
+		}
 
+		local lastCurrency: string? = nil
 		for index, offer in currentOffers do
+			local isGem = offer.currency == "Gems"
+			-- Section header whenever the counter changes (coin offers come first).
+			if offer.currency ~= lastCurrency then
+				lastCurrency = offer.currency
+				local header = Instance.new("Frame")
+				header.Name = `Header_{offer.currency}`
+				header.LayoutOrder = index * 2 - 1
+				header.Size = UDim2.new(1, -14, 0, HEADER_HEIGHT)
+				header.BackgroundColor3 = if isGem then GEM else COIN
+				corner(header, 14)
+				stroke(header, 2)
+				header.Parent = list
+				label(header, if isGem then "Gem-Tresen" else "Münz-Tresen", {
+					Position = UDim2.fromOffset(14, 4),
+					Size = UDim2.new(1, -28, 1, -8),
+					TextXAlignment = Enum.TextXAlignment.Left,
+				})
+			end
+
 			local upgrade = GameConfig.upgrades[offer.upgrade]
 			local card = Instance.new("Frame")
 			card.Name = offer.upgrade
-			card.LayoutOrder = index
+			card.LayoutOrder = index * 2
 			card.Size = UDim2.new(1, -14, 0, CARD_HEIGHT)
 			card.BackgroundColor3 = CARD
 			corner(card, 16)
@@ -245,11 +280,11 @@ function ShopMenu.start()
 			local buttonSize = UDim2.new(0.3, -14, 0, 76)
 			local button: TextButton
 			if offer.status == "Available" and offer.nextPrice then
-				local canAfford = coins >= offer.nextPrice
+				local canAfford = (balance[offer.currency] or 0) >= offer.nextPrice
 				button = bigButton(
 					card,
-					`{formatNumber(offer.nextPrice)} Münzen`,
-					if canAfford then GREEN else GREY,
+					`{formatNumber(offer.nextPrice)} {if isGem then "Gems" else "Münzen"}`,
+					if canAfford then (if isGem then GEM else GREEN) else GREY,
 					buttonSize
 				)
 				local upgradeId = offer.upgrade

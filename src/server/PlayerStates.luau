@@ -21,6 +21,8 @@ local listeners: { (Player, PlayerState) -> () } = {}
 
 local function replicate(player: Player, state: PlayerState)
 	player:SetAttribute("Coins", state.coins)
+	player:SetAttribute("Gems", state.gems)
+	player:SetAttribute("EggsPerOpen", PlayerStates.rules.eggsPerOpen(state))
 	player:SetAttribute("PizzaCount", #state.pizza)
 	player:SetAttribute("PizzaCapacity", PlayerStates.rules.pizzaCapacity(state))
 	player:SetAttribute("AutoCollect", state.autoCollect == true)

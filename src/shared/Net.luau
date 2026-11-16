@@ -4,14 +4,14 @@
 -- CollectTopping  client -> server  (slotId: number, worldId: string)  "I tapped this topping"
 -- SetAutoCollect  client -> server  (enabled: boolean)          "switch auto-collect on/off"
 -- UnlockWorld     client -> server  (worldId: string)          "I want to buy the barrier to this world"
--- Notify          server -> client  (kind: string, amount: number?)  feedback, e.g. "PizzaFull", "Sold"
+-- Notify          server -> client  (kind: string, amount: number?)  feedback, e.g. "PizzaFull", "Sold", "Gems"
 -- ShopOpen        server -> client  (shopId: string, offers: { GameRules.ShopOffer })  player entered a shop stand
 -- ShopUpdate      server -> client  (shopId: string, offers: { GameRules.ShopOffer })  offers changed while inside
 -- ShopClose       server -> client  ()                           player left the shop stand
 -- BuyUpgrade      client -> server  (shopId: string, upgradeId: string)  "I want the next level"
 -- ShopPurchase    server -> client  (ok: boolean, reasonOrUpgradeId: string)  result of BuyUpgrade
--- OpenEgg         client -> server  (eggId: string)             "open one of this egg"
--- EggOpened       server -> client  (eggId: string, petId: string)  plays the hatch animation
+-- OpenEgg         client -> server  (eggId: string, count: number?)  "open 1 (or 3, if bought) of this egg"
+-- EggOpened       server -> client  (eggId: string, ...petId: string)  plays the hatch animation (one pet per egg)
 -- EquipPet        client -> server  (uid: number)               "equip this pet"
 -- UnequipPet      client -> server  (uid: number)               "put this pet away"
 -- PortalOpen      server -> client  (worldId: string, entries: { GameRules.PortalEntry })  player stands in this world's portal
@@ -21,7 +21,8 @@
 -- DeletePet       client -> server  (uid: number)               "delete this pet for good" (client asked to confirm)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
--- Coins, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought).
+-- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
+-- EggsPerOpen (1, or 3 after the gem upgrade).
 -- Tutorial: TutorialStep (step id, "" = finished), TutorialNumber, TutorialTotal, TutorialProgress, TutorialGoal.
 -- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, InventorySlots, CoinMultiplier.
 

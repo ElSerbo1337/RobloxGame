@@ -5,6 +5,7 @@ local Net = require(ReplicatedStorage.Shared.Net)
 
 local BarrierService = require(script.BarrierService)
 local EggService = require(script.EggService)
+local GemService = require(script.GemService)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local OvenService = require(script.OvenService)
 local PetService = require(script.PetService)
@@ -75,6 +76,7 @@ TutorialService.start({
 	OpenEgg = eggSpots[1].stand,
 })
 PetService.start()
+GemService.start()
 -- One teleport portal per configured world (same spot in each world).
 PortalService.start(PortalService.buildAll())
 

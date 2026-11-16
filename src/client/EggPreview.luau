@@ -1,6 +1,7 @@
 --!strict
 -- Floating preview above each egg: all pets with rarity color, chance in % and bonus,
--- plus a big "1 öffnen" button. Shows up when the player comes close.
+-- plus a big "1 öffnen" button (and "3 öffnen" after the gem upgrade). Shows up when
+-- the player comes close.
 -- The button only sends the wish "OpenEgg"; the server decides.
 
 local Players = game:GetService("Players")
@@ -103,24 +104,51 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 		bonus.TextColor3 = Color3.fromRGB(40, 130, 40)
 	end
 
+	local player = Players.LocalPlayer
 	local openText = `1 öffnen – {preview.price} Münzen`
 	local button = UiKit.button(root, openText, UiKit.GREEN)
 	button.Name = "OpenOne"
 	button.Position = UDim2.new(0, 16, 1, -84)
 	button.Size = UDim2.new(1, -32, 0, 70)
 
+	-- "3 öffnen" only after the gem upgrade; then both buttons share the row.
+	local tripleText = `3 öffnen – {preview.price * 3}`
+	local tripleButton = UiKit.button(root, tripleText, UiKit.COIN)
+	tripleButton.Name = "OpenThree"
+	tripleButton.AnchorPoint = Vector2.new(1, 0)
+	tripleButton.Position = UDim2.new(1, -16, 1, -84)
+	tripleButton.Size = UDim2.new(0.5, -22, 0, 70)
+	tripleButton.Visible = false
+
+	local function updateTriple()
+		local unlocked = ((player:GetAttribute("EggsPerOpen") :: number?) or 1) >= 3
+		tripleButton.Visible = unlocked
+		button.Size = if unlocked then UDim2.new(0.5, -22, 0, 70) else UDim2.new(1, -32, 0, 70)
+		button.Text = if unlocked then `1 öffnen – {preview.price}` else openText
+	end
+	player:GetAttributeChangedSignal("EggsPerOpen"):Connect(updateTriple)
+	updateTriple()
+
 	billboard.Parent = playerGui
 
 	local busyUntil = 0
 	local lastRequest = -math.huge
-	button.Activated:Connect(function()
+	local lastButton = button
+	local function request(source: TextButton, count: number)
 		local now = os.clock()
 		if now < busyUntil then
 			return
 		end
 		busyUntil = now + BUTTON_COOLDOWN
 		lastRequest = now
-		Net.event("OpenEgg"):FireServer(eggId)
+		lastButton = source
+		Net.event("OpenEgg"):FireServer(eggId, count)
+	end
+	button.Activated:Connect(function()
+		request(button, 1)
+	end)
+	tripleButton.Activated:Connect(function()
+		request(tripleButton, 3)
 	end)
 
 	-- Feedback when the server says no (only for a request from this preview).
@@ -134,12 +162,18 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 			else nil
 		if message then
 			busyUntil = 0
-			button.Text = message
-			button.BackgroundColor3 = UiKit.RED
-			UiKit.pop(button)
+			local target = lastButton
+			local color = target.BackgroundColor3
+			target.Text = message
+			target.BackgroundColor3 = UiKit.RED
+			UiKit.pop(target)
 			task.delay(1.5, function()
-				button.Text = openText
-				button.BackgroundColor3 = UiKit.GREEN
+				target.BackgroundColor3 = color
+				if target == tripleButton then
+					target.Text = tripleText
+				else
+					updateTriple()
+				end
 			end)
 		end
 	end)

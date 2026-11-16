@@ -1,6 +1,7 @@
 --!strict
 -- Hatch animation after the server opened an egg: the egg wobbles, cracks, flashes,
--- and the pet card jumps out (name, rarity color, bonus). Tap or wait to close.
+-- and the pet card jumps out (name, rarity color, bonus); with "3 öffnen" three cards
+-- side by side. Tap or wait to close.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -9,6 +10,9 @@ local TweenService = game:GetService("TweenService")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local UiKit = require(script.Parent.UiKit)
+
+local CARD_WIDTH = 300
+local CARD_GAP = 16
 
 local EggAnimation = {}
 
@@ -62,48 +66,70 @@ function EggAnimation.start()
 	flash.ZIndex = 5
 	flash.Parent = gui
 
-	local card = Instance.new("Frame")
-	card.AnchorPoint = Vector2.new(0.5, 0.5)
-	card.Position = UDim2.fromScale(0.5, 0.5)
-	card.Size = UDim2.fromOffset(320, 360)
-	card.BackgroundColor3 = UiKit.CREAM
-	card.ZIndex = 6
-	UiKit.corner(card, 28)
-	UiKit.stroke(card, 5)
-	card.Parent = gui
+	-- Row of pet cards (1, or 3 with "3 öffnen"), centered on screen.
+	local cards = Instance.new("Frame")
+	cards.AnchorPoint = Vector2.new(0.5, 0.5)
+	cards.Position = UDim2.fromScale(0.5, 0.5)
+	cards.Size = UDim2.fromOffset(CARD_WIDTH * 3 + CARD_GAP * 2, 360)
+	cards.BackgroundTransparency = 1
+	cards.ZIndex = 6
+	cards.Parent = gui
+	local row = Instance.new("UIListLayout")
+	row.FillDirection = Enum.FillDirection.Horizontal
+	row.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	row.VerticalAlignment = Enum.VerticalAlignment.Center
+	row.Padding = UDim.new(0, CARD_GAP)
+	row.SortOrder = Enum.SortOrder.LayoutOrder
+	row.Parent = cards
 
-	local petIcon = Instance.new("Frame")
-	petIcon.AnchorPoint = Vector2.new(0.5, 0)
-	petIcon.Position = UDim2.new(0.5, 0, 0, 24)
-	petIcon.Size = UDim2.fromOffset(140, 140)
-	petIcon.ZIndex = 7
-	UiKit.corner(petIcon, 70)
-	UiKit.stroke(petIcon, 4)
-	petIcon.Parent = card
+	local function buildCard(petId: string, order: number): Frame
+		local pet = GameConfig.pets[petId]
+		local color = UiKit.rarityColor(pet.rarity)
 
-	local petName = UiKit.label(card, "")
-	petName.Position = UDim2.fromOffset(16, 176)
-	petName.Size = UDim2.new(1, -32, 0, 50)
-	petName.ZIndex = 7
+		local card = Instance.new("Frame")
+		card.LayoutOrder = order
+		card.Size = UDim2.fromOffset(CARD_WIDTH, 360)
+		card.BackgroundColor3 = UiKit.CREAM
+		card.ZIndex = 6
+		UiKit.corner(card, 28)
+		UiKit.stroke(card, 5)
 
-	local rarityName = UiKit.label(card, "")
-	rarityName.Position = UDim2.fromOffset(16, 228)
-	rarityName.Size = UDim2.new(1, -32, 0, 36)
-	rarityName.TextStrokeColor3 = UiKit.DARK
-	rarityName.TextStrokeTransparency = 0
-	rarityName.ZIndex = 7
+		local petIcon = Instance.new("Frame")
+		petIcon.AnchorPoint = Vector2.new(0.5, 0)
+		petIcon.Position = UDim2.new(0.5, 0, 0, 24)
+		petIcon.Size = UDim2.fromOffset(140, 140)
+		petIcon.BackgroundColor3 = color
+		petIcon.ZIndex = 7
+		UiKit.corner(petIcon, 70)
+		UiKit.stroke(petIcon, 4)
+		petIcon.Parent = card
 
-	local bonusText = UiKit.label(card, "")
-	bonusText.Position = UDim2.fromOffset(16, 270)
-	bonusText.Size = UDim2.new(1, -32, 0, 40)
-	bonusText.TextColor3 = Color3.fromRGB(40, 130, 40)
-	bonusText.ZIndex = 7
+		local petName = UiKit.label(card, pet.displayName)
+		petName.Position = UDim2.fromOffset(16, 176)
+		petName.Size = UDim2.new(1, -32, 0, 50)
+		petName.ZIndex = 7
 
-	local hint = UiKit.label(card, "Tippen zum Schließen")
-	hint.Position = UDim2.fromOffset(16, 318)
-	hint.Size = UDim2.new(1, -32, 0, 26)
-	hint.TextTransparency = 0.4
-	hint.ZIndex = 7
+		local rarityName = UiKit.label(card, GameConfig.rarities[pet.rarity].displayName)
+		rarityName.Position = UDim2.fromOffset(16, 228)
+		rarityName.Size = UDim2.new(1, -32, 0, 36)
+		rarityName.TextColor3 = color
+		rarityName.TextStrokeColor3 = UiKit.DARK
+		rarityName.TextStrokeTransparency = 0
+		rarityName.ZIndex = 7
+
+		local bonusText = UiKit.label(card, `{UiKit.bonusText(pet.bonus)} Münzen`)
+		bonusText.Position = UDim2.fromOffset(16, 270)
+		bonusText.Size = UDim2.new(1, -32, 0, 40)
+		bonusText.TextColor3 = Color3.fromRGB(40, 130, 40)
+		bonusText.ZIndex = 7
+
+		local hint = UiKit.label(card, "Tippen zum Schließen")
+		hint.Position = UDim2.fromOffset(16, 318)
+		hint.Size = UDim2.new(1, -32, 0, 26)
+		hint.TextTransparency = 0.4
+		hint.ZIndex = 7
+		return card
+	end
 
 	gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -116,27 +142,32 @@ function EggAnimation.start()
 	end
 	backdrop.Activated:Connect(close)
 
-	Net.event("EggOpened").OnClientEvent:Connect(function(_eggId: string, petId: string)
-		local pet = GameConfig.pets[petId]
-		if pet == nil then
+	-- (eggId, petId, petId?, petId?): one pet id per opened egg.
+	Net.event("EggOpened").OnClientEvent:Connect(function(_eggId: string, ...: string)
+		local petIds = {}
+		for _, petId in { ... } do
+			if GameConfig.pets[petId] then
+				table.insert(petIds, petId)
+			end
+		end
+		if #petIds == 0 then
 			return
 		end
 		playId += 1
 		local myId = playId
 		closable = false
 
-		local color = UiKit.rarityColor(pet.rarity)
-		petIcon.BackgroundColor3 = color
-		petName.Text = pet.displayName
-		rarityName.Text = GameConfig.rarities[pet.rarity].displayName
-		rarityName.TextColor3 = color
-		bonusText.Text = `{UiKit.bonusText(pet.bonus)} Münzen`
+		for _, child in cards:GetChildren() do
+			if child:IsA("Frame") then
+				child:Destroy()
+			end
+		end
+		cards.Visible = false
 
 		egg.Visible = true
 		egg.Rotation = 0
 		egg.Size = UDim2.fromOffset(180, 230)
 		crack.Visible = false
-		card.Visible = false
 		flash.BackgroundTransparency = 1
 		gui.Enabled = true
 
@@ -154,8 +185,11 @@ function EggAnimation.start()
 		-- Burst: flash, egg gone, pet card jumps out.
 		flash.BackgroundTransparency = 0
 		egg.Visible = false
-		card.Visible = true
-		UiKit.pop(card, 0.2)
+		for i, petId in petIds do
+			buildCard(petId, i).Parent = cards
+		end
+		cards.Visible = true
+		UiKit.pop(cards, 0.2)
 		tween(flash, 0.5, { BackgroundTransparency = 1 })
 		closable = true
 

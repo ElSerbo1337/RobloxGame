@@ -2,6 +2,7 @@
 -- Shows the shared toppings of one world, handles collect requests from clients and
 -- picks up toppings players walk over while auto-collect is on.
 -- Started once per world; each instance only answers requests for its own world.
+-- Rarely a slot holds a gem topping instead; it gives gems and never needs pizza space.
 -- Every request is validated by the game rules (range, pizza capacity) and the
 -- ToppingField (topping still there), so a topping can only be taken once.
 
@@ -58,8 +59,15 @@ function ToppingService.start(worldId: string, layout: Layout)
 		if topping == nil then
 			return
 		end
-		local disc = ToppingLook.createDisc(topping.toppingId, DISC_DIAMETER, DISC_THICKNESS)
-		disc.CFrame = CFrame.new(worldPosition(topping.x, topping.z)) * ToppingLook.FLAT
+		local disc
+		if topping.gems then
+			disc = ToppingLook.createGem(topping.gems)
+			disc.CFrame = CFrame.new(worldPosition(topping.x, topping.z) + Vector3.new(0, disc.Size.Y * 0.6, 0))
+				* ToppingLook.GEM_TILT
+		else
+			disc = ToppingLook.createDisc(topping.toppingId, DISC_DIAMETER, DISC_THICKNESS)
+			disc.CFrame = CFrame.new(worldPosition(topping.x, topping.z)) * ToppingLook.FLAT
+		end
 		disc:SetAttribute("SlotId", slotId)
 		disc:SetAttribute("WorldId", worldId)
 		disc.Parent = layout.toppingsFolder
@@ -87,9 +95,9 @@ function ToppingService.start(worldId: string, layout: Layout)
 	local function tryCollect(
 		player: Player,
 		slotId: number,
-		rule: (PlayerState, string, number) -> GameRules.Result,
+		rule: (PlayerState, string, number, number?) -> GameRules.GemResult,
 		distanceTo: (BasePart, BasePart) -> number
-	): GameRules.Result?
+	): GameRules.GemResult?
 		local topping = field:get(slotId)
 		local state = PlayerStates.get(player)
 		local character = player.Character
@@ -98,7 +106,7 @@ function ToppingService.start(worldId: string, layout: Layout)
 			return nil -- already taken by someone else, or player not ready
 		end
 
-		local result = rule(state, topping.toppingId, distanceTo(root, parts[slotId]))
+		local result = rule(state, topping.toppingId, distanceTo(root, parts[slotId]), topping.gems)
 		if result.ok then
 			if rule == PlayerStates.rules.autoCollectTopping then
 				MagnetPull.fly(parts[slotId], root)
@@ -107,7 +115,9 @@ function ToppingService.start(worldId: string, layout: Layout)
 			field:take(slotId, os.clock())
 			PlayerStates.set(player, result.state)
 			render(slotId)
-			if PlayerStates.rules.isPizzaFull(result.state) then
+			if result.gemsEarned > 0 then
+				notify:FireClient(player, "Gems", result.gemsEarned)
+			elseif PlayerStates.rules.isPizzaFull(result.state) then
 				notifyFull(player)
 			end
 		end
@@ -171,8 +181,8 @@ function ToppingService.start(worldId: string, layout: Layout)
 							local result =
 								tryCollect(player, slotId, PlayerStates.rules.autoCollectTopping, groundDistance)
 							if result and result.reason == "PizzaFull" then
+								-- Keep looking: gem toppings still fit with a full pizza.
 								notifyFull(player)
-								break
 							end
 						end
 					end

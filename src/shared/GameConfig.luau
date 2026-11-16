@@ -270,7 +270,7 @@ local GameConfig = {
 	shops = {
 		World1Shop = {
 			worldId = "PizzeriaGarden",
-			displayName = "Münz-Tresen",
+			displayName = "Pizza-Shop",
 			offers = {
 				{ upgrade = "PizzaSpace", maxLevel = 3 },
 				{ upgrade = "CollectRange", maxLevel = 3 },
@@ -285,7 +285,7 @@ local GameConfig = {
 		-- Shop 2: everything from shop 1 plus higher levels; a bigger building in world 4.
 		World4Shop = {
 			worldId = "Icebergs",
-			displayName = "Großer Münz-Tresen",
+			displayName = "Großer Pizza-Shop",
 			offers = {
 				{ upgrade = "PizzaSpace", maxLevel = 6 },
 				{ upgrade = "CollectRange", maxLevel = 6 },

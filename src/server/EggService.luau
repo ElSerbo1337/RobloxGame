@@ -1,7 +1,8 @@
 --!strict
 -- Eggs in the world: puts a placeholder egg on each egg stand and opens eggs on request.
 -- The client only asks ("OpenEgg"); the server checks the distance and lets the game
--- rules decide (price, chances). The drawn pet is sent back for the hatch animation.
+-- rules decide (price, chances, "3 öffnen" bought). The drawn pets are sent back for the
+-- hatch animation.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -106,8 +107,13 @@ function EggService.start(spots: { EggSpot })
 	local rng = Random.new()
 	local lastOpen: { [Player]: number } = {}
 
-	Net.event("OpenEgg").OnServerEvent:Connect(function(player: Player, eggId: unknown)
+	Net.event("OpenEgg").OnServerEvent:Connect(function(player: Player, eggId: unknown, count: unknown)
 		if type(eggId) ~= "string" or eggs[eggId] == nil then
+			return
+		end
+		-- Missing count = 1 egg; the rules reject anything but 1 or the unlocked multi-open size.
+		local eggCount = if count == nil then 1 else count
+		if type(eggCount) ~= "number" then
 			return
 		end
 		local now = os.clock()
@@ -126,7 +132,7 @@ function EggService.start(spots: { EggSpot })
 			return
 		end
 
-		local result = PlayerStates.rules.openEgg(state, eggId, function()
+		local result = PlayerStates.rules.openEggs(state, eggId, eggCount, function()
 			return rng:NextNumber()
 		end)
 		if not result.ok then
@@ -135,7 +141,11 @@ function EggService.start(spots: { EggSpot })
 		end
 		lastOpen[player] = now
 		PlayerStates.set(player, result.state)
-		eggOpened:FireClient(player, eggId, (result.pet :: any).petId)
+		local petIds = {}
+		for _, pet in result.pets do
+			table.insert(petIds, pet.petId)
+		end
+		eggOpened:FireClient(player, eggId, table.unpack(petIds))
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)
