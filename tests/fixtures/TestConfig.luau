@@ -72,6 +72,8 @@ return {
 				{ upgrade = "WalkSpeed", maxLevel = 1 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 			},
+			-- Potions sold at this shop's gem counter.
+			potions = { "Coins", "Luck", "Speed" },
 		},
 		-- Stands in a world that must be unlocked first.
 		BeachShop = {
@@ -79,6 +81,7 @@ return {
 			offers = {
 				{ upgrade = "PizzaSpace", maxLevel = 3 },
 			},
+			potions = { "Coins" },
 		},
 	},
 	petSlots = { start = 3 },
@@ -94,6 +97,18 @@ return {
 		-- One gem per this many seconds of play time.
 		playtimeSeconds = 900,
 		playtimeGems = 1,
+	},
+	-- Potions: bought with gems, drunk from the potion inventory, active for `durationSeconds`.
+	potions = {
+		Coins = { displayName = "Münz-Trank", price = 20, durationSeconds = 600, coinMultiplier = 2 },
+		Luck = {
+			displayName = "Glücks-Trank",
+			price = 25,
+			durationSeconds = 600,
+			-- Egg chance weights are multiplied per rarity (missing = 1).
+			rarityWeights = { Rare = 2, Mythic = 3 },
+		},
+		Speed = { displayName = "Speed-Trank", price = 15, durationSeconds = 600, walkSpeedMultiplier = 1.5 },
 	},
 	tutorial = { collectToppings = 2 },
 	rarities = {

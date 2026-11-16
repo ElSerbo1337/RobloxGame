@@ -166,6 +166,35 @@ local GameConfig = {
 		playtimeGems = 1,
 	},
 
+	-- Potions: bought with gems at a shop's gem counter, kept in the potion inventory and
+	-- drunk from there. Each runs `durationSeconds` of play time (it pauses while offline);
+	-- drinking the same kind again adds its duration to the time left.
+	potions = {
+		Coins = {
+			displayName = "Münz-Trank",
+			description = "Doppelte Münzen beim Verkaufen",
+			price = 25,
+			durationSeconds = 600,
+			coinMultiplier = 2,
+		},
+		Luck = {
+			displayName = "Glücks-Trank",
+			description = "Seltene Pets kommen öfter aus Eiern",
+			price = 30,
+			durationSeconds = 600,
+			-- Egg chances are multiplied per rarity, then scaled back to 100 %.
+			rarityWeights = { Common = 1, Uncommon = 1.2, Rare = 1.5, Epic = 2, Legendary = 2.5, Mythic = 3 },
+		},
+		Speed = {
+			displayName = "Speed-Trank",
+			description = "Schneller laufen",
+			price = 15,
+			durationSeconds = 600,
+			-- Multiplies the walk speed (including the WalkSpeed upgrade).
+			walkSpeedMultiplier = 1.5,
+		},
+	},
+
 	-- New-player tutorial: collect toppings -> sell -> buy an upgrade -> open an egg.
 	tutorial = {
 		-- Toppings to collect in the first step (must fit on the starting pizza).
@@ -281,6 +310,8 @@ local GameConfig = {
 				{ upgrade = "WalkSpeed", maxLevel = 2 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed" },
 		},
 		-- Shop 2: everything from shop 1 plus higher levels; a bigger building in world 4.
 		World4Shop = {
@@ -296,6 +327,8 @@ local GameConfig = {
 				{ upgrade = "WalkSpeed", maxLevel = 4 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed" },
 		},
 	},
 

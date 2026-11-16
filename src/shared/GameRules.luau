@@ -32,6 +32,11 @@ export type PlayerState = {
 	-- Current step of the new-player tutorial (index into the tutorial steps;
 	-- past the last step = finished, never shown again).
 	tutorialStep: number,
+	-- Potion id -> how many the player owns (bought, not drunk yet).
+	potions: { [string]: number },
+	-- Potion id -> seconds of effect left for potions that are running (missing = not active).
+	-- Counts down only while the player is online (see tickPotions).
+	activePotions: { [string]: number },
 }
 
 export type OwnedPet = { uid: number, petId: string }
@@ -43,6 +48,7 @@ export type Result = {
 	-- | "UnknownWorld" | "AlreadyUnlocked" | "PreviousWorldLocked" | "WorldLocked"
 	-- | "UnknownEgg" | "UnknownPet" | "AlreadyEquipped" | "PetSlotsFull" | "NotEquipped"
 	-- | "InventoryFull" | "NoPets" | "NotEnoughGems" | "InvalidTime" | "MultiOpenLocked" | "InvalidCount"
+	-- | "UnknownPotion" | "NoPotion"
 	reason: string?,
 	state: PlayerState,
 }
@@ -78,6 +84,20 @@ export type EggPreview = {
 
 -- One world as shown in the portal menu; locked worlds are greyed out with their price.
 export type PortalEntry = { worldId: string, displayName: string, unlockPrice: number, unlocked: boolean }
+
+-- One potion as shown at a shop's gem counter.
+export type PotionOffer = {
+	potionId: string,
+	displayName: string,
+	-- Price in gems and how long one potion runs.
+	price: number,
+	durationSeconds: number,
+	-- How many the player has in the potion inventory.
+	owned: number,
+}
+
+-- Passing time for running potions: the potion ids whose time ran out with this tick.
+export type PotionTickResult = Result & { expired: { string } }
 
 export type OpenEggResult = Result & { pet: OwnedPet? }
 
@@ -123,6 +143,8 @@ function GameRules.new(config: any)
 			gems = 0,
 			playtimeSeconds = 0,
 			tutorialStep = 1,
+			potions = {},
+			activePotions = {},
 		}
 	end
 
@@ -299,9 +321,23 @@ function GameRules.new(config: any)
 		return upgradeValue(state, "Magnet")
 	end
 
-	-- Humanoid walk speed (studs per second).
+	-- Effect setting of a potion while it runs, `default` otherwise (or for unknown potions).
+	local function potionEffect(state: PlayerState, potionId: string, key: string, default: any): any
+		local potion = config.potions and config.potions[potionId]
+		if potion == nil or (state.activePotions[potionId] or 0) <= 0 then
+			return default
+		end
+		return potion[key] or default
+	end
+
+	-- Humanoid walk speed (studs per second): the WalkSpeed upgrade, times the speed potion.
 	function rules.walkSpeed(state: PlayerState): number
-		return upgradeValue(state, "WalkSpeed")
+		return upgradeValue(state, "WalkSpeed") * potionEffect(state, "Speed", "walkSpeedMultiplier", 1)
+	end
+
+	-- Sell value factor from the coin potion (1 when it is not running).
+	function rules.potionCoinMultiplier(state: PlayerState): number
+		return potionEffect(state, "Coins", "coinMultiplier", 1)
 	end
 
 	-- Most eggs the player may open with one press (1, or 3 after the gem upgrade).
@@ -408,7 +444,7 @@ function GameRules.new(config: any)
 	end
 
 	-- Sells every topping on the pizza at once:
-	-- earned = sum of topping values x coinMultiplier (rounded down).
+	-- earned = sum of topping values x coinMultiplier x coin potion (rounded down).
 	function rules.sellPizza(state: PlayerState): SellResult
 		if #state.pizza == 0 then
 			return { ok = false, reason = "PizzaEmpty", state = state, coinsEarned = 0 }
@@ -419,7 +455,7 @@ function GameRules.new(config: any)
 			toppingValue += config.toppings[toppingId].value
 		end
 		-- Rounded down; the epsilon guards against float noise like 7 * 1.6 = 11.19999.
-		local earned = math.floor(toppingValue * rules.coinMultiplier(state) + 1e-6)
+		local earned = math.floor(toppingValue * rules.coinMultiplier(state) * rules.potionCoinMultiplier(state) + 1e-6)
 
 		local newState = table.clone(state)
 		newState.pizza = {}
@@ -509,15 +545,25 @@ function GameRules.new(config: any)
 		return offers
 	end
 
-	-- Picks a pet id from the egg's chance table. `random` returns a number in [0, 1).
-	local function drawPet(egg: any, random: () -> number): string
-		local total = 0
-		for _, entry in egg.pets do
-			total += entry.chance
+	-- The egg's chance weights for this player: the configured chances, with the luck
+	-- potion's per-rarity factors applied while it runs. Returns the weights (in egg order) and their sum.
+	local function eggWeights(egg: any, state: PlayerState?): ({ number }, number)
+		local rarityWeights = if state then potionEffect(state, "Luck", "rarityWeights", nil) else nil
+		local weights, total = {}, 0
+		for i, entry in egg.pets do
+			local factor = rarityWeights and rarityWeights[config.pets[entry.pet].rarity] or 1
+			weights[i] = entry.chance * factor
+			total += weights[i]
 		end
+		return weights, total
+	end
+
+	-- Picks a pet id from the egg's chance table. `random` returns a number in [0, 1).
+	local function drawPet(state: PlayerState, egg: any, random: () -> number): string
+		local weights, total = eggWeights(egg, state)
 		local roll = random() * total
-		for _, entry in egg.pets do
-			roll -= entry.chance
+		for i, entry in egg.pets do
+			roll -= weights[i]
 			if roll < 0 then
 				return entry.pet
 			end
@@ -525,20 +571,18 @@ function GameRules.new(config: any)
 		return egg.pets[#egg.pets].pet
 	end
 
-	-- What the egg can contain, for the floating preview above the egg.
-	function rules.eggPreview(eggId: string): EggPreview
+	-- What the egg can contain, for the floating preview above the egg. With a state,
+	-- the chances include that player's luck potion.
+	function rules.eggPreview(eggId: string, state: PlayerState?): EggPreview
 		local egg = config.eggs[eggId]
-		local total = 0
-		for _, entry in egg.pets do
-			total += entry.chance
-		end
+		local weights, total = eggWeights(egg, state)
 		local pets = {}
-		for _, entry in egg.pets do
+		for i, entry in egg.pets do
 			local pet = config.pets[entry.pet]
 			table.insert(pets, {
 				petId = entry.pet,
 				rarity = pet.rarity,
-				chancePercent = math.round(entry.chance / total * 100 * 1e4) / 1e4,
+				chancePercent = math.round(weights[i] / total * 100 * 1e4) / 1e4,
 				bonus = pet.bonus,
 			})
 		end
@@ -586,7 +630,7 @@ function GameRules.new(config: any)
 		newState.pets = table.clone(state.pets)
 		local drawn = {}
 		for i = 1, count do
-			local pet: OwnedPet = { uid = state.nextPetUid + i - 1, petId = drawPet(egg, random) }
+			local pet: OwnedPet = { uid = state.nextPetUid + i - 1, petId = drawPet(state, egg, random) }
 			table.insert(newState.pets, pet)
 			table.insert(drawn, pet)
 		end
@@ -599,6 +643,99 @@ function GameRules.new(config: any)
 	function rules.openEgg(state: PlayerState, eggId: string, random: () -> number): OpenEggResult
 		local result = rules.openEggs(state, eggId, 1, random)
 		return { ok = result.ok, reason = result.reason, state = result.state, pet = result.pets[1] }
+	end
+
+	-- How many of a potion the player owns (in the potion inventory).
+	function rules.potionCount(state: PlayerState, potionId: string): number
+		return state.potions[potionId] or 0
+	end
+
+	-- Buys one potion at a shop's gem counter; it lands in the potion inventory.
+	function rules.buyPotion(state: PlayerState, shopId: string, potionId: string): Result
+		local shop = config.shops[shopId]
+		if shop == nil then
+			return fail(state, "UnknownShop")
+		end
+		local potion = config.potions[potionId]
+		if potion == nil then
+			return fail(state, "UnknownPotion")
+		end
+		if shop.worldId and not rules.isWorldUnlocked(state, shop.worldId) then
+			return fail(state, "WorldLocked")
+		end
+		if not (shop.potions and table.find(shop.potions, potionId)) then
+			return fail(state, "NotOffered")
+		end
+		if state.gems < potion.price then
+			return fail(state, "NotEnoughGems")
+		end
+		local newState = table.clone(state)
+		newState.gems = state.gems - potion.price
+		newState.potions = table.clone(state.potions)
+		newState.potions[potionId] = rules.potionCount(state, potionId) + 1
+		return { ok = true, state = newState }
+	end
+
+	-- The potions a shop's gem counter sells, in the shop's configured order.
+	function rules.potionOffers(state: PlayerState, shopId: string): { PotionOffer }
+		local offers = {}
+		for _, potionId in config.shops[shopId].potions or {} do
+			local potion = config.potions[potionId]
+			table.insert(offers, {
+				potionId = potionId,
+				displayName = potion.displayName,
+				price = potion.price,
+				durationSeconds = potion.durationSeconds,
+				owned = rules.potionCount(state, potionId),
+			})
+		end
+		return offers
+	end
+
+	-- Seconds of effect a potion has left (0 = not active).
+	function rules.potionTimeLeft(state: PlayerState, potionId: string): number
+		return state.activePotions[potionId] or 0
+	end
+
+	-- Drinks one potion from the inventory. Drinking a kind that is already running
+	-- adds its duration to the time left instead of starting over.
+	function rules.drinkPotion(state: PlayerState, potionId: string): Result
+		local potion = config.potions[potionId]
+		if potion == nil then
+			return fail(state, "UnknownPotion")
+		end
+		if rules.potionCount(state, potionId) <= 0 then
+			return fail(state, "NoPotion")
+		end
+		local newState = table.clone(state)
+		newState.potions = table.clone(state.potions)
+		newState.potions[potionId] = rules.potionCount(state, potionId) - 1
+		if newState.potions[potionId] == 0 then
+			newState.potions[potionId] = nil
+		end
+		newState.activePotions = table.clone(state.activePotions)
+		newState.activePotions[potionId] = rules.potionTimeLeft(state, potionId) + potion.durationSeconds
+		return { ok = true, state = newState }
+	end
+
+	-- Lets `seconds` of (online) time pass for every running potion; potions whose
+	-- time is up end and are listed in `expired` (sorted).
+	function rules.tickPotions(state: PlayerState, seconds: number): PotionTickResult
+		if not (seconds > 0 and seconds < math.huge) then
+			return { ok = false, reason = "InvalidTime", state = state, expired = {} }
+		end
+		local newState = table.clone(state)
+		newState.activePotions = {}
+		local expired = {}
+		for potionId, left in state.activePotions do
+			if left - seconds > 0 then
+				newState.activePotions[potionId] = left - seconds
+			else
+				table.insert(expired, potionId)
+			end
+		end
+		table.sort(expired)
+		return { ok = true, state = newState, expired = expired }
 	end
 
 	-- How many pets can be equipped at once; grows with the "PetSlots" gem upgrade.

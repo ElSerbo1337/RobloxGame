@@ -412,3 +412,51 @@ describe("GameConfig tutorial", function()
 		expect(rules.tutorial(state).goal <= rules.pizzaCapacity(state)).toBe(true)
 	end)
 end)
+
+describe("GameConfig potions", function()
+	local rules = GameRules.new(GameConfig)
+
+	it("has a coin, a luck and a speed potion that each run for 10 minutes and cost gems", function()
+		for _, potionId in { "Coins", "Luck", "Speed" } do
+			local potion = GameConfig.potions[potionId]
+			expect(potion.durationSeconds).toBe(600)
+			expect(potion.price > 0).toBe(true)
+			expect(type(potion.displayName)).toBe("string")
+		end
+	end)
+
+	it("doubles coins with the coin potion and makes the speed potion faster", function()
+		local state = rules.newPlayerState()
+		state.activePotions = { Coins = 600, Speed = 600 }
+
+		expect(rules.potionCoinMultiplier(state)).toBe(2)
+		expect(rules.walkSpeed(state) > GameConfig.movement.walkSpeed).toBe(true)
+	end)
+
+	it("makes every rarer pet more likely with the luck potion", function()
+		local state = rules.newPlayerState()
+		state.activePotions = { Luck = 600 }
+		for eggId in GameConfig.eggs do
+			local plain = rules.eggPreview(eggId).pets
+			local lucky = rules.eggPreview(eggId, state).pets
+			-- Both lists go from most common to rarest; the rarest gets more, the most common less.
+			expect(lucky[#lucky].chancePercent > plain[#plain].chancePercent).toBe(true)
+			expect(lucky[1].chancePercent < plain[1].chancePercent).toBe(true)
+		end
+	end)
+
+	it("sells all three potions at the gem counter of every shop", function()
+		for shopId, shop in GameConfig.shops do
+			local state = rules.newPlayerState()
+			state.gems = 1000
+			state.unlockedWorlds = {}
+			for _, world in GameConfig.worlds do
+				table.insert(state.unlockedWorlds, world.id)
+			end
+			for _, potionId in { "Coins", "Luck", "Speed" } do
+				expect(rules.buyPotion(state, shopId, potionId).ok).toBe(true)
+			end
+			expect(#shop.potions).toBe(3)
+		end
+	end)
+end)
