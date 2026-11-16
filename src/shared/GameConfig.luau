@@ -35,6 +35,65 @@ local GameConfig = {
 		Ham = { displayName = "Schinken", value = 20 },
 	},
 
+	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
+	-- effect at that level (pizza space in toppings, range/magnet radius in studs).
+	-- Level 0 is the base value (pizza.startCapacity, collect.range, no magnet).
+	-- Levels beyond a shop's maxLevel show up there as "im größeren Shop erhältlich".
+	upgrades = {
+		PizzaSpace = {
+			displayName = "Pizza-Platz",
+			description = "Mehr Beläge pro Pizza",
+			levels = {
+				-- Shop 1 (world 1)
+				{ price = 25, value = 3 },
+				{ price = 120, value = 4 },
+				{ price = 500, value = 6 },
+				-- Shop 2 (world 4)
+				{ price = 5000, value = 8 },
+				{ price = 15000, value = 10 },
+				{ price = 40000, value = 12 },
+				-- Shop 3 (world 7)
+				{ price = 400000, value = 15 },
+				{ price = 2000000, value = 20 },
+			},
+		},
+		CollectRange = {
+			displayName = "Reichweite",
+			description = "Beläge aus größerer Entfernung antippen",
+			levels = {
+				{ price = 40, value = 14 },
+				{ price = 200, value = 18 },
+				{ price = 800, value = 22 },
+				{ price = 8000, value = 26 },
+				{ price = 25000, value = 30 },
+				{ price = 60000, value = 35 },
+			},
+		},
+		Magnet = {
+			displayName = "Magnet",
+			description = "Zieht Beläge beim Auto-Sammeln an",
+			levels = {
+				{ price = 600, value = 12 },
+				{ price = 30000, value = 18 },
+				{ price = 100000, value = 25 },
+			},
+		},
+	},
+
+	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
+	-- worlds offer the same upgrades with higher max levels (config only).
+	shops = {
+		World1Shop = {
+			worldId = "PizzeriaGarden",
+			displayName = "Münz-Tresen",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 3 },
+				{ upgrade = "CollectRange", maxLevel = 3 },
+				{ upgrade = "Magnet", maxLevel = 1 },
+			},
+		},
+	},
+
 	-- Worlds in unlock order. `unlockPrice` is paid once per player at the barrier in
 	-- front of the world (0 = open from the start). `toppingSpawns` weights are relative chances.
 	worlds = {

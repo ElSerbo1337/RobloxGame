@@ -85,3 +85,72 @@ describe("GameConfig", function()
 		end
 	end)
 end)
+
+describe("GameConfig shops", function()
+	local rules = GameRules.new(GameConfig)
+
+	local function buyUntilRejected(upgradeId: string): ({ number }, string?)
+		local state = rules.newPlayerState()
+		state.coins = 1e12
+		local values = {}
+		while true do
+			local result = rules.buyUpgrade(state, "World1Shop", upgradeId)
+			if not result.ok then
+				return values, result.reason
+			end
+			state = result.state
+			table.insert(
+				values,
+				if upgradeId == "PizzaSpace"
+					then rules.pizzaCapacity(state)
+					elseif upgradeId == "CollectRange" then rules.upgradeLevel(state, upgradeId)
+					else rules.magnetRange(state)
+			)
+		end
+	end
+
+	it("shop 1 in world 1 grows the pizza 2 -> 3 -> 4 -> 6, then needs a bigger shop", function()
+		local capacities, reason = buyUntilRejected("PizzaSpace")
+
+		expect(GameConfig.shops.World1Shop.worldId).toBe("PizzeriaGarden")
+		expect(capacities).toEqual({ 3, 4, 6 })
+		expect(reason).toBe("ShopLevelLimit")
+	end)
+
+	it("shop 1 sells collect range levels 1-3 and magnet level 1, more only in bigger shops", function()
+		local rangeLevels, rangeReason = buyUntilRejected("CollectRange")
+		local magnet, magnetReason = buyUntilRejected("Magnet")
+
+		expect(rangeLevels).toEqual({ 1, 2, 3 })
+		expect(rangeReason).toBe("ShopLevelLimit")
+		expect(#magnet).toBe(1)
+		expect(magnet[1] > GameConfig.collect.autoRadius).toBe(true)
+		expect(magnetReason).toBe("ShopLevelLimit")
+	end)
+
+	it("only has pizza space, range and magnet upgrades (no sell value upgrade)", function()
+		for upgradeId in GameConfig.upgrades do
+			local known = upgradeId == "PizzaSpace" or upgradeId == "CollectRange" or upgradeId == "Magnet"
+			expect(known).toBe(true)
+		end
+	end)
+
+	it("makes every upgrade level cost more and do more than the one before", function()
+		for _, upgrade in GameConfig.upgrades do
+			for i = 2, #upgrade.levels do
+				expect(upgrade.levels[i].price > upgrade.levels[i - 1].price).toBe(true)
+				expect(upgrade.levels[i].value > upgrade.levels[i - 1].value).toBe(true)
+			end
+		end
+	end)
+
+	it("only lets shops offer existing upgrades up to their last level", function()
+		for _, shop in GameConfig.shops do
+			for _, offer in shop.offers do
+				local upgrade = GameConfig.upgrades[offer.upgrade]
+				expect(upgrade ~= nil).toBe(true)
+				expect(offer.maxLevel >= 1 and offer.maxLevel <= #upgrade.levels).toBe(true)
+			end
+		end
+	end)
+end)

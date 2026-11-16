@@ -169,9 +169,9 @@ function GameRules.new(config: any)
 		return #state.pizza >= rules.pizzaCapacity(state)
 	end
 
-	-- Pickup radius around the player while auto-collect is on (the magnet will grow it later).
-	function rules.autoCollectRadius(_state: PlayerState): number
-		return config.collect.autoRadius
+	-- Pickup radius around the player while auto-collect is on; a magnet grows it.
+	function rules.autoCollectRadius(state: PlayerState): number
+		return math.max(config.collect.autoRadius, rules.magnetRange(state))
 	end
 
 	local function addTopping(state: PlayerState, toppingId: string, distance: number, range: number): Result

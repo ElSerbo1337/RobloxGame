@@ -1,6 +1,7 @@
 local TestKit = require("./TestKit")
 local TestConfig = require("./fixtures/TestConfig")
 local GameRules = require("../src/shared/GameRules")
+local SaveData = require("../src/shared/SaveData")
 
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
@@ -85,6 +86,24 @@ describe("upgrade effects", function()
 
 		expect(rules.magnetRange(rules.newPlayerState())).toBe(0)
 		expect(rules.magnetRange(state)).toBe(8)
+	end)
+
+	it("the magnet pulls in toppings from its radius while auto-collect is on", function()
+		local state = rules.buyUpgrade(playerWithCoins(100), "SmallShop", "Magnet").state
+		state = rules.setAutoCollect(state, true).state
+
+		expect(rules.autoCollectRadius(state)).toBe(8)
+		expect(rules.autoCollectTopping(state, "Salami", 7).ok).toBe(true)
+	end)
+
+	it("an old save without upgrades loads at level 0 for every upgrade", function()
+		local fresh = rules.newPlayerState()
+		local old = { version = 1, coins = 30, pizza = {} }
+
+		local loaded = SaveData.load(old, fresh).state
+
+		expect(rules.upgradeLevel(loaded, "PizzaSpace")).toBe(0)
+		expect(rules.buyUpgrade(loaded, "SmallShop", "PizzaSpace").ok).toBe(true)
 	end)
 end)
 
