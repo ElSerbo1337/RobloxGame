@@ -16,6 +16,20 @@ Mapping steht in `default.project.json`. Neue Top-Level-Services (z. B. `Starter
 
 Dateinamen-Konventionen (Rojo): `Foo.server.luau` = Script, `Foo.client.luau` = LocalScript, `Foo.luau` = ModuleScript, `init.*.luau` = der Ordner selbst wird zu diesem Script.
 
+## Architektur: Spielregeln vs. Roblox-Schicht
+
+- **Spielregeln** (`src/shared/GameRules.luau`, `src/shared/ToppingField.luau`): reines Luau **ohne Roblox-API** (kein `game`, `Instance`, `script`, kein `require` anderer Module). Arbeiten auf einem `PlayerState` (reine Tabelle); jede Aktion liefert `{ ok, reason?, state }` und verändert den alten Stand nicht. Zeit (`now`) und Zufall (`random: () -> number`) werden als Parameter übergeben, die Konfiguration per `GameRules.new(config)`.
+- **Zentrale Konfiguration** (`src/shared/GameConfig.luau`): alle Balancing-Zahlen, reine Daten. Neue Welten/Beläge nur hier ergänzen.
+- **Roblox-Schicht** (`src/server/*`, `src/client/*`): Server-Dienste rufen ausschließlich die Spielregeln auf (`PlayerStates.set` nur mit Regel-Ergebnissen) und replizieren den Stand als Player-Attribute. Client sendet nur Wünsche über RemoteEvents aus `src/shared/Net.luau`.
+
+## Tests (Lune)
+
+- Ausführen: `lune run test` (Runner in `.lune/test.luau`, Lune via `rokit install`).
+- Konvention: Specs liegen als `tests/**/*.spec.luau`, nutzen `tests/TestKit.luau` (`describe`/`it`/`expect`, `sequenceRandom` für deterministischen Zufall) und `require` mit relativen Pfaden (`../src/shared/GameRules`).
+- Getestet wird nur die Spielregeln-Naht (Aktion auf Stand anwenden → Ergebnis prüfen). Regel-Tests nutzen `tests/fixtures/TestConfig.luau`, damit Balancing-Änderungen sie nicht brechen; `tests/GameConfig.spec.luau` prüft die echte Konfiguration.
+- Roblox-Schicht wird manuell in Studio getestet (Checkliste in `docs/pc-todo.md`).
+- Cloud-Hinweis: Rokit erreicht dort die GitHub-API nicht und `selene` kann den Roblox-API-Dump nicht laden (`setup.rbxcdn.com` gesperrt). Tools dann direkt aus den GitHub-Release-ZIPs holen und Selene mit einer temporären Std (Basis `luau` + Roblox-Globals als `any`) laufen lassen.
+
 ## Regeln
 
 - Sprache: **Luau**, mit `--!strict` wo sinnvoll.

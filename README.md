@@ -37,11 +37,22 @@ Roblox-Spiel, Code-Verwaltung mit [Rojo](https://rojo.space) + Git.
    git push
    ```
 
+## Tests
+
+Die Spielregeln (`src/shared/GameRules.luau`, `src/shared/ToppingField.luau`) laufen ohne Roblox und werden mit [Lune](https://lune-org.github.io/docs) getestet (wird von `rokit install` mitinstalliert):
+
+```powershell
+lune run test
+```
+
+Tests liegen in `tests/*.spec.luau`. Formatieren/Linten: `stylua src tests .lune` und `selene src`.
+
 ## Struktur
 
 - `src/server` → ServerScriptService
 - `src/client` → StarterPlayerScripts
-- `src/shared` → ReplicatedStorage
+- `src/shared` → ReplicatedStorage (u. a. `GameConfig` = alle Spielzahlen, `GameRules` = Spielregeln)
+- `tests/` → Lune-Tests der Spielregeln, Runner in `.lune/test.luau`
 - `docs/` → Entscheidungen (ADRs) und Agent-Konfiguration
 - `.claude/skills/` → Skills für Claude Code (aus mattpocock/skills)
 
