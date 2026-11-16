@@ -279,3 +279,31 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
 - [ ] Freischalt-Knöpfe für Strand/Eisberge und das Menü von Shop 2 sind groß, lesbar und per Antippen bedienbar; die längeren Namen („Gefrorene Erbsen“, „Großer Münz-Tresen“) werden nicht abgeschnitten.
+
+## #17 Tutorial für neue Spieler
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Tutorial.spec.luau` und `GameConfig` „tutorial“).
+
+Wichtig: Wer schon **vor** diesem Ticket gespeichert hat, gilt als erfahrener Spieler und sieht das Tutorial **nicht** (Migration v2 → v3). Zum Testen als neuer Spieler den eigenen Spielstand löschen – in Studio (API-Zugriff an, siehe #3) im **Server**-Fenster in die Command Bar:
+`game:GetService("DataStoreService"):GetDataStore("PlayerState"):RemoveAsync("player_" .. game.Players:GetPlayers()[1].UserId)` – danach **Stop** und neu **Play** (der Leave-Save schreibt den Stand sonst sofort zurück: also Stop direkt nach dem Löschen, ohne vorher etwas zu tun, ggf. zweimal ausführen). Alternativ mit „Enable Studio Access to API Services“ **aus** spielen: Dann startet man immer frisch.
+
+Studio: Rojo verbinden, dann **Play** als neuer Spieler (1 Spieler):
+
+- [ ] Output ohne rote Fehler. Unter den Münzen erscheint eine Karte „Tutorial – Schritt 1/4“: „Sammle 2 Beläge ein (0/2) …“.
+- [ ] Ein gelber, wippender Pfeil ▼ steht über dem **nächsten** Belag, eine gelbe Linie führt von den Füßen dorthin. Beim Laufen springt der Pfeil zum jeweils nächsten Belag (nie zu einem Gem-Belag).
+- [ ] 1 Belag einsammeln → „(1/2)“. Zweiten Belag einsammeln (per Antippen **oder** Auto-Sammeln) → Karte springt mit kleinem Pop auf „Schritt 2/4: … verkaufe deine Pizza!“, Pfeil steht über der Ofen-Zone.
+- [ ] In die Ofen-Zone laufen und verkaufen → „Schritt 3/4: Kauf im Shop dein erstes Upgrade!“, Pfeil über der grünen Shop-Zone in Welt 1.
+- [ ] Mit zu wenig Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4. Weiter sammeln/verkaufen, dann Pizza-Platz kaufen (25 Münzen) → „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil über dem Ei-Sockel in Welt 1.
+- [ ] Ei öffnen (25 Münzen) → Karte zeigt „Tutorial geschafft!“ und verschwindet nach ca. 4 s; Pfeil und Linie sind weg.
+- [ ] **Stop**, erneut **Play** → kein Tutorial mehr (gespeichert).
+- [ ] Mittendrin speichern: Neuer Spieler, bis Schritt 3 spielen, **Stop**, **Play** → Tutorial macht bei Schritt 3/4 weiter.
+- [ ] Reihenfolge: In Schritt 1 schon im Shop kaufen oder ein Ei öffnen (Münzen per Command Bar geben) → Tutorial bleibt bei Schritt 1.
+- [ ] Nach dem Sterben/Respawn (z. B. Character resetten) zeigt die Linie weiterhin vom Spieler zum Ziel.
+
+**Erfahrener Spieler**: Mit einem Spielstand von vor diesem Ticket (oder einem fertigen Tutorial) **Play** → keine Tutorial-Karte, kein Pfeil.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Die Tutorial-Karte ist komplett sichtbar, Text lesbar und nicht abgeschnitten; sie überdeckt weder Münzanzeige noch Meldungen („Pizza voll!“) noch den Auto-Sammeln-Knopf.
+- [ ] Die Karte blockiert keine Eingaben: Beläge, die hinter der Karte liegen, lassen sich antippen; Kamera-Wischen über der Karte funktioniert.
+- [ ] Pfeil und Linie sind auf dem kleinen Bildschirm gut zu erkennen.
