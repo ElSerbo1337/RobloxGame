@@ -217,3 +217,33 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 - [ ] Menü passt auf den Bildschirm, „X“ erreichbar, Einträge groß und mit dem Daumen antippbar, Liste scrollt per Wischen.
 - [ ] Antippen teleportiert (kein Maus-Hover nötig).
+
+## #7 Pet-Verwaltung: Beste ausrüsten, Löschen, Inventargrenze
+
+Vorher: `lune run test` → alle grün (neue Fälle in `tests/Pets.spec.luau`: `equipBest`, `deletePet`, `inventory limit`).
+
+Vorbereitung: Zum schnellen Testen in `src/shared/GameConfig.luau` vorübergehend `price = 1` beim `GardenEgg` und `inventory.start = 5` setzen (**nicht committen**, danach zurück auf 25 bzw. 50).
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler.
+- [ ] Pet-Menü öffnen: Kopfzeile zeigt „Ausgerüstet X/3 · Inventar Y/5 · Bonus +Z %“ (mit echtem Wert: Y/50). Darunter zwei große Knöpfe „Beste ausrüsten“ (grün) und „Löschen“ (rot), die Pet-Liste darunter ist nicht verdeckt.
+- [ ] Ohne Pets „Beste ausrüsten“ antippen → Kopfzeile kurz rot „Noch keine Pets – öffne ein Ei!“.
+- [ ] Mehrere Pets öffnen (verschiedene Seltenheiten), nur schwache ausrüsten → „Beste ausrüsten“ → die 3 Pets mit dem höchsten Bonus sind ausgerüstet (Karten vorn, „Ablegen“), Münz-Bonus in der Kopfzeile passt (Summe der 3 Boni). Die Pet-Kugeln neben dem Spieler wechseln entsprechend.
+- [ ] „Beste ausrüsten“ erneut antippen, wenn schon die besten ausgerüstet sind → nichts ändert sich (keine Pets verschwinden/erscheinen).
+- [ ] „Löschen“ antippen → Knopf wird dunkel „Fertig“, Titel „Pet zum Löschen antippen“, „Beste ausrüsten“ ist ausgeblendet, alle Karten zeigen roten „Löschen“-Streifen.
+- [ ] Im Löschen-Modus eine Karte antippen → Dialog „<Name> (+X %) wirklich löschen?“ mit großen Knöpfen „Löschen“ / „Behalten“. „Behalten“ → nichts passiert.
+- [ ] „Löschen“ im Dialog → Pet verschwindet aus der Liste, Inventar-Zahl sinkt um 1.
+- [ ] Ein **ausgerüstetes** Pet löschen → Dialog erwähnt „Es wird dabei abgelegt.“; nach dem Löschen verschwindet seine Kugel neben dem Spieler, „Ausgerüstet“ und Bonus sinken.
+- [ ] „Fertig“ bzw. Menü schließen (X oder „Pets“-Knopf) beendet den Löschen-Modus; beim nächsten Öffnen normale Ansicht.
+- [ ] Inventar füllen (5/5 mit Testwert) → Kopfzeile rot. Am Ei „1 öffnen“ → Knopf wird kurz rot „Inventar voll!“, oben erscheint Meldung „Pet-Inventar voll! Lösche erst ein Pet.“, **keine Münzen abgezogen**, keine Animation.
+- [ ] Ein Pet löschen → Ei lässt sich wieder öffnen.
+- [ ] Rejoin (Speichern aktiv): gelöschte Pets bleiben weg, Ausrüstung nach „Beste ausrüsten“ bleibt erhalten.
+
+**Mehrspieler** (2 Spieler): Löscht A ein ausgerüstetes Pet, verschwindet dessen Kugel auch bei B.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] Pet-Menü (jetzt 560 hoch) passt komplett auf den Bildschirm, „X“, „Beste ausrüsten“ und „Löschen“ sind mit dem Daumen gut antippbar.
+- [ ] Bestätigungsdialog passt, beide Knöpfe gut antippbar; Antippen außerhalb des Dialogs löst keine Karte darunter aus.
+- [ ] Wischen in der Liste im Löschen-Modus öffnet nicht versehentlich den Dialog.
