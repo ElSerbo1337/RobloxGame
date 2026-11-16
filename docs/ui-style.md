@@ -46,9 +46,9 @@ Seltenheiten haben eigene Farben in `GameConfig.rarities` (`UiKit.rarityColor`).
 | Bereich | Inhalt |
 | --- | --- |
 | oben Mitte | Münzen (links der Mitte) und Gems (rechts der Mitte); kurze Meldungen darunter |
-| links Mitte | runde Knöpfe: Pets (später Rebirth) |
+| links Mitte | runde Knöpfe: Pets, darunter Tränke (später Rebirth) |
 | unten Mitte | Pizza-Füllstand, darüber der Auto-Sammeln-Schalter |
-| rechts | aktive Tränke und aktiver Auftrag mit Timer |
+| rechts | aktive Tränke (ab oberem Drittel, je Trank eine Pille mit Restzeit `m:ss`) und aktiver Auftrag mit Timer |
 
 Kein Shop- und kein Teleport-Knopf im HUD – Shops und Portale betritt man in der Welt.
 

@@ -437,3 +437,31 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Freischalt-Knöpfe „… freischalten – 150.000.000 Münzen“ sind groß, lesbar (nicht abgeschnitten) und per Antippen bedienbar.
 - [ ] Shop-3-Menü: Kaufknöpfe mit langen Preisen („1.200.000.000 Münzen“) lesbar und gut antippbar; Liste scrollt per Wischen.
 - [ ] Portal-Menü mit 7 Einträgen scrollt per Wischen, alle Zeilen gut antippbar.
+
+## #13 Tränke: Münzen, Glück, Speed
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Potions.spec.luau` und `GameConfig potions`).
+
+Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `durationSeconds = 30` bei allen drei Tränken und den Gem-Tipp aus #12 (`gems.playtimeSeconds = 30`, `gems.playtimeGems = 500`) setzen (Server neu starten). **Danach zurücksetzen, nicht committen.**
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler. Links unter dem runden „Pets“-Knopf steht ein runder lila Knopf **„Tränke“**; rechts ist noch keine Trank-Anzeige zu sehen.
+- [ ] Shop in Welt 1: Unter den Gem-Upgrades kommt der Abschnitt **„Gem-Tresen: Tränke (je 10 Min.)“** mit Münz-Trank (25 Gems), Glücks-Trank (30) und Speed-Trank (15), jeweils mit „Im Inventar: 0“. Mit zu wenig Gems: grauer Knopf, Antippen → „Nicht genug Gems!“, nichts ändert sich.
+- [ ] Trank kaufen → Gems sinken um den Preis, Status „Gekauft: Münz-Trank! – im Trank-Menü trinken“, „Im Inventar“ steigt. Zweimal kaufen → 2.
+- [ ] „Tränke“-Knopf → Menü „Meine Tränke“ mit 3 Karten (💰/🍀/⚡), Anzahl im Inventar, grüner Knopf „Trinken“ (grau, wenn 0). „X“ und erneutes Tippen auf „Tränke“ schließen.
+- [ ] **Münz-Trank** trinken → Toast „Münz-Trank wirkt 10 Minuten!“, rechts erscheint „💰 Münzen ×2  10:00“ und zählt sekündlich herunter. Pizza verkaufen → doppelte Münzen (mit Pets: Belagwert × Pet-Bonus × 2).
+- [ ] Gleichen Trank nochmal trinken → Restzeit **verlängert** sich um 10 Min. (z. B. 9:30 → 19:30), sie startet nicht neu.
+- [ ] **Speed-Trank** → man läuft sichtbar schneller (Tempo × 1,5, also 16 → 24, mit Tempo-Upgrade 19 → 28,5). Gilt auch nach Respawn (Reset). Nach Ablauf wieder normales Tempo.
+- [ ] **Glücks-Trank** → in jeder Ei-Vorschau steht „🍀 Glück!“ hinter dem Ei-Namen, die Chancen sind grün und seltene Pets höher (Garten-Ei: Pizza-Drache 0,5 % → ca. 1 %, Teig-Hamster 50 % → ca. 41 %). Nach Ablauf wieder die normalen Werte.
+- [ ] Ablauf: Wenn die Zeit um ist, verschwindet die Anzeige rechts, Toast „… ist abgelaufen.“, die Wirkung endet (Verkaufswert/Tempo/Chancen wieder normal).
+- [ ] Mehrere Tränke gleichzeitig: alle drei trinken → drei Anzeigen rechts untereinander, jede mit eigener Zeit.
+- [ ] Speichern: Tränke im Inventar und laufende Restzeit bleiben nach Rejoin erhalten. Während man offline ist, läuft die Zeit **nicht** weiter (so gewollt).
+- [ ] Server-Schutz (optional, Command Bar im Client): `game.ReplicatedStorage.Remotes.DrinkPotion:FireServer("Coins")` ohne Trank im Inventar → nichts passiert außer Meldung; `BuyPotion:FireServer("World1Shop", "Coins")` **außerhalb** des Shops → nichts passiert.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] „Tränke“-Knopf ist groß, gut antippbar, überdeckt weder den „Pets“-Knopf noch den Joystick.
+- [ ] Trank-Menü passt auf den Bildschirm; „Trinken“-Knöpfe groß und per Antippen bedienbar.
+- [ ] Trank-Anzeigen rechts sind lesbar und liegen nicht über dem Sprung-Knopf (unten rechts).
+- [ ] Shop-Menü: Trank-Kaufknöpfe lesbar und antippbar, Liste scrollt per Wischen bis zu den Tränken.
