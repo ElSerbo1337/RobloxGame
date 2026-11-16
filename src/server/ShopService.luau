@@ -1,12 +1,14 @@
 --!strict
 -- Shop stands: walking into a stand's zone opens its menu on the client, walking out
--- closes it. Purchases are wishes from the client; the server checks that the player
+-- closes it. Purchases (upgrades and potions) are wishes from the client; the server checks that the player
 -- is standing in that shop and lets the game rules decide (price, shop level limit).
 
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
 
@@ -132,36 +134,54 @@ function ShopService.start(stands: { Stand })
 
 	local function offersFor(player: Player, shopId: string)
 		local state = PlayerStates.get(player)
-		return state and PlayerStates.rules.shopOffers(state, shopId)
+		if state == nil then
+			return nil, nil
+		end
+		return PlayerStates.rules.shopOffers(state, shopId), PlayerStates.rules.potionOffers(state, shopId)
 	end
 
-	Net.event("BuyUpgrade").OnServerEvent:Connect(function(player: Player, shopId: unknown, upgradeId: unknown)
-		if typeof(shopId) ~= "string" or typeof(upgradeId) ~= "string" then
-			return
+	-- Upgrades and potions are bought the same way: only while standing at that shop;
+	-- the game rules decide (price, shop level limit, what the shop sells).
+	local function handlePurchase(buy: (GameRules.PlayerState, string, string) -> GameRules.Result)
+		return function(player: Player, shopId: unknown, itemId: unknown)
+			if typeof(shopId) ~= "string" or typeof(itemId) ~= "string" then
+				return
+			end
+			local state = PlayerStates.get(player)
+			if state == nil or insideShop[player] ~= shopId then
+				return
+			end
+			local result = buy(state, shopId, itemId)
+			if result.ok then
+				PlayerStates.set(player, result.state)
+				shopPurchase:FireClient(player, true, itemId)
+			else
+				shopPurchase:FireClient(player, false, result.reason)
+			end
 		end
-		local state = PlayerStates.get(player)
-		if state == nil or insideShop[player] ~= shopId then
-			return -- only buy while standing at that shop
-		end
-		local result = PlayerStates.rules.buyUpgrade(state, shopId, upgradeId)
-		if result.ok then
-			PlayerStates.set(player, result.state)
-			shopPurchase:FireClient(player, true, upgradeId)
-		else
-			shopPurchase:FireClient(player, false, result.reason)
-		end
-	end)
+	end
+	Net.event("BuyUpgrade").OnServerEvent:Connect(handlePurchase(PlayerStates.rules.buyUpgrade))
+	Net.event("BuyPotion").OnServerEvent:Connect(handlePurchase(PlayerStates.rules.buyPotion))
 
-	-- Keep an open menu current (coins earned elsewhere, levels bought).
+	-- Keep an open menu current (coins earned elsewhere, levels or potions bought).
+	-- Only sent when something the menu shows changed: running potions tick every few seconds.
+	local shownFor: { [Player]: string } = {}
 	PlayerStates.onChanged(function(player, state)
 		local shopId = insideShop[player]
 		if shopId then
-			shopUpdate:FireClient(player, shopId, PlayerStates.rules.shopOffers(state, shopId))
+			local offers = PlayerStates.rules.shopOffers(state, shopId)
+			local potions = PlayerStates.rules.potionOffers(state, shopId)
+			local key = HttpService:JSONEncode({ state.coins, state.gems, offers, potions })
+			if shownFor[player] ~= key then
+				shownFor[player] = key
+				shopUpdate:FireClient(player, shopId, offers, potions)
+			end
 		end
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)
 		insideShop[player] = nil
+		shownFor[player] = nil
 	end)
 
 	task.spawn(function()
@@ -185,10 +205,14 @@ function ShopService.start(stands: { Stand })
 					if previous then
 						shopClose:FireClient(player)
 					end
-					local offers = current and offersFor(player, current)
+					shownFor[player] = nil
+					local offers, potions = nil, nil
+					if current then
+						offers, potions = offersFor(player, current)
+					end
 					if current and offers then
 						insideShop[player] = current
-						shopOpen:FireClient(player, current, offers)
+						shopOpen:FireClient(player, current, offers, potions)
 					else
 						insideShop[player] = nil
 					end

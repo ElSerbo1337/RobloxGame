@@ -5,11 +5,16 @@
 -- SetAutoCollect  client -> server  (enabled: boolean)          "switch auto-collect on/off"
 -- UnlockWorld     client -> server  (worldId: string)          "I want to buy the barrier to this world"
 -- Notify          server -> client  (kind: string, amount: number?)  feedback, e.g. "PizzaFull", "Sold", "Gems"
--- ShopOpen        server -> client  (shopId: string, offers: { GameRules.ShopOffer })  player entered a shop stand
--- ShopUpdate      server -> client  (shopId: string, offers: { GameRules.ShopOffer })  offers changed while inside
+-- ShopOpen        server -> client  (shopId: string, offers: { GameRules.ShopOffer }, potions: { GameRules.PotionOffer })
+--                                    player entered a shop stand
+-- ShopUpdate      server -> client  (shopId: string, offers: { GameRules.ShopOffer }, potions: { GameRules.PotionOffer })
+--                                    offers changed while inside
 -- ShopClose       server -> client  ()                           player left the shop stand
 -- BuyUpgrade      client -> server  (shopId: string, upgradeId: string)  "I want the next level"
--- ShopPurchase    server -> client  (ok: boolean, reasonOrUpgradeId: string)  result of BuyUpgrade
+-- ShopPurchase    server -> client  (ok: boolean, reasonOrId: string)  result of BuyUpgrade / BuyPotion (upgrade or potion id)
+-- BuyPotion       client -> server  (shopId: string, potionId: string)  "I want one of this potion" (gem counter)
+-- DrinkPotion     client -> server  (potionId: string)           "drink one of my potions"
+-- PotionNotify    server -> client  (kind: string, potionId: string)  "Drunk" | "Expired" | a rule's failure reason
 -- OpenEgg         client -> server  (eggId: string, count: number?)  "open 1 (or 3, if bought) of this egg"
 -- EggOpened       server -> client  (eggId: string, ...petId: string)  plays the hatch animation (one pet per egg)
 -- EquipPet        client -> server  (uid: number)               "equip this pet"
@@ -25,6 +30,8 @@
 -- EggsPerOpen (1, or 3 after the gem upgrade).
 -- Tutorial: TutorialStep (step id, "" = finished), TutorialNumber, TutorialTotal, TutorialProgress, TutorialGoal.
 -- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, InventorySlots, CoinMultiplier.
+-- Potions (see PotionService): Potions (JSON { [potionId]: count owned }),
+-- ActivePotions (JSON { [potionId]: seconds left when the attribute was set; the client counts down from there }).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -49,6 +56,9 @@ local EVENTS = {
 	Teleport = true,
 	EquipBest = true,
 	DeletePet = true,
+	BuyPotion = true,
+	DrinkPotion = true,
+	PotionNotify = true,
 }
 
 local Net = {}

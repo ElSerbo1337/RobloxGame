@@ -3,7 +3,8 @@
 -- they walk out (or tap X). Shows price, effect and level of every upgrade the shop
 -- sells, split into the coin counter ("Münz-Tresen") and the gem counter ("Gem-Tresen");
 -- levels only a bigger shop sells are shown as "im größeren Shop erhältlich".
--- Buttons only send wishes (BuyUpgrade); the server decides and answers ShopPurchase.
+-- The gem counter also sells potions (they land in the potion inventory, see PotionMenu).
+-- Buttons only send wishes (BuyUpgrade, BuyPotion); the server decides and answers ShopPurchase.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,6 +16,7 @@ local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 
 type ShopOffer = GameRules.ShopOffer
+type PotionOffer = GameRules.PotionOffer
 
 local FONT = Enum.Font.FredokaOne
 local CREAM = Color3.fromRGB(255, 248, 230)
@@ -137,6 +139,7 @@ end
 function ShopMenu.start()
 	local player = Players.LocalPlayer
 	local buyUpgrade = Net.event("BuyUpgrade")
+	local buyPotion = Net.event("BuyPotion")
 
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "ShopMenu"
@@ -194,6 +197,7 @@ function ShopMenu.start()
 
 	local currentShop: string? = nil
 	local currentOffers: { ShopOffer } = {}
+	local currentPotions: { PotionOffer } = {}
 	local statusId = 0
 
 	local function showStatus(text: string, color: Color3)
@@ -305,11 +309,79 @@ function ShopMenu.start()
 			button.AnchorPoint = Vector2.new(1, 0.5)
 			button.Position = UDim2.new(1, -12, 0.5, 0)
 		end
+
+		-- Potions at the gem counter, below the gem upgrades.
+		local order = #currentOffers * 2 + 1
+		if #currentPotions > 0 then
+			local header = Instance.new("Frame")
+			header.Name = "Header_Potions"
+			header.LayoutOrder = order
+			header.Size = UDim2.new(1, -14, 0, HEADER_HEIGHT)
+			header.BackgroundColor3 = GEM
+			corner(header, 14)
+			stroke(header, 2)
+			header.Parent = list
+			label(header, "Gem-Tresen: Tränke (je 10 Min.)", {
+				Position = UDim2.fromOffset(14, 4),
+				Size = UDim2.new(1, -28, 1, -8),
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+		end
+		for index, offer in currentPotions do
+			local potion = GameConfig.potions[offer.potionId]
+			local card = Instance.new("Frame")
+			card.Name = `Potion_{offer.potionId}`
+			card.LayoutOrder = order + index
+			card.Size = UDim2.new(1, -14, 0, CARD_HEIGHT)
+			card.BackgroundColor3 = CARD
+			corner(card, 16)
+			stroke(card, 2)
+			card.Parent = list
+
+			label(card, offer.displayName, {
+				Position = UDim2.fromOffset(14, 8),
+				Size = UDim2.new(0.42, -14, 0, 38),
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			label(card, potion and potion.description or "", {
+				Position = UDim2.fromOffset(14, 50),
+				Size = UDim2.new(0.42, -14, 0, 24),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = Color3.fromRGB(110, 80, 55),
+			})
+			label(card, `{math.floor(offer.durationSeconds / 60)} Minuten`, {
+				Position = UDim2.fromOffset(14, 76),
+				Size = UDim2.new(0.42, -14, 0, 22),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = Color3.fromRGB(110, 80, 55),
+			})
+			label(card, `Im Inventar: {offer.owned}`, {
+				Position = UDim2.new(0.42, 4, 0, 0),
+				Size = UDim2.new(0.28, -8, 1, 0),
+			})
+
+			local canAfford = balance.Gems >= offer.price
+			local button = bigButton(
+				card,
+				`{formatNumber(offer.price)} Gems`,
+				if canAfford then GEM else GREY,
+				UDim2.new(0.3, -14, 0, 76)
+			)
+			button.AnchorPoint = Vector2.new(1, 0.5)
+			button.Position = UDim2.new(1, -12, 0.5, 0)
+			local potionId = offer.potionId
+			button.Activated:Connect(function()
+				if currentShop then
+					buyPotion:FireServer(currentShop, potionId)
+				end
+			end)
+		end
 	end
 
-	local function open(shopId: string, offers: { ShopOffer })
+	local function open(shopId: string, offers: { ShopOffer }, potions: { PotionOffer }?)
 		currentShop = shopId
 		currentOffers = offers
+		currentPotions = potions or {}
 		local shop = GameConfig.shops[shopId]
 		title.Text = if shop then shop.displayName else "Shop"
 		status.Text = ""
@@ -329,19 +401,22 @@ function ShopMenu.start()
 	end
 
 	Net.event("ShopOpen").OnClientEvent:Connect(open)
-	Net.event("ShopUpdate").OnClientEvent:Connect(function(shopId: string, offers: { ShopOffer })
-		if currentShop == shopId then
-			currentOffers = offers
-			render()
-		end
-	end)
+	Net.event("ShopUpdate").OnClientEvent
+		:Connect(function(shopId: string, offers: { ShopOffer }, potions: { PotionOffer }?)
+			if currentShop == shopId then
+				currentOffers = offers
+				currentPotions = potions or {}
+				render()
+			end
+		end)
 	Net.event("ShopClose").OnClientEvent:Connect(close)
 	closeButton.Activated:Connect(close)
 
 	Net.event("ShopPurchase").OnClientEvent:Connect(function(ok: boolean, detail: string)
 		if ok then
-			local upgrade = GameConfig.upgrades[detail]
-			showStatus(`Gekauft: {upgrade and upgrade.displayName or detail}!`, Color3.fromRGB(40, 150, 60))
+			local item = GameConfig.upgrades[detail] or GameConfig.potions[detail]
+			local suffix = if GameConfig.potions[detail] then " – im Trank-Menü trinken" else ""
+			showStatus(`Gekauft: {item and item.displayName or detail}!{suffix}`, Color3.fromRGB(40, 150, 60))
 		else
 			showStatus(MESSAGES[detail] or "Kauf nicht möglich.", RED)
 		end

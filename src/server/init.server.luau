@@ -12,6 +12,7 @@ local PetService = require(script.PetService)
 local PizzaVisual = require(script.PizzaVisual)
 local PlayerStates = require(script.PlayerStates)
 local PortalService = require(script.PortalService)
+local PotionService = require(script.PotionService)
 local ShopService = require(script.ShopService)
 local ToppingService = require(script.ToppingService)
 local TutorialService = require(script.TutorialService)
@@ -30,7 +31,10 @@ end
 for _, name in { "PortalOpen", "PortalClose", "Teleport" } do
 	Net.event(name)
 end
-for _, name in { "ShopOpen", "ShopUpdate", "ShopClose", "BuyUpgrade", "ShopPurchase" } do
+for _, name in { "ShopOpen", "ShopUpdate", "ShopClose", "BuyUpgrade", "ShopPurchase", "BuyPotion" } do
+	Net.event(name)
+end
+for _, name in { "DrinkPotion", "PotionNotify" } do
 	Net.event(name)
 end
 
@@ -83,6 +87,7 @@ TutorialService.start({
 })
 PetService.start()
 GemService.start()
+PotionService.start()
 -- One teleport portal per configured world (same spot in each world).
 PortalService.start(PortalService.buildAll())
 

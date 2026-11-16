@@ -2,7 +2,8 @@
 -- Gem perks that live outside the shop:
 -- * Play time: every PLAYTIME_TICK seconds each player gets the elapsed time credited;
 --   the game rules turn every full 15 minutes into a gem (the rest is kept and saved).
--- * Walk speed: the humanoid's WalkSpeed follows rules.walkSpeed (gem upgrade).
+-- * Walk speed: the humanoid's WalkSpeed follows rules.walkSpeed (gem upgrade times the
+--   speed potion), re-applied on every state change, so it also drops when the potion ends.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

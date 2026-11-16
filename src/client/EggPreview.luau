@@ -1,9 +1,11 @@
 --!strict
 -- Floating preview above each egg: all pets with rarity color, chance in % and bonus,
 -- plus a big "1 öffnen" button (and "3 öffnen" after the gem upgrade). Shows up when
--- the player comes close.
+-- the player comes close. While the luck potion runs, the chances shown are the lucky ones
+-- (from the ActivePotions attribute) and the title says so.
 -- The button only sends the wish "OpenEgg"; the server decides.
 
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -61,6 +63,9 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 	title.Position = UDim2.fromOffset(16, 10)
 	title.Size = UDim2.new(1, -32, 0, 44)
 
+	-- Chance label per pet id, updated when the luck potion starts or ends.
+	local chanceLabels: { [string]: TextLabel } = {}
+
 	for i, entry in preview.pets do
 		local pet = GameConfig.pets[entry.petId]
 		local color = UiKit.rarityColor(entry.rarity)
@@ -97,6 +102,7 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 		local chance = UiKit.label(row, UiKit.chanceText(entry.chancePercent))
 		chance.Position = UDim2.new(0.5, 0, 0, 6)
 		chance.Size = UDim2.new(0.25, 0, 0, 28)
+		chanceLabels[entry.petId] = chance
 
 		local bonus = UiKit.label(row, UiKit.bonusText(entry.bonus))
 		bonus.Position = UDim2.new(0.75, 0, 0, 6)
@@ -105,6 +111,33 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 	end
 
 	local player = Players.LocalPlayer
+
+	local function updateLuck()
+		local ok, active = pcall(HttpService.JSONDecode, HttpService, player:GetAttribute("ActivePotions") or "{}")
+		local activePotions = if ok and type(active) == "table" then active else {}
+		-- eggPreview only reads the running potions from the state.
+		local lucky = rules.eggPreview(eggId, { activePotions = activePotions } :: any)
+		local hasLuck = (activePotions.Luck or 0) > 0
+		title.Text = if hasLuck then `{egg.displayName} 🍀 Glück!` else egg.displayName
+		for _, entry in lucky.pets do
+			local chance = chanceLabels[entry.petId]
+			if chance then
+				chance.Text = UiKit.chanceText(entry.chancePercent)
+				chance.TextColor3 = if hasLuck then Color3.fromRGB(40, 130, 40) else UiKit.DARK
+			end
+		end
+	end
+	-- Only re-render when luck switches on or off (the attribute also changes while it counts down).
+	local hadLuck: boolean? = nil
+	player:GetAttributeChangedSignal("ActivePotions"):Connect(function()
+		local hasLuck = string.find(tostring(player:GetAttribute("ActivePotions")), '"Luck"') ~= nil
+		if hasLuck ~= hadLuck then
+			hadLuck = hasLuck
+			updateLuck()
+		end
+	end)
+	updateLuck()
+
 	local openText = `1 öffnen – {preview.price} Münzen`
 	local button = UiKit.button(root, openText, UiKit.GREEN)
 	button.Name = "OpenOne"

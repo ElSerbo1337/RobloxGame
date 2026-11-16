@@ -10,6 +10,7 @@ local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local UiKit = require(script.Parent.UiKit)
 
@@ -294,6 +295,16 @@ function Hud.start(): GuiObject
 				elseif kind == "WorldUnlocked" then COIN
 				else nil
 			showToast(MESSAGES[kind], color)
+		end
+	end)
+
+	-- A potion ran out (the potion menu may be closed, so say it here).
+	Net.event("PotionNotify").OnClientEvent:Connect(function(kind: string, potionId: string)
+		local potion = GameConfig.potions[potionId]
+		if kind == "Expired" and potion then
+			showToast(`{potion.displayName} ist abgelaufen.`, CREAM)
+		elseif kind == "Drunk" and potion then
+			showToast(`{potion.displayName} wirkt 10 Minuten!`, ON)
 		end
 	end)
 
