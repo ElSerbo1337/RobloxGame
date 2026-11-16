@@ -148,3 +148,39 @@ Vorbereitung: Zum schnellen Testen in `src/shared/GameConfig.luau` vorübergehen
 
 - [ ] Freischalt-Knopf ist groß, gut lesbar, mit dem Daumen antippbar und verdeckt weder Joystick noch Sprung-Knopf noch die Pizza-Leiste.
 - [ ] Antippen kauft (kein Maus-Hover nötig).
+
+## #6 Eier und Pets: öffnen, ausrüsten, Bonus
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Pets.spec.luau`).
+
+Vorbereitung: Zum schnellen Testen in `src/shared/GameConfig.luau` vorübergehend `price = 1` beim `GardenEgg` setzen (**nicht committen**, danach zurück auf 25) oder ein paar Runden sammeln/verkaufen.
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler):
+
+- [ ] Output ohne rote Fehler. Im Workspace gibt es `Eggs` (mit `GardenEgg` und `FarmEgg`) und `Pets`.
+- [ ] Links neben dem Spawn (x = −30, zwischen Spawn und Shop-Stand) steht auf einem Sockel ein cremefarbenes Ei mit orangen Punkten, nicht im Boden versunken und nicht schwebend.
+- [ ] Hinlaufen (< 20 Studs) → über dem Ei schwebt die Vorschau „Garten-Ei“ mit 6 Zeilen: Teig-Hamster (grau, 50 %, +10 %), Basilikum-Hase (grün, 28 %, +15 %), Tomaten-Katze (blau, 15 %, +25 %), Käse-Maus (lila, 5,5 %, +40 %), Oliven-Eule (orange, 1 %, +75 %), Pizza-Drache (pink, 0,5 %, +150 %) und darunter der grüne Knopf „1 öffnen – 25 Münzen“. Weggehen → Vorschau verschwindet.
+- [ ] Vorschau ist lesbar, nicht abgeschnitten und verdeckt das Ei nicht komplett (ggf. `StudsOffsetWorldSpace`/`WIDTH` in `src/client/EggPreview.luau` anpassen).
+- [ ] Mit weniger als 25 Münzen „1 öffnen“ antippen → Knopf wird kurz rot „Zu wenig Münzen!“, Münzen unverändert, kein Pet.
+- [ ] Mit genug Münzen „1 öffnen“ → Münzen sinken um 25; Animation: Ei wackelt immer stärker, knackt (⚡), weißer Blitz, Pet-Karte springt heraus (Name, Seltenheit in Farbe, „+X % Münzen“). Antippen oder 3 s warten schließt sie.
+- [ ] Schnell mehrfach tippen öffnet nicht mehrere Eier gleichzeitig (Sperre ca. 2,5 s).
+- [ ] Links mittig großer runder Knopf „Pets“ → Menü „Meine Pets“ mit Karten (Farbe = Seltenheit, Name, Bonus, Knopf „Ausrüsten“). Ohne Pets: „Noch keine Pets – öffne ein Ei!“.
+- [ ] Karte antippen → Pet ausgerüstet (Karte rückt nach vorn, „Ablegen“), Kopfzeile „Ausgerüstet 1/3 · Münz-Bonus +X %“. Neben dem Spieler erscheint eine farbige Kugel mit Augen und Namensschild.
+- [ ] 4 Pets öffnen, 3 ausrüsten → das 4. lässt sich nicht ausrüsten, Meldung „Alle Pet-Plätze belegt – erst ein Pet ablegen!“. Eins ablegen → Kugel verschwindet, das 4. lässt sich nun ausrüsten.
+- [ ] Ausgerüstete Pets laufen in einer Reihe hinter dem Spieler her, hüpfen beim Laufen, schweben im Stand leicht, stehen auf dem Boden (nicht im Boden / nicht in der Luft), auch an Rampen/Kanten. Kein Ruckeln, Spieler kollidiert nicht mit ihnen.
+- [ ] Verkaufswert: z. B. mit Teig-Hamster (+10 %) und Tomaten-Katze (+25 %) ergibt eine Pizza aus Pilz + Mozzarella (7) → 7 × 1,35 = 9,45 → **9** Münzen. Ohne ausgerüstete Pets wieder 7.
+- [ ] Nach Reset (Esc → Reset Character) folgen die Pets der neuen Figur weiter.
+- [ ] Rejoin (Speichern aktiv wie bei #3): Pets und Ausrüstung sind noch da.
+- [ ] Bauernhof-Ei (Welt 2, auf dem Ei-Sockel aus #8): Ohne Freischaltung → „1 öffnen“ wird abgelehnt (Server meldet `WorldLocked`, keine Münzen weg). Nach Freischaltung öffnen klappt, die Bauernhof-Pets erscheinen.
+
+**Mehrspieler** (Test → Clients and Servers → 2 Spieler):
+
+- [ ] Spieler B sieht die Pets von Spieler A hinter A herlaufen (und umgekehrt), flüssig.
+- [ ] Verlässt A das Spiel, verschwinden seine Pets bei B.
+
+**Handy** (Device-Emulator, iPhone SE quer + Tablet):
+
+- [ ] „Pets“-Knopf ist groß, mit dem Daumen gut antippbar, verdeckt nicht den Joystick.
+- [ ] „1 öffnen“ in der Ei-Vorschau lässt sich antippen (BillboardGui in PlayerGui, `Active`). Falls Antippen nicht ankommt: melden – dann kommt der Knopf als ScreenGui unten ins HUD.
+- [ ] Pet-Menü passt auf den Bildschirm (Schließen-„X“ erreichbar), Karten gut antippbar, Liste scrollt per Wischen.
+- [ ] Pet-Karte nach dem Öffnen ist komplett sichtbar; Antippen schließt sie.

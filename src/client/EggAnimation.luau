@@ -1,0 +1,170 @@
+--!strict
+-- Hatch animation after the server opened an egg: the egg wobbles, cracks, flashes,
+-- and the pet card jumps out (name, rarity color, bonus). Tap or wait to close.
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+
+local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local Net = require(ReplicatedStorage.Shared.Net)
+local UiKit = require(script.Parent.UiKit)
+
+local EggAnimation = {}
+
+local function tween(target: Instance, seconds: number, props: { [string]: any }, style: Enum.EasingStyle?): Tween
+	local t = TweenService:Create(target, TweenInfo.new(seconds, style or Enum.EasingStyle.Quad), props)
+	t:Play()
+	return t
+end
+
+function EggAnimation.start()
+	local player = Players.LocalPlayer
+
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "EggAnimation"
+	gui.ResetOnSpawn = false
+	gui.IgnoreGuiInset = true
+	gui.DisplayOrder = 10
+	gui.Enabled = false
+	UiKit.autoScale(gui)
+
+	-- Dark backdrop that also catches the tap to close.
+	local backdrop = Instance.new("TextButton")
+	backdrop.Text = ""
+	backdrop.AutoButtonColor = false
+	backdrop.Size = UDim2.fromScale(1, 1)
+	backdrop.BackgroundColor3 = Color3.new(0, 0, 0)
+	backdrop.BackgroundTransparency = 0.45
+	backdrop.Parent = gui
+
+	local egg = Instance.new("Frame")
+	egg.AnchorPoint = Vector2.new(0.5, 0.5)
+	egg.Position = UDim2.fromScale(0.5, 0.5)
+	egg.Size = UDim2.fromOffset(180, 230)
+	egg.BackgroundColor3 = Color3.fromRGB(255, 245, 220)
+	UiKit.corner(egg, 110)
+	UiKit.stroke(egg, 5)
+	egg.Parent = gui
+
+	-- Crack line that appears before the egg bursts.
+	local crack = UiKit.label(egg, "⚡")
+	crack.AnchorPoint = Vector2.new(0.5, 0.5)
+	crack.Position = UDim2.fromScale(0.5, 0.45)
+	crack.Size = UDim2.fromOffset(120, 120)
+	crack.TextColor3 = UiKit.DARK
+	crack.Visible = false
+
+	local flash = Instance.new("Frame")
+	flash.Size = UDim2.fromScale(1, 1)
+	flash.BackgroundColor3 = Color3.new(1, 1, 1)
+	flash.BackgroundTransparency = 1
+	flash.ZIndex = 5
+	flash.Parent = gui
+
+	local card = Instance.new("Frame")
+	card.AnchorPoint = Vector2.new(0.5, 0.5)
+	card.Position = UDim2.fromScale(0.5, 0.5)
+	card.Size = UDim2.fromOffset(320, 360)
+	card.BackgroundColor3 = UiKit.CREAM
+	card.ZIndex = 6
+	UiKit.corner(card, 28)
+	UiKit.stroke(card, 5)
+	card.Parent = gui
+
+	local petIcon = Instance.new("Frame")
+	petIcon.AnchorPoint = Vector2.new(0.5, 0)
+	petIcon.Position = UDim2.new(0.5, 0, 0, 24)
+	petIcon.Size = UDim2.fromOffset(140, 140)
+	petIcon.ZIndex = 7
+	UiKit.corner(petIcon, 70)
+	UiKit.stroke(petIcon, 4)
+	petIcon.Parent = card
+
+	local petName = UiKit.label(card, "")
+	petName.Position = UDim2.fromOffset(16, 176)
+	petName.Size = UDim2.new(1, -32, 0, 50)
+	petName.ZIndex = 7
+
+	local rarityName = UiKit.label(card, "")
+	rarityName.Position = UDim2.fromOffset(16, 228)
+	rarityName.Size = UDim2.new(1, -32, 0, 36)
+	rarityName.TextStrokeColor3 = UiKit.DARK
+	rarityName.TextStrokeTransparency = 0
+	rarityName.ZIndex = 7
+
+	local bonusText = UiKit.label(card, "")
+	bonusText.Position = UDim2.fromOffset(16, 270)
+	bonusText.Size = UDim2.new(1, -32, 0, 40)
+	bonusText.TextColor3 = Color3.fromRGB(40, 130, 40)
+	bonusText.ZIndex = 7
+
+	local hint = UiKit.label(card, "Tippen zum Schließen")
+	hint.Position = UDim2.fromOffset(16, 318)
+	hint.Size = UDim2.new(1, -32, 0, 26)
+	hint.TextTransparency = 0.4
+	hint.ZIndex = 7
+
+	gui.Parent = player:WaitForChild("PlayerGui")
+
+	local playId = 0
+	local closable = false
+	local function close()
+		if closable then
+			gui.Enabled = false
+		end
+	end
+	backdrop.Activated:Connect(close)
+
+	Net.event("EggOpened").OnClientEvent:Connect(function(_eggId: string, petId: string)
+		local pet = GameConfig.pets[petId]
+		if pet == nil then
+			return
+		end
+		playId += 1
+		local myId = playId
+		closable = false
+
+		local color = UiKit.rarityColor(pet.rarity)
+		petIcon.BackgroundColor3 = color
+		petName.Text = pet.displayName
+		rarityName.Text = GameConfig.rarities[pet.rarity].displayName
+		rarityName.TextColor3 = color
+		bonusText.Text = `{UiKit.bonusText(pet.bonus)} Münzen`
+
+		egg.Visible = true
+		egg.Rotation = 0
+		egg.Size = UDim2.fromOffset(180, 230)
+		crack.Visible = false
+		card.Visible = false
+		flash.BackgroundTransparency = 1
+		gui.Enabled = true
+
+		-- Wobble, getting stronger.
+		for _, angle in { 8, -8, 12, -12, 16, -16 } do
+			tween(egg, 0.12, { Rotation = angle }, Enum.EasingStyle.Sine).Completed:Wait()
+		end
+		tween(egg, 0.08, { Rotation = 0 })
+		crack.Visible = true
+		tween(egg, 0.25, { Size = UDim2.fromOffset(200, 250) }, Enum.EasingStyle.Back).Completed:Wait()
+		if myId ~= playId then
+			return
+		end
+
+		-- Burst: flash, egg gone, pet card jumps out.
+		flash.BackgroundTransparency = 0
+		egg.Visible = false
+		card.Visible = true
+		UiKit.pop(card, 0.2)
+		tween(flash, 0.5, { BackgroundTransparency = 1 })
+		closable = true
+
+		task.delay(3, function()
+			if myId == playId then
+				close()
+			end
+		end)
+	end)
+end
+
+return EggAnimation
