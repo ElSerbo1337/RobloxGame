@@ -35,25 +35,31 @@ end
 
 -- Builds a placeholder shop stand (counter, striped awning, sign) facing -Z at
 -- `groundPosition` and returns it with the zone in front of the counter.
-function ShopService.buildStand(parent: Instance, shopId: string, groundPosition: Vector3): Stand
+-- `scale` (default 1) makes the whole building bigger, e.g. for the shops in later worlds.
+function ShopService.buildStand(parent: Instance, shopId: string, groundPosition: Vector3, scale: number?): Stand
 	local shop = GameConfig.shops[shopId]
 	assert(shop, `unknown shop "{shopId}"`)
+	local k = scale or 1
+	-- Position relative to the stand's ground point, scaled with the building.
+	local function at(x: number, y: number, z: number): Vector3
+		return groundPosition + Vector3.new(x, y, z) * k
+	end
 
 	local model = Instance.new("Model")
 	model.Name = `Shop_{shopId}`
 
 	local counter = part({
 		Name = "Counter",
-		Size = Vector3.new(12, 3.5, 3),
-		Position = groundPosition + Vector3.new(0, 1.75, 0),
+		Size = Vector3.new(12, 3.5, 3) * k,
+		Position = at(0, 1.75, 0),
 		Color = Color3.fromRGB(160, 105, 60),
 		Material = Enum.Material.WoodPlanks,
 		Parent = model,
 	})
 	part({
 		Name = "CounterTop",
-		Size = Vector3.new(12.6, 0.4, 3.6),
-		Position = groundPosition + Vector3.new(0, 3.7, 0),
+		Size = Vector3.new(12.6, 0.4, 3.6) * k,
+		Position = at(0, 3.7, 0),
 		Color = Color3.fromRGB(250, 235, 200),
 		Material = Enum.Material.SmoothPlastic,
 		Parent = model,
@@ -61,8 +67,8 @@ function ShopService.buildStand(parent: Instance, shopId: string, groundPosition
 	for _, x in { -5.8, 5.8 } do
 		part({
 			Name = "Post",
-			Size = Vector3.new(0.6, 9, 0.6),
-			Position = groundPosition + Vector3.new(x, 4.5, 1.2),
+			Size = Vector3.new(0.6, 9, 0.6) * k,
+			Position = at(x, 4.5, 1.2),
 			Color = Color3.fromRGB(120, 75, 40),
 			Material = Enum.Material.Wood,
 			Parent = model,
@@ -73,18 +79,17 @@ function ShopService.buildStand(parent: Instance, shopId: string, groundPosition
 	for i = 1, stripes do
 		local stripe = part({
 			Name = "Awning",
-			Size = Vector3.new(13 / stripes, 0.3, 5),
+			Size = Vector3.new(13 / stripes, 0.3, 5) * k,
 			Color = if i % 2 == 0 then Color3.fromRGB(255, 250, 240) else Color3.fromRGB(220, 60, 50),
 			Material = Enum.Material.Fabric,
 			Parent = model,
 		})
-		stripe.CFrame = CFrame.new(groundPosition + Vector3.new(-6.5 + (i - 0.5) * 13 / stripes, 9.3, 0))
-			* CFrame.Angles(math.rad(-15), 0, 0)
+		stripe.CFrame = CFrame.new(at(-6.5 + (i - 0.5) * 13 / stripes, 9.3, 0)) * CFrame.Angles(math.rad(-15), 0, 0)
 	end
 
 	local billboard = Instance.new("BillboardGui")
-	billboard.Size = UDim2.fromScale(12, 3)
-	billboard.StudsOffsetWorldSpace = Vector3.new(0, 10, 0)
+	billboard.Size = UDim2.fromScale(12 * k, 3 * k)
+	billboard.StudsOffsetWorldSpace = Vector3.new(0, 10 * k, 0)
 	billboard.MaxDistance = 150
 	billboard.Adornee = counter
 	local label = Instance.new("TextLabel")
@@ -100,8 +105,8 @@ function ShopService.buildStand(parent: Instance, shopId: string, groundPosition
 
 	local zone = part({
 		Name = "ShopZone",
-		Size = Vector3.new(14, 6, 9),
-		Position = groundPosition + Vector3.new(0, 3, -6.5),
+		Size = Vector3.new(14 * k, 6, 9 * k),
+		Position = groundPosition + Vector3.new(0, 3, -6.5 * k),
 		Color = Color3.fromRGB(90, 200, 120),
 		Material = Enum.Material.ForceField,
 		Transparency = 0.3,

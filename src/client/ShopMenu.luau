@@ -31,6 +31,7 @@ local MESSAGES: { [string]: string } = {
 	NotEnoughCoins = "Nicht genug Münzen!",
 	ShopLevelLimit = "Diese Stufe gibt es nur im größeren Shop.",
 	MaxLevel = "Schon auf höchster Stufe!",
+	WorldLocked = "Diese Welt ist noch gesperrt!",
 }
 
 local ShopMenu = {}

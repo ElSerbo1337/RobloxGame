@@ -12,6 +12,14 @@ local LOOKS: { [string]: Look } = {
 	BellPepper = { color = Color3.fromRGB(60, 170, 60), material = Enum.Material.SmoothPlastic },
 	Corn = { color = Color3.fromRGB(255, 215, 50), material = Enum.Material.SmoothPlastic },
 	Ham = { color = Color3.fromRGB(240, 150, 160), material = Enum.Material.SmoothPlastic },
+	-- World 3 (Strand)
+	Tuna = { color = Color3.fromRGB(170, 95, 90), material = Enum.Material.SmoothPlastic },
+	Shrimp = { color = Color3.fromRGB(255, 140, 100), material = Enum.Material.SmoothPlastic },
+	Pineapple = { color = Color3.fromRGB(255, 225, 90), material = Enum.Material.SmoothPlastic },
+	-- World 4 (Eisberge): frosty look
+	FrozenPeas = { color = Color3.fromRGB(120, 210, 120), material = Enum.Material.Glass },
+	Salmon = { color = Color3.fromRGB(250, 130, 95), material = Enum.Material.SmoothPlastic },
+	IcebergLettuce = { color = Color3.fromRGB(190, 240, 170), material = Enum.Material.Glass },
 }
 
 local FALLBACK: Look = { color = Color3.fromRGB(255, 0, 255), material = Enum.Material.Neon }

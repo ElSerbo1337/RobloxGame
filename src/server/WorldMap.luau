@@ -27,6 +27,8 @@ export type Layout = {
 	returnPoint: Vector3,
 	-- Where the world's egg sits (attributes WorldId, EggId); the egg service hooks in here.
 	eggStand: BasePart,
+	-- Free ground spot left of the egg stand for a shop stand facing -Z (worlds with a shop).
+	shopSpot: Vector3,
 }
 
 type Theme = { ground: Color3, area: Color3, accent: Color3, material: Enum.Material }
@@ -42,6 +44,18 @@ local THEMES: { [string]: Theme } = {
 		area = Color3.fromRGB(150, 120, 70),
 		accent = Color3.fromRGB(200, 60, 50),
 		material = Enum.Material.Ground,
+	},
+	Beach = {
+		ground = Color3.fromRGB(240, 220, 160),
+		area = Color3.fromRGB(225, 200, 135),
+		accent = Color3.fromRGB(40, 170, 200),
+		material = Enum.Material.Sand,
+	},
+	Icebergs = {
+		ground = Color3.fromRGB(225, 240, 250),
+		area = Color3.fromRGB(180, 215, 240),
+		accent = Color3.fromRGB(90, 150, 230),
+		material = Enum.Material.Snow,
 	},
 }
 local DEFAULT_THEME: Theme = {
@@ -216,6 +230,7 @@ function WorldMap.build(world: any, index: number): Layout
 		boundsSize = Vector2.new(WORLD_SIZE, WORLD_SIZE),
 		returnPoint = border + Vector3.new(0, 3, 10),
 		eggStand = eggStand,
+		shopSpot = center + Vector3.new(-72, 0, 72),
 	}
 end
 

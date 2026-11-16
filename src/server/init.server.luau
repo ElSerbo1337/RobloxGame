@@ -43,7 +43,18 @@ for _, world in laterWorlds do
 end
 BarrierService.start(laterWorlds)
 -- World 1 coin shop: far left of the spawn, outside the topping area (eggs get x = -30).
-ShopService.start({ ShopService.buildStand(layout.folder, "World1Shop", Vector3.new(-60, 0.1, 72)) })
+local shopStands = { ShopService.buildStand(layout.folder, "World1Shop", Vector3.new(-60, 0.1, 72)) }
+-- Shops of later worlds stand on their world's shop spot; every 3 worlds the building grows by half.
+for index, world in laterWorlds do
+	local worldIndex = index + 1
+	for shopId, shop in GameConfig.shops do
+		if shop.worldId == world.worldId then
+			local scale = 1 + 0.5 * math.floor((worldIndex - 1) / 3)
+			table.insert(shopStands, ShopService.buildStand(world.folder, shopId, world.shopSpot, scale))
+		end
+	end
+end
+ShopService.start(shopStands)
 -- Eggs: world 1 gets its own stand (x = -30 next to the spawn), later worlds use their egg stand.
 local eggSpots = {
 	{ eggId = GameConfig.worlds[1].eggs[1], stand = EggService.buildStand(layout.folder, Vector3.new(-30, 0.1, 66)) },
