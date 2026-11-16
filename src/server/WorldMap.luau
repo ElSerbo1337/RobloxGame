@@ -57,6 +57,24 @@ local THEMES: { [string]: Theme } = {
 		accent = Color3.fromRGB(90, 150, 230),
 		material = Enum.Material.Snow,
 	},
+	Volcano = {
+		ground = Color3.fromRGB(70, 55, 55),
+		area = Color3.fromRGB(110, 60, 45),
+		accent = Color3.fromRGB(255, 90, 30),
+		material = Enum.Material.Basalt,
+	},
+	CandyLand = {
+		ground = Color3.fromRGB(255, 190, 220),
+		area = Color3.fromRGB(255, 230, 245),
+		accent = Color3.fromRGB(150, 90, 230),
+		material = Enum.Material.SmoothPlastic,
+	},
+	Space = {
+		ground = Color3.fromRGB(150, 150, 165),
+		area = Color3.fromRGB(110, 105, 140),
+		accent = Color3.fromRGB(120, 255, 200),
+		material = Enum.Material.Slate,
+	},
 }
 local DEFAULT_THEME: Theme = {
 	ground = Color3.fromRGB(120, 180, 120),

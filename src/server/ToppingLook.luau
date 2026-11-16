@@ -20,6 +20,18 @@ local LOOKS: { [string]: Look } = {
 	FrozenPeas = { color = Color3.fromRGB(120, 210, 120), material = Enum.Material.Glass },
 	Salmon = { color = Color3.fromRGB(250, 130, 95), material = Enum.Material.SmoothPlastic },
 	IcebergLettuce = { color = Color3.fromRGB(190, 240, 170), material = Enum.Material.Glass },
+	-- World 5 (Vulkan): hot, glowing a little
+	Chili = { color = Color3.fromRGB(220, 30, 25), material = Enum.Material.SmoothPlastic },
+	Pepperoni = { color = Color3.fromRGB(200, 70, 40), material = Enum.Material.SmoothPlastic },
+	Jalapeno = { color = Color3.fromRGB(70, 160, 40), material = Enum.Material.SmoothPlastic },
+	-- World 6 (Süßigkeitenland)
+	ChocolateChips = { color = Color3.fromRGB(95, 55, 30), material = Enum.Material.SmoothPlastic },
+	GummyBears = { color = Color3.fromRGB(255, 80, 150), material = Enum.Material.Glass },
+	Marshmallow = { color = Color3.fromRGB(255, 240, 245), material = Enum.Material.SmoothPlastic },
+	-- World 7 (Weltraum): otherworldly, glowing
+	MoonCheese = { color = Color3.fromRGB(240, 230, 150), material = Enum.Material.SmoothPlastic },
+	StarOlives = { color = Color3.fromRGB(120, 90, 255), material = Enum.Material.Neon },
+	AlienMushroom = { color = Color3.fromRGB(90, 255, 140), material = Enum.Material.Neon },
 }
 
 local FALLBACK: Look = { color = Color3.fromRGB(255, 0, 255), material = Enum.Material.Neon }

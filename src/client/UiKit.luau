@@ -108,6 +108,24 @@ function UiKit.pop(target: GuiObject, from: number?)
 	TweenService:Create(uiScale, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Scale = 1 }):Play()
 end
 
+-- Short number for small labels: 999.999 stays as is, then "1,5 Mio", "12 Mrd", "3,4 Bio".
+function UiKit.shortNumber(value: number): string
+	local units = { { 1e12, "Bio" }, { 1e9, "Mrd" }, { 1e6, "Mio" } }
+	for _, unit in units do
+		if value >= unit[1] then
+			local scaled = value / unit[1]
+			local text = if scaled >= 100
+				then tostring(math.floor(scaled))
+				else string.format("%.1f", math.floor(scaled * 10) / 10)
+			text = string.gsub(string.gsub(text, "%.0$", ""), "%.", ",")
+			return `{text} {unit[2]}`
+		end
+	end
+	local text = tostring(math.floor(value))
+	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
+	return (string.gsub(formatted, "^%.", ""))
+end
+
 function UiKit.rarityColor(rarityId: string): Color3
 	local color = GameConfig.rarities[rarityId].color
 	return Color3.fromRGB(color[1], color[2], color[3])

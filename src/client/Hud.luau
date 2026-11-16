@@ -11,6 +11,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Net = require(ReplicatedStorage.Shared.Net)
+local UiKit = require(script.Parent.UiKit)
 
 local FONT = Enum.Font.FredokaOne
 local CREAM = Color3.fromRGB(255, 248, 230)
@@ -34,11 +35,8 @@ local MESSAGES: { [string]: string } = {
 
 local Hud = {}
 
-local function formatNumber(value: number): string
-	local text = tostring(math.floor(value))
-	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
-	return (string.gsub(formatted, "^%.", ""))
-end
+-- Short form from a million on ("1,5 Mio"), so late-world amounts fit the counters on phones.
+local formatNumber = UiKit.shortNumber
 
 local function corner(parent: Instance, radius: number)
 	local uiCorner = Instance.new("UICorner")
