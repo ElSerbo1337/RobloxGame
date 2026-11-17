@@ -4,6 +4,18 @@
 -- New worlds and toppings are added here only.
 
 local GameConfig = {
+	save = {
+		-- Seconds between periodic saves of every player (also renews the session lock).
+		autosaveSeconds = 120,
+		-- A session lock older than this is treated as orphaned (its server crashed)
+		-- and may be taken over. Must be clearly longer than autosaveSeconds.
+		lockExpirySeconds = 300,
+		-- While another server holds a fresh lock, loading retries this often ...
+		lockRetrySeconds = 5,
+		-- ... for at most this long; then the player is kicked with a hint to rejoin.
+		lockWaitSeconds = 60,
+	},
+
 	pizza = {
 		-- Toppings a new player's pizza can hold.
 		startCapacity = 2,

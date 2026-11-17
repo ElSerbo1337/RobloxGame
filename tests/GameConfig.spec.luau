@@ -737,3 +737,19 @@ describe("GameConfig delivery", function()
 		end
 	end)
 end)
+
+describe("GameConfig save", function()
+	it("expires a session lock after about 5 minutes, well after the next periodic save renews it", function()
+		local save = GameConfig.save
+
+		expect(save.lockExpirySeconds).toBe(300)
+		expect(save.autosaveSeconds * 2 <= save.lockExpirySeconds).toBe(true)
+	end)
+
+	it("retries a locked load a few times before giving up", function()
+		local save = GameConfig.save
+
+		expect(save.lockRetrySeconds > 0).toBe(true)
+		expect(save.lockWaitSeconds >= save.lockRetrySeconds * 3).toBe(true)
+	end)
+end)

@@ -1,7 +1,8 @@
 --!strict
 -- Owns every player's PlayerState on the server. State only changes through
 -- results of the game rules; each change is replicated to the client as attributes.
--- States are loaded on join and saved on leave, periodically and on shutdown.
+-- States are loaded on join and saved on leave, periodically and on shutdown
+-- (leave and shutdown release the session lock, see SaveService).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -56,7 +57,7 @@ function PlayerStates.onChanged(listener: (Player, PlayerState) -> ())
 	table.insert(listeners, listener)
 end
 
-local AUTOSAVE_SECONDS = 120
+local AUTOSAVE_SECONDS = GameConfig.save.autosaveSeconds
 
 -- Saves still running for players who left; shutdown waits for them.
 local pendingLeaveSaves = 0
@@ -65,7 +66,9 @@ function PlayerStates.start()
 	local function onPlayerAdded(player: Player)
 		local state = SaveService.load(player, PlayerStates.rules.newPlayerState())
 		if player.Parent == nil then
-			SaveService.forget(player.UserId) -- left while loading
+			-- Left while loading: release the session lock right away.
+			SaveService.save(player.UserId, state, true)
+			SaveService.forget(player.UserId)
 			return
 		end
 		states[player] = state
@@ -84,7 +87,7 @@ function PlayerStates.start()
 			return
 		end
 		pendingLeaveSaves += 1
-		SaveService.save(player.UserId, state)
+		SaveService.save(player.UserId, state, true)
 		SaveService.forget(player.UserId)
 		pendingLeaveSaves -= 1
 	end)
@@ -103,7 +106,7 @@ function PlayerStates.start()
 		for player, state in states do
 			running += 1
 			task.spawn(function()
-				SaveService.save(player.UserId, state)
+				SaveService.save(player.UserId, state, true)
 				running -= 1
 			end)
 		end

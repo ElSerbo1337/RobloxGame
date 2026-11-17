@@ -649,3 +649,24 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler). Für schnelles Testen Münzen
 - [ ] Alter Spielstand (vor #25, ohne `lastWorldId`) lädt ohne Fehler und startet in Welt 1.
 - [ ] Barriere-Schutz: In einer gesperrten Welt (z. B. per Command Bar hineingesetzt) wird man wie bisher zurückgesetzt und `LastWorldId` ändert sich **nicht** auf die gesperrte Welt.
 - [ ] **Mehrspieler** (2 Spieler): A stirbt in Welt 2, B in Welt 1 → jeder erscheint in seiner eigenen Welt.
+
+## #34 Session-Lock beim Speichern
+
+Vorher: `lune run test` → alle grün (inkl. neue Lock-Tests in `tests/SaveData.spec.luau`). Studio-Zugriff auf API-Dienste muss an sein (siehe #3).
+
+Was neu ist: Der gespeicherte Stand trägt ein Feld `lock = { serverId, time }`. Laden belegt den Stand per `UpdateAsync`, Auto-Speichern (alle 120 s) erneuert den Lock, Verlassen/Herunterfahren gibt ihn frei. Ist er von einem anderen Server frisch belegt (< 300 s), wartet das Laden (alle 5 s, max. 60 s) und kickt dann mit Hinweis. Zahlen: `GameConfig.save`.
+
+Normalbetrieb (1 Spieler, Rojo verbunden):
+
+- [ ] **Play** mit einem alten Spielstand von vor diesem Ticket: Münzen, Pets, Tutorial-Schritt sind wie vorher, Output ohne `[Save]`-Warnungen (bestehende Spielstände laden weiter).
+- [ ] Münzen verdienen, **Stop**, erneut **Play**: Stand ist erhalten, **keine** Meldung `noch von einem anderen Server belegt` (Stop hat den Lock freigegeben).
+- [ ] Mit **Test → Clients and Servers** (1 Spieler) das Client-Fenster schließen, Server weiterlaufen lassen, dann mit **Test → Clients and Servers** neu starten: lädt sofort, ohne Warten.
+
+Verwaister Lock (Server stirbt ohne Freigabe):
+
+- [ ] Play, Münzen verdienen, > 2 Minuten warten (Auto-Speichern), dann Studio-Prozess **hart beenden** (Task-Manager). Studio neu öffnen, **Play** innerhalb von 5 Minuten: Output zeigt mehrmals `[Save] Spielstand von … ist noch von einem anderen Server belegt, warte …`, nach ca. 60 s wird man mit „Dein Spielstand wird gerade noch auf einem anderen Server gespeichert …“ gekickt. Es wurde **nichts** überschrieben.
+- [ ] Nach Ablauf von 5 Minuten seit dem letzten Auto-Speichern erneut **Play**: Der Stand lädt (Münzen von vor dem Absturz), keine Warnung mehr.
+
+Optional (veröffentlichtes Spiel, 2 Server): Spieler wechselt per Teleport/Neubeitritt schnell den Server → auf dem neuen Server ist der zuletzt gespielte Stand da, nie ein älterer. Im Server-Log des neuen Servers ggf. kurz `… belegt, warte …`, dann normales Laden.
+
+Fehler gefunden? Beheben, `lune run test` erneut ausführen, hier abhaken, committen, pushen.
