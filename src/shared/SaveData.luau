@@ -58,6 +58,13 @@ local MIGRATIONS: { [number]: (save: { [string]: any }) -> () } = {
 		-- Any number past the last step means finished (math.huge cannot be stored as JSON).
 		save.tutorialStep = 1000
 	end,
+	[3] = function(save)
+		-- v4: the prepared rebirth multiplier becomes a rebirth counter (the multiplier
+		-- is now computed as 1 + 0.5 x rebirths). It was never raised, so this gives 0.
+		local multiplier = save.rebirthMultiplier
+		save.rebirthMultiplier = nil
+		save.rebirths = if type(multiplier) == "number" then math.max(0, math.round((multiplier - 1) / 0.5)) else 0
+	end,
 }
 
 -- `fresh` is a brand-new PlayerState (rules.newPlayerState()); it provides the

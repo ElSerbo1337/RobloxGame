@@ -32,6 +32,8 @@ local SOUNDS: { [string]: Entry } = {
 	EggCrack = { id = "", volume = 0.7, search = { "egg crack", "crack", "shell", "break" } },
 	-- Old phone ringing (delivery service).
 	PhoneRing = { id = "", volume = 0.6, search = { "phone ring", "telephone", "old phone", "ringing" } },
+	-- Short fanfare for the rebirth celebration (#35).
+	Rebirth = { id = "", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
 	-- Background music per world, looped (cheerful, light).
 	Music_PizzeriaGarden = {
 		id = "",

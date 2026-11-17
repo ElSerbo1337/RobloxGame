@@ -15,6 +15,7 @@ local PizzaVisual = require(script.PizzaVisual)
 local PlayerStates = require(script.PlayerStates)
 local PortalService = require(script.PortalService)
 local PotionService = require(script.PotionService)
+local RebirthService = require(script.RebirthService)
 local ShopService = require(script.ShopService)
 local SpawnService = require(script.SpawnService)
 local ToppingService = require(script.ToppingService)
@@ -40,7 +41,7 @@ end
 for _, name in { "DrinkPotion", "PotionNotify" } do
 	Net.event(name)
 end
-for _, name in { "PhoneOpen", "PhoneClose", "AnswerPhone" } do
+for _, name in { "PhoneOpen", "PhoneClose", "AnswerPhone", "Rebirth", "Rebirthed" } do
 	Net.event(name)
 end
 
@@ -106,5 +107,7 @@ PotionService.start()
 DeliveryService.start(DeliveryService.buildAll())
 -- One teleport portal per configured world (same spot in each world).
 PortalService.start(PortalService.buildAll())
+-- Rebirth (#35): HUD button + menu on the client, the rules decide.
+RebirthService.start()
 
 print(`[{Constants.GAME_NAME}] Server gestartet`)

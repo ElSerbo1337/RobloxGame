@@ -13,8 +13,9 @@ export type PlayerState = {
 	pizza: { string },
 	-- HUD switch: collect toppings by walking over them. Free from the start.
 	autoCollect: boolean,
-	-- Multiplies coins earned from selling; raised by rebirths (not built yet).
-	rebirthMultiplier: number,
+	-- Rebirths done so far; each adds config.rebirth.multiplierPerRebirth to the coin
+	-- multiplier for selling and delivery coins (see rebirthMultiplier).
+	rebirths: number,
 	-- Upgrade id -> bought level (missing = level 0).
 	upgrades: { [string]: number },
 	-- Ids of the worlds this player bought. Free worlds (unlockPrice 0) count as unlocked without being listed.
@@ -146,8 +147,23 @@ export type TutorialInfo = {
 	goal: number,
 }
 
+-- What the rebirth menu shows.
+export type RebirthOffer = {
+	-- Rebirths done so far and the coin price of the next one.
+	rebirths: number,
+	price: number,
+	-- Rebirth coin multiplier now and after the next rebirth.
+	multiplier: number,
+	nextMultiplier: number,
+	-- Coins / price, at most 1.
+	progress: number,
+	affordable: boolean,
+	-- A potion is running: it would end with the rebirth.
+	potionWarning: boolean,
+}
+
 -- Bump together with a migration step in SaveData when a field changes shape.
-local STATE_VERSION = 3
+local STATE_VERSION = 4
 
 local GameRules = {}
 
@@ -164,7 +180,7 @@ function GameRules.new(config: any)
 			coins = 0,
 			pizza = {},
 			autoCollect = false,
-			rebirthMultiplier = 1,
+			rebirths = 0,
 			upgrades = {},
 			unlockedWorlds = {},
 			pets = {},
@@ -490,8 +506,13 @@ function GameRules.new(config: any)
 		return { ok = true, state = newState }
 	end
 
+	-- Coin factor from rebirths: 1 + multiplierPerRebirth x rebirths (not for gems).
+	function rules.rebirthMultiplier(state: PlayerState): number
+		return 1 + config.rebirth.multiplierPerRebirth * state.rebirths
+	end
+
 	-- 1 + sum of the coin bonuses of all equipped pets (bonuses are additive).
-	function rules.coinMultiplier(state: PlayerState): number
+	function rules.petMultiplier(state: PlayerState): number
 		local bonus = 0
 		for _, pet in state.pets do
 			if table.find(state.equipped, pet.uid) then
@@ -500,6 +521,11 @@ function GameRules.new(config: any)
 		end
 		-- Round to 6 decimals so 0.2 + 0.2 + 0.2 reads as 0.6 in the HUD and tests.
 		return math.round((1 + bonus) * 1e6) / 1e6
+	end
+
+	-- Pet multiplier x rebirth multiplier: what selling and delivery coins are multiplied by.
+	function rules.coinMultiplier(state: PlayerState): number
+		return math.round(rules.petMultiplier(state) * rules.rebirthMultiplier(state) * 1e6) / 1e6
 	end
 
 	-- Splits the pizza into toppings the active delivery order still needs (kept, in
@@ -1032,6 +1058,54 @@ function GameRules.new(config: any)
 			return fail(state, "NoCall")
 		end
 		return { ok = true, state = withDelivery(state, nil, nil, now) }
+	end
+
+	-- Rebirth -------------------------------------------------------------------
+
+	-- Coin price of the next rebirth: startPrice x priceFactor ^ rebirths done.
+	local function rebirthPrice(state: PlayerState): number
+		local rebirth = config.rebirth
+		return math.floor(rebirth.startPrice * rebirth.priceFactor ^ state.rebirths + 0.5)
+	end
+
+	function rules.rebirthOffer(state: PlayerState): RebirthOffer
+		local price = rebirthPrice(state)
+		local after = table.clone(state)
+		after.rebirths = state.rebirths + 1
+		return {
+			rebirths = state.rebirths,
+			price = price,
+			multiplier = rules.rebirthMultiplier(state),
+			nextMultiplier = rules.rebirthMultiplier(after),
+			progress = math.min(1, state.coins / price),
+			affordable = state.coins >= price,
+			potionWarning = next(state.activePotions) ~= nil,
+		}
+	end
+
+	-- Pays the price and starts over with a higher coin multiplier. Reset: coins, coin
+	-- upgrades, bought worlds, pizza, last world, call and order (the phone rings again
+	-- after a call interval from `now`); running potions end. Everything else stays
+	-- (pets, gems, gem upgrades, potion inventory, tutorial, ...).
+	function rules.rebirth(state: PlayerState, now: number): Result
+		if state.coins < rebirthPrice(state) then
+			return fail(state, "NotEnoughCoins")
+		end
+		local newState = withDelivery(state, nil, nil, now)
+		newState.rebirths = state.rebirths + 1
+		newState.coins = 0
+		newState.upgrades = {}
+		for upgradeId, level in state.upgrades do
+			local upgrade = config.upgrades[upgradeId]
+			if upgrade and upgrade.currency == "Gems" then
+				newState.upgrades[upgradeId] = level
+			end
+		end
+		newState.unlockedWorlds = {}
+		newState.pizza = {}
+		newState.lastWorldId = ""
+		newState.activePotions = {}
+		return { ok = true, state = newState }
 	end
 
 	-- How many pets can be equipped at once; grows with the "PetSlots" gem upgrade.

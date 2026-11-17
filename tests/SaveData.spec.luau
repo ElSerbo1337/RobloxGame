@@ -15,7 +15,7 @@ describe("SaveData.load", function()
 		expect(result.state).toEqual(rules.newPlayerState())
 	end)
 
-	it("keeps coins and pizza of a version 1 save and adds a rebirth multiplier of 1", function()
+	it("keeps coins and pizza of a version 1 save and starts it with 0 rebirths", function()
 		local saved = { version = 1, coins = 1234, pizza = { "Salami", "Mozzarella" } }
 
 		local result = SaveData.load(saved, rules.newPlayerState())
@@ -23,7 +23,7 @@ describe("SaveData.load", function()
 		expect(result.ok).toBe(true)
 		expect(result.state.coins).toBe(1234)
 		expect(result.state.pizza).toEqual({ "Salami", "Mozzarella" })
-		expect(result.state.rebirthMultiplier).toBe(1)
+		expect(result.state.rebirths).toBe(0)
 		expect(result.state.version).toBe(rules.newPlayerState().version)
 	end)
 
@@ -31,15 +31,35 @@ describe("SaveData.load", function()
 		local fresh = rules.newPlayerState()
 		fresh.gems = 0
 		fresh.unlockedWorlds = { "PizzeriaGarden" }
-		local saved = { version = fresh.version, coins = 40, pizza = {}, rebirthMultiplier = 3 }
+		local saved = { version = fresh.version, coins = 40, pizza = {}, rebirths = 3 }
 
 		local result = SaveData.load(saved, fresh)
 
 		expect(result.ok).toBe(true)
 		expect(result.state.coins).toBe(40)
-		expect(result.state.rebirthMultiplier).toBe(3)
+		expect(result.state.rebirths).toBe(3)
 		expect(result.state.gems).toBe(0)
 		expect(result.state.unlockedWorlds).toEqual({ "PizzeriaGarden" })
+	end)
+
+	it("turns the prepared rebirth multiplier of a version 3 save into a rebirth counter", function()
+		local cases = {
+			{ multiplier = 1, rebirths = 0 },
+			{ multiplier = 1.5, rebirths = 1 },
+			{ multiplier = 2, rebirths = 2 },
+			{ multiplier = 0.5, rebirths = 0 },
+			{ multiplier = "x", rebirths = 0 },
+		}
+		for _, case in cases do
+			local saved = { version = 3, coins = 9, pizza = {}, rebirthMultiplier = case.multiplier }
+
+			local result = SaveData.load(saved, rules.newPlayerState())
+
+			expect(result.ok).toBe(true)
+			expect(result.state.rebirths).toBe(case.rebirths)
+			expect(result.state.rebirthMultiplier).toBe(nil)
+			expect(result.state.coins).toBe(9)
+		end
 	end)
 
 	it("replaces a field of the wrong type with its default", function()

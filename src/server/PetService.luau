@@ -189,7 +189,8 @@ function PetService.start()
 		player:SetAttribute("Pets", HttpService:JSONEncode(list))
 		player:SetAttribute("PetSlots", rules.petSlots(state))
 		player:SetAttribute("InventorySlots", rules.inventorySlots(state))
-		player:SetAttribute("CoinMultiplier", rules.coinMultiplier(state))
+		-- Pets only (the rebirth factor is shown in the rebirth menu).
+		player:SetAttribute("CoinMultiplier", rules.petMultiplier(state))
 		syncModels(player, state)
 	end
 

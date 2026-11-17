@@ -254,6 +254,17 @@ local GameConfig = {
 		},
 	},
 
+	-- Rebirth: pay coins to start over (coins, coin upgrades and worlds are reset) with a
+	-- permanently higher coin multiplier for selling and delivery coins (not gems).
+	rebirth = {
+		-- Price of the first rebirth: a while after reaching world 7 (150 Mio).
+		startPrice = 250000000,
+		-- Each further rebirth costs this many times the one before.
+		priceFactor = 2,
+		-- Coin multiplier = 1 + multiplierPerRebirth x rebirths (1 rebirth = x1,5, 2 = x2, ...).
+		multiplierPerRebirth = 0.5,
+	},
+
 	-- New-player tutorial: collect toppings -> sell -> buy an upgrade -> open an egg.
 	tutorial = {
 		-- Toppings to collect in the first step (must fit on the starting pizza).

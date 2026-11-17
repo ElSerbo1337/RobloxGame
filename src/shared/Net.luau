@@ -28,12 +28,17 @@
 --                                    player stands at a ringing phone: show the order with accept/decline
 -- PhoneClose      server -> client  ()                           player left the phone (or answered)
 -- AnswerPhone     client -> server  (accept: boolean)            "take / turn down this order" (only at a phone)
+-- Rebirth         client -> server  ()                           "do a rebirth now" (client asked to confirm)
+-- Rebirthed       server -> client  (rebirths: number, multiplier: number)  rebirth done: play the celebration
+--                                    (a refused rebirth answers with Notify and the rule's reason)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
 -- EggsPerOpen (1, or 3 after the gem upgrade).
 -- Tutorial: TutorialStep (step id, "" = finished), TutorialNumber, TutorialTotal, TutorialProgress, TutorialGoal.
--- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, InventorySlots, CoinMultiplier.
+-- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, InventorySlots,
+-- CoinMultiplier (pets only).
+-- Rebirth (see RebirthService): Rebirths (number done), RebirthOffer (JSON GameRules.RebirthOffer).
 -- Potions (see PotionService): Potions (JSON { [potionId]: count owned }),
 -- ActivePotions (JSON { [potionId]: seconds left when the attribute was set; the client counts down from there }).
 -- Delivery (see DeliveryService): PhoneRinging (boolean), DeliveryOrder (JSON, "" = no order:
@@ -71,6 +76,8 @@ local EVENTS = {
 	PhoneOpen = true,
 	PhoneClose = true,
 	AnswerPhone = true,
+	Rebirth = true,
+	Rebirthed = true,
 }
 
 local Net = {}

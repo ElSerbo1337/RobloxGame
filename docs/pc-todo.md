@@ -810,3 +810,32 @@ Ohne Import läuft alles weiter: Jedes Ei ist dann eine Kugel in seiner Weltfarb
 - [ ] Neon-Teile (Vulkan, Weltraum) leuchten, ohne überstrahlt zu sein.
 
 **Handy** (Device-Emulator): Schild aus 10–15 Studs Entfernung lesbar; Ei-Vorschau-Knöpfe bleiben antippbar.
+
+## #35 C2 Rebirth
+
+Regeln: `rules.rebirthOffer` / `rules.rebirth` in `GameRules` (Tests in `tests/Rebirth.spec.luau`), Preis und Multiplikator in `GameConfig.rebirth` (erster Rebirth 250 Mio, ×2 pro Rebirth, +0,5 Münz-Multiplikator pro Rebirth). Spielstand-Version 4: das alte Feld `rebirthMultiplier` wird zu `rebirths`. Server: `src/server/RebirthService.luau`, Client: `src/client/RebirthMenu.luau`.
+
+Tipp für schnelles Testen: wie bei #11 vorübergehend `Mozzarella.value = 50000000` (oder `GameConfig.rebirth.startPrice = 100`). **Danach zurücksetzen, nicht committen.**
+
+**1. Test** (Rojo verbunden, **Play**, 1 Spieler, Tutorial fertig):
+
+- [ ] Output ohne rote Fehler. Alter Spielstand lädt (Münzen, Pets, Gems wie vorher), Rebirth-Zahl 0.
+- [ ] Links in der Knopf-Spalte (Platz `rebirth`, nach Pets/Tränke bzw. Geschenke) ein runder lila Knopf **„Rebirth“**. Ohne Rebirth kein Abzeichen.
+- [ ] Menü öffnen: „Noch kein Rebirth“, „Münzen ×1 → ×1,5“, „Preis: 250 Mio Münzen“, Fortschrittsbalken mit Prozent, darunter was zurückgesetzt wird und was bleibt. Menü liegt unter Münzen/Gems und über dem Pizza-Balken. X schließt.
+- [ ] Zu wenig Münzen: „Rebirth!“-Knopf grau, Antippen tut nichts. Fortschrittsbalken wächst beim Verkaufen mit.
+- [ ] Genug Münzen (ohne Menü offen): Knopf **pulsiert** mit Hinweis „Neu! Mehr Münzen“ rechts daneben; nach dem ersten Öffnen hört das Pulsieren auf.
+- [ ] Trank trinken, dann Menü öffnen: rote Warnung „Dein laufender Trank endet beim Rebirth!“, auch im Bestätigungsfenster.
+- [ ] „Rebirth!“ → Bestätigung „Rebirth 1 für 250 Mio Münzen? …“ mit **Ja**/**Nein**. „Nein“ schließt nur die Bestätigung.
+- [ ] Vorher einen Auftrag annehmen und Beläge auf der Pizza haben, dann in Welt 3+ „Ja“: Figur steht am **Spawnpunkt von Welt 1**, Pizza leer, Auftragskarte und Trank-Pille weg, Münzen 0, Feier-Text **„Rebirth 1! ×1,5 Münzen“** mitten im Bild (verblasst nach ca. 3 s), Abzeichen „1“ am Knopf.
+- [ ] Danach: Barrieren zu Welt 2+ wieder geschlossen, Portal-Menü zeigt sie gesperrt, Shop-Upgrades (Pizza-Platz, Reichweite, Magnet) wieder auf Stufe 0. Pets (ausgerüstet), Gems, Gem-Upgrades (Pet-Plätze, Inventar, Speed, 3 Eier) und Tränke im Inventar sind noch da.
+- [ ] Verkaufen am Ofen bringt jetzt das 1,5-Fache (z. B. 2 Salami ohne Pets: 2 → 3 Münzen). Münz-Lieferauftrag zeigt eine 1,5-fach höhere Belohnung; Gem-Belohnungen unverändert. Pet-Menü zeigt weiter nur den Pet-Bonus.
+- [ ] Menü erneut: „Rebirths: 1“, „Münzen ×1,5 → ×2“, Preis 500 Mio.
+- [ ] Tod nach dem Rebirth: Respawn in Welt 1.
+- [ ] **Rejoin** (Stop, Play): Rebirth-Zahl, Abzeichen und Multiplikator bleiben; Start in Welt 1.
+- [ ] Server-Schutz (Command Bar im Client): `game.ReplicatedStorage.Remotes.Rebirth:FireServer()` mit zu wenig Münzen → nur Meldung „Nicht genug Münzen!“, nichts wird zurückgesetzt.
+- [ ] Sound: in `src/client/Sounds.luau` für `Rebirth` eine Fanfare suchen (Suchbegriffe dort) und die ID eintragen.
+
+**2. Device-Emulator** (kleines Handy quer):
+
+- [ ] Rebirth-Knopf liegt nicht unter dem Joystick; Abzeichen und Hinweis-Blase sind lesbar und verdecken keine anderen Knöpfe.
+- [ ] Menü und Bestätigung passen ganz ins Bild, „Ja“/„Nein“ antippbar.

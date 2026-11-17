@@ -111,6 +111,8 @@ return {
 		Speed = { displayName = "Speed-Trank", price = 15, durationSeconds = 600, walkSpeedMultiplier = 1.5 },
 	},
 	tutorial = { collectToppings = 2 },
+	-- Rebirth: price = startPrice x priceFactor ^ rebirths done; coins x (1 + multiplierPerRebirth x rebirths).
+	rebirth = { startPrice = 1000, priceFactor = 3, multiplierPerRebirth = 0.5 },
 	-- Delivery service: phone -> order -> delivery van.
 	delivery = {
 		-- Seconds between the end of one call/order and the next ring.

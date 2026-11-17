@@ -255,6 +255,12 @@ describe("GameConfig balancing", function()
 		end
 	end)
 
+	it("makes the first rebirth possible soon after reaching world 7 (5-30 minutes of its income)", function()
+		local minutes = GameConfig.rebirth.startPrice / coinsPerMinute(#GameConfig.worlds)
+		expect(GameConfig.rebirth.startPrice > GameConfig.worlds[#GameConfig.worlds].unlockPrice).toBe(true)
+		expect(minutes >= 5 and minutes <= 30).toBe(true)
+	end)
+
 	it("prices the coin levels only shop 3 sells at 5-60 minutes of world 7 income each", function()
 		local shop2Max = {}
 		for _, offer in GameConfig.shops.World4Shop.offers do
@@ -787,5 +793,12 @@ describe("GameConfig save", function()
 
 		expect(save.lockRetrySeconds > 0).toBe(true)
 		expect(save.lockWaitSeconds >= save.lockRetrySeconds * 3).toBe(true)
+	end)
+end)
+
+describe("GameConfig rebirth", function()
+	it("gives +50 % coins per rebirth and makes every rebirth pricier than the one before", function()
+		expect(GameConfig.rebirth.multiplierPerRebirth).toBe(0.5)
+		expect(GameConfig.rebirth.priceFactor > 1).toBe(true)
 	end)
 end)
