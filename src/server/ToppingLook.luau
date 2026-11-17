@@ -1,5 +1,6 @@
 --!strict
--- How each topping looks in the world and on the pizza (placeholder art until Blender models exist).
+-- How each topping looks in the world and on the pizza without its Blender model: a coloured
+-- disc (fallback until the models are imported, see ModelLibrary.dressDisc and #15/#18).
 
 export type Look = { color: Color3, material: Enum.Material }
 

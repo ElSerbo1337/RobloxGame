@@ -1038,3 +1038,41 @@ Welten können neben dem Münzpreis eine Mindestzahl an Rebirths verlangen (`req
 - [ ] **Portal-Menü:** Bauernhof und Strand stehen grau da mit „Ab 1 Rebirth“ bzw. „Ab 2 Rebirths“ und dem Preis in der zweiten Zeile. Text nicht abgeschnitten, auch im Device-Emulator (kleines Handy).
 - [ ] Mit **1 Rebirth** (Münz-Tipp aus #11 für den Rebirth-Preis, oder in der Command Bar den Spielstand anpassen): Bauernhof-Knopf wird grün „🔓 Bauernhof freischalten“, Kaufen klappt. Strand zeigt weiter „Ab 2 Rebirths“.
 - [ ] Ohne die vorübergehende Änderung: Tore und Portal-Menü sehen aus wie vorher (nur Preis, kein Rebirth-Hinweis).
+
+## #18 Belag-Modelle der Welten 2–7
+
+Die 19 Beläge der Welten 2–7 haben jetzt Blender-Modelle im Stil der neuen Salami (#24): flach, kräftige Farben, dunklerer Rand oder Unterseite, damit sie auf jedem Boden und auf der Pizza lesbar sind. Gebaut mit `tools/blender/build_toppings.py`. Die Teile tragen ihre Farbe im Namen wie Pets und Eier (`Top_F59AAA`, `Top_785AFF_Neon`, `Top_A8DCFF_Glass`), `ModelLibrary` färbt danach. Weltspezifische Effekte: Welt 4 frostig (Glas-Eisstückchen, Frostkappen), Welt 5 heiß (leuchtendes Fett in der Peperoni, glühende Chili-Spitze), Welt 6 Gummibärchen aus Glas, Welt 7 Neon (Sternen-Oliven, Alien-Pilz). Test: `tests/ToppingModels.spec.luau` (jeder Belag hat FBX und Vorschau, jede Welt 2–7 ein Prüfbild).
+
+Code musste nicht geändert werden: Boden-Belag (`ToppingService`), Pizza in der Hand und Bestell-Pizza (`PizzaVisual`) rufen schon `ModelLibrary.dressDisc(disc, toppingId)` auf. **Ohne Import bleiben die farbigen Scheiben wie bisher** (Fallback).
+
+Vorschau: `assets/previews/toppings/<BelagId>.png`, `World2.png` … `World7.png` (Beläge auf dem Belagfeld und auf der Pizza, maßstabsgetreu), `Overview.png` (alle 19).
+
+| Welt | Beläge (Id = Dateiname) |
+| --- | --- |
+| 2 Bauernhof | `Onion` (rote Zwiebelscheibe), `BellPepper` (grüner und roter Paprikaring), `Corn` (Maiskörner auf Blatt), `Ham` (Schinkenscheibe mit Fettrand) |
+| 3 Strand | `Tuna` (Thunfisch-Flocken), `Shrimp` (gestreifte Garnele mit Schwanzfächer), `Pineapple` (Ananasring) |
+| 4 Eisberge | `FrozenPeas` (Erbsen mit Frost und Eis), `Salmon` (Lachsscheibe mit Fettstreifen), `IcebergLettuce` (Salatblätter mit Eissplittern) |
+| 5 Vulkan | `Chili` (rote Chili, glühende Spitze), `Pepperoni` (3 gewölbte Scheiben mit glühendem Fett), `Jalapeno` (2 Scheiben mit Kernen) |
+| 6 Süßigkeitenland | `ChocolateChips` (Schokotropfen), `GummyBears` (2 Gummibärchen aus Glas), `Marshmallow` (3 Marshmallows) |
+| 7 Weltraum | `MoonCheese` (Käse-Keil mit Kratern), `StarOlives` (leuchtende Stern-Oliven), `AlienMushroom` (leuchtende Pilze mit Punkten) |
+
+**1. Modelle importieren** (19 Dateien in `assets/models/toppings/`, gleiche Einstellungen wie bei #16):
+
+- [ ] In **ReplicatedStorage → GameAssets → Models** einen Ordner **`Toppings`** anlegen (Rechtsklick → Insert Object → Folder).
+- [ ] **Home → Import 3D** → im Dateidialog in `assets/models/toppings/` alle 19 `.fbx` markieren (oder in Gruppen über das Namensfeld) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**.
+- [ ] Die importierten Models (Name = Belag-Id, MeshParts `Top_6E2662`, `Top_FFA040_Neon`, `Top_A8DCFF_Glass` …, Endungen wie `.001` sind in Ordnung) in den Ordner **`Models/Toppings`** ziehen. **Namen nicht ändern.** Größe, Farbe und Position egal – das Spiel skaliert und färbt nach den Teilnamen.
+- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Toppings:GetChildren())` → **19**.
+- [ ] Place speichern und **File → Publish to Roblox**.
+
+**2. Test** (Rojo verbunden, **Play**, 1 Spieler; zum schnellen Hinkommen Münz-Tipp aus #11 oder Portal):
+
+- [ ] Output ohne rote Fehler.
+- [ ] In jeder Welt 2–7 liegen auf dem Belagfeld die Modelle statt der Scheiben; jeder Belag ist von oben und aus der Spielerperspektive gut erkennbar (Vergleich mit `assets/previews/toppings/World<N>.png`). Nichts steckt im Boden oder schwebt.
+- [ ] Anklicken/Antippen eines Modells sammelt den Belag ein (Klick trifft auch auf das Modell, nicht nur auf die unsichtbare Scheibe); Auto-Sammeln und Magnet ziehen das Modell mit.
+- [ ] **Pizza in der Hand**: gesammelte Beläge liegen passend klein auf der Pizza, ragen nicht über den Rand, stehen nicht hoch heraus (besonders Gummibärchen, Alien-Pilz, Marshmallow, Mond-Käse).
+- [ ] **Bestell-Pizza** (Lieferauftrag in Welt 2+): Beläge auf der Pizza mit Bestellzettel ebenso als Modelle; Abgabe am Lieferwagen funktioniert.
+- [ ] Verkaufs-Animation am Ofen zeigt die Pizza wie gewohnt.
+- [ ] Effekte: Eisstückchen in Welt 4 durchsichtig, Fett der Peperoni und Chili-Spitze in Welt 5 leuchten, Gummibärchen durchsichtig, Sternen-Oliven und Alien-Pilz-Hüte in Welt 7 leuchten.
+- [ ] Ohne Import (z. B. Ordner `Toppings` kurz umbenennen): wieder farbige Scheiben, keine Fehler. Danach zurück umbenennen.
+- [ ] **Handy** (Device-Emulator): volles Belagfeld in Welt 6/7 ohne spürbares Ruckeln.
+- [ ] Was in Studio schlecht zu erkennen ist: hier notieren.

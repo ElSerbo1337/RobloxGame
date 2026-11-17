@@ -5,9 +5,10 @@
 -- Every function here falls back gracefully: if a model is missing, nothing happens
 -- and the callers keep their simple placeholder parts.
 -- Models may also sit in subfolders of Models (e.g. Models/Pets, Models/Deco).
--- Pets (tools/blender/build_pets.py) and eggs (tools/blender/build_eggs.py) carry their
--- colour in the part name instead of a palette entry: "Pet_F2D49B", "Pet_FF7A1A_Neon",
--- "Egg_FFF3DC" or "Egg_FFC83A_Metal" (materials: Neon, Glass, Metal).
+-- Pets (tools/blender/build_pets.py), eggs (tools/blender/build_eggs.py) and the toppings
+-- of worlds 2-7 (tools/blender/build_toppings.py, #18) carry their colour in the part name
+-- instead of a palette entry: "Pet_F2D49B", "Pet_FF7A1A_Neon", "Egg_FFC83A_Metal" or
+-- "Top_A8DCFF_Glass" (materials: Neon, Glass, Metal).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -122,6 +123,9 @@ local PALETTE: { [string]: { color: Color3, material: Enum.Material } } = {
 	EggSign = { color = Color3.fromRGB(255, 248, 230), material = Enum.Material.SmoothPlastic },
 }
 
+-- Part name prefixes that carry the colour in the name (see lookFor).
+local COLOR_PREFIXES: { [string]: boolean } = { Pet = true, Egg = true, Top = true }
+
 -- Materials a pet part can ask for with a name suffix ("Pet_FF7A1A_Neon").
 local PET_MATERIALS: { [string]: Enum.Material } = {
 	Neon = Enum.Material.Neon,
@@ -172,8 +176,8 @@ local function source(name: string): Instance?
 	return nil
 end
 
--- Colour and material of a part: palette entry by name, or the colour in a pet or egg
--- part name ("Pet_F2D49B_Neon", "Egg_FFF3DC"). Studio may add suffixes like ".001";
+-- Colour and material of a part: palette entry by name, or the colour in a pet, egg or
+-- topping part name ("Pet_F2D49B_Neon", "Egg_FFF3DC", "Top_785AFF_Neon"). Studio may add suffixes like ".001";
 -- they are ignored.
 local function lookFor(partName: string): { color: Color3, material: Enum.Material }?
 	local base = string.match(partName, "^[^%.]+") or partName
@@ -182,7 +186,7 @@ local function lookFor(partName: string): { color: Color3, material: Enum.Materi
 		return palette
 	end
 	local prefix, hex = string.match(base, "^(%a+)_(%x%x%x%x%x%x)")
-	if hex == nil or (prefix ~= "Pet" and prefix ~= "Egg") then
+	if hex == nil or COLOR_PREFIXES[prefix] == nil then
 		return nil
 	end
 	local suffix = string.match(base, "^%a+_%x+_(%a+)$")
