@@ -868,3 +868,34 @@ describe("GameConfig play time gifts", function()
 		end
 	end)
 end)
+
+describe("GameConfig login calendar", function()
+	local function kinds(entry: any): string
+		local parts = {}
+		for _, reward in entry.rewards do
+			table.insert(parts, `{reward.kind} {reward.amount or reward.incomeMinutes}`)
+		end
+		return table.concat(parts, " + ")
+	end
+
+	it("has exactly 7 days", function()
+		expect(#GameConfig.loginCalendar).toBe(7)
+	end)
+
+	it("gives coins, 10 gems, 1 potion, coins, 20 gems, 2 potions, 50 gems + 3 potions", function()
+		local days = {}
+		for _, entry in GameConfig.loginCalendar do
+			table.insert(days, kinds(entry))
+		end
+
+		expect(days).toEqual({
+			"Coins 5",
+			"Gems 10",
+			"Potion 1",
+			"Coins 5",
+			"Gems 20",
+			"Potion 2",
+			"Gems 50 + Potion 3",
+		})
+	end)
+end)

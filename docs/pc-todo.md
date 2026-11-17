@@ -861,3 +861,28 @@ Vorher: `lune run test` → `0 failed`. Zum schnellen Testen in `src/shared/Game
 - [ ] Alter Spielstand (vor #36) lädt ohne Fehler, Gems bleiben, Tages-Spielzeit startet bei 0.
 
 **Tageswechsel** (optional, Mitternacht deutscher Zeit): Nach Mitternacht beginnt die Tages-Spielzeit bei 0 und alle Geschenke sind wieder offen; Output ohne Fehler.
+
+## #37 C4 Login-Kalender
+
+Vorher: `lune run test` → `0 failed` (inkl. `tests/LoginCalendar.spec.luau`).
+
+**Automatisches Öffnen** (Play, 1 Spieler, API-Zugriff an, Spielstand mit beendetem Tutorial):
+
+- [ ] Beim ersten Beitreten des Tages öffnet sich das Fenster „Login-Kalender“ von selbst: 7 Kacheln „Tag 1“ … „Tag 7“ mit Belohnung (Münzen, 10 Gems, 1 Trank, Münzen, 20 Gems, 2 Tränke, 50 Gems + 3 Tränke). Die heutige Kachel ist gelb mit „Heute“ und dickem Rand.
+- [ ] Fenster sitzt unter Münzen/Meldungen und über dem Pizza-Balken; im Device-Emulator (kleines Handy) wird es kleiner, „Abholen“ und „X“ bleiben antippbar, Texte lesbar.
+- [ ] Stop, erneut Play am selben Tag: Das Fenster öffnet sich **nicht** noch einmal (auch wenn nicht abgeholt).
+- [ ] Neuer Spieler (Spielstand löschen bzw. anderer Test-Account): Das Fenster öffnet sich erst, wenn das Tutorial beendet ist, nicht mittendrin.
+- [ ] Geschenke-Menü hat oben einen orangen Knopf „📅 Kalender“ → öffnet den Kalender (Geschenke-Menü schließt sich).
+
+**Abholen:**
+
+- [ ] „Abholen“ → Statuszeile „Tag 1! +34 Münzen“ (neuer Spieler in Welt 1, ca. 5 Minuten Einkommen), Gem-Sound, Münzen oben steigen, Kachel zeigt ✓, Knopf wird grau „Morgen wieder“.
+- [ ] Mit höherer freigeschalteter Welt (oder mehr Pizza-Platz/Pets) ist der Münzbetrag auf Tag 1/Tag 4 deutlich größer.
+- [ ] Graues „Morgen wieder“ antippen → nichts passiert; kein zweites Abholen möglich, auch nicht nach Rejoin.
+
+**Mehrere Server / Rejoin:**
+
+- [ ] Abholen, Spiel verlassen, sofort neu beitreten (anderer Server bzw. neuer Play-Lauf): Tag bleibt ✓, Abholen nicht möglich. Output ohne `[Save]`-Fehler.
+- [ ] Alter Spielstand (vor #37) lädt ohne Fehler und startet bei Tag 1.
+
+**Serie** (optional, über mehrere echte Tage oder mit vorübergehend verstellter Zeit): am Folgetag ist Tag 2 „Heute“ und Tag 1 ✓; nach einem ausgelassenen Tag wieder Tag 1; nach Tag 7 wieder Tag 1. Neuer Tag beginnt um Mitternacht deutscher Zeit; bleibt man über Mitternacht im Spiel, wird der nächste Tag nach spätestens 15 s abholbar (über „📅 Kalender“).

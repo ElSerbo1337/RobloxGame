@@ -9,6 +9,7 @@ local DeliveryService = require(script.DeliveryService)
 local EggService = require(script.EggService)
 local GemService = require(script.GemService)
 local GiftService = require(script.GiftService)
+local LoginCalendarService = require(script.LoginCalendarService)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local OvenService = require(script.OvenService)
 local PetService = require(script.PetService)
@@ -45,7 +46,7 @@ end
 for _, name in { "PhoneOpen", "PhoneClose", "AnswerPhone", "Rebirth", "Rebirthed" } do
 	Net.event(name)
 end
-for _, name in { "ClaimGift", "GiftResult", "HintSeen" } do
+for _, name in { "ClaimGift", "GiftResult", "HintSeen", "ClaimLoginReward", "LoginRewardResult" } do
 	Net.event(name)
 end
 
@@ -108,6 +109,8 @@ PetService.start()
 GemService.start()
 -- Play time (per German day and in total) and the play time gifts.
 GiftService.start()
+-- Login calendar: opens once per German day on join, one reward per day.
+LoginCalendarService.start()
 PotionService.start()
 -- Delivery service: a phone and a delivery van in every world (same spot in each world).
 DeliveryService.start(DeliveryService.buildAll())

@@ -35,6 +35,9 @@
 -- GiftResult      server -> client  (ok: boolean, indexOrReason: number | string, rewards: { GameRules.Reward })
 --                                    result of ClaimGift
 -- HintSeen        client -> server  (hintId: string)             "I opened this new HUD button" (stops its pulsing)
+-- ClaimLoginReward client -> server ()                           "give me today's login calendar reward"
+-- LoginRewardResult server -> client (ok: boolean, dayOrReason: number | string, rewards: { GameRules.Reward })
+--                                    result of ClaimLoginReward (day = calendar day 1-7 that was claimed)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -54,6 +57,10 @@
 --   next gift (-1 = none left today), gifts = { { minutes, status "Claimed" | "Ready" | "Waiting",
 --   secondsLeft, rewards = { { kind, amount } } } } }; the client counts the seconds down until the
 --   next update), SeenHints (comma-separated GameConfig.hints ids the player has opened).
+-- Login calendar (see LoginCalendarService): LoginCalendar (JSON { today = calendar day 1-7, claimable,
+--   days = { { day, status "Claimed" | "Ready" | "Waiting", rewards = { { kind, amount } } } } }),
+--   LoginCalendarAutoOpen (German day number: set on the first join of a day; the client opens the
+--   calendar window once per value).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -89,6 +96,8 @@ local EVENTS = {
 	ClaimGift = true,
 	GiftResult = true,
 	HintSeen = true,
+	ClaimLoginReward = true,
+	LoginRewardResult = true,
 }
 
 local Net = {}

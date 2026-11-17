@@ -4,7 +4,8 @@
 --   gift and a red "!" badge while one is ready. It pulses (with a short note) until the
 --   player opened it once (hint "Gifts", remembered on the server), starting after the tutorial.
 -- * The menu lists every gift of the day: play time needed, rewards and a button
---   ("Abholen" when ready, the time left while waiting, a tick once claimed).
+--   ("Abholen" when ready, the time left while waiting, a tick once claimed), and a
+--   "Kalender" button that opens the login calendar.
 -- Reads the attributes Gifts (JSON) and SeenHints (see Net / GiftService); the play time
 -- left is re-synced by the server every few seconds and counted down locally in between.
 -- "Abholen" only sends the wish ClaimGift; the server decides and answers GiftResult.
@@ -15,6 +16,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local LoginCalendarMenu = require(script.Parent.LoginCalendarMenu)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
 local UiKit = require(script.Parent.UiKit)
@@ -55,27 +57,6 @@ end
 local function clockText(seconds: number): string
 	local total = math.max(0, math.ceil(seconds))
 	return string.format("%d:%02d", total // 60, total % 60)
-end
-
-local function rewardText(reward: Reward): string
-	if reward.kind == "Coins" then
-		return `{UiKit.shortNumber(reward.amount)} Münzen`
-	elseif reward.kind == "Gems" then
-		return `{UiKit.shortNumber(reward.amount)} Gems`
-	end
-	local potion = reward.potionId and GameConfig.potions[reward.potionId]
-	if potion then
-		return `{reward.amount}× {potion.displayName}`
-	end
-	return if reward.amount == 1 then "1 Trank" else `{reward.amount} Tränke`
-end
-
-local function rewardsText(rewards: { Reward }): string
-	local parts = {}
-	for _, reward in rewards do
-		table.insert(parts, rewardText(reward))
-	end
-	return table.concat(parts, " + ")
 end
 
 function GiftMenu.start()
@@ -151,7 +132,7 @@ function GiftMenu.start()
 
 	local title = UiKit.label(panel, "Geschenke")
 	title.Position = UDim2.fromOffset(24, 14)
-	title.Size = UDim2.new(1, -120, 0, 48)
+	title.Size = UDim2.new(1, -290, 0, 48)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 
 	local status = UiKit.label(panel, "")
@@ -166,6 +147,17 @@ function GiftMenu.start()
 	closeButton.AnchorPoint = Vector2.new(1, 0)
 	closeButton.Position = UDim2.new(1, -14, 0, 14)
 	closeButton.Size = UDim2.fromOffset(72, 72)
+
+	-- Opens the login calendar (it opens by itself only once a day on join).
+	local calendarButton = UiKit.button(panel, "📅 Kalender", UiKit.ORANGE)
+	calendarButton.Name = "Calendar"
+	calendarButton.AnchorPoint = Vector2.new(1, 0)
+	calendarButton.Position = UDim2.new(1, -96, 0, 14)
+	calendarButton.Size = UDim2.fromOffset(170, UiKit.MIN_TOUCH)
+	calendarButton.Activated:Connect(function()
+		panel.Visible = false
+		LoginCalendarMenu.open()
+	end)
 
 	local rows: { { minutes: TextLabel, rewards: TextLabel, button: TextButton } } = {}
 	for index in GameConfig.gifts do
@@ -233,7 +225,7 @@ function GiftMenu.start()
 				continue
 			end
 			row.minutes.Text = `{gift.minutes} Min`
-			row.rewards.Text = rewardsText(gift.rewards)
+			row.rewards.Text = UiKit.rewardsText(gift.rewards)
 			if gift.status == "Claimed" then
 				row.button.Text = "✓"
 				row.button.BackgroundColor3 = UiKit.GREY
@@ -331,7 +323,7 @@ function GiftMenu.start()
 	Net.event("GiftResult").OnClientEvent:Connect(function(ok: boolean, indexOrReason: any, rewards: { Reward })
 		if ok then
 			Sounds.play("Gem")
-			showStatus(`Geschenk! +{rewardsText(rewards)}`, Color3.fromRGB(40, 150, 60))
+			showStatus(`Geschenk! +{UiKit.rewardsText(rewards)}`, Color3.fromRGB(40, 150, 60))
 		else
 			showStatus(MESSAGES[indexOrReason] or "Geht gerade nicht.", UiKit.RED)
 		end

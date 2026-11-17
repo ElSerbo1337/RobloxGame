@@ -218,6 +218,20 @@ local GameConfig = {
 		{ minutes = 60, rewards = { { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 1 } } },
 	},
 
+	-- Login calendar: one reward per German day (new day at midnight German time). Claimed
+	-- on the following day, the series goes on to the next calendar day; a missed day
+	-- starts over at day 1, and so does the day after day 7. Same reward kinds as gifts
+	-- (coins worth about 5 minutes of the income estimate of the highest unlocked world).
+	loginCalendar = {
+		{ rewards = { { kind = "Coins", incomeMinutes = 5 } } },
+		{ rewards = { { kind = "Gems", amount = 10 } } },
+		{ rewards = { { kind = "Potion", amount = 1 } } },
+		{ rewards = { { kind = "Coins", incomeMinutes = 5 } } },
+		{ rewards = { { kind = "Gems", amount = 20 } } },
+		{ rewards = { { kind = "Potion", amount = 2 } } },
+		{ rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },
+	},
+
 	-- Potions: bought with gems at a shop's gem counter, kept in the potion inventory and
 	-- drunk from there. Each runs `durationSeconds` of play time (it pauses while offline);
 	-- drinking the same kind again adds its duration to the time left.

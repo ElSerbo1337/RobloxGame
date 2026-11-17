@@ -287,4 +287,28 @@ function UiKit.chanceText(percent: number): string
 	return (string.gsub(text, "%.", ",")) .. " %"
 end
 
+-- A reward of gifts or the login calendar ({ kind = "Coins" | "Gems" | "Potion", amount,
+-- potionId? }) as short German text: "1,2K Münzen", "10 Gems", "2× Glücks-Trank", "1 Trank".
+function UiKit.rewardText(reward: { kind: string, amount: number, potionId: string? }): string
+	if reward.kind == "Coins" then
+		return `{UiKit.shortNumber(reward.amount)} Münzen`
+	elseif reward.kind == "Gems" then
+		return `{UiKit.shortNumber(reward.amount)} Gems`
+	end
+	local potion = reward.potionId and GameConfig.potions[reward.potionId]
+	if potion then
+		return `{reward.amount}× {potion.displayName}`
+	end
+	return if reward.amount == 1 then "1 Trank" else `{reward.amount} Tränke`
+end
+
+-- Several rewards joined with " + ".
+function UiKit.rewardsText(rewards: { { kind: string, amount: number, potionId: string? } }): string
+	local parts = {}
+	for _, reward in rewards do
+		table.insert(parts, UiKit.rewardText(reward))
+	end
+	return table.concat(parts, " + ")
+end
+
 return UiKit

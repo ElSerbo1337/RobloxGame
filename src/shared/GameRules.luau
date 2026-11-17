@@ -37,6 +37,12 @@ export type PlayerState = {
 	totalPlaytimeSeconds: number,
 	-- Ids (config.hints) of new HUD buttons the player has opened once (they stop pulsing).
 	seenHints: { string },
+	-- Login calendar: calendar day (1-7) of the last claimed reward and the German day
+	-- (see dayNumber) it was claimed on, and the German day the calendar last opened by
+	-- itself on join (0 = never).
+	loginStreak: number,
+	loginClaimDay: number,
+	loginShownDay: number,
 	-- Current step of the new-player tutorial (index into the tutorial steps;
 	-- past the last step = finished, never shown again).
 	tutorialStep: number,
@@ -83,6 +89,7 @@ export type Result = {
 	-- | "TutorialRunning" | "CallWaiting" | "OrderActive" | "PhoneNotReady" | "NoCall" | "NoOrder"
 	-- | "OrderExpired" | "WrongToppings" | "NotExpired"
 	-- | "UnknownGift" | "GiftNotReady" | "GiftClaimed" | "UnknownHint" | "HintSeen"
+	-- | "LoginClaimed" | "CalendarShown"
 	reason: string?,
 	state: PlayerState,
 }
@@ -200,6 +207,25 @@ export type GiftStatus = {
 
 export type RewardsResult = Result & { rewards: { Reward } }
 
+-- One day of the login calendar as shown in the calendar window.
+export type LoginDay = {
+	day: number,
+	-- "Claimed" (earlier in the current series, or today once claimed) | "Ready" (today,
+	-- not claimed yet) | "Waiting" (later days)
+	status: string,
+	rewards: { Reward },
+}
+
+export type LoginCalendar = {
+	-- Calendar day (1-7) of today: claimable now, or already claimed today.
+	today: number,
+	claimable: boolean,
+	days: { LoginDay },
+}
+
+-- `day` = the calendar day that was claimed (0 when refused).
+export type LoginClaimResult = RewardsResult & { day: number }
+
 -- Bump together with a migration step in SaveData when a field changes shape.
 local STATE_VERSION = 5
 
@@ -272,6 +298,9 @@ function GameRules.new(config: any)
 			giftsClaimed = {},
 			totalPlaytimeSeconds = 0,
 			seenHints = {},
+			loginStreak = 0,
+			loginClaimDay = 0,
+			loginShownDay = 0,
 			tutorialStep = 1,
 			potions = {},
 			activePotions = {},
@@ -1140,6 +1169,59 @@ function GameRules.new(config: any)
 		newState.giftsClaimed = table.clone(state.giftsClaimed)
 		table.insert(newState.giftsClaimed, index)
 		return { ok = true, state = newState, rewards = paid }
+	end
+
+	-- Today's calendar day and whether it can still be claimed: a claim yesterday continues
+	-- the series (after day 7 back to day 1), a claim today means claimed, anything older
+	-- starts over at day 1. A claim on a later day than today (clock of another server
+	-- ahead) counts as claimed, so the reward cannot be taken twice.
+	local function loginToday(state: PlayerState, now: number): (number, boolean)
+		local today = rules.dayNumber(now)
+		if state.loginClaimDay >= today then
+			return math.max(1, state.loginStreak), false
+		elseif state.loginClaimDay == today - 1 then
+			return state.loginStreak % #config.loginCalendar + 1, true
+		end
+		return 1, true
+	end
+
+	-- The login calendar on the German day of `now`: today's calendar day, whether it can be
+	-- claimed, and all days (config.loginCalendar) with status and rewards.
+	function rules.loginCalendar(state: PlayerState, now: number): LoginCalendar
+		local today, claimable = loginToday(state, now)
+		local days = {}
+		for day, entry in config.loginCalendar do
+			local status = if day < today or (day == today and not claimable)
+				then "Claimed"
+				elseif day == today then "Ready"
+				else "Waiting"
+			table.insert(days, { day = day, status = status, rewards = previewRewards(state, entry.rewards) })
+		end
+		return { today = today, claimable = claimable, days = days }
+	end
+
+	-- Claims today's login reward (once per German day) and moves the series on.
+	function rules.claimLoginReward(state: PlayerState, now: number, random: () -> number): LoginClaimResult
+		local today, claimable = loginToday(state, now)
+		if not claimable then
+			return { ok = false, reason = "LoginClaimed", state = state, rewards = {}, day = 0 }
+		end
+		local newState, paid = payRewards(state, config.loginCalendar[today].rewards, random)
+		newState.loginStreak = today
+		newState.loginClaimDay = rules.dayNumber(now)
+		return { ok = true, state = newState, rewards = paid, day = today }
+	end
+
+	-- The calendar opens by itself on the first join of each German day: succeeds (and
+	-- remembers the day) only if it has not opened yet today.
+	function rules.markLoginCalendarShown(state: PlayerState, now: number): Result
+		local today = rules.dayNumber(now)
+		if state.loginShownDay >= today then
+			return fail(state, "CalendarShown")
+		end
+		local newState = table.clone(state)
+		newState.loginShownDay = today
+		return { ok = true, state = newState }
 	end
 
 	-- The order the ringing phone offers (nil = phone is quiet).

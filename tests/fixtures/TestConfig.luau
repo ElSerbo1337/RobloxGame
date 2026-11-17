@@ -107,6 +107,17 @@ return {
 		{ minutes = 15, rewards = { { kind = "Potion", amount = 1 } } },
 		{ minutes = 20, rewards = { { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 2 } } },
 	},
+	-- Login calendar: one reward per day in a row (day 1-7, then day 1 again; a missed day
+	-- starts over at day 1). Same reward kinds as gifts.
+	loginCalendar = {
+		{ rewards = { { kind = "Coins", incomeMinutes = 5 } } },
+		{ rewards = { { kind = "Gems", amount = 10 } } },
+		{ rewards = { { kind = "Potion", amount = 1 } } },
+		{ rewards = { { kind = "Coins", incomeMinutes = 10 } } },
+		{ rewards = { { kind = "Gems", amount = 20 } } },
+		{ rewards = { { kind = "Potion", amount = 2 } } },
+		{ rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },
+	},
 	-- Potions: bought with gems, drunk from the potion inventory, active for `durationSeconds`.
 	potions = {
 		Coins = { displayName = "Münz-Trank", price = 20, durationSeconds = 600, coinMultiplier = 2 },
