@@ -728,6 +728,9 @@ local GameConfig = {
 	-- front of the world (0 = open from the start). `toppingSpawns` weights are relative chances.
 	-- Unlock, shop and rebirth prices are tuned with `lune run balance` (#41, docs/balancing.md)
 	-- to about 10-15 min of play in worlds 1-2, 20-25 min in 3-5 and 30-35 min in 6-7.
+	-- Optional `requiredRebirths` (default 0, #43): rebirths needed besides the price. Worlds
+	-- 1-7 need none; later worlds follow the plan in docs/balancing.md (1 rebirth up to
+	-- world 10, 2 up to 12, 3 up to 14, then 2-3 new worlds per rebirth).
 	worlds = {
 		{
 			id = "PizzeriaGarden",

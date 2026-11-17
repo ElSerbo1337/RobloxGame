@@ -87,7 +87,7 @@ export type Result = {
 	ok: boolean,
 	-- Set when ok == false: "UnknownTopping" | "OutOfRange" | "PizzaFull" | "PizzaEmpty" | "AutoCollectOff"
 	-- | "UnknownShop" | "UnknownUpgrade" | "NotOffered" | "MaxLevel" | "ShopLevelLimit" | "NotEnoughCoins"
-	-- | "UnknownWorld" | "AlreadyUnlocked" | "PreviousWorldLocked" | "WorldLocked"
+	-- | "UnknownWorld" | "AlreadyUnlocked" | "PreviousWorldLocked" | "WorldLocked" | "NotEnoughRebirths"
 	-- | "UnknownEgg" | "UnknownPet" | "AlreadyEquipped" | "PetSlotsFull" | "NotEquipped"
 	-- | "InventoryFull" | "NoPets" | "NotEnoughGems" | "InvalidTime" | "MultiOpenLocked" | "InvalidCount"
 	-- | "UnknownPotion" | "NoPotion" | "OrderToppingsOnly"
@@ -129,7 +129,15 @@ export type EggPreview = {
 }
 
 -- One world as shown in the portal menu; locked worlds are greyed out with their price.
-export type PortalEntry = { worldId: string, displayName: string, unlockPrice: number, unlocked: boolean }
+export type PortalEntry = {
+	worldId: string,
+	displayName: string,
+	unlockPrice: number,
+	unlocked: boolean,
+	-- Rebirths the world asks for besides its price (#43) and whether the player has them.
+	requiredRebirths: number,
+	enoughRebirths: boolean,
+}
 
 -- One potion as shown at a shop's gem counter.
 export type PotionOffer = {
@@ -366,10 +374,22 @@ function GameRules.new(config: any)
 		if world == nil then
 			return false
 		end
-		if (world.unlockPrice or 0) == 0 then
+		if (world.unlockPrice or 0) == 0 and (world.requiredRebirths or 0) == 0 then
 			return true
 		end
 		return table.find(state.unlockedWorlds, worldId) ~= nil
+	end
+
+	-- Rebirths a world asks for besides its coin price (#43); worlds without the field
+	-- (and unknown worlds) need 0.
+	function rules.rebirthsNeeded(worldId: string): number
+		local world = findWorld(worldId)
+		return if world then world.requiredRebirths or 0 else 0
+	end
+
+	-- Whether the player has done enough rebirths to buy this world.
+	function rules.hasRebirthsFor(state: PlayerState, worldId: string): boolean
+		return state.rebirths >= rules.rebirthsNeeded(worldId)
 	end
 
 	-- A topping can be collected if at least one world it spawns in is unlocked.
@@ -411,14 +431,17 @@ function GameRules.new(config: any)
 		if rules.isWorldUnlocked(state, worldId) then
 			return fail(state, "AlreadyUnlocked")
 		end
-		if not rules.isWorldUnlocked(state, config.worlds[index - 1].id) then
+		if index > 1 and not rules.isWorldUnlocked(state, config.worlds[index - 1].id) then
 			return fail(state, "PreviousWorldLocked")
 		end
-		if state.coins < world.unlockPrice then
+		if not rules.hasRebirthsFor(state, worldId) then
+			return fail(state, "NotEnoughRebirths")
+		end
+		if state.coins < (world.unlockPrice or 0) then
 			return fail(state, "NotEnoughCoins")
 		end
 		local newState = table.clone(state)
-		newState.coins = state.coins - world.unlockPrice
+		newState.coins = state.coins - (world.unlockPrice or 0)
 		newState.unlockedWorlds = table.clone(state.unlockedWorlds)
 		table.insert(newState.unlockedWorlds, worldId)
 		return { ok = true, state = newState }
@@ -471,6 +494,8 @@ function GameRules.new(config: any)
 				displayName = world.displayName,
 				unlockPrice = world.unlockPrice or 0,
 				unlocked = rules.isWorldUnlocked(state, world.id),
+				requiredRebirths = world.requiredRebirths or 0,
+				enoughRebirths = rules.hasRebirthsFor(state, world.id),
 			})
 		end
 		return entries

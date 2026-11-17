@@ -225,11 +225,17 @@ local function buildGate(folder: Instance, world: any, index: number): (BasePart
 	barrier:SetAttribute("WorldId", world.id)
 	barrier:SetAttribute("WorldName", world.displayName)
 	barrier:SetAttribute("UnlockPrice", world.unlockPrice)
+	local requiredRebirths = world.requiredRebirths or 0
+	barrier:SetAttribute("RequiredRebirths", requiredRebirths)
 	CollectionService:AddTag(barrier, "WorldBarrier")
+	-- Worlds behind rebirths (#43) name the condition above the price.
+	local condition = if requiredRebirths > 0
+		then `Ab {requiredRebirths} {if requiredRebirths == 1 then "Rebirth" else "Rebirths"}\n`
+		else ""
 	sign(
 		barrier,
 		barrier,
-		`🔒 {world.displayName}\n{formatCoins(world.unlockPrice)} Münzen`,
+		`🔒 {world.displayName}\n{condition}{formatCoins(world.unlockPrice)} Münzen`,
 		-barrier.Size.Y / 2 + 9,
 		"PriceSign"
 	)

@@ -4,22 +4,22 @@ Ziel aus Spec #19: Welt 1–2 je ca. 10–15 Minuten, Welt 3–5 je ca. 20–25 
 
 ## Wie gerechnet wird
 
-`lune run balance [Läufe]` (Skript `.lune/balance.luau`, Modell `tools/BalanceSim.luau`) schickt einen Modellspieler mit den **echten Spielregeln** (`GameRules`) und der echten `GameConfig` durch Welt 1–7, macht den Rebirth und spielt danach bis zum nächsten bezahlbaren Rebirth weiter. Gemessen wird die Spielzeit von der Freischaltung einer Welt bis zur Freischaltung der nächsten. In Welt 7 zählt die Zeit bis der (nächste) Rebirth bezahlbar ist. Weil Ei-Ziehungen Glück sind, wird mit 51 verschiedenen Zufallsfolgen gerechnet. Angegeben ist jeweils der Median.
+`lune run balance [Läufe]` (Skript `.lune/balance.luau`, Modell `tools/BalanceSim.luau`) schickt einen Modellspieler mit den **echten Spielregeln** (`GameRules`) und der echten `GameConfig` durch Welt 1–7, macht den Rebirth und spielt danach bis zum nächsten bezahlbaren Rebirth weiter. Gemessen wird die Spielzeit von der Freischaltung einer Welt bis zur Freischaltung der nächsten. In der letzten erreichbaren Welt zählt die Zeit bis der (nächste) Rebirth bezahlbar ist. Welten, die mehr Rebirths verlangen als der Spieler hat (#43), betritt der Modellspieler in diesem Durchlauf nicht (in der Tabelle „–“). Weil Ei-Ziehungen Glück sind, wird mit 51 verschiedenen Zufallsfolgen gerechnet. Angegeben ist jeweils der Median.
 
 Die Konfigurations-Tests (`tests/GameConfig.spec.luau`, Block „GameConfig balancing“) rechnen dasselbe Modell mit 9 Läufen und prüfen die Zielbänder mit etwas Spielraum.
 
 ## Ergebnis (Median aus 51 Läufen, Minuten Spielzeit)
 
-| Welt | ohne Rebirth | nach 1. Rebirth |
-| ---- | -----------: | --------------: |
-| 1 Pizzeria-Garten | 12.8 | 0.1 |
-| 2 Bauernhof | 12.3 | 0.2 |
-| 3 Strand | 23.5 | 0.2 |
-| 4 Eisberge | 20.5 | 0.4 |
-| 5 Vulkan | 22.8 | 2.6 |
-| 6 Süßigkeitenland | 34.7 | 8.8 |
-| 7 Weltraum (bis Rebirth) | 35.8 | 36.8 |
-| **Gesamt** | **160.8** | **51.1** |
+| Welt | ab Rebirths | ohne Rebirth | nach 1. Rebirth |
+| ---- | ----------: | -----------: | --------------: |
+| 1 Pizzeria-Garten | 0 | 12.8 | 0.1 |
+| 2 Bauernhof | 0 | 12.3 | 0.2 |
+| 3 Strand | 0 | 23.5 | 0.2 |
+| 4 Eisberge | 0 | 20.5 | 0.4 |
+| 5 Vulkan | 0 | 22.8 | 2.6 |
+| 6 Süßigkeitenland | 0 | 34.7 | 8.8 |
+| 7 Weltraum (bis Rebirth) | 0 | 35.8 | 36.8 |
+| **Gesamt** | | **160.8** | **51.1** |
 
 Pet-Multiplikator beim ersten Rebirth im Median: ×331.
 
@@ -70,7 +70,7 @@ Warum so: Shop 1 war für das Einkommen in Welt 1 viel zu teuer. Allein der Pizz
   2. Pizza-Platz, sobald bezahlbar (alle Shops, auch Shop 3).
   3. Eier nur aus der höchsten Welt, wenn sich das Ei rechnerisch in höchstens 10 Minuten bezahlt macht. Gerechnet wird mit dem erwarteten Bonus-Gewinn gegenüber dem schwächsten ausgerüsteten Pet. Danach „Beste ausrüsten“, bei vollem Inventar wird das schwächste nicht ausgerüstete Pet gelöscht.
   4. Reichweite und Magnet, wenn sie höchstens 5 Minuten Einkommen kosten (im Modell ohne Einkommenswirkung).
-- **Rebirth:** sofort, wenn bezahlbar. Der zweite Durchlauf endet, sobald der zweite Rebirth bezahlbar ist.
+- **Rebirth:** sofort, wenn bezahlbar und alle Welten gekauft sind, die die bisherigen Rebirths erlauben. Der zweite Durchlauf endet, sobald der zweite Rebirth bezahlbar ist.
 
 ## Wie empfindlich das Ergebnis ist
 
@@ -86,6 +86,31 @@ Gleiche Preise, ein Parameter des Modellspielers geändert (Median aus 51 Läufe
 | Ei-Amortisation 20 Min | 14 / 12 / 18 / 18 / 21 / 32 / 32 | 145.3 | 42.0 |
 
 Am stärksten wirken das Rundentempo und wie viel der Spieler in Eier steckt. Bei kleiner Pizza (Welt 1) sind 2 Runden pro Minute eher vorsichtig gerechnet, echte Spieler sind dort vermutlich schneller. Spieler mit kurzen Tagen kommen pro Spielminute schneller voran, weil die ersten Geschenke des Tages früh kommen. Die Zeiten sollten deshalb in Studio mit der Stoppuhr nachgemessen werden (Checkliste #41 in `docs/pc-todo.md`).
+
+## Welten hinter Rebirths (#43)
+
+Jede Welt in `GameConfig.worlds` kann neben `unlockPrice` ein Feld `requiredRebirths` haben (Standard 0). Die Regel „Welt freischalten“ lehnt mit dem Grund `NotEnoughRebirths` ab, solange der Spieler weniger Rebirths hat. Barrieren-Tor, Freischalt-Knopf und Portal-Menü zeigen dann „Ab X Rebirths“ über dem Preis. Welt 1–7 brauchen 0 Rebirths, am heutigen Spiel ändert sich nichts (ein Konfigurations-Test prüft das).
+
+Geplanter Ausbau (noch nicht gebaut):
+
+| Rebirths | erreichbar bis |
+| ---: | --- |
+| 0 | Welt 7 |
+| 1 | Welt 10 |
+| 2 | Welt 12 |
+| 3 | Welt 14 |
+
+Danach weiter so, 2–3 neue Welten pro Rebirth. Der Rebirth-Preisfaktor bleibt ×3.
+
+**Neue Welten anhängen:**
+
+1. Welt am Ende von `GameConfig.worlds` ergänzen (Belag-Spawns, Eier, Farbe wie die anderen Welten) und `requiredRebirths` nach der Tabelle setzen, z. B. Welt 8–10 `requiredRebirths = 1`. Die Zahl darf von Welt zu Welt nur gleich bleiben oder steigen (Konfigurations-Test).
+2. Den Münzpreis an der Einkommens-Stufe davor ausrichten: Ab Rebirth 1 kommt der Spieler mit ×1,5 Münzen und seinen Pets aus Welt 7 in die neue Welt. Als Startwert etwa das 10- bis 20-fache der vorigen Welt nehmen.
+3. `lune run balance` ausführen. Die Simulation spielt im ersten Durchlauf nur bis zur letzten Welt ohne Rebirth-Bedingung und macht dort den Rebirth. Im zweiten Durchlauf kauft sie alle Welten, die 1 Rebirth erlaubt, und misst die Zeit bis zum zweiten Rebirth. Welten hinter mehr Rebirths stehen mit „–“ in der Tabelle.
+4. Preise anpassen, bis jede neue Welt im zweiten Durchlauf etwa 30–40 Minuten dauert und der zweite Rebirth erst danach bezahlbar ist. Liegt der zweite Rebirth zu früh, hebt `rebirth.startPrice` (bzw. der Faktor) mit den neuen Welten mit. Welten für 2 und mehr Rebirths misst die Simulation heute nicht. Dafür müsste `tools/BalanceSim.luau` um weitere Durchläufe erweitert werden.
+5. Tabelle hier ersetzen, Zielbänder in `tests/GameConfig.spec.luau` ergänzen, `lune run test`.
+
+`tests/BalanceSim.spec.luau` prüft mit einer angehängten Testwelt hinter 1 Rebirth, dass die Simulation die Bedingung beachtet.
 
 ## Neu rechnen
 

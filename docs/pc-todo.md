@@ -1027,3 +1027,14 @@ Vorschau: pro Ei `assets/previews/pets/<EiId>.png` (z. B. `StoneOvenEgg.png`, 4 
 - [ ] Farben wie in den Vorschaubildern; jedes Pet ist an Tier und Essen erkennbar (Tabelle oben). Was in Studio schlecht zu erkennen ist: hier notieren.
 - [ ] **Mehrspieler** (2 Spieler): B sieht A's neue Pets als Modelle hinter A herlaufen.
 - [ ] **Handy** (Device-Emulator): Pet-Menü mit vielen neuen Pets öffnet ohne spürbares Ruckeln.
+
+## #43 C10 Welten mit Mindestzahl an Rebirths
+
+Welten können neben dem Münzpreis eine Mindestzahl an Rebirths verlangen (`requiredRebirths` in `GameConfig.worlds`, Standard 0). Welt 1–7 brauchen 0. Im normalen Spiel ändert sich also nichts. Zum Testen vorübergehend eine Bedingung setzen (**nicht committen**): in `src/shared/GameConfig.luau` beim Bauernhof `requiredRebirths = 1` und beim Strand `requiredRebirths = 2` ergänzen.
+
+- [ ] Output ohne rote Fehler.
+- [ ] **Barrieren-Tor Bauernhof:** Das Schild zeigt „🔒 Bauernhof / Ab 1 Rebirth / 170 Münzen“, beim Strand „Ab 2 Rebirths“.
+- [ ] **Freischalt-Knopf** am Tor (mit 0 Rebirths, genug Münzen): grau, Text „🔒 Bauernhof: Ab 1 Rebirth“ und der Preis darunter. Tippen → Hinweis „Dafür brauchst du mehr Rebirths!“, Münzen bleiben gleich, das Tor bleibt zu.
+- [ ] **Portal-Menü:** Bauernhof und Strand stehen grau da mit „Ab 1 Rebirth“ bzw. „Ab 2 Rebirths“ und dem Preis in der zweiten Zeile. Text nicht abgeschnitten, auch im Device-Emulator (kleines Handy).
+- [ ] Mit **1 Rebirth** (Münz-Tipp aus #11 für den Rebirth-Preis, oder in der Command Bar den Spielstand anpassen): Bauernhof-Knopf wird grün „🔓 Bauernhof freischalten“, Kaufen klappt. Strand zeigt weiter „Ab 2 Rebirths“.
+- [ ] Ohne die vorübergehende Änderung: Tore und Portal-Menü sehen aus wie vorher (nur Preis, kein Rebirth-Hinweis).

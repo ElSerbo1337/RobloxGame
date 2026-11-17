@@ -126,6 +126,21 @@ describe("GameConfig", function()
 		end
 	)
 
+	it("asks no rebirths for worlds 1-7, so they stay reachable before the first rebirth", function()
+		for index = 1, 7 do
+			expect(GameConfig.worlds[index].requiredRebirths or 0).toBe(0)
+		end
+	end)
+
+	it("never asks fewer rebirths for a world than for the one before", function()
+		local previous = 0
+		for _, world in GameConfig.worlds do
+			local needed = world.requiredRebirths or 0
+			expect(needed >= previous).toBe(true)
+			previous = needed
+		end
+	end)
+
 	it("lets a player unlock worlds 5-7 one after another and teleport to all of them", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()

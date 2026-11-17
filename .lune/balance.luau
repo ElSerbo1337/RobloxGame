@@ -1,6 +1,7 @@
 --!strict
--- Balancing table (#41): plays the model player of tools/BalanceSim through worlds 1-7
--- with the real rules and configuration, without and after the first rebirth.
+-- Balancing table (#41): plays the model player of tools/BalanceSim through every world
+-- it may buy (`requiredRebirths`, #43) with the real rules and configuration, without
+-- and after the first rebirth.
 -- Usage: lune run balance [seeds]   (default 51 runs with different luck; medians)
 -- The result goes into docs/balancing.md.
 
@@ -28,16 +29,23 @@ end
 
 local result = BalanceSim.median(GameConfig, seeds)
 print(`Medians over {seeds} runs (minutes of play time)\n`)
-print("| Welt | ohne Rebirth | nach 1. Rebirth |")
-print("| ---- | -----------: | --------------: |")
+-- Worlds behind more rebirths than a run has (#43) are not entered there: "–".
+local function cell(value: number, world: any, rebirths: number): string
+	return if (world.requiredRebirths or 0) > rebirths then "–" else minutes(value)
+end
+
+print("| Welt | ab Rebirths | ohne Rebirth | nach 1. Rebirth |")
+print("| ---- | ----------: | -----------: | --------------: |")
 for index, world in GameConfig.worlds do
 	print(
-		`| {index} {world.displayName} | {minutes(result.first.worlds[index])} | {minutes(
-			result.afterRebirth.worlds[index]
+		`| {index} {world.displayName} | {world.requiredRebirths or 0} | {cell(result.first.worlds[index], world, 0)} | {cell(
+			result.afterRebirth.worlds[index],
+			world,
+			1
 		)} |`
 	)
 end
-print(`| **Gesamt** | **{minutes(result.first.total)}** | **{minutes(result.afterRebirth.total)}** |`)
+print(`| **Gesamt** | | **{minutes(result.first.total)}** | **{minutes(result.afterRebirth.total)}** |`)
 print(`\nPet multiplier at the first rebirth: x{string.format("%.1f", result.rebirthPetMultiplier)}`)
 
 -- Sensitivity: the same prices with slower/faster players and shorter sessions.

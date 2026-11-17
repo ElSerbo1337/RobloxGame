@@ -16,7 +16,9 @@
 -- * Coins: next world as soon as affordable, then pizza space, eggs of the highest unlocked
 --   world whose expected coin gain pays them back within `eggPaybackMinutes`, range and
 --   magnet levels costing at most `comfortMinutes` of income (no effect on the income).
--- * A run ends with the rebirth (run 1) or once the next rebirth is affordable (run 2).
+-- * A run ends with the rebirth (run 1) or once the next rebirth is affordable (run 2),
+--   after every world the rebirths done so far allow (`requiredRebirths`, #43) is bought.
+--   Worlds needing more rebirths are not entered in that run (0 minutes).
 
 local GameRules = require("../src/shared/GameRules")
 
@@ -33,8 +35,8 @@ export type Options = {
 	trace: ((minutes: number, note: string) -> ())?,
 }
 
--- Minutes spent in each world (index = world; the last world lasts until the next
--- rebirth is affordable) plus the run's total.
+-- Minutes spent in each world (index = world; the last reachable world lasts until the
+-- next rebirth is affordable, worlds behind more rebirths get 0) plus the run's total.
 export type Run = { worlds: { number }, total: number }
 export type Result = { first: Run, afterRebirth: Run, rebirthPetMultiplier: number }
 
@@ -303,6 +305,9 @@ function BalanceSim.run(config: any, options: Options?): Result
 			step()
 			local count = unlockedCount()
 			local nextWorld = config.worlds[count + 1]
+			if nextWorld and not rules.hasRebirthsFor(state, nextWorld.id) then
+				nextWorld = nil -- needs more rebirths (#43): play on towards the rebirth
+			end
 			local goal = if nextWorld then nextWorld.unlockPrice else rules.rebirthOffer(state).price
 			if nextWorld and state.coins >= goal and apply(rules.unlockWorld(state, nextWorld.id)) then
 				enteredAt[count + 1] = played
@@ -319,8 +324,20 @@ function BalanceSim.run(config: any, options: Options?): Result
 		return { worlds = worlds, total = (played - startedAt) / 60 }
 	end
 
+	-- Worlds the player may buy with the rebirths done so far (#43).
+	local function reachableCount(): number
+		local count = 0
+		for _, world in config.worlds do
+			if not rules.hasRebirthsFor(state, world.id) then
+				break
+			end
+			count += 1
+		end
+		return count
+	end
+
 	local function rebirthReady(): boolean
-		return unlockedCount() == #config.worlds and rules.rebirthOffer(state).affordable
+		return unlockedCount() == reachableCount() and rules.rebirthOffer(state).affordable
 	end
 
 	local first = playRun(rebirthReady)

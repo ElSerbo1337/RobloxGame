@@ -1,8 +1,9 @@
 --!strict
 -- Portal menu: opens when the server says the player stands in a portal, closes when
 -- they walk out (or tap X). Lists every world; unlocked ones are big green buttons,
--- locked ones are grey with their price and cannot be chosen. Buttons only send the
--- wish (Teleport); the server checks again and moves the character.
+-- locked ones are grey with their price (worlds behind rebirths also "Ab X Rebirths",
+-- #43) and cannot be chosen. Buttons only send the wish (Teleport); the server checks
+-- again and moves the character.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -27,6 +28,11 @@ local function formatNumber(value: number): string
 	local text = tostring(math.floor(value))
 	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
 	return (string.gsub(formatted, "^%.", ""))
+end
+
+-- "Ab 1 Rebirth" / "Ab 3 Rebirths" (#43).
+local function rebirthsText(count: number): string
+	return `Ab {count} {if count == 1 then "Rebirth" else "Rebirths"}`
 end
 
 function PortalMenu.start()
@@ -89,7 +95,13 @@ function PortalMenu.start()
 		for index, entry in entries do
 			local here = entry.worldId == currentWorldId
 			local text, color
-			if not entry.unlocked then
+			if not entry.unlocked and not entry.enoughRebirths then
+				-- Behind rebirths (#43): the condition first, the price below.
+				text = `🔒 {entry.displayName} – {rebirthsText(entry.requiredRebirths)}\n{formatNumber(
+					entry.unlockPrice
+				)} Münzen`
+				color = GREY
+			elseif not entry.unlocked then
 				text = `🔒 {entry.displayName} – {formatNumber(entry.unlockPrice)} Münzen`
 				color = GREY
 			elseif here then

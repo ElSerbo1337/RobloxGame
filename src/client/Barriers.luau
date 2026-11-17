@@ -30,6 +30,11 @@ local function formatNumber(value: number): string
 	return (string.gsub(formatted, "^%.", ""))
 end
 
+-- "Ab 1 Rebirth" / "Ab 3 Rebirths" (#43).
+local function rebirthsText(count: number): string
+	return `Ab {count} {if count == 1 then "Rebirth" else "Rebirths"}`
+end
+
 local function unlockedWorlds(player: Player): { [string]: boolean }
 	local set = {}
 	local list = player:GetAttribute("UnlockedWorlds")
@@ -148,8 +153,17 @@ function Barriers.start()
 		if found then
 			local price = (found:GetAttribute("UnlockPrice") :: number?) or 0
 			local coins = (player:GetAttribute("Coins") :: number?) or 0
-			button.Text = `🔓 {found:GetAttribute("WorldName")} freischalten\n{formatNumber(price)} Münzen`
-			button.BackgroundColor3 = if coins >= price then GREEN else GRAY
+			local needed = (found:GetAttribute("RequiredRebirths") :: number?) or 0
+			local rebirths = (player:GetAttribute("Rebirths") :: number?) or 0
+			if rebirths < needed then
+				-- Behind rebirths (#43): name the condition; the server refuses anyway.
+				button.Text =
+					`🔒 {found:GetAttribute("WorldName")}: {rebirthsText(needed)}\n{formatNumber(price)} Münzen`
+				button.BackgroundColor3 = GRAY
+			else
+				button.Text = `🔓 {found:GetAttribute("WorldName")} freischalten\n{formatNumber(price)} Münzen`
+				button.BackgroundColor3 = if coins >= price then GREEN else GRAY
+			end
 		end
 	end)
 

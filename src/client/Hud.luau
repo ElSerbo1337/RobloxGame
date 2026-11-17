@@ -28,6 +28,7 @@ local MESSAGES: { [string]: string } = {
 	NotEnoughCoins = "Nicht genug Münzen!",
 	WorldLocked = "Diese Welt ist noch gesperrt!",
 	PreviousWorldLocked = "Erst die vorige Welt freischalten!",
+	NotEnoughRebirths = "Dafür brauchst du mehr Rebirths!",
 	WorldUnlocked = "Neue Welt freigeschaltet!",
 	InventoryFull = "Pet-Inventar voll! Lösche erst ein Pet.",
 	NotEnoughGems = "Nicht genug Gems!",
@@ -273,6 +274,7 @@ function Hud.start(): GuiObject
 			local color = if kind == "PizzaFull"
 					or kind == "NotEnoughCoins"
 					or kind == "WorldLocked"
+					or kind == "NotEnoughRebirths"
 					or kind == "InventoryFull"
 					or kind == "NotEnoughGems"
 					or kind == "WrongToppings"
