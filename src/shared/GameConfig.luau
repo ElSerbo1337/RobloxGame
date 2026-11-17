@@ -65,7 +65,7 @@ local GameConfig = {
 			description = "Mehr Beläge pro Pizza",
 			levels = {
 				-- Shop 1 (world 1)
-				{ price = 25, value = 3 },
+				{ price = 12, value = 3 }, -- first upgrade after 3-4 rounds (#23)
 				{ price = 120, value = 4 },
 				{ price = 500, value = 6 },
 				-- Shop 2 (world 4)

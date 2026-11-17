@@ -294,7 +294,7 @@ Studio: Rojo verbinden, dann **Play** als neuer Spieler (1 Spieler):
 - [ ] Ein gelber, wippender Pfeil ▼ steht über dem **nächsten** Belag, eine gelbe Linie führt von den Füßen dorthin. Beim Laufen springt der Pfeil zum jeweils nächsten Belag (nie zu einem Gem-Belag).
 - [x] 1 Belag einsammeln → „(1/2)“. Zweiten Belag einsammeln (per Antippen **oder** Auto-Sammeln) → Karte springt mit kleinem Pop auf „Schritt 2/4: … verkaufe deine Pizza!“, Pfeil steht über der Ofen-Zone.
 - [x] In die Ofen-Zone laufen und verkaufen → „Schritt 3/4: Kauf im Shop dein erstes Upgrade!“, Pfeil über der grünen Shop-Zone in Welt 1.
-- [ ] Mit zu wenig Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4. Weiter sammeln/verkaufen, dann Pizza-Platz kaufen (25 Münzen) → „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil über dem Ei-Sockel in Welt 1.
+- [ ] Mit zu wenig Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4. Weiter sammeln/verkaufen, dann Pizza-Platz kaufen (12 Münzen, seit #23) → „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil über dem Ei-Sockel in Welt 1.
 - [x] Ei öffnen (25 Münzen) → Karte zeigt „Tutorial geschafft!“ und verschwindet nach ca. 4 s; Pfeil und Linie sind weg.
 - [x] **Stop**, erneut **Play** → kein Tutorial mehr (gespeichert).
 - [x] Mittendrin speichern: Neuer Spieler, bis Schritt 3 spielen, **Stop**, **Play** → Tutorial macht bei Schritt 3/4 weiter. _(am 16.11. Schritt 3/4 nach Stop/Play erhalten)_
@@ -377,13 +377,15 @@ Ohne die folgenden Import-Schritte läuft alles weiter mit den bisherigen Teilen
 
 Aus der Cloud-Sitzung ließ sich keine Roblox-Asset-ID prüfen (roblox.com gesperrt), deshalb sind die IDs noch leer. In Studio: **View → Toolbox → Creator Store → Audio**, Creator-Filter **Roblox** (diese Sounds bleiben öffentlich), anhören, Rechtsklick → **Copy Asset ID**, als Zahl in `Sounds.luau` eintragen:
 
-- [ ] `Collect` – kurzer „Plopp“ (Suche: *pop*, *plop*, *bubble pop*), < 0,5 s.
-- [ ] `Sell` – Kasse/Münzen (Suche: *cash register*, *coins*, *purchase*).
-- [ ] `Gem` – Glitzern/Chime (Suche: *sparkle*, *chime*, *magic*).
-- [ ] `EggCrack` – Ei/Schale knackt (Suche: *egg crack*, *crack*, *shell*).
-- [ ] `PhoneRing` – altes Telefonklingeln (Suche: *phone ring*, *telephone*); wird erst mit #13 (Lieferdienst) abgespielt.
-- [ ] `Music_PizzeriaGarden` – fröhliche, leichte Hintergrundmusik zum Loopen (Suche: *happy*, *cheerful*, *ukulele*, *italian*), Lautstärke ist schon leise (0,25).
-- [ ] Eingetragene IDs hier mit Namen notieren, committen (`Add sound IDs (#15)`), pushen.
+> Zusammengefasst und mit genauer Anleitung in **#23** (unten) – IDs dort eintragen und abhaken.
+
+- `Collect` – kurzer „Plopp“ (Suche: *pop*, *plop*, *bubble pop*), < 0,5 s.
+- `Sell` – Kasse/Münzen (Suche: *cash register*, *coins*, *purchase*).
+- `Gem` – Glitzern/Chime (Suche: *sparkle*, *chime*, *magic*).
+- `EggCrack` – Ei/Schale knackt (Suche: *egg crack*, *crack*, *shell*).
+- `PhoneRing` – altes Telefonklingeln (Suche: *phone ring*, *telephone*); wird erst mit #13 (Lieferdienst) abgespielt.
+- `Music_PizzeriaGarden` – fröhliche, leichte Hintergrundmusik zum Loopen (Suche: *happy*, *cheerful*, *ukulele*, *italian*), Lautstärke ist schon leise (0,25).
+- Eingetragene IDs hier mit Namen notieren, committen (`Add sound IDs (#15)`), pushen.
 
 **4. Test** (Rojo verbunden, **Play**, 1 Spieler):
 
@@ -535,13 +537,15 @@ Ohne Import läuft alles weiter: Pets bleiben farbige Kugeln mit Augen, die Bild
 
 **3. Musik der Welten 2–7** (IDs in `src/client/Sounds.luau`, starten leer = stumm; aus der Cloud war roblox.com gesperrt, deshalb keine geprüften IDs). **View → Toolbox → Creator Store → Audio**, Creator-Filter **Roblox**, Kategorie Musik, anhören, Rechtsklick → **Copy Asset ID**, als Zahl eintragen, Lautstärke ist schon leise (0,25):
 
-- [ ] `Music_Farm` – fröhlich-ländlich (Suche: *country*, *banjo*, *farm*, *folk*).
-- [ ] `Music_Beach` – sommerlich (Suche: *tropical*, *beach*, *ukulele*, *reggae*).
-- [ ] `Music_Icebergs` – ruhig-funkelnd (Suche: *winter*, *snow*, *bells*, *calm*).
-- [ ] `Music_Volcano` – spannend, Trommeln (Suche: *volcano*, *drums*, *adventure*, *tribal*).
-- [ ] `Music_CandyLand` – verspielt-süß (Suche: *candy*, *cute*, *bubbly*, *playful*).
-- [ ] `Music_Space` – sphärisch (Suche: *space*, *synth*, *ambient*, *cosmic*).
-- [ ] Eingetragene IDs hier mit Namen notieren, committen (`Add world music IDs (#16)`), pushen.
+> Zusammengefasst und mit genauer Anleitung in **#23** (unten) – IDs dort eintragen und abhaken.
+
+- `Music_Farm` – fröhlich-ländlich (Suche: *country*, *banjo*, *farm*, *folk*).
+- `Music_Beach` – sommerlich (Suche: *tropical*, *beach*, *ukulele*, *reggae*).
+- `Music_Icebergs` – ruhig-funkelnd (Suche: *winter*, *snow*, *bells*, *calm*).
+- `Music_Volcano` – spannend, Trommeln (Suche: *volcano*, *drums*, *adventure*, *tribal*).
+- `Music_CandyLand` – verspielt-süß (Suche: *candy*, *cute*, *bubbly*, *playful*).
+- `Music_Space` – sphärisch (Suche: *space*, *synth*, *ambient*, *cosmic*).
+- Eingetragene IDs hier mit Namen notieren, committen (`Add world music IDs (#16)`), pushen.
 
 **4. Test Pets** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11 zum schnellen Öffnen):
 
@@ -572,3 +576,59 @@ Ohne Import läuft alles weiter: Pets bleiben farbige Kugeln mit Augen, die Bild
 
 - [ ] Ei-Vorschau: 3D-Pets sind auch klein erkennbar; Pet-Menü-Karten bleiben gut antippbar (das 3D-Bild fängt keine Eingaben ab – Antippen rüstet aus/ab).
 - [ ] Bildrate in Vulkan und Weltraum (Licht-Effekte) bleibt flüssig; falls nicht, hier notieren.
+
+## #23 Schnellerer Start und Sounds vorbereiten
+
+**1. Schnellerer Start** (Rojo verbunden, **Play**, 1 Spieler, als **neuer Spieler** – Spielstand löschen oder API-Zugriff aus, siehe #17):
+
+- [ ] Output ohne rote Fehler.
+- [ ] Shop in Welt 1: Pizza-Platz Stufe 1 kostet **12 Münzen** (Knopf „12 Münzen“), Stufe 2 weiterhin 120.
+- [ ] Garten-Ei kostet weiterhin **25 Münzen** („1 öffnen – 25 Münzen“).
+- [ ] Tutorial durchspielen: 2 Beläge sammeln → verkaufen → Schritt 3/4 „Kauf im Shop dein erstes Upgrade!“. Nach **3–4 Runden** (je 2 Beläge) reicht das Geld für Pizza-Platz → Kauf klappt, Pizza fasst 3 Beläge, Tutorial springt auf „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil zeigt zum Ei.
+- [ ] Mit weniger als 12 Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4.
+
+**2. Sound-IDs eintragen** (wird in **A7** ausgeführt; IDs in `src/client/Sounds.luau`, starten leer = stumm). Die Suchbegriffe stehen auch im Code als `search` bei jedem Eintrag.
+
+So geht's für jeden Schlüssel der Tabelle:
+
+1. Studio: **View → Toolbox**, oben **Creator Store**, Kategorie **Audio** (bei Musik zusätzlich den Typ **Music**, bei Effekten **Sound Effects** wählen).
+2. Suchbegriff aus der Tabelle eingeben, dann über das Filter-Symbol (Trichter) bei **Creator** „Roblox“ eintragen und bestätigen. Nur Sounds dieses Creators nehmen, die bleiben öffentlich und funktionieren in jedem Spiel.
+3. Mit dem ▶-Knopf in der Liste anhören. Passt der Sound zur Beschreibung (und zur Länge), dann **Rechtsklick → Copy Asset ID**.
+4. **Nicht in Studio**, sondern in der Datei `src/client/Sounds.luau` (Editor, Rojo synchronisiert) beim Schlüssel `id = ""` durch die Zahl ersetzen, z. B. `id = "1234567890"` (nur Ziffern, ohne `rbxassetid://`). In Studio geänderter Code würde von Rojo überschrieben.
+5. Speichern → Rojo synchronisiert → **Play** und prüfen (siehe 3.). Zu laut/leise: `volume` im selben Eintrag anpassen.
+6. Gewählten Sound (Name + ID) unten in der Tabelle in der Spalte „Gewählt“ notieren und die Zeile abhaken.
+
+| Schlüssel | Wann | Gesucht wird | Suchbegriffe | Gewählt (Name, ID) |
+| --- | --- | --- | --- | --- |
+| `Collect` | Belag landet auf der Pizza | kurzer, weicher „Plopp“, **< 0,5 s** | *pop*, *plop*, *bubble pop*, *click* | |
+| `Sell` | Verkauf am Ofen, Lieferung | Kasse / Münzen klimpern, ≈ 1 s | *cash register*, *coins*, *purchase*, *ka-ching* | |
+| `Gem` | Gem-Belag, Gem-Belohnung | helles Glitzern / Chime | *sparkle*, *chime*, *magic*, *twinkle* | |
+| `EggCrack` | Ei-Animation, Schale bricht | Ei-/Schale-Knacken, kurz | *egg crack*, *crack*, *shell*, *break* | |
+| `PhoneRing` | Telefon klingelt (alle 3 s) | altes Telefonklingeln, **≤ 3 s** | *phone ring*, *telephone*, *old phone*, *ringing* | |
+| `Music_PizzeriaGarden` | Welt 1 | fröhlich, leicht, loopbar | *happy*, *cheerful*, *ukulele*, *italian* | |
+| `Music_Farm` | Welt 2 | fröhlich-ländlich | *country*, *banjo*, *farm*, *folk* | |
+| `Music_Beach` | Welt 3 | sommerlich | *tropical*, *beach*, *ukulele*, *reggae* | |
+| `Music_Icebergs` | Welt 4 | ruhig-funkelnd | *winter*, *snow*, *bells*, *calm* | |
+| `Music_Volcano` | Welt 5 | spannend, Trommeln | *volcano*, *drums*, *adventure*, *tribal* | |
+| `Music_CandyLand` | Welt 6 | verspielt-süß | *candy*, *cute*, *bubbly*, *playful* | |
+| `Music_Space` | Welt 7 | sphärisch | *space*, *synth*, *ambient*, *cosmic* | |
+
+- [ ] `Collect` eingetragen
+- [ ] `Sell` eingetragen
+- [ ] `Gem` eingetragen
+- [ ] `EggCrack` eingetragen
+- [ ] `PhoneRing` eingetragen
+- [ ] `Music_PizzeriaGarden` eingetragen
+- [ ] `Music_Farm` eingetragen
+- [ ] `Music_Beach` eingetragen
+- [ ] `Music_Icebergs` eingetragen
+- [ ] `Music_Volcano` eingetragen
+- [ ] `Music_CandyLand` eingetragen
+- [ ] `Music_Space` eingetragen
+- [ ] Commit `Add sound IDs (#23)`, pushen.
+
+**3. Sound-Test** (nach Schritt 2, **Play**, 1 Spieler):
+
+- [ ] Output ohne Fehler wie „Failed to load sound“ (sonst ID falsch oder nicht öffentlich → anderen Sound wählen).
+- [ ] Plopp beim Sammeln (nicht beim Beitreten, nicht als Dauerfeuer beim Auto-Sammeln), Kasse beim Verkaufen und Liefern, Glitzern bei Gems, Knacken in der Ei-Animation, Klingeln am Telefon.
+- [ ] Musik startet in Welt 1, läuft in Schleife und wechselt beim Betreten jeder anderen Welt (auch per Portal) innerhalb ~1 s. Lautstärke ist leise im Hintergrund, Effekte bleiben gut hörbar.

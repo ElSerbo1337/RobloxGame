@@ -596,6 +596,44 @@ describe("GameConfig tutorial", function()
 		expect(rules.tutorial(state).goal).toBe(2)
 		expect(rules.tutorial(state).goal <= rules.pizzaCapacity(state)).toBe(true)
 	end)
+
+	it("prices the first pizza space upgrade at 12 coins, the garden egg stays at 25", function()
+		expect(GameConfig.upgrades.PizzaSpace.levels[1].price).toBe(12)
+		expect(GameConfig.eggs.GardenEgg.price).toBe(25)
+	end)
+
+	it("lets new players afford the first upgrade after 3-4 rounds on average", function()
+		local world = GameConfig.worlds[1]
+		local totalWeight, weightedValue = 0, 0
+		for _, spawn in world.toppingSpawns do
+			totalWeight += spawn.weight
+			weightedValue += spawn.weight * GameConfig.toppings[spawn.topping].value
+		end
+		local coinsPerRound = weightedValue / totalWeight * GameConfig.pizza.startCapacity
+		local rounds = math.ceil(GameConfig.upgrades.PizzaSpace.levels[1].price / coinsPerRound)
+
+		expect(rounds >= 3 and rounds <= 4).toBe(true)
+	end)
+
+	it("reaches the 'buy an upgrade' step and finishes it with the first pizza space upgrade", function()
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+		-- Four average rounds: salami + mushroom (1 + 2 coins) each.
+		for _ = 1, 4 do
+			state = rules.collectTopping(state, "Salami", 1).state
+			state = rules.collectTopping(state, "Mushroom", 1).state
+			state = rules.sellPizza(state).state
+		end
+		expect(rules.tutorial(state).step).toBe("BuyUpgrade")
+		expect(state.coins).toBe(12)
+
+		local result = rules.buyUpgrade(state, "World1Shop", "PizzaSpace")
+
+		expect(result.ok).toBe(true)
+		expect(result.state.coins).toBe(0)
+		expect(rules.pizzaCapacity(result.state)).toBe(3)
+		expect(rules.tutorial(result.state).step).toBe("OpenEgg")
+	end)
 end)
 
 describe("GameConfig potions", function()

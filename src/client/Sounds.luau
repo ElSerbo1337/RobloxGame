@@ -3,8 +3,9 @@
 --
 -- IDs come from the Roblox Creator Store (Toolbox → Audio). They could not be
 -- verified from the cloud session, so they start empty; an empty ID simply stays
--- silent. Fill them in during the Studio check (docs/pc-todo.md, #15): pick sounds
--- by the creator "Roblox" (those stay public), copy the asset ID, enter it below.
+-- silent. Every entry carries `search`: the Toolbox search terms to find a fitting
+-- sound. The local session picks sounds by the creator "Roblox" (those stay public)
+-- and enters the asset IDs here, see docs/pc-todo.md (#23, done in A7).
 --
 -- Played automatically here: Collect (pizza count goes up), Sell ("Sold"),
 -- Gem (gem topping / gem reward), Sell also for a delivered order. EggCrack is played by
@@ -17,28 +18,64 @@ local SoundService = game:GetService("SoundService")
 
 local Net = require(ReplicatedStorage.Shared.Net)
 
-type Entry = { id: string, volume: number, looped: boolean? }
+-- `search`: Toolbox search terms (documentation only, not used at runtime).
+type Entry = { id: string, volume: number, looped: boolean?, search: { string } }
 
 local SOUNDS: { [string]: Entry } = {
 	-- Short "plop" when a topping lands on the pizza.
-	Collect = { id = "", volume = 0.5 },
+	Collect = { id = "", volume = 0.5, search = { "pop", "plop", "bubble pop", "click" } },
 	-- Cash register / coins when selling at the oven.
-	Sell = { id = "", volume = 0.6 },
+	Sell = { id = "", volume = 0.6, search = { "cash register", "coins", "purchase", "ka-ching" } },
 	-- Sparkle / chime for gems.
-	Gem = { id = "", volume = 0.5 },
+	Gem = { id = "", volume = 0.5, search = { "sparkle", "chime", "magic", "twinkle" } },
 	-- Egg shell cracking in the hatch animation.
-	EggCrack = { id = "", volume = 0.7 },
+	EggCrack = { id = "", volume = 0.7, search = { "egg crack", "crack", "shell", "break" } },
 	-- Old phone ringing (delivery service).
-	PhoneRing = { id = "", volume = 0.6 },
+	PhoneRing = { id = "", volume = 0.6, search = { "phone ring", "telephone", "old phone", "ringing" } },
 	-- Background music per world, looped (cheerful, light).
-	Music_PizzeriaGarden = { id = "", volume = 0.25, looped = true },
-	-- Worlds 2-7 (#16), see docs/pc-todo.md for search terms per world.
-	Music_Farm = { id = "", volume = 0.25, looped = true },
-	Music_Beach = { id = "", volume = 0.25, looped = true },
-	Music_Icebergs = { id = "", volume = 0.25, looped = true },
-	Music_Volcano = { id = "", volume = 0.25, looped = true },
-	Music_CandyLand = { id = "", volume = 0.25, looped = true },
-	Music_Space = { id = "", volume = 0.25, looped = true },
+	Music_PizzeriaGarden = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "happy", "cheerful", "ukulele", "italian" },
+	},
+	-- Worlds 2-7 (#16).
+	Music_Farm = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "country", "banjo", "farm", "folk" },
+	},
+	Music_Beach = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "tropical", "beach", "ukulele", "reggae" },
+	},
+	Music_Icebergs = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "winter", "snow", "bells", "calm" },
+	},
+	Music_Volcano = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "volcano", "drums", "adventure", "tribal" },
+	},
+	Music_CandyLand = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "candy", "cute", "bubbly", "playful" },
+	},
+	Music_Space = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "space", "synth", "ambient", "cosmic" },
+	},
 }
 
 -- Several pickups within this time play only one plop.
