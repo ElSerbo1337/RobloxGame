@@ -23,6 +23,7 @@ local SpawnService = require(script.SpawnService)
 local ToppingService = require(script.ToppingService)
 local TutorialService = require(script.TutorialService)
 local IslandBuilder = require(script.IslandBuilder)
+local LeaderboardService = require(script.LeaderboardService)
 local WorldDeco = require(script.WorldDeco)
 local WorldMap = require(script.WorldMap)
 
@@ -53,7 +54,7 @@ end
 CameraService.start()
 -- Flying islands (#27): spawn island -> bridge -> world 1 -> bridge -> world 2 ...
 WorldMap.removeBaseplate()
-WorldMap.buildSpawnIsland()
+local spawnIsland = WorldMap.buildSpawnIsland()
 WorldMap.buildBridges()
 local worlds = WorldMap.buildAll()
 local layout = worlds[1]
@@ -61,6 +62,9 @@ local laterWorlds = {}
 for index = 2, #worlds do
 	table.insert(laterWorlds, worlds[index])
 end
+-- Global leaderboards (#38) on the spawn island's boards; before PlayerStates.start so
+-- every save (also an early leave) submits the scores.
+LeaderboardService.start(spawnIsland)
 PlayerStates.start()
 PizzaVisual.start()
 for _, world in worlds do

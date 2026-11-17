@@ -120,9 +120,10 @@ end
 
 -- Yields. Writes the state if this server owns the player's save. `release`
 -- frees the session lock (final save on leave/shutdown); otherwise it is renewed.
-function SaveService.save(userId: number, state: any, release: boolean?)
+-- Returns true if the state was written (only then is it this player's real state).
+function SaveService.save(userId: number, state: any, release: boolean?): boolean
 	if not storeOk or not owned[userId] then
-		return
+		return false
 	end
 
 	local refused: string? = nil
@@ -135,14 +136,17 @@ function SaveService.save(userId: number, state: any, release: boolean?)
 	end)
 	if not ok then
 		warn(`[Save] Speichern für Spieler {userId} fehlgeschlagen: {err}`)
+		return false
 	elseif refused ~= nil then
 		-- Another server took the save over (or a newer version wrote it): stop
 		-- writing for this player, the other server's state wins.
 		warn(`[Save] Speichern für Spieler {userId} verweigert ({refused}), es wird nicht mehr gespeichert`)
 		owned[userId] = nil
+		return false
 	elseif release then
 		owned[userId] = nil -- lock released; later saves (e.g. leave during shutdown) are skipped
 	end
+	return true
 end
 
 -- Call after the final save of a player who left.

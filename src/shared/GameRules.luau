@@ -35,6 +35,9 @@ export type PlayerState = {
 	giftsClaimed: { number },
 	-- Seconds played in total (never reset).
 	totalPlaytimeSeconds: number,
+	-- Coins earned in total from selling, deliveries, login calendar and gifts. Never
+	-- lowered by spending and kept through rebirths (leaderboard "Münzen verdient").
+	totalCoinsEarned: number,
 	-- Ids (config.hints) of new HUD buttons the player has opened once (they stop pulsing).
 	seenHints: { string },
 	-- Login calendar: calendar day (1-7) of the last claimed reward and the German day
@@ -77,6 +80,8 @@ export type Order = {
 }
 
 export type OwnedPet = { uid: number, petId: string }
+
+export type LeaderboardScores = { Playtime: number, CoinsEarned: number, Rebirths: number }
 
 export type Result = {
 	ok: boolean,
@@ -297,6 +302,7 @@ function GameRules.new(config: any)
 			playtimeDay = 0,
 			giftsClaimed = {},
 			totalPlaytimeSeconds = 0,
+			totalCoinsEarned = 0,
 			seenHints = {},
 			loginStreak = 0,
 			loginClaimDay = 0,
@@ -709,6 +715,7 @@ function GameRules.new(config: any)
 		local newState = table.clone(state)
 		newState.pizza = kept
 		newState.coins = state.coins + earned
+		newState.totalCoinsEarned = state.totalCoinsEarned + earned
 		advanceTutorial(newState, "SellPizza")
 		return { ok = true, state = newState, coinsEarned = earned }
 	end
@@ -1105,6 +1112,7 @@ function GameRules.new(config: any)
 		for _, reward in paid do
 			if reward.kind == "Coins" then
 				newState.coins += reward.amount
+				newState.totalCoinsEarned += reward.amount
 			elseif reward.kind == "Gems" then
 				newState.gems += reward.amount
 			elseif reward.kind == "Potion" then
@@ -1346,6 +1354,7 @@ function GameRules.new(config: any)
 		newState.pizza = {}
 		if reward.reward == "Coins" then
 			newState.coins = state.coins + reward.amount
+			newState.totalCoinsEarned = state.totalCoinsEarned + reward.amount
 		elseif reward.reward == "Gems" then
 			newState.gems = state.gems + reward.amount
 		elseif reward.potionId then
@@ -1375,6 +1384,18 @@ function GameRules.new(config: any)
 		return { ok = true, state = withDelivery(state, nil, nil, now) }
 	end
 
+	-- Leaderboards ----------------------------------------------------------------
+
+	-- Whole-number scores for the global leaderboards (ordered DataStores only take
+	-- integers), keyed by the board ids in config.leaderboards.boards.
+	function rules.leaderboardScores(state: PlayerState): LeaderboardScores
+		return {
+			Playtime = math.floor(state.totalPlaytimeSeconds),
+			CoinsEarned = math.floor(state.totalCoinsEarned),
+			Rebirths = math.floor(state.rebirths),
+		}
+	end
+
 	-- Rebirth -------------------------------------------------------------------
 
 	-- Coin price of the next rebirth: startPrice x priceFactor ^ rebirths done.
@@ -1401,7 +1422,7 @@ function GameRules.new(config: any)
 	-- Pays the price and starts over with a higher coin multiplier. Reset: coins, coin
 	-- upgrades, bought worlds, pizza, last world, call and order (the phone rings again
 	-- after a call interval from `now`); running potions end. Everything else stays
-	-- (pets, gems, gem upgrades, potion inventory, tutorial, ...).
+	-- (pets, gems, gem upgrades, potion inventory, tutorial, lifetime totals, ...).
 	function rules.rebirth(state: PlayerState, now: number): Result
 		if state.coins < rebirthPrice(state) then
 			return fail(state, "NotEnoughCoins")

@@ -899,7 +899,7 @@ Vorher: `lune run test` → `0 failed` (inkl. `tests/IslandPlan.spec.luau`). Vor
 **Play (1 Spieler, neuer Spielstand):**
 
 - [ ] Output ohne rote Fehler. Start auf der **Spawn-Insel** am gelben Spawn, Blick auf den Pizza-Brunnen (Wasserspritzer) und die Brücke.
-- [ ] Spawn-Insel: runder, unregelmäßiger Umriss mit Felskante darunter, Hecke am Rand, Bäume, Teich mit Wasserfall, Portal-Tor links vorne, drei Tafeln „⏱ Spielzeit“, „💰 Münzen verdient“, „🔁 Rebirths“ mit „Bestenliste kommt bald!“ (Text auf der Vorderseite, Richtung Brunnen).
+- [ ] Spawn-Insel: runder, unregelmäßiger Umriss mit Felskante darunter, Hecke am Rand, Bäume, Teich mit Wasserfall, Portal-Tor links vorne, drei Tafeln „⏱ Spielzeit“, „💰 Münzen verdient“, „🔁 Rebirths“ (Inhalt seit #38: echte Bestenlisten, Text auf der Vorderseite, Richtung Brunnen).
 - [ ] Tutorial-Karte erscheint auf der Spawn-Insel; Pfeil und Leuchtlinie zeigen zuerst auf den **Brückenkopf von Welt 1**, nach dem Überqueren der Brücke auf die Beläge.
 - [ ] Hängebrücke (Holzplanken, Pfosten, Seile) begehbar, leicht durchhängend, man kann nicht seitlich herunterfallen (unsichtbare Wand), springen hilft nicht.
 - [ ] Welt 1 als Insel wie in `World1_Overview.jpg`: Hauptweg aus Platten, links Portal, Shop, Ei-Stand mit Garten-Ei und ein zweiter Ei-Stand „Bald: neues Ei!“, rechts Ofen mit oranger Verkaufszone, Telefon, Lieferwagen. Alle Stationen zeigen mit der Front zum Weg.
@@ -924,3 +924,17 @@ Vorher: `lune run test` → `0 failed` (inkl. `tests/IslandPlan.spec.luau`). Vor
 - [ ] Beide starten auf der Spawn-Insel; einer schaltet Welt 2 frei, der andere bleibt am Tor stecken.
 - [ ] Auf dem Handy: Brücke und Plattenwege gut begehbar, Freischalt-Knopf am Tor antippbar.
 
+
+## #38 C5 Bestenlisten
+
+Voraussetzung: **Game Settings → Security → „Enable Studio Access to API Services“** an (sonst schreiben/lesen die DataStores in Studio nicht; dann bleiben die Tafeln bei „Bestenliste lädt …“ und das Spiel läuft trotzdem weiter).
+
+- [ ] Spawn-Insel: Die drei Tafeln zeigen oben den Titel („⏱ Spielzeit“, „💰 Münzen verdient“, „🔁 Rebirths“) und darunter bis zu 10 Zeilen mit Platz, Anzeigename und Wert. Platz 1–3 in Gold/Silber/Bronze. Text gut lesbar, nichts abgeschnitten (lange Namen enden mit „…“).
+- [ ] Erster Start mit leeren Bestenlisten: Nach dem ersten Einlesen steht „Noch keine Einträge“ (vorher „Bestenliste lädt …“).
+- [ ] Ein paar Minuten spielen (Beläge verkaufen), dann Play stoppen (Verlassen schreibt die Werte) und erneut starten → spätestens nach ca. 2 Minuten steht man auf allen Tafeln, auf denen man einen Wert > 0 hat. Spielzeit z. B. „5 Min.“ bzw. „1 Std. 3 Min.“, Münzen mit Tausenderpunkt (`12.345`).
+- [ ] Aktualisierung ohne Neustart: im laufenden Spiel weiterspielen; nach dem nächsten automatischen Speichern (alle 2 Minuten) und dem nächsten Einlesen (alle ca. 2 Minuten) steigen die Werte auf den Tafeln.
+- [ ] „Münzen verdient“ zählt Verkauf am Ofen, Lieferauftrag mit Münz-Belohnung, Kalender- und Geschenk-Münzen. Prüfen per Command Bar (Server), z. B. vor und nach einem Verkauf: `print(require(game.ServerScriptService.Server.PlayerStates).get(game.Players:GetPlayers()[1]).totalCoinsEarned)`.
+- [ ] Rebirth durchführen → Münzen auf 0, „Münzen verdient“ bleibt gleich, Rebirths-Tafel zeigt nach dem nächsten Speichern/Einlesen 1.
+- [ ] DataStore-Fehler: „Enable Studio Access to API Services“ ausschalten, Play → keine roten Fehler/Abbrüche, nur gelbe Warnungen `[Bestenliste] …`; Sammeln, Verkaufen und Speichern-Warnungen wie gewohnt.
+- [ ] Output: beim normalen Spielen keine Warnungen `[Bestenliste] … fehlgeschlagen`.
+- [ ] 2 Spieler (Test → Clients and Servers, 2 Spieler): Beide erscheinen mit ihrem Anzeigenamen auf den Tafeln (Studio-Testspieler haben negative IDs; wenn deren Namen nicht auflösbar sind, steht „Spieler“ – im veröffentlichten Spiel echte Namen prüfen).

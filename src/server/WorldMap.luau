@@ -368,9 +368,9 @@ function WorldMap.buildAll(): { Layout }
 	return layouts
 end
 
--- Spawn island: SpawnLocation, pizza fountain, leaderboard boards (placeholder text
--- until #38), the trees and the rim. The portal gate is built by PortalService.
-local BOARD_TITLES = { "⏱ Spielzeit", "💰 Münzen verdient", "🔁 Rebirths" }
+-- Spawn island: SpawnLocation, pizza fountain, leaderboard boards (a SurfaceGui per
+-- panel, filled by LeaderboardService), the trees and the rim. The portal gate is
+-- built by PortalService.
 
 function WorldMap.buildSpawnIsland(): Folder
 	local island = plan.spawnIsland()
@@ -387,7 +387,8 @@ function WorldMap.buildSpawnIsland(): Folder
 	spawn.Duration = 0
 	spawn.Parent = folder
 
-	-- Leaderboards: the panels come from the plan, the text goes on their front.
+	-- Leaderboards: the panels come from the plan, the text goes on their front
+	-- (board `index` = GameConfig.leaderboards.boards[index]).
 	local index = 0
 	for _, panel in folder:GetChildren() do
 		if panel:IsA("BasePart") and panel.Name == "BoardPanel" then
@@ -407,7 +408,8 @@ function WorldMap.buildSpawnIsland(): Folder
 			label.Font = Enum.Font.FredokaOne
 			label.TextScaled = true
 			label.TextColor3 = Color3.fromRGB(60, 35, 20)
-			label.Text = `{BOARD_TITLES[index] or "Bestenliste"}\nBestenliste kommt bald!`
+			local board = GameConfig.leaderboards.boards[index]
+			label.Text = `{if board then board.title else "Bestenliste"}\nBestenliste lädt …`
 			label.Parent = gui
 			local padding = Instance.new("UIPadding")
 			padding.PaddingTop = UDim.new(0.1, 0)

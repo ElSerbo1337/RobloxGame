@@ -899,3 +899,31 @@ describe("GameConfig login calendar", function()
 		})
 	end)
 end)
+
+describe("GameConfig leaderboards", function()
+	it(
+		"has three boards (play time, coins earned, rebirths) with the top 10, refreshed about every 2 minutes",
+		function()
+			local leaderboards = GameConfig.leaderboards
+			local ids = {}
+			for _, board in leaderboards.boards do
+				table.insert(ids, board.id)
+			end
+
+			expect(ids).toEqual({ "Playtime", "CoinsEarned", "Rebirths" })
+			expect(leaderboards.top).toBe(10)
+			expect(leaderboards.refreshSeconds).toBe(120)
+		end
+	)
+
+	it("gives every board its own store and a score from the rules", function()
+		local rules = GameRules.new(GameConfig)
+		local scores = rules.leaderboardScores(rules.newPlayerState())
+		local stores = {}
+		for _, board in GameConfig.leaderboards.boards do
+			expect(scores[board.id]).toBe(0)
+			expect(stores[board.store]).toBeNil()
+			stores[board.store] = true
+		end
+	end)
+end)

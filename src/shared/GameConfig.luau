@@ -16,6 +16,25 @@ local GameConfig = {
 		lockWaitSeconds = 60,
 	},
 
+	-- Global leaderboards on the spawn island (#38): one ordered DataStore per board,
+	-- written on every periodic save and on leave; every server reads the top entries
+	-- this often. Board ids match rules.leaderboardScores; boards are shown in this
+	-- order on the island's panels. Bump a store name to start a board over.
+	leaderboards = {
+		refreshSeconds = 120,
+		top = 10,
+		boards = {
+			{ id = "Playtime", store = "Leaderboard_Playtime_v1", title = "⏱ Spielzeit", format = "Duration" },
+			{
+				id = "CoinsEarned",
+				store = "Leaderboard_CoinsEarned_v1",
+				title = "💰 Münzen verdient",
+				format = "Number",
+			},
+			{ id = "Rebirths", store = "Leaderboard_Rebirths_v1", title = "🔁 Rebirths", format = "Number" },
+		},
+	},
+
 	pizza = {
 		-- Toppings a new player's pizza can hold.
 		startCapacity = 2,

@@ -19,6 +19,7 @@ PlayerStates.rules = GameRules.new(GameConfig)
 
 local states: { [Player]: PlayerState } = {}
 local listeners: { (Player, PlayerState) -> () } = {}
+local savedListeners: { (number, PlayerState) -> () } = {}
 
 local function replicate(player: Player, state: PlayerState)
 	player:SetAttribute("Coins", state.coins)
@@ -57,7 +58,28 @@ function PlayerStates.onChanged(listener: (Player, PlayerState) -> ())
 	table.insert(listeners, listener)
 end
 
+-- Called (may yield) after a player's state was written to the save, with the user id
+-- and the written state: periodic saves, leave and shutdown. Never for states that
+-- were not written (load failed, save taken over by another server).
+function PlayerStates.onSaved(listener: (number, PlayerState) -> ())
+	table.insert(savedListeners, listener)
+end
+
 local AUTOSAVE_SECONDS = GameConfig.save.autosaveSeconds
+
+-- Saves and, if written, runs the onSaved listeners (one after another, so the
+-- caller can wait for all of them, e.g. on shutdown). Listener errors are contained.
+local function saveAndNotify(userId: number, state: PlayerState, release: boolean?)
+	if not SaveService.save(userId, state, release) then
+		return
+	end
+	for _, listener in savedListeners do
+		local ok, err = pcall(listener, userId, state)
+		if not ok then
+			warn(`[Save] Nach-Speichern für Spieler {userId} fehlgeschlagen: {err}`)
+		end
+	end
+end
 
 -- Saves still running for players who left; shutdown waits for them.
 local pendingLeaveSaves = 0
@@ -87,7 +109,7 @@ function PlayerStates.start()
 			return
 		end
 		pendingLeaveSaves += 1
-		SaveService.save(player.UserId, state, true)
+		saveAndNotify(player.UserId, state, true)
 		SaveService.forget(player.UserId)
 		pendingLeaveSaves -= 1
 	end)
@@ -96,7 +118,7 @@ function PlayerStates.start()
 		while true do
 			task.wait(AUTOSAVE_SECONDS)
 			for player, state in states do
-				task.spawn(SaveService.save, player.UserId, state)
+				task.spawn(saveAndNotify, player.UserId, state)
 			end
 		end
 	end)
@@ -106,7 +128,7 @@ function PlayerStates.start()
 		for player, state in states do
 			running += 1
 			task.spawn(function()
-				SaveService.save(player.UserId, state, true)
+				saveAndNotify(player.UserId, state, true)
 				running -= 1
 			end)
 		end
