@@ -97,42 +97,42 @@ local GameConfig = {
 			levels = {
 				-- Shop 1 (world 1)
 				{ price = 12, value = 3 }, -- first upgrade after 3-4 rounds (#23)
-				{ price = 120, value = 4 },
-				{ price = 500, value = 6 },
+				{ price = 50, value = 4 },
+				{ price = 200, value = 6 },
 				-- Shop 2 (world 4)
 				{ price = 5000, value = 8 },
 				{ price = 15000, value = 10 },
 				{ price = 40000, value = 12 },
-				-- Shop 3 (world 7): priced as goals for world 7 (about 15 / 45 min of income there).
-				{ price = 400000000, value = 15 },
-				{ price = 1200000000, value = 20 },
+				-- Shop 3 (world 7): bought on the way to the first rebirth (below its price).
+				{ price = 600000000, value = 15 },
+				{ price = 1800000000, value = 20 },
 			},
 		},
 		CollectRange = {
 			displayName = "Reichweite",
 			description = "Beläge aus größerer Entfernung antippen",
 			levels = {
-				{ price = 40, value = 14 },
-				{ price = 200, value = 18 },
-				{ price = 800, value = 22 },
+				{ price = 30, value = 14 },
+				{ price = 100, value = 18 },
+				{ price = 400, value = 22 },
 				{ price = 8000, value = 26 },
 				{ price = 25000, value = 30 },
 				{ price = 60000, value = 35 },
 				-- Shop 3 (world 7)
-				{ price = 250000000, value = 40 },
-				{ price = 700000000, value = 45 },
+				{ price = 400000000, value = 40 },
+				{ price = 1200000000, value = 45 },
 			},
 		},
 		Magnet = {
 			displayName = "Magnet",
 			description = "Zieht Beläge beim Auto-Sammeln an",
 			levels = {
-				{ price = 600, value = 12 },
+				{ price = 300, value = 12 },
 				{ price = 30000, value = 18 },
 				{ price = 100000, value = 25 },
 				-- Shop 3 (world 7)
-				{ price = 300000000, value = 32 },
-				{ price = 900000000, value = 40 },
+				{ price = 500000000, value = 32 },
+				{ price = 1500000000, value = 40 },
 			},
 		},
 
@@ -312,10 +312,10 @@ local GameConfig = {
 	-- Rebirth: pay coins to start over (coins, coin upgrades and worlds are reset) with a
 	-- permanently higher coin multiplier for selling and delivery coins (not gems).
 	rebirth = {
-		-- Price of the first rebirth: a while after reaching world 7 (150 Mio).
-		startPrice = 250000000,
+		-- Price of the first rebirth: about 30-35 min of play in world 7 (#41, docs/balancing.md).
+		startPrice = 4900000000,
 		-- Each further rebirth costs this many times the one before.
-		priceFactor = 2,
+		priceFactor = 3,
 		-- Coin multiplier = 1 + multiplierPerRebirth x rebirths (1 rebirth = x1,5, 2 = x2, ...).
 		multiplierPerRebirth = 0.5,
 	},
@@ -727,6 +727,8 @@ local GameConfig = {
 
 	-- Worlds in unlock order. `unlockPrice` is paid once per player at the barrier in
 	-- front of the world (0 = open from the start). `toppingSpawns` weights are relative chances.
+	-- Unlock, shop and rebirth prices are tuned with `lune run balance` (#41, docs/balancing.md)
+	-- to about 10-15 min of play in worlds 1-2, 20-25 min in 3-5 and 30-35 min in 6-7.
 	worlds = {
 		{
 			id = "PizzeriaGarden",
@@ -745,7 +747,7 @@ local GameConfig = {
 		{
 			id = "Farm",
 			displayName = "Bauernhof",
-			unlockPrice = 1500,
+			unlockPrice = 170,
 			color = { 250, 210, 70 },
 			toppingSpawns = {
 				{ topping = "Onion", weight = 45 },
@@ -758,7 +760,7 @@ local GameConfig = {
 		{
 			id = "Beach",
 			displayName = "Strand",
-			unlockPrice = 15000,
+			unlockPrice = 2000,
 			color = { 60, 200, 230 },
 			toppingSpawns = {
 				{ topping = "Tuna", weight = 55 },
@@ -770,7 +772,7 @@ local GameConfig = {
 		{
 			id = "Icebergs",
 			displayName = "Eisberge",
-			unlockPrice = 150000,
+			unlockPrice = 42000,
 			color = { 150, 225, 255 },
 			toppingSpawns = {
 				{ topping = "FrozenPeas", weight = 55 },
@@ -782,7 +784,7 @@ local GameConfig = {
 		{
 			id = "Volcano",
 			displayName = "Vulkan",
-			unlockPrice = 1500000,
+			unlockPrice = 310000,
 			color = { 255, 80, 30 },
 			toppingSpawns = {
 				{ topping = "Chili", weight = 55 },
@@ -794,7 +796,7 @@ local GameConfig = {
 		{
 			id = "CandyLand",
 			displayName = "Süßigkeitenland",
-			unlockPrice = 15000000,
+			unlockPrice = 23000000,
 			color = { 255, 110, 200 },
 			toppingSpawns = {
 				{ topping = "ChocolateChips", weight = 55 },
@@ -806,7 +808,7 @@ local GameConfig = {
 		{
 			id = "Space",
 			displayName = "Weltraum",
-			unlockPrice = 150000000,
+			unlockPrice = 460000000,
 			color = { 150, 100, 255 },
 			toppingSpawns = {
 				{ topping = "MoonCheese", weight = 55 },

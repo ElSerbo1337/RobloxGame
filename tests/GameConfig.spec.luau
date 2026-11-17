@@ -1,6 +1,7 @@
 local TestKit = require("./TestKit")
 local GameConfig = require("../src/shared/GameConfig")
 local GameRules = require("../src/shared/GameRules")
+local BalanceSim = require("../tools/BalanceSim")
 local ToppingField = require("../src/shared/ToppingField")
 
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
@@ -51,11 +52,11 @@ describe("GameConfig", function()
 		end
 	end)
 
-	it("puts world 2 (Bauernhof) behind a 1.500 coin barrier with its own four toppings", function()
+	it("puts world 2 (Bauernhof) behind a 170 coin barrier with its own four toppings", function()
 		local farm = GameConfig.worlds[2]
 
 		expect(farm.id).toBe("Farm")
-		expect(farm.unlockPrice).toBe(1500)
+		expect(farm.unlockPrice).toBe(170)
 		local toppings = {}
 		for _, spawn in farm.toppingSpawns do
 			table.insert(toppings, GameConfig.toppings[spawn.topping].displayName)
@@ -73,54 +74,54 @@ describe("GameConfig", function()
 		return names
 	end
 
-	it("puts world 3 (Strand) behind a 15.000 coin barrier with tuna, shrimp and pineapple", function()
+	it("puts world 3 (Strand) behind a 2.000 coin barrier with tuna, shrimp and pineapple", function()
 		local beach = GameConfig.worlds[3]
 
 		expect(beach.id).toBe("Beach")
 		expect(beach.displayName).toBe("Strand")
-		expect(beach.unlockPrice).toBe(15000)
+		expect(beach.unlockPrice).toBe(2000)
 		expect(toppingNames(beach)).toEqual({ "Ananas", "Garnele", "Thunfisch" })
 	end)
 
-	it("puts world 4 (Eisberge) behind a 150.000 coin barrier with frozen peas, salmon and iceberg lettuce", function()
+	it("puts world 4 (Eisberge) behind a 42.000 coin barrier with frozen peas, salmon and iceberg lettuce", function()
 		local icebergs = GameConfig.worlds[4]
 
 		expect(icebergs.id).toBe("Icebergs")
 		expect(icebergs.displayName).toBe("Eisberge")
-		expect(icebergs.unlockPrice).toBe(150000)
+		expect(icebergs.unlockPrice).toBe(42000)
 		expect(toppingNames(icebergs)).toEqual({ "Eisberg-Salat", "Gefrorene Erbsen", "Lachs" })
 	end)
 
-	it("puts world 5 (Vulkan) behind a 1,5 Mio coin barrier with chili, pepperoni and jalapeño", function()
+	it("puts world 5 (Vulkan) behind a 310.000 coin barrier with chili, pepperoni and jalapeño", function()
 		local volcano = GameConfig.worlds[5]
 
 		expect(volcano.id).toBe("Volcano")
 		expect(volcano.displayName).toBe("Vulkan")
-		expect(volcano.unlockPrice).toBe(1500000)
+		expect(volcano.unlockPrice).toBe(310000)
 		expect(toppingNames(volcano)).toEqual({ "Chili", "Jalapeño", "Peperoni" })
 	end)
 
 	it(
-		"puts world 6 (Süßigkeitenland) behind a 15 Mio coin barrier with chocolate chips, gummy bears and marshmallow",
+		"puts world 6 (Süßigkeitenland) behind a 23 Mio coin barrier with chocolate chips, gummy bears and marshmallow",
 		function()
 			local candy = GameConfig.worlds[6]
 
 			expect(candy.id).toBe("CandyLand")
 			expect(candy.displayName).toBe("Süßigkeitenland")
-			expect(candy.unlockPrice).toBe(15000000)
+			expect(candy.unlockPrice).toBe(23000000)
 			expect(toppingNames(candy)).toEqual({ "Gummibärchen", "Marshmallow", "Schoko-Stücke" })
 		end
 	)
 
 	it(
-		"puts world 7 (Weltraum) behind a 150 Mio coin barrier with moon cheese, star olives and alien mushroom",
+		"puts world 7 (Weltraum) behind a 460 Mio coin barrier with moon cheese, star olives and alien mushroom",
 		function()
 			local space = GameConfig.worlds[7]
 
 			expect(#GameConfig.worlds).toBe(7)
 			expect(space.id).toBe("Space")
 			expect(space.displayName).toBe("Weltraum")
-			expect(space.unlockPrice).toBe(150000000)
+			expect(space.unlockPrice).toBe(460000000)
 			expect(toppingNames(space)).toEqual({ "Alien-Pilz", "Mond-Käse", "Sternen-Oliven" })
 		end
 	)
@@ -129,7 +130,10 @@ describe("GameConfig", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
 		state.unlockedWorlds = { "Farm", "Beach", "Icebergs" }
-		state.coins = 1500000 + 15000000 + 150000000
+		state.coins = 0
+		for index = 5, 7 do
+			state.coins += GameConfig.worlds[index].unlockPrice
+		end
 		for index = 5, 7 do
 			local result = rules.unlockWorld(state, GameConfig.worlds[index].id)
 			expect(result.ok).toBe(true)
@@ -145,7 +149,10 @@ describe("GameConfig", function()
 	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
-		state.coins = 1500 + 15000 + 150000
+		state.coins = 0
+		for index = 2, 4 do
+			state.coins += GameConfig.worlds[index].unlockPrice
+		end
 		for index = 2, 4 do
 			local result = rules.unlockWorld(state, GameConfig.worlds[index].id)
 			expect(result.ok).toBe(true)
@@ -194,89 +201,50 @@ describe("GameConfig", function()
 end)
 
 describe("GameConfig balancing", function()
-	-- Rough income model of a player who plays world k-1 to save for the barrier of world k:
-	-- they sell world k-1 toppings (spawn-weighted average), carry the biggest pizza the shops
-	-- in worlds 1..k-1 sell, need 1.5 s per topping plus 10 s per trip to the oven, and have
-	-- the starting pet slots filled with "Selten" pets from world k-1's egg.
-	local SECONDS_PER_TOPPING = 1.5
-	local SECONDS_PER_SELL_TRIP = 10
+	-- Model player of tools/BalanceSim (real rules, income estimate, pets, potions, delivery,
+	-- gifts; assumptions in docs/balancing.md), medians over a few runs with different luck.
+	-- Target (#41): worlds 1-2 about 10-15 min, 3-5 about 20-25 min, 6-7 about 30-35 min
+	-- (world 7 = until the first rebirth); checked with some slack for the luck of few runs.
+	local result = BalanceSim.median(GameConfig, 9)
+	local BANDS = { { 8, 18 }, { 8, 18 }, { 16, 30 }, { 16, 30 }, { 16, 30 }, { 25, 42 }, { 25, 42 } }
 
-	local function averageToppingValue(world): number
-		local weight, value = 0, 0
-		for _, spawn in world.toppingSpawns do
-			weight += spawn.weight
-			value += spawn.weight * GameConfig.toppings[spawn.topping].value
-		end
-		return value / weight
-	end
-
-	local function biggestPizza(upToWorld: number): number
-		local reachable = {}
-		for i = 1, upToWorld do
-			reachable[GameConfig.worlds[i].id] = true
-		end
-		local capacity = GameConfig.pizza.startCapacity
-		for _, shop in GameConfig.shops do
-			if reachable[shop.worldId] then
-				for _, offer in shop.offers do
-					if offer.upgrade == "PizzaSpace" then
-						capacity = math.max(capacity, GameConfig.upgrades.PizzaSpace.levels[offer.maxLevel].value)
-					end
-				end
-			end
-		end
-		return capacity
-	end
-
-	local function rarePetBonus(world): number
-		for _, entry in GameConfig.eggs[world.eggs[1]].pets do
-			local pet = GameConfig.pets[entry.pet]
-			if pet.rarity == "Rare" then
-				return pet.bonus
-			end
-		end
-		error(`no rare pet in {world.eggs[1]}`)
-	end
-
-	local function coinsPerMinute(worldIndex: number, pizza: number?): number
-		local world = GameConfig.worlds[worldIndex]
-		local capacity = pizza or biggestPizza(worldIndex)
-		local toppingsPerMinute = 60 * capacity / (capacity * SECONDS_PER_TOPPING + SECONDS_PER_SELL_TRIP)
-		local multiplier = 1 + GameConfig.petSlots.start * rarePetBonus(world)
-		return averageToppingValue(world) * toppingsPerMinute * multiplier
-	end
-
-	it("makes every world reachable with the income of the world before in 10-60 minutes", function()
-		for i = 2, #GameConfig.worlds do
-			local minutes = GameConfig.worlds[i].unlockPrice / coinsPerMinute(i - 1)
-			if minutes < 10 or minutes > 60 then
-				error(`{GameConfig.worlds[i].id}: {math.floor(minutes)} min`)
+	it("plays worlds 1-2 in about 10-15 min, 3-5 in about 20-25 min and 6-7 in about 30-35 min", function()
+		for index, band in BANDS do
+			local minutes = result.first.worlds[index]
+			if minutes < band[1] or minutes > band[2] then
+				error(`{GameConfig.worlds[index].id}: {string.format("%.1f", minutes)} min`)
 			end
 		end
 	end)
 
-	it("makes the first rebirth possible soon after reaching world 7 (5-30 minutes of its income)", function()
-		local minutes = GameConfig.rebirth.startPrice / coinsPerMinute(#GameConfig.worlds)
+	it("makes the first rebirth affordable about 30-35 min after reaching world 7", function()
 		expect(GameConfig.rebirth.startPrice > GameConfig.worlds[#GameConfig.worlds].unlockPrice).toBe(true)
-		expect(minutes >= 5 and minutes <= 30).toBe(true)
+		local minutes = result.first.worlds[#GameConfig.worlds]
+		expect(minutes >= 25 and minutes <= 42).toBe(true)
 	end)
 
-	it("prices the coin levels only shop 3 sells at 5-60 minutes of world 7 income each", function()
+	it("makes a run through worlds 1-7 after the first rebirth clearly shorter (at most half)", function()
+		local ratio = result.afterRebirth.total / result.first.total
+		expect(ratio >= 0.2 and ratio <= 0.5).toBe(true)
+	end)
+
+	it("makes every later rebirth cost more than the one before", function()
+		expect(GameConfig.rebirth.priceFactor > 1).toBe(true)
+	end)
+
+	it("prices the coin levels only shop 3 sells above shop 2 and below the first rebirth", function()
 		local shop2Max = {}
 		for _, offer in GameConfig.shops.World4Shop.offers do
 			shop2Max[offer.upgrade] = offer.maxLevel
 		end
-		-- Before shop 3 the player still carries the biggest pizza from shop 2.
-		local income = coinsPerMinute(7, biggestPizza(6))
 		local checked = 0
 		for _, offer in GameConfig.shops.World7Shop.offers do
 			local upgrade = GameConfig.upgrades[offer.upgrade]
 			if upgrade.currency ~= "Gems" then
 				for level = shop2Max[offer.upgrade] + 1, offer.maxLevel do
-					local minutes = upgrade.levels[level].price / income
-					if minutes < 5 or minutes > 60 then
-						error(`{offer.upgrade} level {level}: {math.floor(minutes)} min`)
-					end
+					local price = upgrade.levels[level].price
+					expect(price > upgrade.levels[shop2Max[offer.upgrade]].price).toBe(true)
+					expect(price < GameConfig.rebirth.startPrice).toBe(true)
 					checked += 1
 				end
 			end

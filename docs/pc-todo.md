@@ -257,7 +257,7 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozz
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 - [x] Output ohne rote Fehler. Im Workspace gibt es `World3_Beach` und `World4_Icebergs` (hinter dem Bauernhof entlang −Z), in `Portals` zusätzlich `Portal_Beach` und `Portal_Icebergs`.
-- [ ] Strand: Sand-Boden, türkise Barriere mit Schild „🔒 Strand – 15.000 Münzen“ am Ende des Bauernhofs. Eisberge: Schnee-Boden, blaue Barriere „🔒 Eisberge – 150.000 Münzen“ am Ende des Strands.
+- [ ] Strand: Sand-Boden, türkise Barriere mit Schild „🔒 Strand – 2.000 Münzen“ am Ende des Bauernhofs. Eisberge: Schnee-Boden, blaue Barriere „🔒 Eisberge – 42.000 Münzen“ am Ende des Strands.
 - [x] Mit zu wenig Münzen an der Strand-Barriere freischalten → „Nicht genug Münzen!“, Barriere bleibt. Eisberge vor dem Strand freischalten geht nicht („Erst die vorige Welt freischalten!“). _(geprüft: Server setzt aus gesperrtem Strand zurück, „Diese Welt ist noch gesperrt!“)_
 - [x] Strand freischalten → Barriere lokal durchlässig, Münzen −15.000. Danach Eisberge (−150.000).
 - [ ] Strand-Beläge: Thunfisch (rotbraun), Garnele (orange), Ananas (gelb), ca. 60 Stück; Eisberge: Gefrorene Erbsen (grün, glasig), Lachs (lachsfarben), Eisberg-Salat (hellgrün, glasig). Keine pinken Neon-Scheiben (= fehlende Optik).
@@ -408,12 +408,12 @@ Aus der Cloud-Sitzung ließ sich keine Roblox-Asset-ID prüfen (roblox.com gespe
 
 Vorher: `lune run test` → alle grün (u. a. `GameConfig` „world 5/6/7“, „shop 3“ und „balancing“).
 
-Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozzarella.value = 50000000` setzen (Rojo synchronisiert live), damit die Barrieren (1,5 Mio / 15 Mio / 150 Mio) und Shop 3 (bis 1,2 Mrd) schnell bezahlbar sind. **Danach zurücksetzen, nicht committen.**
+Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozzarella.value = 50000000` setzen (Rojo synchronisiert live), damit die Barrieren (310.000 / 23 Mio / 460 Mio, seit #41) und Shop 3 (bis 1,8 Mrd) schnell bezahlbar sind. **Danach zurücksetzen, nicht committen.**
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 - [x] Output ohne rote Fehler. Im Workspace gibt es `World5_Volcano`, `World6_CandyLand` und `World7_Space` (hinter den Eisbergen entlang −Z, Welt 7 bei ca. z = −1.200), in `Portals` zusätzlich `Portal_Volcano`, `Portal_CandyLand` und `Portal_Space`.
-- [ ] Vulkan: dunkler Basalt-Boden, orange Barriere „🔒 Vulkan – 1.500.000 Münzen“ am Ende der Eisberge. Süßigkeitenland: rosa Boden, lila Barriere „🔒 Süßigkeitenland – 15.000.000 Münzen“. Weltraum: grauer Schiefer-Boden, mintgrüne Barriere „🔒 Weltraum – 150.000.000 Münzen“. Schilder lesbar.
+- [ ] Vulkan: dunkler Basalt-Boden, orange Barriere „🔒 Vulkan – 310.000 Münzen“ am Ende der Eisberge. Süßigkeitenland: rosa Boden, lila Barriere „🔒 Süßigkeitenland – 23.000.000 Münzen“. Weltraum: grauer Schiefer-Boden, mintgrüne Barriere „🔒 Weltraum – 460.000.000 Münzen“. Schilder lesbar.
 - [ ] Reihenfolge: Süßigkeitenland vor dem Vulkan freischalten geht nicht („Erst die vorige Welt freischalten!“); mit zu wenig Münzen → „Nicht genug Münzen!“.
 - [x] Nacheinander freischalten → Barriere jeweils lokal durchlässig, Münzen sinken um den Preis.
 - [ ] Beläge (je ca. 60): Vulkan Chili (rot), Peperoni (rot-orange), Jalapeño (grün); Süßigkeitenland Schoko-Stücke (braun), Gummibärchen (pink, glasig), Marshmallow (weiß-rosa); Weltraum Mond-Käse (hellgelb), Sternen-Oliven (lila, leuchtend), Alien-Pilz (grün, leuchtend). Keine pinken Neon-Scheiben (= fehlende Optik).
@@ -813,7 +813,7 @@ Ohne Import läuft alles weiter: Jedes Ei ist dann eine Kugel in seiner Weltfarb
 
 ## #35 C2 Rebirth
 
-Regeln: `rules.rebirthOffer` / `rules.rebirth` in `GameRules` (Tests in `tests/Rebirth.spec.luau`), Preis und Multiplikator in `GameConfig.rebirth` (erster Rebirth 250 Mio, ×2 pro Rebirth, +0,5 Münz-Multiplikator pro Rebirth). Spielstand-Version 4: das alte Feld `rebirthMultiplier` wird zu `rebirths`. Server: `src/server/RebirthService.luau`, Client: `src/client/RebirthMenu.luau`.
+Regeln: `rules.rebirthOffer` / `rules.rebirth` in `GameRules` (Tests in `tests/Rebirth.spec.luau`), Preis und Multiplikator in `GameConfig.rebirth` (erster Rebirth 250 Mio, ×2 pro Rebirth – seit #41: 4,9 Mrd, ×3 –, +0,5 Münz-Multiplikator pro Rebirth). Spielstand-Version 4: das alte Feld `rebirthMultiplier` wird zu `rebirths`. Server: `src/server/RebirthService.luau`, Client: `src/client/RebirthMenu.luau`.
 
 Tipp für schnelles Testen: wie bei #11 vorübergehend `Mozzarella.value = 50000000` (oder `GameConfig.rebirth.startPrice = 100`). **Danach zurücksetzen, nicht committen.**
 
@@ -821,11 +821,11 @@ Tipp für schnelles Testen: wie bei #11 vorübergehend `Mozzarella.value = 50000
 
 - [ ] Output ohne rote Fehler. Alter Spielstand lädt (Münzen, Pets, Gems wie vorher), Rebirth-Zahl 0.
 - [ ] Links in der Knopf-Spalte (Platz `rebirth`, nach Pets/Tränke bzw. Geschenke) ein runder lila Knopf **„Rebirth“**. Ohne Rebirth kein Abzeichen.
-- [ ] Menü öffnen: „Noch kein Rebirth“, „Münzen ×1 → ×1,5“, „Preis: 250 Mio Münzen“, Fortschrittsbalken mit Prozent, darunter was zurückgesetzt wird und was bleibt. Menü liegt unter Münzen/Gems und über dem Pizza-Balken. X schließt.
+- [ ] Menü öffnen: „Noch kein Rebirth“, „Münzen ×1 → ×1,5“, „Preis: 4,9 Mrd Münzen“ (seit #41), Fortschrittsbalken mit Prozent, darunter was zurückgesetzt wird und was bleibt. Menü liegt unter Münzen/Gems und über dem Pizza-Balken. X schließt.
 - [ ] Zu wenig Münzen: „Rebirth!“-Knopf grau, Antippen tut nichts. Fortschrittsbalken wächst beim Verkaufen mit.
 - [ ] Genug Münzen (ohne Menü offen): Knopf **pulsiert** mit Hinweis „Neu! Mehr Münzen“ rechts daneben; nach dem ersten Öffnen hört das Pulsieren auf.
 - [ ] Trank trinken, dann Menü öffnen: rote Warnung „Dein laufender Trank endet beim Rebirth!“, auch im Bestätigungsfenster.
-- [ ] „Rebirth!“ → Bestätigung „Rebirth 1 für 250 Mio Münzen? …“ mit **Ja**/**Nein**. „Nein“ schließt nur die Bestätigung.
+- [ ] „Rebirth!“ → Bestätigung „Rebirth 1 für 4,9 Mrd Münzen? …“ mit **Ja**/**Nein**. „Nein“ schließt nur die Bestätigung.
 - [ ] Vorher einen Auftrag annehmen und Beläge auf der Pizza haben, dann in Welt 3+ „Ja“: Figur steht am **Spawnpunkt von Welt 1**, Pizza leer, Auftragskarte und Trank-Pille weg, Münzen 0, Feier-Text **„Rebirth 1! ×1,5 Münzen“** mitten im Bild (verblasst nach ca. 3 s), Abzeichen „1“ am Knopf.
 - [ ] Danach: Barrieren zu Welt 2+ wieder geschlossen, Portal-Menü zeigt sie gesperrt, Shop-Upgrades (Pizza-Platz, Reichweite, Magnet) wieder auf Stufe 0. Pets (ausgerüstet), Gems, Gem-Upgrades (Pet-Plätze, Inventar, Speed, 3 Eier) und Tränke im Inventar sind noch da.
 - [ ] Verkaufen am Ofen bringt jetzt das 1,5-Fache (z. B. 2 Salami ohne Pets: 2 → 3 Münzen). Münz-Lieferauftrag zeigt eine 1,5-fach höhere Belohnung; Gem-Belohnungen unverändert. Pet-Menü zeigt weiter nur den Pet-Bonus.
@@ -912,7 +912,7 @@ Vorher: `lune run test` → `0 failed` (inkl. `tests/IslandPlan.spec.luau`). Vor
 
 **Welt 2–7 (alter Look an der Kette):**
 
-- [ ] Hinter Welt 1 führt eine Brücke zu Welt 2; am Brückenkopf steht ein **leuchtendes Tor** in Weltfarbe mit Preisschild „🔒 Bauernhof 1.500 Münzen“. Durchlaufen geht nicht.
+- [ ] Hinter Welt 1 führt eine Brücke zu Welt 2; am Brückenkopf steht ein **leuchtendes Tor** in Weltfarbe mit Preisschild „🔒 Bauernhof 170 Münzen“ (seit #41). Durchlaufen geht nicht.
 - [ ] Vor dem Tor erscheint der Freischalt-Knopf; mit genug Münzen freischalten → Tor wird durchsichtig/passierbar, Preisschild verschwindet. Andere Spieler bleiben stecken.
 - [ ] Welt 2–7 sind über Brücken erreichbar und spielbar wie vorher (Ofen, Ei, Shop, Portal, Telefon/Wagen, Deko). Ränder haben unsichtbare Wände, unter den Platten hängt ein Felsblock.
 - [ ] Portal in Welt 1 / auf der Spawn-Insel: Menü öffnet, Teleport in jede freigeschaltete Welt, Ankunft vor deren Portal; danach Tod → Respawn in dieser Welt.
@@ -976,3 +976,19 @@ Standorte: In Welt 1 (Insel-Look) steht das zweite Ei auf dem zweiten Ei-Platz l
 - [ ] Rejoin: Pets aus dem zweiten Ei sind nach dem Neubeitreten noch da.
 
 **Handy** (Device-Emulator): Beide Schilder aus 10–15 Studs lesbar; die Vorschau-Knöpfe beider Eier bleiben antippbar.
+
+## #41 C8 Late-Game-Balancing
+
+Neue Preise für Freischaltungen, Shop 1, Shop 3 und Rebirth, abgestimmt mit einer Simulation über die echten Regeln (`lune run balance`, Modell `tools/BalanceSim.luau`). Tabelle, Annahmen und alle alten/neuen Preise: `docs/balancing.md`. Ziel: Welt 1–2 je ca. 10–15 Min, Welt 3–5 je ca. 20–25 Min, Welt 6–7 je ca. 30–35 Min. Belagwerte, Ei-Preise und das erste Upgrade (12) sind unverändert. Tests: `tests/GameConfig.spec.luau` („GameConfig balancing“).
+
+Neue Preise: Bauernhof 170, Strand 2.000, Eisberge 42.000, Vulkan 310.000, Süßigkeitenland 23 Mio, Weltraum 460 Mio, erster Rebirth 4,9 Mrd (×3 pro weiterem Rebirth). Shop 1: Pizza-Platz 12 / 50 / 200, Reichweite 30 / 100 / 400, Magnet 300. Shop 3: Pizza-Platz 600 Mio / 1,8 Mrd, Reichweite 400 Mio / 1,2 Mrd, Magnet 500 Mio / 1,5 Mrd.
+
+Studio: Rojo verbinden, **Play** (1 Spieler, möglichst frischer Spielstand, Tutorial normal durchspielen):
+
+- [ ] Output ohne rote Fehler.
+- [ ] Tore und Preisschilder zeigen die neuen Preise: „🔒 Bauernhof 170 Münzen“, Strand 2.000, Eisberge 42.000, Vulkan 310.000, Süßigkeitenland 23 Mio, Weltraum 460 Mio. Das Teleport-Menü zeigt dieselben Preise bei den gesperrten Welten.
+- [ ] Shop 1: Pizza-Platz kostet 12 → 50 → 200, Reichweite 30 → 100 → 400, Magnet 300. Shop 3 (Weltraum) zeigt die Preise oben.
+- [ ] Rebirth-Menü: „Preis: 4,9 Mrd Münzen“; nach einem Rebirth zeigt es 14,7 Mrd für den zweiten (Test mit vorübergehend hohem Münzstand, **nicht committen**).
+- [ ] **Stoppuhr Welt 1:** Ab Spielstart (Tutorial inklusive) bis zum Freischalten des Bauernhofs normal spielen, dabei Upgrades und das Garten-Ei kaufen, Lieferaufträge annehmen. Zeit notieren (Ziel ca. 10–15 Min, Simulation 13 Min). Fühlt es sich deutlich schneller an, liegt das am Rundentempo: Die Simulation rechnet mit 2 Runden pro Minute.
+- [ ] **Stoppuhr Welt 2:** Vom Freischalten des Bauernhofs bis zum Freischalten des Strands (Ziel ca. 10–15 Min, Simulation 12 Min). Beide Zeiten in `docs/balancing.md` unter der Tabelle notieren.
+- [ ] Geschenke und Login-Kalender geben weiterhin Münzen „ca. N Minuten Einkommen“; Beträge passen zur aktuellen Welt (unverändert, nur Kontrolle).
