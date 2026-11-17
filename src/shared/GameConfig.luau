@@ -386,9 +386,51 @@ local GameConfig = {
 		RocketDog = { displayName = "Raketen-Hund", rarity = "Epic", bonus = 32 },
 		CometWhale = { displayName = "Kometen-Wal", rarity = "Legendary", bonus = 60 },
 		GalaxyDragon = { displayName = "Galaxie-Drache", rarity = "Mythic", bonus = 120 },
+
+		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
+		-- the same rarity in the world's first egg. Until their models exist (C7) they show
+		-- up as a dot in their rarity colour.
+		-- World 1 (Steinofen-Ei)
+		RucolaHedgehog = { displayName = "Rucola-Igel", rarity = "Rare", bonus = 0.375 },
+		ParmesanRaccoon = { displayName = "Parmesan-Waschbär", rarity = "Epic", bonus = 0.6 },
+		TruffleFox = { displayName = "Trüffel-Fuchs", rarity = "Legendary", bonus = 1.125 },
+		StoneOvenPhoenix = { displayName = "Steinofen-Phönix", rarity = "Mythic", bonus = 2.25 },
+		-- World 2 (Scheunen-Ei)
+		PumpkinCat = { displayName = "Kürbis-Katze", rarity = "Rare", bonus = 0.75 },
+		ButterDonkey = { displayName = "Butter-Esel", rarity = "Epic", bonus = 1.2 },
+		HoneyBear = { displayName = "Honig-Bär", rarity = "Legendary", bonus = 2.25 },
+		GoldGrainBull = { displayName = "Goldkorn-Stier", rarity = "Mythic", bonus = 4.5 },
+		-- World 3 (Muschel-Ei)
+		CoconutMonkey = { displayName = "Kokos-Affe", rarity = "Rare", bonus = 1.5 },
+		ShellSeahorse = { displayName = "Muschel-Seepferdchen", rarity = "Epic", bonus = 2.4 },
+		SardineShark = { displayName = "Sardinen-Hai", rarity = "Legendary", bonus = 4.5 },
+		PearlSeaSerpent = { displayName = "Perlen-Seeschlange", rarity = "Mythic", bonus = 9 },
+		-- World 4 (Gletscher-Ei)
+		MintReindeer = { displayName = "Minz-Rentier", rarity = "Rare", bonus = 3 },
+		SundaePolarBear = { displayName = "Eisbecher-Eisbär", rarity = "Epic", bonus = 4.8 },
+		VanillaMammoth = { displayName = "Vanille-Mammut", rarity = "Legendary", bonus = 9 },
+		SorbetNarwhal = { displayName = "Sorbet-Narwal", rarity = "Mythic", bonus = 18 },
+		-- World 5 (Magma-Ei)
+		PepperScorpion = { displayName = "Pfeffer-Skorpion", rarity = "Rare", bonus = 6.75 },
+		HabaneroRhino = { displayName = "Habanero-Nashorn", rarity = "Epic", bonus = 10.8 },
+		CurryTiger = { displayName = "Curry-Tiger", rarity = "Legendary", bonus = 20.25 },
+		CalzoneHydra = { displayName = "Calzone-Hydra", rarity = "Mythic", bonus = 40.5 },
+		-- World 6 (Bonbon-Ei)
+		DonutDachshund = { displayName = "Donut-Dackel", rarity = "Rare", bonus = 15 },
+		PuddingPanda = { displayName = "Pudding-Panda", rarity = "Epic", bonus = 24 },
+		LicoricePanther = { displayName = "Lakritz-Panther", rarity = "Legendary", bonus = 45 },
+		CakePegasus = { displayName = "Torten-Pegasus", rarity = "Mythic", bonus = 90 },
+		-- World 7 (Nebula-Ei)
+		MooncakeBunny = { displayName = "Mondkuchen-Hase", rarity = "Rare", bonus = 30 },
+		StarfruitJellyfish = { displayName = "Sternfrucht-Qualle", rarity = "Epic", bonus = 48 },
+		StardustLion = { displayName = "Sternenstaub-Löwe", rarity = "Legendary", bonus = 90 },
+		GalaxyPizzaLeviathan = { displayName = "Galaxie-Pizza-Leviathan", rarity = "Mythic", bonus = 180 },
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
+	-- Every world has two eggs: the first with 6 pets (Gewöhnlich to Mythisch) and a
+	-- second one (#39, `fancy` look) at about 5x the price with 4 stronger pets (Selten
+	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
 	-- Cracks, Swirl, Stars. `glow` = accent glows (Neon); `fancy` = showier variant
@@ -407,6 +449,17 @@ local GameConfig = {
 				{ pet = "PizzaDragon", chance = 0.5 },
 			},
 		},
+		StoneOvenEgg = {
+			displayName = "Steinofen-Ei",
+			look = { color = "C9653A", accent = "FFD27A", pattern = "Cracks", fancy = true },
+			price = 125,
+			pets = {
+				{ pet = "RucolaHedgehog", chance = 68 },
+				{ pet = "ParmesanRaccoon", chance = 25 },
+				{ pet = "TruffleFox", chance = 6 },
+				{ pet = "StoneOvenPhoenix", chance = 1 },
+			},
+		},
 		FarmEgg = {
 			displayName = "Bauernhof-Ei",
 			look = { color = "F2CF6B", accent = "8A5A2B", pattern = "Stripes" },
@@ -418,6 +471,17 @@ local GameConfig = {
 				{ pet = "OnionCow", chance = 5.5 },
 				{ pet = "HayHorse", chance = 1 },
 				{ pet = "GoldenRooster", chance = 0.5 },
+			},
+		},
+		BarnEgg = {
+			displayName = "Scheunen-Ei",
+			look = { color = "B8322A", accent = "FFFFFF", pattern = "Diamonds", fancy = true },
+			price = 1000,
+			pets = {
+				{ pet = "PumpkinCat", chance = 68 },
+				{ pet = "ButterDonkey", chance = 25 },
+				{ pet = "HoneyBear", chance = 6 },
+				{ pet = "GoldGrainBull", chance = 1 },
 			},
 		},
 		BeachEgg = {
@@ -433,6 +497,17 @@ local GameConfig = {
 				{ pet = "CoralKraken", chance = 0.5 },
 			},
 		},
+		ShellEgg = {
+			displayName = "Muschel-Ei",
+			look = { color = "FFD7C9", accent = "E86F8F", pattern = "Swirl", fancy = true },
+			price = 7500,
+			pets = {
+				{ pet = "CoconutMonkey", chance = 68 },
+				{ pet = "ShellSeahorse", chance = 25 },
+				{ pet = "SardineShark", chance = 6 },
+				{ pet = "PearlSeaSerpent", chance = 1 },
+			},
+		},
 		IceEgg = {
 			displayName = "Eis-Ei",
 			look = { color = "DDF3FF", accent = "3E9BE6", pattern = "Diamonds" },
@@ -444,6 +519,17 @@ local GameConfig = {
 				{ pet = "SalmonBear", chance = 5.5 },
 				{ pet = "LettuceYeti", chance = 1 },
 				{ pet = "FrostPhoenix", chance = 0.5 },
+			},
+		},
+		GlacierEgg = {
+			displayName = "Gletscher-Ei",
+			look = { color = "8FD8E8", accent = "FFFFFF", pattern = "Stars", fancy = true },
+			price = 60000,
+			pets = {
+				{ pet = "MintReindeer", chance = 68 },
+				{ pet = "SundaePolarBear", chance = 25 },
+				{ pet = "VanillaMammoth", chance = 6 },
+				{ pet = "SorbetNarwhal", chance = 1 },
 			},
 		},
 		VolcanoEgg = {
@@ -459,6 +545,17 @@ local GameConfig = {
 				{ pet = "LavaTitan", chance = 0.5 },
 			},
 		},
+		MagmaEgg = {
+			displayName = "Magma-Ei",
+			look = { color = "2A1A1A", accent = "FF3A1A", pattern = "Waves", glow = true, fancy = true },
+			price = 500000,
+			pets = {
+				{ pet = "PepperScorpion", chance = 68 },
+				{ pet = "HabaneroRhino", chance = 25 },
+				{ pet = "CurryTiger", chance = 6 },
+				{ pet = "CalzoneHydra", chance = 1 },
+			},
+		},
 		CandyEgg = {
 			displayName = "Süßigkeiten-Ei",
 			look = { color = "FF8CC6", accent = "FFFFFF", pattern = "Swirl" },
@@ -472,6 +569,17 @@ local GameConfig = {
 				{ pet = "CaramelGriffin", chance = 0.5 },
 			},
 		},
+		BonbonEgg = {
+			displayName = "Bonbon-Ei",
+			look = { color = "9B6BFF", accent = "FFE14A", pattern = "Stripes", fancy = true },
+			price = 4000000,
+			pets = {
+				{ pet = "DonutDachshund", chance = 68 },
+				{ pet = "PuddingPanda", chance = 25 },
+				{ pet = "LicoricePanther", chance = 6 },
+				{ pet = "CakePegasus", chance = 1 },
+			},
+		},
 		SpaceEgg = {
 			displayName = "Weltraum-Ei",
 			look = { color = "3B2A7A", accent = "FFD84A", pattern = "Stars", glow = true },
@@ -483,6 +591,17 @@ local GameConfig = {
 				{ pet = "RocketDog", chance = 5.5 },
 				{ pet = "CometWhale", chance = 1 },
 				{ pet = "GalaxyDragon", chance = 0.5 },
+			},
+		},
+		NebulaEgg = {
+			displayName = "Nebula-Ei",
+			look = { color = "14163A", accent = "C86BFF", pattern = "Spots", glow = true, fancy = true },
+			price = 32000000,
+			pets = {
+				{ pet = "MooncakeBunny", chance = 68 },
+				{ pet = "StarfruitJellyfish", chance = 25 },
+				{ pet = "StardustLion", chance = 6 },
+				{ pet = "GalaxyPizzaLeviathan", chance = 1 },
 			},
 		},
 	},
@@ -620,8 +739,8 @@ local GameConfig = {
 				{ topping = "Mushroom", weight = 30 },
 				{ topping = "Mozzarella", weight = 10 },
 			},
-			-- Eggs standing in this world.
-			eggs = { "GardenEgg" },
+			-- Eggs standing in this world: first egg, then the pricier second egg (#39).
+			eggs = { "GardenEgg", "StoneOvenEgg" },
 		},
 		{
 			id = "Farm",
@@ -634,7 +753,7 @@ local GameConfig = {
 				{ topping = "Corn", weight = 17 },
 				{ topping = "Ham", weight = 8 },
 			},
-			eggs = { "FarmEgg" },
+			eggs = { "FarmEgg", "BarnEgg" },
 		},
 		{
 			id = "Beach",
@@ -646,7 +765,7 @@ local GameConfig = {
 				{ topping = "Shrimp", weight = 30 },
 				{ topping = "Pineapple", weight = 15 },
 			},
-			eggs = { "BeachEgg" },
+			eggs = { "BeachEgg", "ShellEgg" },
 		},
 		{
 			id = "Icebergs",
@@ -658,7 +777,7 @@ local GameConfig = {
 				{ topping = "Salmon", weight = 30 },
 				{ topping = "IcebergLettuce", weight = 15 },
 			},
-			eggs = { "IceEgg" },
+			eggs = { "IceEgg", "GlacierEgg" },
 		},
 		{
 			id = "Volcano",
@@ -670,7 +789,7 @@ local GameConfig = {
 				{ topping = "Pepperoni", weight = 30 },
 				{ topping = "Jalapeno", weight = 15 },
 			},
-			eggs = { "VolcanoEgg" },
+			eggs = { "VolcanoEgg", "MagmaEgg" },
 		},
 		{
 			id = "CandyLand",
@@ -682,7 +801,7 @@ local GameConfig = {
 				{ topping = "GummyBears", weight = 30 },
 				{ topping = "Marshmallow", weight = 15 },
 			},
-			eggs = { "CandyEgg" },
+			eggs = { "CandyEgg", "BonbonEgg" },
 		},
 		{
 			id = "Space",
@@ -694,7 +813,7 @@ local GameConfig = {
 				{ topping = "StarOlives", weight = 30 },
 				{ topping = "AlienMushroom", weight = 15 },
 			},
-			eggs = { "SpaceEgg" },
+			eggs = { "SpaceEgg", "NebulaEgg" },
 		},
 	},
 }

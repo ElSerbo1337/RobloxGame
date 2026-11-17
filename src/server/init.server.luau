@@ -101,7 +101,7 @@ for _, world in laterWorlds do
 		WorldDeco.decorateWorld(world.folder, world.worldId, world.boundsCenter)
 	end
 end
--- Eggs on the egg stands of every world (stands without an egg wait for #39).
+-- Eggs on the egg stands of every world (two per world, #39).
 local eggSpots = {}
 for _, world in worlds do
 	for _, stand in world.eggStands do

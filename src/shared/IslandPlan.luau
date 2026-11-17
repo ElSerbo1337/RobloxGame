@@ -1195,6 +1195,8 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			Spawn = old(0, 60, 0),
 			Oven = old(30, 68, 0),
 			Egg1 = old(-30, 68, 0),
+			-- Second egg (#39) next to the first, between it and the shop.
+			Egg2 = old(-48, 68, 0),
 			Shop = old(-72, 72, 0),
 			Portal = old(65, 70, 0),
 			-- Phone and van face -X like before (see DeliveryService).

@@ -323,12 +323,16 @@ local function buildClassic(world: any, index: number): Layout
 		Parent = folder,
 	})
 
-	-- Oven near the entrance, egg stand on the other side of the path.
+	-- Oven near the entrance, both egg stands on the other side of the path.
 	local sellZone =
 		buildOven(folder, IslandBuilder.station(island.stations.Oven), world, theme.accent, Enum.Material.Brick)
-	local eggId = world.eggs and world.eggs[1]
-	local eggStand = EggService.buildStand(folder, IslandBuilder.vector(island.stations.Egg1.position), eggId)
-	eggStand:SetAttribute("WorldId", world.id)
+	local eggStands = {}
+	for i, name in { "Egg1", "Egg2" } do
+		local eggId = world.eggs and world.eggs[i]
+		local stand = EggService.buildStand(folder, IslandBuilder.vector(island.stations[name].position), eggId)
+		stand:SetAttribute("WorldId", world.id)
+		table.insert(eggStands, stand)
+	end
 
 	local barrier, returnPoint = buildGate(folder, world, index)
 	local toppings = toppingsFolder(folder)
@@ -346,7 +350,7 @@ local function buildClassic(world: any, index: number): Layout
 		boundsCenter = center,
 		boundsSize = Vector2.new(2 * HALF, 2 * HALF),
 		returnPoint = returnPoint,
-		eggStands = { eggStand },
+		eggStands = eggStands,
 		shopSpot = IslandBuilder.station(island.stations.Shop),
 		isIsland = false,
 	}

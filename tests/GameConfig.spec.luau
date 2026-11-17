@@ -469,28 +469,32 @@ describe("GameConfig pets and eggs", function()
 		expect(GameConfig.eggs[world1.eggs[1]] ~= nil).toBe(true)
 	end)
 
-	it("fills every egg with 5-6 known pets whose chances add up to 100 %, one of them a ~0.5 % dream drop", function()
-		for _, egg in GameConfig.eggs do
-			expect(#egg.pets >= 5 and #egg.pets <= 6).toBe(true)
-			expect(egg.price > 0).toBe(true)
-			local total, rarest = 0, math.huge
-			for _, entry in egg.pets do
-				local pet = GameConfig.pets[entry.pet]
-				expect(pet ~= nil).toBe(true)
-				expect(GameConfig.rarities[pet.rarity] ~= nil).toBe(true)
-				expect(pet.bonus > 0).toBe(true)
-				total += entry.chance
-				rarest = math.min(rarest, entry.chance)
+	it(
+		"fills every first egg with 5-6 known pets whose chances add up to 100 %, one of them a ~0.5 % dream drop",
+		function()
+			for _, world in GameConfig.worlds do
+				local egg = GameConfig.eggs[world.eggs[1]]
+				expect(#egg.pets >= 5 and #egg.pets <= 6).toBe(true)
+				expect(egg.price > 0).toBe(true)
+				local total, rarest = 0, math.huge
+				for _, entry in egg.pets do
+					local pet = GameConfig.pets[entry.pet]
+					expect(pet ~= nil).toBe(true)
+					expect(GameConfig.rarities[pet.rarity] ~= nil).toBe(true)
+					expect(pet.bonus > 0).toBe(true)
+					total += entry.chance
+					rarest = math.min(rarest, entry.chance)
+				end
+				expect(math.abs(total - 100) < 1e-9).toBe(true)
+				expect(rarest <= 0.5).toBe(true)
 			end
-			expect(math.abs(total - 100) < 1e-9).toBe(true)
-			expect(rarest <= 0.5).toBe(true)
 		end
-	end)
+	)
 
 	it("gives every egg its own look: base colour, accent colour and one of the known patterns", function()
 		local PATTERNS =
 			{ Spots = true, Stripes = true, Waves = true, Diamonds = true, Cracks = true, Swirl = true, Stars = true }
-		local usedColors, usedPatterns = {}, {}
+		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
 			local look = egg.look
 			expect(look ~= nil).toBe(true)
@@ -500,11 +504,16 @@ describe("GameConfig pets and eggs", function()
 			expect(PATTERNS[look.pattern]).toBe(true)
 			expect(look.glow == nil or type(look.glow) == "boolean").toBe(true)
 			expect(look.fancy == nil or type(look.fancy) == "boolean").toBe(true)
-			-- Distinguishable at a glance: no two eggs share a base colour or a pattern.
+			-- Distinguishable at a glance: no two eggs share a base colour.
 			expect(usedColors[look.color]).toBe(nil)
-			expect(usedPatterns[look.pattern]).toBe(nil)
 			usedColors[look.color] = eggId
-			usedPatterns[look.pattern] = eggId
+		end
+		-- The first eggs of the worlds don't share a pattern either.
+		local usedPatterns = {}
+		for _, world in GameConfig.worlds do
+			local look = GameConfig.eggs[world.eggs[1]].look
+			expect(usedPatterns[look.pattern]).toBe(nil)
+			usedPatterns[look.pattern] = true
 		end
 	end)
 
@@ -524,10 +533,10 @@ describe("GameConfig pets and eggs", function()
 end)
 
 describe("GameConfig worlds and eggs", function()
-	it("gives every world its own egg", function()
+	it("gives every world its own two eggs", function()
 		local seen = {}
 		for _, world in GameConfig.worlds do
-			expect(world.eggs ~= nil and #world.eggs >= 1).toBe(true)
+			expect(world.eggs ~= nil and #world.eggs == 2).toBe(true)
 			for _, eggId in world.eggs do
 				expect(GameConfig.eggs[eggId] ~= nil).toBe(true)
 				expect(seen[eggId] == nil).toBe(true)
@@ -550,6 +559,94 @@ describe("GameConfig worlds and eggs", function()
 			local ratio = averageBonus(current) / averageBonus(previous)
 			expect(ratio >= 1.5 and ratio <= 2.5).toBe(true)
 			expect(GameConfig.eggs[current].price > GameConfig.eggs[previous].price).toBe(true)
+		end
+	end)
+end)
+
+describe("GameConfig second egg per world", function()
+	local SECOND_EGG_RARITIES = { "Rare", "Epic", "Legendary", "Mythic" }
+
+	local function petOfRarity(eggId: string, rarity: string): any
+		for _, entry in GameConfig.eggs[eggId].pets do
+			local pet = GameConfig.pets[entry.pet]
+			if pet.rarity == rarity then
+				return pet
+			end
+		end
+		return nil
+	end
+
+	it(
+		"fills the second egg with 4 pets from Selten to Mythisch (no Gewöhnlich/Ungewöhnlich), chances 100 %",
+		function()
+			for _, world in GameConfig.worlds do
+				local egg = GameConfig.eggs[world.eggs[2]]
+				expect(#egg.pets).toBe(4)
+				local total, rarities = 0, {}
+				for _, entry in egg.pets do
+					local pet = GameConfig.pets[entry.pet]
+					expect(pet ~= nil).toBe(true)
+					expect(entry.chance > 0).toBe(true)
+					rarities[pet.rarity] = true
+					total += entry.chance
+				end
+				expect(math.abs(total - 100) < 1e-9).toBe(true)
+				for _, rarity in SECOND_EGG_RARITIES do
+					expect(rarities[rarity]).toBe(true)
+				end
+			end
+		end
+	)
+
+	it("prices the second egg at about 5x the first egg of the world", function()
+		for _, world in GameConfig.worlds do
+			local first = GameConfig.eggs[world.eggs[1]].price
+			local second = GameConfig.eggs[world.eggs[2]].price
+			expect(second > first).toBe(true)
+			local ratio = second / first
+			expect(ratio >= 4 and ratio <= 6).toBe(true)
+		end
+	end)
+
+	it("makes its pets about 1.5x as strong as the same rarity in the first egg", function()
+		for _, world in GameConfig.worlds do
+			for _, rarity in SECOND_EGG_RARITIES do
+				local ratio = petOfRarity(world.eggs[2], rarity).bonus / petOfRarity(world.eggs[1], rarity).bonus
+				expect(ratio >= 1.3 and ratio <= 1.7).toBe(true)
+			end
+		end
+	end)
+
+	it("gives the second egg the showier look and a pattern of its own in the world", function()
+		for _, world in GameConfig.worlds do
+			local first = GameConfig.eggs[world.eggs[1]].look
+			local second = GameConfig.eggs[world.eggs[2]].look
+			expect(second.fancy).toBe(true)
+			expect(first.fancy == true).toBe(false)
+			expect(second.pattern ~= first.pattern).toBe(true)
+		end
+	end)
+
+	it("can be opened as soon as the world is unlocked", function()
+		local rules = GameRules.new(GameConfig)
+		local open = function()
+			return 0.5
+		end
+		local before = {}
+		for _, world in GameConfig.worlds do
+			local eggId = world.eggs[2]
+			local state = rules.newPlayerState()
+			state.coins = GameConfig.eggs[eggId].price
+			state.unlockedWorlds = table.clone(before)
+			if world.unlockPrice > 0 then
+				-- Still locked: the egg stands there but can't be opened yet.
+				expect(rules.openEggs(state, eggId, 1, open).ok).toBe(false)
+				table.insert(state.unlockedWorlds, world.id)
+				table.insert(before, world.id)
+			end
+			local result = rules.openEggs(state, eggId, 1, open)
+			expect(result.ok).toBe(true)
+			expect(result.state.coins).toBe(0)
 		end
 	end)
 end)

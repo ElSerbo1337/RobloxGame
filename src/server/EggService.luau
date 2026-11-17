@@ -105,7 +105,7 @@ local function buildSign(parent: Instance, ground: Vector3, eggId: string?, visi
 	label.Font = Enum.Font.FredokaOne
 	label.TextScaled = true
 	label.TextColor3 = DARK
-	-- A spot without an egg yet: the second egg per world (#39) comes later.
+	-- A spot without an egg (a world listing fewer than two eggs).
 	label.Text = if egg then `{egg.displayName}\n💰 {formatNumber(egg.price)}` else "Bald: neues Ei!"
 	label.Parent = gui
 	local padding = Instance.new("UIPadding")

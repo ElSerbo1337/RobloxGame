@@ -938,3 +938,41 @@ Voraussetzung: **Game Settings → Security → „Enable Studio Access to API S
 - [ ] DataStore-Fehler: „Enable Studio Access to API Services“ ausschalten, Play → keine roten Fehler/Abbrüche, nur gelbe Warnungen `[Bestenliste] …`; Sammeln, Verkaufen und Speichern-Warnungen wie gewohnt.
 - [ ] Output: beim normalen Spielen keine Warnungen `[Bestenliste] … fehlgeschlagen`.
 - [ ] 2 Spieler (Test → Clients and Servers, 2 Spieler): Beide erscheinen mit ihrem Anzeigenamen auf den Tafeln (Studio-Testspieler haben negative IDs; wenn deren Namen nicht auflösbar sind, steht „Spieler“ – im veröffentlichten Spiel echte Namen prüfen).
+
+## #39 C6 Zweites Ei pro Welt
+
+Jede Welt hat jetzt zwei Eier (`GameConfig.worlds[].eggs`): das bisherige und ein zweites, auffälligeres Ei (`fancy = true`: Goldband, Goldperlen, leuchtendes Muster) mit 4 neuen Pets (Selten, Episch, Legendär, Mythisch; Chancen 68 / 25 / 6 / 1 %), ca. 5× so teuer und Pets ca. 1,5× so stark wie dieselbe Seltenheit im ersten Ei. Tests: `tests/GameConfig.spec.luau` („second egg per world“) und `tests/IslandPlan.spec.luau` („egg spots in every world“).
+
+| Welt | Zweites Ei (Id) | Preis | Pets |
+| --- | --- | --- | --- |
+| Pizzeria-Garten | Steinofen-Ei (`StoneOvenEgg`) | 125 | Rucola-Igel, Parmesan-Waschbär, Trüffel-Fuchs, Steinofen-Phönix |
+| Bauernhof | Scheunen-Ei (`BarnEgg`) | 1.000 | Kürbis-Katze, Butter-Esel, Honig-Bär, Goldkorn-Stier |
+| Strand | Muschel-Ei (`ShellEgg`) | 7.500 | Kokos-Affe, Muschel-Seepferdchen, Sardinen-Hai, Perlen-Seeschlange |
+| Eisberge | Gletscher-Ei (`GlacierEgg`) | 60.000 | Minz-Rentier, Eisbecher-Eisbär, Vanille-Mammut, Sorbet-Narwal |
+| Vulkan | Magma-Ei (`MagmaEgg`) | 500.000 | Pfeffer-Skorpion, Habanero-Nashorn, Curry-Tiger, Calzone-Hydra |
+| Süßigkeitenland | Bonbon-Ei (`BonbonEgg`) | 4.000.000 | Donut-Dackel, Pudding-Panda, Lakritz-Panther, Torten-Pegasus |
+| Weltraum | Nebula-Ei (`NebulaEgg`) | 32.000.000 | Mondkuchen-Hase, Sternfrucht-Qualle, Sternenstaub-Löwe, Galaxie-Pizza-Leviathan |
+
+Die 28 neuen Pets haben noch keine Modelle (kommt mit C7): Sie erscheinen bis dahin als Kugel bzw. Punkt in ihrer Seltenheitsfarbe. Vorschau der Eier: `assets/previews/eggs/<EiId>.png` und `assets/previews/eggs/Overview.png` (vorne die ersten Eier, dahinter die zweiten).
+
+Standorte: In Welt 1 (Insel-Look) steht das zweite Ei auf dem zweiten Ei-Platz links am Hauptweg. In Welt 2–7 (noch alter Look) steht es links neben dem ersten Ei, zwischen erstem Ei und Shop-Platz.
+
+**1. Modelle importieren** (7 neue Dateien in `assets/models/eggs/`):
+
+- [ ] **Home → Import 3D** → `StoneOvenEgg.fbx`, `BarnEgg.fbx`, `ShellEgg.fbx`, `GlacierEgg.fbx`, `MagmaEgg.fbx`, `BonbonEgg.fbx`, `NebulaEgg.fbx` → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**. In **ReplicatedStorage → GameAssets → Models → Eggs** ziehen, **Namen nicht ändern** (MeshParts z. B. `Egg_C9653A`, `Egg_FFD27A_Neon`, `Egg_FFC83A_Metal`).
+- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Eggs:GetChildren())` → **15** (14 Eier + `EggStand`).
+- [ ] Place speichern und **File → Publish to Roblox**.
+
+**2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch die Welten). Zum schnellen Testen vorübergehend `price = 1` beim `StoneOvenEgg` setzen (**nicht committen**, danach zurück auf 125).
+
+- [ ] Output ohne rote Fehler. Im Workspace unter `Eggs` stehen **14** Eier.
+- [ ] **Welt 1:** Zwei Ei-Stände links am Weg: vorne Garten-Ei, dahinter Steinofen-Ei (terrakotta mit leuchtenden Rissen, Goldband, Goldperlen). Schild „Steinofen-Ei / 💰 125“. Kein Stand zeigt mehr „Bald: neues Ei!“.
+- [ ] **Welt 2–7:** In jeder Welt zwei Stände nebeneinander vor dem Belagfeld (links neben dem ersten Ei das zweite), keiner steckt im Shop, in der Deko oder im Weg. Eier wie in `Overview.png` (zweite Reihe): Scheune rot mit weißen Rauten, Muschel rosa mit Wirbel, Gletscher eisblau mit Sternen, Magma fast schwarz mit leuchtenden Lava-Wellen, Bonbon lila mit gelben Streifen, Nebula dunkelblau mit leuchtenden lila Punkten.
+- [ ] Das zweite Ei ist sofort nach dem Freischalten der Welt nutzbar; in einer noch gesperrten Welt (per Portal nicht erreichbar) geht es nicht.
+- [ ] Ei-Vorschau am zweiten Ei: 4 Pets mit Seltenheit und Chance (Selten 68 %, Episch 25 %, Legendär 6 %, Mythisch 1 %), Preis stimmt. Mit Glücks-Trank verschieben sich die Chancen wie beim ersten Ei.
+- [ ] Zwischen den beiden Ständen hin und her laufen: Die Vorschau wechselt zum jeweils näheren Ei, sie flackert nicht und zeigt nie zwei Vorschauen übereinander. „1 öffnen“ öffnet das Ei, vor dem man steht.
+- [ ] „1 öffnen“ und (mit gekauftem „3 Eier auf einmal“) „3 öffnen“ funktionieren, Knack-Animation in der Farbe des zweiten Eis, danach Pet-Karten mit den neuen Namen.
+- [ ] Neue Pets im Pet-Menü: Name vollständig lesbar (auch „Galaxie-Pizza-Leviathan“), Icon als Punkt in Seltenheitsfarbe, Bonus z. B. Rucola-Igel +37,5 % (Anzeige je nach Rundung). Ausrüsten → Pet folgt als Kugel in Seltenheitsfarbe, Münzbonus beim Verkaufen wirkt.
+- [ ] Rejoin: Pets aus dem zweiten Ei sind nach dem Neubeitreten noch da.
+
+**Handy** (Device-Emulator): Beide Schilder aus 10–15 Studs lesbar; die Vorschau-Knöpfe beider Eier bleiben antippbar.

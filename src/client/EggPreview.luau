@@ -229,7 +229,8 @@ function EggPreview.start()
 	local playerGui = player:WaitForChild("PlayerGui")
 	local eggsFolder = Workspace:WaitForChild("Eggs")
 
-	local previews: { { billboard: BillboardGui, part: BasePart } } = {}
+	type Preview = { billboard: BillboardGui, part: BasePart }
+	local previews: { Preview } = {}
 
 	local function addEgg(model: Instance)
 		local eggId = model:GetAttribute("EggId")
@@ -251,16 +252,25 @@ function EggPreview.start()
 	RunService.Heartbeat:Connect(function()
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-		local openAt: Vector3? = nil
-		for _, preview in previews do
-			local near = root ~= nil and (root.Position - preview.part.Position).Magnitude <= SHOW_DISTANCE
-			if near ~= preview.billboard.Enabled then
-				preview.billboard.Enabled = near
-			end
-			if near then
-				openAt = preview.part.Position
+		-- Only the nearest egg in range shows its preview: two eggs stand side by side in
+		-- every world (#39) and their previews would cover each other.
+		local nearest: Preview? = nil
+		local nearestDistance = SHOW_DISTANCE
+		if root ~= nil then
+			for _, preview in previews do
+				local distance = (root.Position - preview.part.Position).Magnitude
+				if distance <= nearestDistance then
+					nearest, nearestDistance = preview, distance
+				end
 			end
 		end
+		for _, preview in previews do
+			local show = preview == nearest
+			if show ~= preview.billboard.Enabled then
+				preview.billboard.Enabled = show
+			end
+		end
+		local openAt: Vector3? = if nearest then nearest.part.Position else nil
 		-- Pet name tags near an open preview would cover its buttons: hide them.
 		SignCulling.setPetTagZone(openAt, SHOW_DISTANCE + PET_TAG_MARGIN)
 	end)

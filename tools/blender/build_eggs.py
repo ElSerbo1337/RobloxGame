@@ -4,8 +4,9 @@ Run headless (bpy from pip, Python 3.13):
     python tools/blender/build_eggs.py [EggId ... | EggStand | Overview | FancyDemo]
 
 Writes assets/models/eggs/<EggId>.fbx, assets/models/eggs/EggStand.fbx and
-assets/previews/eggs/<Name>.png (plus Overview.png with all eggs on their stands and
-FancyDemo.png, a showier variant for a later second egg per world).
+assets/previews/eggs/<Name>.png (plus Overview.png with all eggs on their stands, first
+eggs in front and the fancy second eggs per world (#39) behind them, and FancyDemo.png,
+a normal and a fancy version of two eggs side by side).
 
 The egg looks (base colour, accent colour, pattern, glow, fancy) are read from
 src/shared/GameConfig.luau (`look = { ... }` of every egg), so the config stays the only
@@ -524,21 +525,30 @@ def add_at(builder, offset, scale=1.0):
 
 
 def overview(looks):
-    """All eggs on their stands in a row (world 1 left), trim tinted like in the game."""
+    """All eggs on their stands, trim tinted like in the game: the first egg of every world
+    in the front row (world 1 left), the fancy second eggs (#39) in the row behind."""
     reset_scene()
     # Egg is 5.5 studs wide on a 10 studs stand: scale 0.55 relative to the 2-unit stand.
     stand_top = 0.44
-    for i, (egg_id, look) in enumerate(looks.items()):
-        x = (i - (len(looks) - 1) / 2) * 2.4
+    rows = [
+        [(egg_id, look) for egg_id, look in looks.items() if not look.get("fancy")],
+        [(egg_id, look) for egg_id, look in looks.items() if look.get("fancy")],
+    ]
+    spots = []
+    for row, entries in enumerate(rows):
+        for i, entry in enumerate(entries):
+            # The camera looks at the front (+Y), so world 1 (left in the picture) goes to +X.
+            spots.append((entry, ((len(rows[0]) - 1) / 2 - i) * 2.4, -row * 2.6))
+    for (egg_id, look), x, y in spots:
         before = set(bpy.context.scene.objects)
         build_stand()
         for o in set(bpy.context.scene.objects) - before:
-            o.location = Vector((x, 0, 0)) + o.location
+            o.location = Vector((x, y, 0)) + o.location
             if o.name.startswith("StandTrim"):
                 o.data.materials.clear()
                 o.data.materials.append(material(f"Trim_{egg_id}", hex_rgb(look["accent"]) if look["accent"] != "FFFFFF" else hex_rgb(look["color"])))
-        add_at(lambda look=look: build_egg(look), (x, 0, stand_top), 0.55)
-    render(mesh_objects(), os.path.join(PREVIEW_DIR, "Overview.png"), size=720, width=1920, distance=3.0, yaw=0, height=0.3)
+        add_at(lambda look=look: build_egg(look), (x, y, stand_top), 0.55)
+    render(mesh_objects(), os.path.join(PREVIEW_DIR, "Overview.png"), size=900, width=1920, distance=2.9, yaw=0, height=0.45)
 
 
 def fancy_demo(looks):

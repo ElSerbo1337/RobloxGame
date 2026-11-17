@@ -343,6 +343,26 @@ describe("world island layout (shared floor plan)", function()
 	end)
 end)
 
+describe("egg spots in every world", function()
+	it("gives every world island, the old-style ones included, two separate egg stands", function()
+		for index = 1, WORLD_COUNT do
+			local island = plan.worldIsland(index)
+			local first, second = island.stations.Egg1, island.stations.Egg2
+			expect(first ~= nil and second ~= nil).toBe(true)
+			-- Stands are 10 studs wide: keep them (and the other stations) apart.
+			for name, station in island.stations do
+				if name ~= "Egg2" then
+					local d = math.sqrt(
+						(second.position[1] - station.position[1]) ^ 2 + (second.position[3] - station.position[3]) ^ 2
+					)
+					expect(d >= 14).toBe(true)
+				end
+			end
+			expect(plan.worldIndexAt(second.position[1], second.position[3])).toBe(index)
+		end
+	end)
+end)
+
 describe("spawn island", function()
 	local spawn = plan.spawnIsland()
 
