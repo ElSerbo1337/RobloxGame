@@ -10,6 +10,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Net = require(ReplicatedStorage.Shared.Net)
+local SignCulling = require(script.Parent.SignCulling)
 
 local TAG = "WorldBarrier"
 -- Show the unlock button within this many studs of a locked barrier (server allows 30).
@@ -103,7 +104,7 @@ function Barriers.start()
 		barrier.Transparency = if open then 1 else 0.2
 		local priceSign = barrier:FindFirstChild("PriceSign")
 		if priceSign and priceSign:IsA("BillboardGui") then
-			priceSign.Enabled = not open
+			SignCulling.setHidden(priceSign, "unlocked", open)
 		end
 	end
 

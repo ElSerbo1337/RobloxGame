@@ -692,3 +692,29 @@ Ohne Neu-Import läuft alles weiter: Die alte Salami wird schon in den neuen Far
 - [ ] Lava-Akzente: 8 leuchtende Lava-Pools und 6 Lava-Risse rund um das Belagfeld, mit warmem Licht. Keiner liegt im Belagfeld, vor Ofen/Shop/Ei/Portal, bei Telefon/Lieferwagen oder im großen Vulkan (hinten links).
 - [ ] Nichts ist überstrahlt. Falls zu hell/zu dunkel: in `src/shared/WorldLooks.luau` (Eintrag `Volcano`) `brightness` bzw. `ambient`/`outdoorAmbient` anpassen und hier notieren.
 - [ ] Bildrate im Vulkan bleibt flüssig (14 zusätzliche Lichter); auf dem Handy-Emulator kurz prüfen.
+
+## #22 Kamera und Welt-Störungen
+
+Betrifft auch die Beobachtungen „Kamera“ und „Pets am Ofen“ oben. Play in Welt 1, danach mit dem Portal in eine spätere Welt.
+
+**Kamera (Invisicam):**
+
+- [ ] Output/Explorer: `StarterPlayer.DevCameraOcclusionMode` und `Players.<Spieler>.DevCameraOcclusionMode` stehen im Play auf `Invisicam`.
+- [ ] Rückwärts an Ofen, Shop, Ei-Stand und Telefon heranlaufen (Station zwischen Kamera und Figur): Die Kamera bleibt auf Abstand, die Station wird halb durchsichtig statt heranzuzoomen. In Welt 1 und in mindestens einer späteren Welt prüfen (Welt 7: großer Shop).
+
+**Pets am Ofen:**
+
+- [ ] Mit 3+ ausgerüsteten Pets rückwärts und seitlich an den Ofen laufen und stehen bleiben: Kein Pet steht auf dem Ofendach, auf dem Shop-Tresen oder auf dem Ei-Stand, keines steckt in einer Wand. Die Pets bleiben vor der Wand auf dem Boden.
+- [ ] Auf dem normalen Weg, über Brücken/Barrieren und auf der Belag-Fläche folgen die Pets wie bisher (kein Ruckeln, kein Versinken). Beläge am Boden bremsen die Pets nicht aus.
+- [ ] Falls Pets an kleinen Stufen hängen bleiben: `MAX_STEP` in `src/client/PetFollow.luau` erhöhen (jetzt 1,5).
+
+**Namensschild und Ei-Vorschau:**
+
+- [ ] Mit ausgerüsteten Pets zum Ei laufen: Die Vorschau liegt über allem, kein Pet-Namensschild verdeckt „1 öffnen“ (bzw. „3 öffnen“). Namensschilder der Pets in Ei-Nähe sind ausgeblendet und erscheinen wieder, sobald man weggeht.
+
+**Ferne Schilder:**
+
+- [ ] In Welt 1 am Spawn und am Ende Richtung Welt 2 umschauen (auch weit herausgezoomt): Keine Schilder anderer Welten (z. B. „Riesiger Pizza-Shop – Upgrades“, „Ofen (Bauernhof) …“) am Himmel oder Horizont.
+- [ ] Schilder in der Nähe (Ofen, Shop, Telefon, Lieferwagen, Portal, Preisschild an der Barriere) erscheinen beim Herangehen wie bisher (ab ca. 150 Studs), Pizza-Zähler und Pet-Namen ab ca. 60 Studs.
+- [ ] Preisschild einer freigeschalteten Barriere bleibt verborgen, das einer gesperrten erscheint.
+- [ ] Zur Ursache: Im Play (Client) in der Befehlsleiste `for _,b in workspace:GetDescendants() do if b:IsA("BillboardGui") and b.MaxDistance == 0 then print(b:GetFullName()) end end` ausführen und Treffer hier notieren (erwartet: keine). So lässt sich klären, ob ein Schild ohne `MaxDistance` die Quelle war oder die Engine `MaxDistance` nicht anwendet.

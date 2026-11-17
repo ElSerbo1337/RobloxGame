@@ -15,10 +15,14 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PetIcon = require(script.Parent.PetIcon)
+local SignCulling = require(script.Parent.SignCulling)
 local UiKit = require(script.Parent.UiKit)
 
 -- Studs between player and egg at which the preview appears.
 local SHOW_DISTANCE = 20
+-- Pet name tags this far beyond SHOW_DISTANCE from an open preview are hidden too
+-- (pets follow a few studs behind their owner).
+local PET_TAG_MARGIN = 10
 -- Button stays disabled this long after a request (the hatch animation is playing).
 local BUTTON_COOLDOWN = 2.6
 
@@ -40,6 +44,8 @@ local function buildPreview(eggId: string, adornee: BasePart, playerGui: Instanc
 	billboard.ResetOnSpawn = false
 	billboard.Enabled = false
 	billboard.LightInfluence = 0
+	-- Draw above other billboards (e.g. pet name tags), which are not AlwaysOnTop.
+	billboard.AlwaysOnTop = true
 	local height = 64 + #preview.pets * ROW_HEIGHT + 96
 	billboard.Size = UDim2.fromOffset(WIDTH, height)
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, adornee.Size.Y / 2 + 6, 0)
@@ -245,12 +251,18 @@ function EggPreview.start()
 	RunService.Heartbeat:Connect(function()
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		local openAt: Vector3? = nil
 		for _, preview in previews do
 			local near = root ~= nil and (root.Position - preview.part.Position).Magnitude <= SHOW_DISTANCE
 			if near ~= preview.billboard.Enabled then
 				preview.billboard.Enabled = near
 			end
+			if near then
+				openAt = preview.part.Position
+			end
 		end
+		-- Pet name tags near an open preview would cover its buttons: hide them.
+		SignCulling.setPetTagZone(openAt, SHOW_DISTANCE + PET_TAG_MARGIN)
 	end)
 end
 

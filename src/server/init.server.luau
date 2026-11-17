@@ -4,6 +4,7 @@ local Constants = require(ReplicatedStorage.Shared.Constants)
 local Net = require(ReplicatedStorage.Shared.Net)
 
 local BarrierService = require(script.BarrierService)
+local CameraService = require(script.CameraService)
 local DeliveryService = require(script.DeliveryService)
 local EggService = require(script.EggService)
 local GemService = require(script.GemService)
@@ -43,6 +44,7 @@ for _, name in { "PhoneOpen", "PhoneClose", "AnswerPhone" } do
 	Net.event(name)
 end
 
+CameraService.start()
 local layout = World1Map.build()
 local laterWorlds = WorldMap.buildAll()
 PlayerStates.start()
