@@ -213,8 +213,9 @@ local GameConfig = {
 	},
 
 	-- New HUD buttons that pulse (with a short explanation) until the player opened them
-	-- once; remembered per player (GameRules.markHintSeen).
-	hints = { "Gifts" },
+	-- once; remembered per player (GameRules.markHintSeen): play time gifts (#36) and the
+	-- rebirth button (#35, pulses the first time a rebirth is affordable).
+	hints = { "Gifts", "Rebirth" },
 
 	-- Income estimate (GameRules.incomePerMinute): average topping value of the highest
 	-- unlocked world x pizza space x rounds per minute x coin multiplier (pets, rebirths).

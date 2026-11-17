@@ -1,6 +1,7 @@
 local TestKit = require("./TestKit")
 local TestConfig = require("./fixtures/TestConfig")
 local GameRules = require("../src/shared/GameRules")
+local SaveData = require("../src/shared/SaveData")
 
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 local sequenceRandom = TestKit.sequenceRandom
@@ -219,5 +220,28 @@ describe("rebirth multiplier", function()
 		end
 
 		expect(deliveredGems(3)).toBe(deliveredGems(0))
+	end)
+end)
+
+describe("rebirth button hint", function()
+	it("a new player has not opened the rebirth button yet (it pulses once affordable)", function()
+		expect(rules.hasSeenHint(rules.newPlayerState(), "Rebirth")).toBe(false)
+	end)
+
+	it("opening the button once is remembered after saving and loading", function()
+		local result = rules.markHintSeen(player(5000), "Rebirth")
+
+		expect(result.ok).toBe(true)
+		local loaded = SaveData.load(result.state, rules.newPlayerState()).state
+		expect(rules.hasSeenHint(loaded, "Rebirth")).toBe(true)
+	end)
+
+	it("stays remembered after a rebirth", function()
+		local seen = rules.markHintSeen(player(5000), "Rebirth").state
+
+		local result = rules.rebirth(seen, 0)
+
+		expect(result.ok).toBe(true)
+		expect(rules.hasSeenHint(result.state, "Rebirth")).toBe(true)
 	end)
 end)

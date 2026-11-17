@@ -96,7 +96,7 @@ return {
 		toppingMax = 3,
 	},
 	-- New HUD buttons that pulse until the player opened them once.
-	hints = { "Gifts" },
+	hints = { "Gifts", "Rebirth" },
 	-- Income estimate: rounds (collect + sell a full pizza) per minute.
 	income = { roundsPerMinute = 2 },
 	-- Play time gifts: reached after `minutes` of play time on a (German) day.

@@ -1076,3 +1076,15 @@ Vorschau: `assets/previews/toppings/<BelagId>.png`, `World2.png` … `World7.png
 - [ ] Ohne Import (z. B. Ordner `Toppings` kurz umbenennen): wieder farbige Scheiben, keine Fehler. Danach zurück umbenennen.
 - [ ] **Handy** (Device-Emulator): volles Belagfeld in Welt 6/7 ohne spürbares Ruckeln.
 - [ ] Was in Studio schlecht zu erkennen ist: hier notieren.
+
+## #35 Korrektur: Rebirth-Knopf merkt sich „schon gesehen“
+
+Der Rebirth-Knopf pulsierte in jeder Sitzung neu, sobald ein Rebirth leistbar war. Jetzt nutzt er das gespeicherte Hinweis-System aus #36 wie der Geschenke-Knopf: Hinweis-Id `Rebirth` in `GameConfig.hints`, beim ersten Öffnen schickt der Client `HintSeen("Rebirth")`, der Server merkt es in `seenHints` (bleibt auch nach einem Rebirth). Tests: `tests/Rebirth.spec.luau` („rebirth button hint“) und `tests/GameConfig.spec.luau`.
+
+**Test** (Rojo verbunden, **Play**, 1 Spieler, Tutorial fertig, noch kein Rebirth; Tipp aus #35: vorübergehend `GameConfig.rebirth.startPrice = 100`, **nicht committen**):
+
+- [ ] Genug Münzen: Rebirth-Knopf pulsiert mit „Neu! Mehr Münzen“. Menü öffnen → Pulsieren hört auf, Menü schließen → bleibt ruhig.
+- [ ] **Rejoin** (Stop, Play) mit weiter genug Münzen: Knopf pulsiert **nicht** mehr.
+- [ ] Neuer Spielstand (anderer Test-Spieler oder Spielstand löschen): Knopf pulsiert wieder, bis er einmal geöffnet wurde.
+- [ ] Geschenke-Knopf verhält sich unverändert (pulsiert nur bis zum ersten Öffnen).
+- [ ] Output ohne rote Fehler.

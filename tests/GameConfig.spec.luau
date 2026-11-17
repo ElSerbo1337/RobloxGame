@@ -882,6 +882,15 @@ describe("GameConfig rebirth", function()
 		expect(GameConfig.rebirth.multiplierPerRebirth).toBe(0.5)
 		expect(GameConfig.rebirth.priceFactor > 1).toBe(true)
 	end)
+
+	it("remembers per player that the rebirth button was opened, like the gifts button", function()
+		local rules = GameRules.new(GameConfig)
+
+		local result = rules.markHintSeen(rules.newPlayerState(), "Rebirth")
+
+		expect(result.ok).toBe(true)
+		expect(rules.hasSeenHint(result.state, "Rebirth")).toBe(true)
+	end)
 end)
 
 describe("GameConfig play time gifts", function()

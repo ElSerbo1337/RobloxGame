@@ -2,12 +2,13 @@
 -- Rebirth on the client (#35):
 -- * Round "Rebirth" button on the left (HUD slot "rebirth") with the number of rebirths
 --   as a badge. It pulses (with a short hint) the first time a rebirth is affordable,
---   until the menu is opened.
+--   until the menu is opened once (hint "Rebirth", remembered on the server like the
+--   gifts button, so it does not pulse again in the next session).
 -- * Menu: rebirths, coin multiplier now -> next, price and progress, what is reset and what
 --   stays, a warning while a potion runs, and a "Rebirth!" button that asks to confirm.
 -- * Celebration "Rebirth 2! ×2 Münzen" when the server answers Rebirthed.
--- Reads the attributes Rebirths and RebirthOffer (JSON, see Net / RebirthService). Only
--- sends the wish Rebirth; the server decides.
+-- Reads the attributes Rebirths, RebirthOffer (JSON, see Net / RebirthService) and
+-- SeenHints (GiftService). Only sends the wishes Rebirth and HintSeen; the server decides.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -19,6 +20,7 @@ local Sounds = require(script.Parent.Sounds)
 local UiKit = require(script.Parent.UiKit)
 
 local PANEL_SIZE = Vector2.new(560, 500)
+local HINT_ID = "Rebirth"
 local PURPLE = Color3.fromRGB(150, 80, 220)
 local SOFT = Color3.fromRGB(110, 80, 55)
 
@@ -225,6 +227,13 @@ function RebirthMenu.start()
 	-- Behaviour ---------------------------------------------------------------------
 	local opened = false
 	local pulseTween: Tween? = nil
+	local hintSeen = Net.event("HintSeen")
+
+	-- Opened in an earlier session (or earlier in this one): remembered on the server.
+	local function seen(): boolean
+		local hints = player:GetAttribute("SeenHints")
+		return type(hints) == "string" and table.find(string.split(hints, ","), HINT_ID) ~= nil
+	end
 
 	local function setPulsing(on: boolean)
 		if on == (pulseTween ~= nil) then
@@ -276,11 +285,16 @@ function RebirthMenu.start()
 			offer.nextMultiplier
 		)}, Start in Welt 1.` .. (if offer.potionWarning then "\nDein laufender Trank endet!" else "")
 		-- First time a rebirth is possible: draw attention until the menu is opened.
-		setPulsing(not opened and offer.rebirths == 0 and offer.affordable)
+		setPulsing(not opened and not seen() and offer.rebirths == 0 and offer.affordable)
 	end
 
 	local function open()
-		opened = true
+		if not opened then
+			opened = true
+			if not seen() then
+				hintSeen:FireServer(HINT_ID)
+			end
+		end
 		setPulsing(false)
 		confirm.Visible = false
 		panel.Visible = true
@@ -343,6 +357,7 @@ function RebirthMenu.start()
 
 	player:GetAttributeChangedSignal("Rebirths"):Connect(refresh)
 	player:GetAttributeChangedSignal("RebirthOffer"):Connect(refresh)
+	player:GetAttributeChangedSignal("SeenHints"):Connect(refresh)
 	refresh()
 end
 
