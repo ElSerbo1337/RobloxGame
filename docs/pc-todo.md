@@ -953,7 +953,7 @@ Jede Welt hat jetzt zwei Eier (`GameConfig.worlds[].eggs`): das bisherige und ei
 | Süßigkeitenland | Bonbon-Ei (`BonbonEgg`) | 4.000.000 | Donut-Dackel, Pudding-Panda, Lakritz-Panther, Torten-Pegasus |
 | Weltraum | Nebula-Ei (`NebulaEgg`) | 32.000.000 | Mondkuchen-Hase, Sternfrucht-Qualle, Sternenstaub-Löwe, Galaxie-Pizza-Leviathan |
 
-Die 28 neuen Pets haben noch keine Modelle (kommt mit C7): Sie erscheinen bis dahin als Kugel bzw. Punkt in ihrer Seltenheitsfarbe. Vorschau der Eier: `assets/previews/eggs/<EiId>.png` und `assets/previews/eggs/Overview.png` (vorne die ersten Eier, dahinter die zweiten).
+Die 28 neuen Pets haben noch keine Modelle (kommt mit C7): Sie erscheinen bis dahin als Kugel bzw. Punkt in ihrer Seltenheitsfarbe. _(Modelle seit #40, Import siehe unten.)_ Vorschau der Eier: `assets/previews/eggs/<EiId>.png` und `assets/previews/eggs/Overview.png` (vorne die ersten Eier, dahinter die zweiten).
 
 Standorte: In Welt 1 (Insel-Look) steht das zweite Ei auf dem zweiten Ei-Platz links am Hauptweg. In Welt 2–7 (noch alter Look) steht es links neben dem ersten Ei, zwischen erstem Ei und Shop-Platz.
 
@@ -992,3 +992,38 @@ Studio: Rojo verbinden, **Play** (1 Spieler, möglichst frischer Spielstand, Tut
 - [ ] **Stoppuhr Welt 1:** Ab Spielstart (Tutorial inklusive) bis zum Freischalten des Bauernhofs normal spielen, dabei Upgrades und das Garten-Ei kaufen, Lieferaufträge annehmen. Zeit notieren (Ziel ca. 10–15 Min, Simulation 13 Min). Fühlt es sich deutlich schneller an, liegt das am Rundentempo: Die Simulation rechnet mit 2 Runden pro Minute.
 - [ ] **Stoppuhr Welt 2:** Vom Freischalten des Bauernhofs bis zum Freischalten des Strands (Ziel ca. 10–15 Min, Simulation 12 Min). Beide Zeiten in `docs/balancing.md` unter der Tabelle notieren.
 - [ ] Geschenke und Login-Kalender geben weiterhin Münzen „ca. N Minuten Einkommen“; Beträge passen zur aktuellen Welt (unverändert, nur Kontrolle).
+
+## #40 C7 28 neue Pet-Modelle
+
+Die 28 Pets der zweiten Eier (#39) haben jetzt Modelle im Chibi-Stil (großer Kopf, glänzende Augen, rosa Wangen), gebaut mit `tools/blender/build_pets.py`. Jedes Pet zeigt sein Tier und sein Essen. Test: `tests/PetModels.spec.luau` prüft, dass jedes Pet aus `GameConfig.pets` eine FBX-Datei und ein Vorschaubild mit seiner Id hat und jedes Ei ein Vorschaublatt.
+
+Vorschau: pro Ei `assets/previews/pets/<EiId>.png` (z. B. `StoneOvenEgg.png`, 4 Pets nebeneinander), einzeln `assets/previews/pets/<PetId>.png`.
+
+| Ei | Pets (Id) – Erkennungsmerkmal |
+| --- | --- |
+| Steinofen-Ei | `RucolaHedgehog` (Rucola-Blätter als Stacheln), `ParmesanRaccoon` (Parmesan-Keil), `TruffleFox` (Teller mit Trüffel), `StoneOvenPhoenix` (Steinofen-Körper mit Glut, Flammenflügel) |
+| Scheunen-Ei | `PumpkinCat` (Kürbis-Rippen, Stiel), `ButterDonkey` (Butterstück auf dem Kopf, Butterdose auf dem Rücken), `HoneyBear` (Honigtopf, Biene), `GoldGrainBull` (Goldhörner, Weizenkrone und -kragen) |
+| Muschel-Ei | `CoconutMonkey` (Kokos-Helm, Kokos-Drink), `ShellSeahorse` (Jakobsmuschel), `SardineShark` (Sardinendose auf dem Kopf), `PearlSeaSerpent` (Muschel mit Perle, Perlenkette) |
+| Gletscher-Ei | `MintReindeer` (minzgrün, Schokostückchen, Minzbonbon), `SundaePolarBear` (Eisbecher), `VanillaMammoth` (Vanille-Eis im Rüssel, Vanilleblüte), `SorbetNarwhal` (Sorbet-Kugeln, Eis-Stoßzahn) |
+| Magma-Ei | `PepperScorpion` (Pfefferkörner-Schwanz, Chili-Stachel), `HabaneroRhino` (Habanero-Hörner), `CurryTiger` (Curry-Schüssel), `CalzoneHydra` (Calzone-Körper, Köpfe Tomate/Käse/Basilikum) |
+| Bonbon-Ei | `DonutDachshund` (Donut um den Bauch), `PuddingPanda` (Pudding auf dem Kopf), `LicoricePanther` (Lakritz-Konfekt, Lakritzschnecke am Schwanz), `CakePegasus` (Tortenstück mit Kerze) |
+| Nebula-Ei | `MooncakeBunny` (Mondkuchen, Mondsichel), `StarfruitJellyfish` (Sternfrucht-Scheibe, leuchtende Tentakel), `StardustLion` (Sternen-Mähne), `GalaxyPizzaLeviathan` (Galaxie-Pizza mit Pepperoni-Planeten) |
+
+**1. Pet-Modelle importieren** (28 neue Dateien in `assets/models/pets/`, gleiche Einstellungen wie bei #16):
+
+- [ ] **Home → Import 3D** → im Dateidialog die 28 neuen `.fbx` markieren (Namen siehe Tabelle; Gruppen über das Namensfeld wie bei #16) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
+- [ ] Die importierten Models (Name = Pet-Id, MeshParts `Pet_9A6A44`, `Pet_FF8A2A_Neon`, `Pet_C8D0DA_Metal`, `Pet_D8F0FF_Glass` …) in **ReplicatedStorage → GameAssets → Models → Pets** ziehen. **Namen nicht ändern.** Größe, Farbe und Position egal.
+- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Pets:GetChildren())` → **70**.
+- [ ] Place speichern und **File → Publish to Roblox**.
+
+**2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, zum schnellen Öffnen vorübergehend `price = 1` bei einem zweiten Ei setzen, **nicht committen**):
+
+- [ ] Output ohne rote Fehler.
+- [ ] **Ei-Vorschau** am zweiten Ei jeder Welt: alle 4 Zeilen zeigen das 3D-Pet statt eines farbigen Punkts, nichts abgeschnitten (auch die breiten: Calzone-Hydra, Galaxie-Pizza-Leviathan, Goldkorn-Stier).
+- [ ] **Ei öffnen**: Die Pet-Karte zeigt das 3D-Pet vor dem Kreis in Seltenheitsfarbe.
+- [ ] **Pet-Menü**: Jede Karte eines neuen Pets zeigt das Modell im runden Feld.
+- [ ] **Folgen**: Je ein neues Pet pro Welt ausrüsten → läuft als Modell hinter dem Spieler, **Gesicht in Laufrichtung**, steht auf dem Boden (Seeschlange, Qualle und Leviathan nicht im Boden, nicht hoch schwebend), Namensschild über dem Kopf. Mythische (Phönix, Stier, Seeschlange, Narwal, Hydra, Pegasus, Leviathan) sind etwas größer als die seltenen.
+- [ ] Neon leuchtet (Ofenglut und Flammen des Phönix, Calzone-Soße, Quallen-Tentakel, Sterne des Löwen, Pepperoni-Planeten), Glas ist durchsichtig (Eisbecher, Seepferdchen-Flossen), Metall glänzt (Goldhörner und Weizen des Stiers, Sardinendose, Löffel des Pandas, Hufe des Pegasus).
+- [ ] Farben wie in den Vorschaubildern; jedes Pet ist an Tier und Essen erkennbar (Tabelle oben). Was in Studio schlecht zu erkennen ist: hier notieren.
+- [ ] **Mehrspieler** (2 Spieler): B sieht A's neue Pets als Modelle hinter A herlaufen.
+- [ ] **Handy** (Device-Emulator): Pet-Menü mit vielen neuen Pets öffnet ohne spürbares Ruckeln.

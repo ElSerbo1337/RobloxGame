@@ -1,4 +1,4 @@
-"""Builds the 42 low-poly cartoon pets (all eggs) and renders their preview images.
+"""Builds the 70 low-poly cartoon pets (all eggs) and renders their preview images.
 
 Run headless (bpy from pip, Python 3.13):
     python tools/blender/build_pets.py [PetId ... | EggId ...]
@@ -20,7 +20,7 @@ import sys
 
 import bpy  # noqa: I001  (bpy must be imported before bmesh)
 import bmesh
-from mathutils import Euler, Vector
+from mathutils import Euler, Matrix, Vector
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 MODEL_DIR = os.path.join(ROOT, "assets", "models", "pets")
@@ -1043,6 +1043,952 @@ def galaxy_dragon(P):
     flat(P, "FFF2A0", star_points(0.1, 0.04), 0.03, c=surface(head, R, 40, 40, 1.0), rot=(math.radians(-40), 0, -math.radians(40)), kind="Neon")
 
 
+# ---------------------------------------------------------------- helpers for the second eggs (#40)
+
+
+def aim(direction):
+    """Rotation that turns +Z (the axis of cylinders and cones) towards `direction`."""
+    return Vector((0, 0, 1)).rotation_difference(Vector(direction).normalized()).to_euler()
+
+
+def at(c, rot, v):
+    """Point `v` given in the local frame of something at `c` turned by `rot`."""
+    return Vector(c) + Euler(rot).to_matrix() @ Vector(v)
+
+
+def facing(yaw, pitch):
+    """Rotation that turns local +Y outwards at (yaw, pitch) of `surface`, local +Z along the meridian."""
+    return (math.radians(pitch), 0, -math.radians(yaw))
+
+
+def stick(P, h, a, b, r, r2=None, verts=8, kind=None):
+    a, b = Vector(a), Vector(b)
+    d = b - a
+    if r2 is None:
+        return cyl(P, h, (a + b) / 2, r, d.length, rot=aim(d), verts=verts, kind=kind)
+    return cone(P, h, (a + b) / 2, r, r2, d.length, rot=aim(d), verts=verts, kind=kind)
+
+
+def chain(P, colors, points, radii, kind=None):
+    for i, p in enumerate(points):
+        r = radii[i] if isinstance(radii, (list, tuple)) else radii
+        sph(P, colors[i % len(colors)], p, r, seg=10, rings=7, kind=kind)
+
+
+def lobed_leaf(P, h, c, length=0.34, width=0.12, rot=(0, 0, 0), lobes=3, kind=None):
+    """Leaf with a wavy edge (rocket/rucola), pointing along local +Z."""
+    n = lobes * 2 + 1
+    right = []
+    for i in range(1, n + 1):
+        t = i / (n + 1)
+        right.append((math.sin(t * math.pi) * width * (1.0 if i % 2 else 0.55), t * length))
+    pts = [(0, 0)] + right + [(0, length)] + [(-x, z) for x, z in reversed(right)]
+    return flat(P, h, pts, 0.03, c=c, rot=rot, kind=kind)
+
+
+def scallop(P, h, c, size, rot=(0, 0, 0), rib=None, thickness=0.05):
+    """Scallop shell: a fan opening along local +Z, flat side facing ±Y."""
+    pts = [(size * 0.14, -size * 0.12)]
+    for i in range(13):
+        a = math.radians(15 + i * 12.5)
+        r = size * (1.0 if i % 2 == 0 else 0.92)
+        pts.append((math.cos(a) * r, math.sin(a) * r))
+    pts.append((-size * 0.14, -size * 0.12))
+    flat(P, h, pts, thickness, c=c, rot=rot)
+    if rib:
+        base = Euler(rot).to_matrix()
+        for k in range(5):
+            ang = math.radians(35 + k * 27.5)
+            for side in (-1, 1):
+                mid = at(c, rot, (math.cos(ang) * size * 0.5, side * thickness * 0.55, math.sin(ang) * size * 0.5))
+                turn = (base @ Matrix.Rotation(-ang, 3, "Y")).to_euler()
+                box(P, rib, mid, (size * 0.8, 0.02, 0.03), rot=turn)
+
+
+def wheat_ear(P, base, direction, length=0.45, grain="FFD24A", stem="C89A3A", kind="Metal"):
+    d = Vector(direction).normalized()
+    base = Vector(base)
+    side = d.cross(Vector((0, 1, 0)))
+    if side.length < 0.1:
+        side = d.cross(Vector((1, 0, 0)))
+    side.normalize()
+    stick(P, stem, base, base + d * length * 0.45, 0.018, verts=5)
+    for k in range(5):
+        p = base + d * length * (0.45 + k * 0.1)
+        for s in (-1, 1):
+            sph(P, grain, p + side * s * 0.035, 0.045, scale=(0.75, 0.75, 1.4), rot=aim(d + side * s * 0.5), seg=8, rings=5, kind=kind)
+    sph(P, grain, base + d * length * 0.98, 0.04, scale=(0.75, 0.75, 1.4), rot=aim(d), seg=8, rings=5, kind=kind)
+
+
+def crescent_points(r, off=0.38):
+    """Crescent moon (bulging to the left) as 2D points."""
+    s60 = math.sin(math.radians(60))
+    ri = math.hypot(0.5 - off, s60) * r
+    a_in = math.degrees(math.atan2(s60, 0.5 - off))
+    pts = []
+    for i in range(11):
+        a = math.radians(60 + i * 24)
+        pts.append((math.cos(a) * r, math.sin(a) * r))
+    for i in range(1, 10):
+        a = math.radians(360 - a_in - i * (360 - 2 * a_in) / 10)
+        pts.append((off * r + math.cos(a) * ri, math.sin(a) * ri))
+    return pts
+
+
+def stripe(P, h, center, radii, yaw, pitch, length, width=0.035, across=False, kind=None):
+    """Thin stripe lying on an ellipsoid; along the meridian, or along the latitude if `across`."""
+    scale = (length, 0.025, width) if across else (width, 0.025, length)
+    sph(P, h, surface(center, radii, yaw, pitch, 0.98), 1, scale=scale, rot=facing(yaw, pitch), seg=10, rings=6, kind=kind)
+
+
+def paws(P, h, y, z, spread=0.27, r=0.12):
+    for side in (-1, 1):
+        sph(P, h, (side * spread, y, z), r)
+
+
+# ---------------------------------------------------------------- world 1, second egg (Steinofen-Ei)
+
+
+def rucola_hedgehog(P):
+    head, R = critter(P, "9A6A44", belly="F2DDBE", head_color="E8C9A0", feet_color="6E4A30", nose=None, eye_size=0.14)
+    snout_long(P, "F2DDBE", head, R, length=0.26, r=0.15, pitch=-14)
+    round_ears(P, "C99A70", head, R, size=0.1, spread=62, pitch=30, inner="FFC2B0")
+    # Rocket leaves as spines: a crown on the head and all over the back.
+    greens = ["3F8F3A", "5DB04A", "2E7A32"]
+    spots = [(Vector(BODY), BODY_R, yaw, pitch) for yaw in (90, 125, 160, 200, 235, 270) for pitch in (-5, 25, 55)]
+    spots += [(head, (R, R, R), yaw, pitch) for yaw in (100, 135, 180, 225, 260) for pitch in (20, 50)]
+    spots += [(head, (R, R, R), yaw, 72) for yaw in (-60, -30, 0, 30, 60)]
+    spots += [(head, (R, R, R), yaw, 45) for yaw in (-80, 80)]
+    for i, (center, radii, yaw, pitch) in enumerate(spots):
+        pos = surface(center, radii, yaw, pitch, 0.85)
+        d = (pos - Vector(center)).normalized() + Vector((0, -0.6, 0.45))
+        lobed_leaf(P, greens[i % 3], pos, length=0.42, width=0.12, rot=aim(d))
+
+
+def parmesan_raccoon(P):
+    fur = "8E8E98"
+    head, R = critter(P, fur, belly="D8D8E0", feet_color="4A4A54", muzzle="F0F0F4", nose="22222A", eye_size=0.14)
+    round_ears(P, fur, head, R, size=0.16, spread=40, pitch=48, inner="F0F0F4")
+    # Bandit mask behind the eyes and a white blaze above.
+    for side in (-1, 1):
+        sph(P, "33333D", surface(head, R, side * 30, 6, 0.86), 0.2, scale=(1.35, 0.4, 0.85), rot=(0, 0, -math.radians(side * 30)))
+    sph(P, "F0F0F4", surface(head, R, 0, 42, 0.93), 0.11, scale=(0.6, 0.4, 1.0), rot=facing(0, 42))
+    # Ringed tail
+    for i in range(6):
+        t = i / 5
+        sph(P, fur if i % 2 == 0 else "33333D", (0, -0.5 - t * 0.38, 0.32 + t * 0.6), 0.17 - t * 0.03)
+    # Wedge of parmesan with its rind, held in both paws
+    wedge = Vector((0, 0.58, 0.5))
+    flat(P, "F7E7A8", [(-0.24, -0.1), (0.24, -0.1), (0.03, 0.22)], 0.2, c=wedge)
+    box(P, "D9A43E", wedge + Vector((0, 0, -0.12)), (0.5, 0.22, 0.05), bevel=0.01)
+    for x, z in [(-0.08, 0.0), (0.06, 0.06), (0.0, -0.05)]:
+        sph(P, "FFF6D2", wedge + Vector((x, 0.1, z)), 0.025, seg=6, rings=4)
+    paws(P, "4A4A54", 0.55, 0.5, spread=0.27, r=0.1)
+
+
+def truffle_fox(P):
+    fur = "E8782E"
+    head, R = critter(P, fur, belly="FFF2E0", feet_color="4A2A1C", nose="2A1A10", eye_size=0.14)
+    pointed_ears(P, fur, head, R, size=0.2, height=0.42, inner="FFF2E0")
+    snout_long(P, "FFF2E0", head, R, length=0.18, r=0.2, pitch=-18, nose="2A1A10")
+    for i in range(5):
+        t = i / 4
+        sph(P, fur if i < 4 else "FFF2E0", (-0.1 * t, -0.55 - t * 0.35, 0.5 + t * 0.55), 0.22 + math.sin(t * math.pi) * 0.08)
+    # Plate (tilted to the viewer) with a black truffle and two slices
+    plate = Vector((0, 0.6, 0.44))
+    rot = (math.radians(-25), 0, 0)
+    cyl(P, WHITE, plate, 0.28, 0.04, rot=rot, verts=18)
+    ico(P, "3A2A22", at(plate, rot, (-0.06, -0.02, 0.13)), 0.14, subdiv=2, jit=0.025, seed=4)
+    for k, (x, y) in enumerate([(0.13, 0.06), (0.15, -0.07)]):
+        cyl(P, "8A6A52", at(plate, rot, (x, y, 0.035 + k * 0.015)), 0.08, 0.02, rot=rot, verts=12)
+        cyl(P, "C8AA92", at(plate, rot, (x, y, 0.046 + k * 0.015)), 0.04, 0.005, rot=rot, verts=10)
+    paws(P, "4A2A1C", 0.55, 0.48, spread=0.3, r=0.1)
+
+
+def stone_oven_phoenix(P):
+    body = Vector((0, -0.05, 0.6))
+    Rb = (0.5, 0.5, 0.56)
+    sph(P, "C8B4A0", body, 1, scale=Rb)
+    # Bricks on the dome, leaving room for the oven mouth
+    for pitch, n, off in ((-12, 9, 0), (18, 8, 22), (46, 6, 0)):
+        for i in range(n):
+            yaw = off + i * 360 / n
+            if abs(((yaw + 180) % 360) - 180) < 45 and pitch < 30:
+                continue
+            box(P, "A8927E", surface(body, Rb, yaw, pitch, 0.97), (0.17, 0.07, 0.08), rot=facing(yaw, pitch))
+    mouth = surface(body, Rb, 0, -14, 0.9)
+    arch = [(-0.2, -0.14), (0.2, -0.14)] + [(math.cos(math.radians(a)) * 0.2, 0.04 + math.sin(math.radians(a)) * 0.2) for a in range(0, 181, 20)]
+    flat(P, "6A5A50", [(x * 1.3, z * 1.25) for x, z in arch], 0.12, c=mouth)
+    flat(P, "FF8A2A", arch, 0.06, c=mouth + Vector((0, 0.06, 0)), kind="Neon")
+    # Chimney with a puff of smoke
+    cyl(P, "8A7A6E", (0.12, -0.32, 1.08), 0.08, 0.3, verts=8)
+    ico(P, "E8E2DA", (0.16, -0.36, 1.33), 0.08, jit=0.01, seed=7)
+    # Fiery bird head
+    head = Vector((0, 0.1, 1.32))
+    Rh = 0.36
+    sph(P, "FF9A3A", head, Rh)
+    eyes(P, head, Rh, spread=30, pitch=6, size=0.12)
+    cheeks(P, head, Rh, size=0.07)
+    beak(P, "FFD24A", head, Rh, pitch=-8, length=0.18, r=0.08)
+    for a, c in ((-28, "FF6A1A"), (0, "FFC23A"), (28, "FF6A1A")):
+        d = Vector((math.sin(math.radians(a)) * 0.6, -0.45, 1))
+        cone(P, c, head + Vector((math.sin(math.radians(a)) * 0.1, -0.08, Rh * 0.8)) + d.normalized() * 0.2, 0.08, 0.0, 0.42, rot=aim(d), verts=6, kind="Neon")
+    # Flame wings and tail
+    for side in (-1, 1):
+        for k, c in enumerate(("FF6A1A", "FFA02A", "FFD24A")):
+            d = Vector((side * 1.0, -0.3, 0.4 + k * 0.4))
+            sph(P, c, Vector((side * 0.42, -0.1, 0.78)) + d.normalized() * 0.3, 1, scale=(0.09, 0.09, 0.32), rot=aim(d), kind="Neon")
+    for k, c in enumerate(("FFA02A", "FF6A1A", "FFD24A")):
+        d = Vector(((k - 1) * 0.5, -1, 0.5))
+        sph(P, c, Vector((0, -0.5, 0.55)) + d.normalized() * 0.3, 1, scale=(0.08, 0.08, 0.34), rot=aim(d), kind="Neon")
+    feet(P, "FFD24A", TWO_FEET, r=0.12)
+
+
+# ---------------------------------------------------------------- world 2, second egg (Scheunen-Ei)
+
+
+def pumpkin_cat(P):
+    head, R = critter(P, "F28A1E", head_color="F59A3A", feet_color="C86A14", nose="7A3A10", eye_size=0.14)
+    pointed_ears(P, "F59A3A", head, R, inner="FFD0A0")
+    # Pumpkin body: ribbed lobes around the middle
+    for i in range(8):
+        a = math.radians(i * 45)
+        sph(P, "F28A1E" if i % 2 else "D86410", (math.sin(a) * 0.22, BODY[1] + math.cos(a) * 0.22, BODY[2]), 1, scale=(0.25, 0.22, 0.43), rot=(0, 0, -a))
+    for i in range(8):
+        a = math.radians(i * 45 + 22.5)
+        stripe(P, "B8500C", BODY, BODY_R, math.degrees(a), 0, 0.22, width=0.03)
+    # Stem with a leaf and a curly vine tail
+    top = head + Vector((0, -0.05, R * 0.95))
+    stick(P, "6A7A2A", top, top + Vector((0.05, -0.04, 0.2)), 0.05, r2=0.035, verts=6)
+    leaf(P, "4E9A3A", top + Vector((0.04, -0.02, 0.08)), length=0.28, width=0.11, rot=(math.radians(-20), math.radians(55), 0))
+    tail_curve(P, "5A9A3A", r=0.045, up=0.6, length=0.8)
+    leaf(P, "4E9A3A", (0, -1.0, 0.95), length=0.2, width=0.08, rot=(math.radians(30), 0, 0))
+
+
+def butter_donkey(P):
+    fur = "A8A2AE"
+    sph(P, fur, (0, -0.1, 0.72), 1, scale=(0.45, 0.6, 0.42))
+    sph(P, "E6E2EA", (0, 0.25, 0.62), 1, scale=(0.3, 0.28, 0.28))
+    legs(P, fur, [(-0.24, 0.3), (0.24, 0.3), (-0.24, -0.45), (0.24, -0.45)], height=0.5, r=0.1, hoof="4A4048")
+    head = Vector((0, 0.42, 1.35))
+    R = 0.42
+    sph(P, fur, head, R)
+    snout_long(P, "E6E2EA", head, R, length=0.22, r=0.25, pitch=-25)
+    eyes(P, head, R, spread=34, pitch=12, size=0.12)
+    cheeks(P, head, R, size=0.07)
+    long_ears(P, fur, head, R, length=0.4, width=0.11, spread=34, inner="F0C0C8", droop=(14, -4))
+    for i in range(4):
+        ico(P, "FFE070", (0, 0.1 - i * 0.14, 1.72 - i * 0.16), 0.1, jit=0.02, seed=20 + i)
+    stick(P, fur, (0, -0.65, 0.85), (0, -0.82, 0.55), 0.035)
+    ico(P, "5A5260", (0, -0.84, 0.5), 0.08, jit=0.02, seed=25)
+    # Butter dish on the back and a melting pat on the head
+    dish = Vector((0, -0.2, 1.13))
+    cyl(P, "8EC8F0", dish, 0.32, 0.05, verts=18)
+    box(P, "FFE070", dish + Vector((0, 0, 0.11)), (0.36, 0.22, 0.17), bevel=0.03)
+    box(P, "FFF2B0", dish + Vector((0.06, 0.02, 0.21)), (0.14, 0.12, 0.04), bevel=0.01)
+    top = head + Vector((0, 0.06, R * 0.95))
+    box(P, "FFE070", top + Vector((0, 0, 0.04)), (0.3, 0.24, 0.15), rot=(0.12, 0, 0.15), bevel=0.03)
+    box(P, "FFF2B0", top + Vector((0.03, 0.02, 0.13)), (0.12, 0.1, 0.04), rot=(0.12, 0, 0.4), bevel=0.01)
+    for x, y in ((0.1, 0.13), (-0.09, 0.12), (0.0, 0.14)):
+        sph(P, "FFE070", top + Vector((x, y, -0.05)), 0.045, scale=(1, 1, 1.8))
+
+
+def honey_bear(P):
+    fur = "E0A040"
+    head, R = critter(P, fur, belly="FFD88A", feet_color="B07A28", muzzle="FFE6B0", nose="4A2A10")
+    round_ears(P, fur, head, R, size=0.16, spread=44, pitch=44, inner="FFD88A")
+    # Honey dripping from the head
+    sph(P, "FFB41E", head + Vector((0, -0.02, R * 0.84)), 1, scale=(0.3, 0.3, 0.14))
+    for yaw in (-32, 22):
+        sph(P, "FFB41E", surface(head, R, yaw, 50, 0.99), 0.055, scale=(1, 1, 1.8))
+    # Honey pot with a dipper
+    pot = Vector((0, 0.58, 0.48))
+    sph(P, "C0703A", pot, 1, scale=(0.25, 0.23, 0.22))
+    cyl(P, "C0703A", pot + Vector((0, 0, 0.19)), 0.16, 0.1, verts=14)
+    torus(P, "9A5424", pot + Vector((0, 0, 0.25)), 0.16, 0.035)
+    cyl(P, "FFB41E", pot + Vector((0, 0, 0.255)), 0.15, 0.03, verts=14)
+    sph(P, "FFB41E", pot + Vector((0.1, 0.13, 0.17)), 0.05, scale=(1, 1, 1.8))
+    stick(P, "C89A5A", pot + Vector((0.02, 0, 0.2)), pot + Vector((-0.14, -0.05, 0.55)), 0.022)
+    for k in range(3):
+        torus(P, "C89A5A", pot + Vector((0.0 - k * 0.012, 0, 0.27 + k * 0.035)), 0.045, 0.018)
+    paws(P, fur, 0.52, 0.55, spread=0.3)
+    # Little bee buzzing by the ear
+    bee = head + Vector((0.45, 0.1, 0.4))
+    sph(P, "FFD21E", bee, 0.09, scale=(1, 1.3, 1))
+    for y in (0.02, -0.05):
+        cyl(P, "2A2A2A", bee + Vector((0, y, 0)), 0.09 - abs(y) * 0.25, 0.035, rot=(math.radians(90), 0, 0), verts=12)
+    for side in (-1, 1):
+        sph(P, "EAF6FF", bee + Vector((side * 0.06, -0.02, 0.1)), 0.06, scale=(0.6, 1, 0.3), rot=(0, side * 0.5, 0), kind="Glass")
+    sph(P, EYE, bee + Vector((0.03, 0.1, 0.02)), 0.018, seg=6, rings=4)
+    sph(P, EYE, bee + Vector((-0.03, 0.1, 0.02)), 0.018, seg=6, rings=4)
+
+
+def gold_grain_bull(P):
+    fur = "8A4A2A"
+    sph(P, fur, (0, -0.1, 0.72), 1, scale=(0.54, 0.62, 0.46))
+    sph(P, "6E3A1E", (0, 0.05, 1.0), 1, scale=(0.46, 0.32, 0.26))
+    legs(P, fur, [(-0.27, 0.28), (0.27, 0.28), (-0.27, -0.45), (0.27, -0.45)], height=0.48, r=0.12, hoof="3A2418")
+    head = Vector((0, 0.45, 1.2))
+    R = 0.42
+    sph(P, fur, head, R)
+    muzzle = surface(head, R, 0, -26, 0.82)
+    sph(P, "E8B890", muzzle, 0.26, scale=(1.15, 0.7, 0.75))
+    for side in (-1, 1):
+        sph(P, "6A3A2A", muzzle + Vector((side * 0.09, 0.17, 0.02)), 0.035, seg=6, rings=4)
+    torus(P, "FFC83A", muzzle + Vector((0, 0.19, -0.1)), 0.08, 0.02, rot=(math.radians(90), 0, 0), kind="Metal")
+    eyes(P, head, R, spread=36, pitch=14, size=0.12)
+    cheeks(P, head, R, size=0.07, spread=56, pitch=-8)
+    horns(P, "FFC83A", head, R, spread=58, pitch=34, length=0.5, r=0.1, tilt=78, kind="Metal")
+    floppy_ears(P, fur, head, R, size=0.12, spread=80, pitch=10)
+    # Crown and collar of golden wheat
+    for x in (-0.12, 0.0, 0.12):
+        wheat_ear(P, head + Vector((x, -0.05, R * 0.85)), (x * 2.2, -0.15, 1), length=0.42)
+    for k in range(7):
+        a = math.radians(-70 + k * 23.3)
+        base = Vector((math.sin(a) * 0.36, 0.2 + math.cos(a) * 0.3, 0.86))
+        wheat_ear(P, base, (math.sin(a), math.cos(a) * 0.6, -0.4), length=0.3)
+    sph(P, "FFC83A", (0, 0.52, 0.76), 0.08, kind="Metal")
+    stick(P, fur, (0, -0.68, 0.85), (0, -0.85, 0.5), 0.035)
+    ico(P, "FFC83A", (0, -0.87, 0.45), 0.08, jit=0.02, seed=26, kind="Metal")
+
+
+# ---------------------------------------------------------------- world 3, second egg (Muschel-Ei)
+
+
+def coconut_monkey(P):
+    fur = "8A5A3A"
+    head, R = critter(P, fur, belly="E8C8A0", feet_color="6A4028", muzzle="F0D2AE", nose="3A2418", eye_size=0.15)
+    round_ears(P, fur, head, R, size=0.17, spread=88, pitch=8, inner="F0D2AE", flatness=0.4)
+    # Half coconut shell as a helmet
+    cap = head + Vector((0, -0.02, R * 0.64))
+    sph(P, "5A3A22", cap, 1, scale=(0.5, 0.5, 0.3))
+    torus(P, "FFF8EE", cap + Vector((0, 0, -0.03)), 0.47, 0.035, seg=20)
+    for yaw in (0, 120, 240):
+        sph(P, "3A2414", cap + Vector((math.sin(math.radians(yaw)) * 0.1, math.cos(math.radians(yaw)) * 0.1, 0.29)), 0.03, seg=6, rings=4)
+    # Coconut drink with straw and paper umbrella
+    nut = Vector((0, 0.6, 0.48))
+    sph(P, "5A3A22", nut, 1, scale=(0.2, 0.2, 0.16))
+    cyl(P, WHITE, nut + Vector((0, 0, 0.145)), 0.12, 0.04, verts=14)
+    stick(P, "FF5A8A", nut + Vector((0.04, 0, 0.1)), nut + Vector((0.12, -0.05, 0.42)), 0.022)
+    stick(P, WHITE, nut + Vector((-0.06, 0, 0.1)), nut + Vector((-0.12, 0.02, 0.4)), 0.012)
+    cone(P, "38B6D8", nut + Vector((-0.12, 0.02, 0.42)), 0.15, 0.0, 0.08, verts=8)
+    paws(P, fur, 0.55, 0.5, spread=0.26, r=0.1)
+    tail_curve(P, fur, r=0.05, up=0.8, length=0.9, tip="6A4028")
+
+
+def shell_seahorse(P):
+    c1, c2 = "FF8A6A", "FFD0A0"
+    torso = Vector((0, 0, 0.8))
+    Rt = (0.34, 0.3, 0.46)
+    sph(P, c1, torso, 1, scale=Rt)
+    for k in range(4):
+        p = -40 + k * 22
+        sph(P, c2, surface(torso, Rt, 0, p, 0.92), 1, scale=(0.2, 0.07, 0.06), rot=facing(0, p))
+    head = Vector((0, 0.05, 1.36))
+    Rh = 0.32
+    sph(P, c1, head, Rh)
+    eyes(P, head, Rh, spread=40, pitch=10, size=0.12)
+    cheeks(P, head, Rh, spread=58, pitch=-12, size=0.07)
+    stick(P, c1, head + Vector((0, 0.2, -0.06)), head + Vector((0, 0.48, -0.1)), 0.07)
+    sph(P, "E8705A", head + Vector((0, 0.48, -0.1)), 0.08)
+    for a in (-25, 0, 25):
+        cone(P, c2, head + Vector((math.sin(math.radians(a)) * 0.12, -0.05, Rh * 0.92)), 0.06, 0.0, 0.16, rot=(math.radians(-15), math.radians(a), 0), verts=5)
+    # Glassy fins
+    flat(P, "FFC8D8", [(0, -0.25), (-0.16, -0.2), (-0.22, 0), (-0.16, 0.2), (0, 0.25)], 0.03, c=(0, -0.26, 0.85), rot=(0, 0, math.radians(90)), kind="Glass")
+    for side in (-1, 1):
+        sph(P, "FFC8D8", (side * 0.32, 0.0, 1.22), 0.12, scale=(0.3, 0.8, 1), rot=(0, side * 0.4, 0), kind="Glass")
+    # Curled tail
+    cy, cz = -0.22, 0.33
+    pts, radii = [], []
+    for i in range(12):
+        t = i / 11
+        th = -t * 1.75 * math.pi
+        r = 0.27 * (1 - 0.6 * t)
+        pts.append((0, cy + r * math.cos(th), cz + r * math.sin(th)))
+        radii.append(0.15 - 0.1 * t)
+    chain(P, [c1], pts, radii)
+    # Big scallop shell held on the chest
+    scallop(P, "FFB0C0", torso + Vector((0, 0.32, -0.08)), 0.24, rib="E87A98")
+
+
+def sardine_shark(P):
+    c = "5A7A9A"
+    body = Vector((0, 0, 0.6))
+    R = (0.45, 0.82, 0.45)
+    sph(P, c, body, 1, scale=R, seg=16, rings=10)
+    sph(P, "EEF2F6", surface(body, R, 0, -35, 0.55), 1, scale=(0.34, 0.66, 0.24))
+    head = Vector((0, 0.38, 0.72))
+    HR = (0.42, 0.45, 0.38)
+    eyes(P, head, HR, spread=46, pitch=14, size=0.11)
+    cheeks(P, head, HR, spread=62, pitch=-12)
+    # Grin with little teeth
+    for yaw in (-28, -14, 0, 14, 28):
+        p = surface(body, R, yaw, -14 + abs(yaw) * 0.15, 0.99)
+        sph(P, "3A2A3A", p, 0.05, scale=(1.4, 0.6, 0.6), rot=(0, 0, -math.radians(yaw)), seg=8, rings=5)
+        cone(P, WHITE, p + Vector((0, 0.03, 0.03)), 0.04, 0.0, 0.09, rot=(math.pi, 0, 0), verts=5)
+    for side in (-1, 1):
+        for yaw in (62, 70, 78):
+            stripe(P, "44627E", body, R, side * yaw, 2, 0.1, width=0.015)
+        sph(P, "4A6A8A", (side * 0.45, 0.15, 0.35), 1, scale=(0.26, 0.13, 0.05), rot=(0, side * 0.6, side * 0.5))
+    flat(P, "4A6A8A", [(0.24, 0), (-0.22, 0), (-0.2, 0.42)], 0.06, c=(0, -0.08, 0.96), rot=(0, 0, math.radians(90)))
+    flat(P, "4A6A8A", [(0.1, 0), (-0.32, 0.42), (-0.18, 0), (-0.32, -0.3)], 0.06, c=(0, -0.75, 0.62), rot=(0, 0, math.radians(90)))
+    # Open sardine tin on the head
+    tin = Vector((0, 0.26, 1.08))
+    box(P, "C8D0DA", tin, (0.42, 0.28, 0.07), kind="Metal", bevel=0.02)
+    cyl(P, "C8D0DA", tin + Vector((0, -0.16, 0.06)), 0.05, 0.42, rot=(0, math.radians(90), 0), kind="Metal")
+    for x in (-0.12, 0.0, 0.12):
+        f = tin + Vector((x, 0.0, 0.05))
+        sph(P, "8AA6C8", f, 1, scale=(0.05, 0.12, 0.04))
+        cone(P, "6A86A8", f + Vector((0, -0.14, 0)), 0.0, 0.05, 0.06, rot=(math.radians(90), 0, 0), verts=4, scale=(1, 1, 0.5))
+        sph(P, EYE, f + Vector((0, 0.09, 0.025)), 0.012, seg=6, rings=4)
+
+
+def pearl_sea_serpent(P):
+    c, belly = "2EB8A8", "E8F5C8"
+    # Coil on the ground ending at the front, then the neck rises
+    pts, radii = [], []
+    for i in range(16):
+        t = i / 15
+        a = math.radians(120 + t * 330)
+        pts.append((math.cos(a) * 0.42, -0.1 + math.sin(a) * 0.42, 0.18 + t * 0.04))
+        radii.append(0.08 + 0.12 * t)
+    for i in range(1, 7):
+        s = i / 6
+        pts.append((0, 0.32 - 0.25 * s, 0.22 + 0.85 * s))
+        radii.append(0.2 - 0.04 * s)
+    chain(P, [c], pts, radii)
+    for i in range(4, 15, 3):
+        x, y, z = pts[i]
+        sph(P, belly, (x, y, z + radii[i] * 0.75), radii[i] * 0.45, scale=(1, 1, 0.5))
+    # Head with a snout and glassy frills
+    head = Vector((0, 0.14, 1.3))
+    HR = (0.3, 0.34, 0.27)
+    sph(P, c, head, 1, scale=HR)
+    sph(P, "5ED8C8", head + Vector((0, 0.27, -0.07)), 1, scale=(0.18, 0.16, 0.13))
+    for side in (-1, 1):
+        sph(P, "1A6A60", head + Vector((side * 0.06, 0.42, -0.02)), 0.025, seg=6, rings=4)
+        flat(P, "8AF0E0", [(0, 0), (-0.3, 0.14), (-0.26, 0.28), (-0.12, 0.3), (0.02, 0.18)], 0.03, c=head + Vector((side * 0.25, -0.02, -0.02)), rot=(0, side * 0.3, math.radians(90)), kind="Glass")
+    eyes(P, head, HR, spread=36, pitch=12, size=0.1)
+    cheeks(P, head, HR, spread=55, pitch=-14, size=0.06)
+    for k in range(3):
+        x, y, z = pts[-2 - k * 2]
+        flat(P, "8AF0E0", [(0, -0.1), (-0.14, -0.06), (-0.16, 0.06), (0, 0.1)], 0.03, c=(0, y - 0.12, z), rot=(0, 0, math.radians(90)), kind="Glass")
+    # Pearl necklace and an open clam with a big pearl on the head
+    nx, ny, nz = pts[-3]
+    for k in range(10):
+        a = k * 2 * math.pi / 10
+        sph(P, "FFF6FA", (nx + math.cos(a) * 0.2, ny + math.sin(a) * 0.2, nz), 0.045, seg=8, rings=6)
+    crown = head + Vector((0, -0.04, HR[2] * 0.85))
+    scallop(P, "F8D8E8", crown, 0.2, rot=(math.radians(-90), 0, 0), rib="E8A8C8", thickness=0.04)
+    scallop(P, "F8D8E8", crown + Vector((0, -0.02, 0.02)), 0.2, rot=(math.radians(-25), 0, 0), rib="E8A8C8", thickness=0.04)
+    sph(P, "FFF8F0", crown + Vector((0, 0.1, 0.1)), 0.1, seg=16, rings=10)
+    sph(P, WHITE, crown + Vector((0.035, 0.17, 0.15)), 0.025, seg=6, rings=4, kind="Neon")
+
+
+# ---------------------------------------------------------------- world 4, second egg (Gletscher-Ei)
+
+
+def mint_reindeer(P):
+    fur = "8EDDB8"
+    head, R = critter(P, fur, belly="E2F7EC", feet_spots=None, muzzle="E2F7EC", nose="E8322E", eye_size=0.14)
+    legs(P, fur, FOUR_FEET, height=0.32, r=0.09, hoof="4A2A1A")
+    pointed_ears(P, fur, head, R, size=0.12, height=0.26, spread=70, pitch=32, inner="FFC2D0", tilt=60)
+    # Antlers
+    for side in (-1, 1):
+        base = surface(head, R, side * 26, 62, 0.9)
+        tip = base + Vector((side * 0.28, -0.08, 0.5))
+        stick(P, "6A4028", base, tip, 0.04)
+        for f, off in ((0.45, (side * 0.18, 0.08, 0.16)), (0.75, (-side * 0.05, 0.1, 0.18))):
+            p = base + (tip - base) * f
+            stick(P, "6A4028", p, p + Vector(off), 0.03)
+            sph(P, "6A4028", p + Vector(off), 0.03)
+        sph(P, "6A4028", tip, 0.04)
+    # Mint leaves between the antlers
+    for a in (-35, 35):
+        leaf(P, "2EA84A", head + Vector((math.sin(math.radians(a)) * 0.08, -0.02, R * 0.88)), length=0.3, width=0.12, rot=(math.radians(-15), math.radians(a), 0))
+    # Chocolate chips
+    for center, radii, yaw, pitch in [(Vector(BODY), BODY_R, y, p) for y, p in ((60, 20), (-70, 35), (150, 40), (-140, 15), (110, -10), (-100, -5), (180, 55), (-30, 45))] + [(head, (R, R, R), -60, 40), (head, (R, R, R), 62, 48)]:
+        pos = surface(center, radii, yaw, pitch, 0.96)
+        cone(P, "4A2A1A", pos, 0.05, 0.0, 0.08, rot=aim(pos - Vector(center)), verts=6)
+    # Mint candy on a red ribbon
+    torus(P, "E8322E", (0, 0.12, 0.84), 0.3, 0.04, seg=18)
+    candy = Vector((0, 0.46, 0.74))
+    cyl(P, WHITE, candy, 0.11, 0.04, rot=(math.radians(90), 0, 0), verts=16)
+    for k in range(4):
+        a = math.radians(k * 90)
+        b = a + math.radians(45)
+        flat(P, "3EC27A", [(0, 0), (math.cos(a) * 0.1, math.sin(a) * 0.1), (math.cos(b) * 0.1, math.sin(b) * 0.1)], 0.01, c=candy + Vector((0, 0.022, 0)))
+
+
+def sundae_polar_bear(P):
+    fur = "F4F8FB"
+    head, R = critter(P, fur, belly=WHITE, feet_color="D8E2EA", muzzle=WHITE, nose="2A2A3A", eye_size=0.14)
+    round_ears(P, fur, head, R, size=0.14, spread=44, pitch=44, inner="D8E2EA")
+    # Sundae glass hugged in front
+    cup = Vector((0, 0.72, 0.0))
+    cyl(P, "D8F0FF", cup + Vector((0, 0, 0.03)), 0.14, 0.04, verts=14, kind="Glass")
+    stick(P, "D8F0FF", cup + Vector((0, 0, 0.04)), cup + Vector((0, 0, 0.2)), 0.035, kind="Glass")
+    cone(P, "D8F0FF", cup + Vector((0, 0, 0.35)), 0.07, 0.24, 0.3, verts=16, kind="Glass")
+    cone(P, "FF9AB8", cup + Vector((0, 0, 0.34)), 0.05, 0.2, 0.24, verts=14)
+    for x, col in ((-0.1, "FF8AAE"), (0.1, "7A4A2E")):
+        sph(P, col, cup + Vector((x, 0, 0.55)), 0.13)
+    sph(P, "FFF2C8", cup + Vector((0, 0.02, 0.7)), 0.12)
+    for x, y, z in ((-0.06, 0.1, 0.62), (0.07, 0.09, 0.66), (0.0, 0.1, 0.76)):
+        sph(P, "5A3018", cup + Vector((x, y, z)), 0.035, scale=(1, 1, 1.6))
+    sph(P, WHITE, cup + Vector((0, 0.03, 0.82)), 0.09, scale=(1, 1, 0.8))
+    cone(P, WHITE, cup + Vector((0, 0.03, 0.9)), 0.06, 0.0, 0.08, verts=8)
+    sph(P, "E8203A", cup + Vector((0, 0.04, 0.98)), 0.055)
+    stick(P, "3E7A2A", cup + Vector((0, 0.04, 1.02)), cup + Vector((0.03, 0.0, 1.12)), 0.01, verts=5)
+    box(P, "E8B060", cup + Vector((0.13, -0.03, 0.78)), (0.05, 0.03, 0.26), rot=(0, 0.45, 0))
+    paws(P, fur, 0.58, 0.45, spread=0.28)
+
+
+def vanilla_mammoth(P):
+    fur, dark = "B8865A", "8A5E3A"
+    sph(P, fur, (0, -0.12, 0.68), 1, scale=(0.56, 0.62, 0.5))
+    sph(P, dark, (0, -0.2, 1.05), 1, scale=(0.42, 0.44, 0.25))
+    legs(P, fur, [(-0.28, 0.22), (0.28, 0.22), (-0.28, -0.45), (0.28, -0.45)], height=0.4, r=0.14, hoof="F5E6C8")
+    head = Vector((0, 0.3, 1.12))
+    R = 0.44
+    sph(P, fur, head, R)
+    ico(P, dark, head + Vector((0, -0.05, R * 0.92)), 0.2, jit=0.04, seed=31)
+    eyes(P, head, R, spread=34, pitch=16, size=0.12)
+    cheeks(P, head, R, spread=56, pitch=-4)
+    for side in (-1, 1):
+        sph(P, fur, surface(head, R, side * 80, 5, 0.95), 0.22, scale=(0.35, 0.8, 1.0), rot=(0, 0, -math.radians(side * 80)))
+        base = surface(head, R, side * 24, -30, 0.9)
+        mid = base + Vector((side * 0.08, 0.22, -0.1))
+        stick(P, WHITE, base, mid, 0.055, r2=0.045)
+        stick(P, WHITE, mid, mid + Vector((side * 0.03, 0.08, 0.16)), 0.045, r2=0.01)
+    # Trunk curling up around a vanilla ice cream cone
+    trunk = [(0, 0.62, 1.0), (0, 0.72, 0.84), (0, 0.76, 0.67), (0, 0.78, 0.52), (0, 0.84, 0.42), (0, 0.93, 0.41), (0, 0.99, 0.48)]
+    chain(P, [fur], trunk, [0.13, 0.12, 0.11, 0.1, 0.09, 0.085, 0.08])
+    cone(P, "D9A04A", (0, 1.02, 0.63), 0.0, 0.12, 0.3, verts=10)
+    for k in range(3):
+        torus(P, "B8803A", (0, 1.02, 0.56 + k * 0.07), 0.035 + k * 0.03, 0.01, seg=10, mseg=4)
+    sph(P, "FFF4D6", (0, 1.02, 0.82), 0.14)
+    sph(P, "FFF4D6", (0.06, 1.1, 0.74), 0.045, scale=(1, 1, 1.6))
+    # Vanilla flower and pods behind the ear
+    flower = surface(head, R, -42, 48, 1.0)
+    for k in range(5):
+        a = math.radians(k * 72)
+        sph(P, "FFF2A8", flower + Vector((math.cos(a) * 0.07, 0.02, math.sin(a) * 0.07)), 0.05, scale=(1, 0.4, 0.6), rot=(0, -a, 0))
+    sph(P, "FFC83A", flower + Vector((0, 0.04, 0)), 0.03)
+    for k in range(2):
+        stick(P, "3A2418", flower + Vector((0.04 + k * 0.04, -0.05, -0.05)), flower + Vector((0.12 + k * 0.05, -0.12, 0.25)), 0.018, verts=5)
+    stick(P, fur, (0, -0.72, 0.8), (0, -0.82, 0.5), 0.035)
+    ico(P, dark, (0, -0.84, 0.46), 0.07, jit=0.02, seed=32)
+
+
+def sorbet_narwhal(P):
+    body = Vector((0, -0.05, 0.62))
+    R = (0.48, 0.78, 0.46)
+    sph(P, "FFB0C8", body, 1, scale=R, seg=16, rings=10)
+    sph(P, "FFF0DA", surface(body, R, 0, -35, 0.55), 1, scale=(0.34, 0.6, 0.24))
+    head = Vector((0, 0.35, 0.72))
+    HR = (0.42, 0.45, 0.38)
+    eyes(P, head, HR, spread=44, pitch=12, size=0.12)
+    cheeks(P, head, HR, spread=60, pitch=-12)
+    # Spiral ice tusk
+    base = surface(body, R, 0, 18, 0.92)
+    d = Vector((0, 1, 0.9)).normalized()
+    cone(P, "E0F6FF", base + d * 0.3, 0.07, 0.0, 0.6, rot=aim(d), verts=8)
+    for k in range(4):
+        torus(P, "9FE8FF", base + d * (0.1 + k * 0.12), 0.064 - k * 0.012, 0.014, rot=aim(d), kind="Neon", seg=10, mseg=4)
+    for side in (-1, 1):
+        sph(P, "F590B0", (side * 0.46, 0.2, 0.35), 1, scale=(0.26, 0.13, 0.05), rot=(0, side * 0.4, side * 0.5))
+    flat(P, "F590B0", [(-0.42, 0.18), (0, -0.05), (0.42, 0.18), (0.3, -0.1), (0, -0.2), (-0.3, -0.1)], 0.06, c=(0, -0.88, 0.68), rot=(math.radians(80), 0, 0))
+    # Three sorbet scoops in a waffle bowl on the back
+    bowl = Vector((0, -0.15, 1.05))
+    sph(P, "D9A04A", bowl, 1, scale=(0.3, 0.3, 0.16))
+    for x, y, z, col in ((-0.12, 0.02, 0.14, "FF5A8A"), (0.12, 0.02, 0.14, "FFB040"), (0, -0.06, 0.28, "9AE05A")):
+        sph(P, col, bowl + Vector((x, y, z)), 0.15)
+    leaf(P, "2EA84A", bowl + Vector((0.03, -0.06, 0.4)), length=0.18, width=0.07, rot=(0, math.radians(25), 0))
+    for p in ((0.5, 0.3, 1.2), (-0.55, -0.2, 1.1), (0.45, -0.6, 0.95)):
+        flat(P, "CFF4FF", star_points(0.06, 0.025, n=4), 0.02, c=p, kind="Neon")
+
+
+# ---------------------------------------------------------------- world 5, second egg (Magma-Ei)
+
+
+def pepper_scorpion(P):
+    dark = "2E2626"
+    shell = Vector((0, 0.2, 0.32))
+    SR = (0.42, 0.4, 0.26)
+    sph(P, dark, shell, 1, scale=SR)
+    eyes(P, shell, SR, spread=30, pitch=28, size=0.12, sclera=WHITE)
+    cheeks(P, shell, SR, spread=50, pitch=8, size=0.07)
+    sph(P, "3A302E", (0, -0.15, 0.3), 1, scale=(0.32, 0.26, 0.2))
+    for side in (-1, 1):
+        for k in range(3):
+            a = Vector((side * 0.3, 0.25 - k * 0.2, 0.25))
+            b = a + Vector((side * 0.22, 0.02, 0.05))
+            stick(P, dark, a, b, 0.035)
+            stick(P, dark, b, b + Vector((side * 0.06, 0, -0.26)), 0.03)
+        # Chili-red claws
+        arm0 = Vector((side * 0.28, 0.4, 0.3))
+        arm1 = Vector((side * 0.46, 0.62, 0.36))
+        stick(P, "E8322E", arm0, arm1, 0.05)
+        sph(P, "E8322E", arm1 + Vector((0, 0.1, 0.02)), 1, scale=(0.14, 0.17, 0.11))
+        for f in (-1, 1):
+            cone(P, "C8261F", arm1 + Vector((side * 0.05 * f, 0.3, 0.03)), 0.05, 0.0, 0.18, rot=(math.radians(-90), 0, 0), verts=5)
+    # Tail of black, pink and green peppercorns with a red chili stinger
+    cy, cz, r = -0.42, 0.72, 0.38
+    colors = ["2E2626", "E86A8A", "6A9A3A"]
+    end = None
+    for i in range(9):
+        th = math.radians(-90 + i * 30)
+        p = Vector((0, cy - r * math.cos(th), cz + r * math.sin(th)))
+        ico(P, colors[i % 3], p, 0.12 - i * 0.004, subdiv=2, jit=0.015, seed=60 + i)
+        end = p
+    d = Vector((0, 0.8, -0.5)).normalized()
+    sph(P, "E8322E", end + d * 0.18, 1, scale=(0.08, 0.08, 0.2), rot=aim(d))
+    cone(P, "E8322E", end + d * 0.4, 0.06, 0.0, 0.16, rot=aim(d), verts=8)
+    cyl(P, "3E8F2E", end + d * 0.03, 0.07, 0.05, rot=aim(d), verts=8)
+
+
+def habanero_rhino(P):
+    c = "FF8A1E"
+    sph(P, c, (0, -0.1, 0.62), 1, scale=(0.52, 0.62, 0.44))
+    sph(P, "FFC07A", (0, 0.2, 0.5), 1, scale=(0.36, 0.3, 0.26))
+    legs(P, c, [(-0.27, 0.25), (0.27, 0.25), (-0.27, -0.42), (0.27, -0.42)], height=0.36, r=0.13, hoof="5A2A14")
+    head = Vector((0, 0.42, 0.92))
+    R = 0.4
+    sph(P, c, head, R)
+    snout = surface(head, R, 0, -25, 0.75)
+    sph(P, "FFC07A", snout, 0.24, scale=(1.05, 0.9, 0.7))
+    for side in (-1, 1):
+        sph(P, "8A3A14", snout + Vector((side * 0.08, 0.2, 0.02)), 0.03, seg=6, rings=4)
+    eyes(P, head, R, spread=38, pitch=14, size=0.12)
+    cheeks(P, head, R, size=0.07, spread=56, pitch=-8)
+    pointed_ears(P, c, head, R, size=0.1, height=0.22, spread=42, pitch=56, inner="FFC07A")
+
+    # Horns are habanero peppers: lantern shape, pointed tip, green cap
+    def habanero(base, d, s):
+        d = Vector(d).normalized()
+        cyl(P, "3E8F2E", base, 0.09 * s, 0.05, rot=aim(d), verts=8)
+        sph(P, "FF6A0A", base + d * 0.13 * s, 1, scale=(0.14 * s, 0.14 * s, 0.17 * s), rot=aim(d))
+        for k in range(4):
+            a = k * math.pi / 2
+            sph(P, "E8560A", base + d * 0.13 * s + (aim(d).to_matrix() @ Vector((math.cos(a), math.sin(a), 0))) * 0.12 * s, 1, scale=(0.03 * s, 0.03 * s, 0.13 * s), rot=aim(d))
+        cone(P, "FF6A0A", base + d * 0.33 * s, 0.08 * s, 0.0, 0.16 * s, rot=aim(d), verts=8)
+
+    habanero(surface(head, R, 0, -5, 1.1) + Vector((0, 0.05, 0.05)), (0, 0.5, 1), 1.0)
+    habanero(surface(head, R, 0, 30, 0.98), (0, 0.2, 1), 0.65)
+    # Back plates and pepper rings with seeds
+    for k in range(3):
+        cone(P, "E0661A", (0, 0.05 - k * 0.25, 1.02 - k * 0.04), 0.13, 0.0, 0.2, verts=4, scale=(0.4, 1, 1))
+    for side in (-1, 1):
+        p = surface((0, -0.1, 0.62), (0.52, 0.62, 0.44), side * 95, 10, 0.98)
+        torus(P, "E8560A", p, 0.11, 0.03, rot=facing(side * 95, 10 + 90), seg=12, mseg=5)
+        for k in range(3):
+            a = k * 2 * math.pi / 3
+            sph(P, "FFF0B0", p + Vector((0, math.cos(a) * 0.05, math.sin(a) * 0.05)), 0.02, seg=6, rings=4)
+    stick(P, c, (0, -0.7, 0.7), (0, -0.85, 0.45), 0.035)
+
+
+def curry_tiger(P):
+    c, dark = "F0A830", "6A3A1A"
+    head, R = critter(P, c, belly="FFF0D0", feet_color="D08A20", muzzle="FFF0D0", nose="C84A6A", eye_size=0.14)
+    round_ears(P, c, head, R, size=0.15, spread=44, pitch=44, inner="FFF0D0")
+    for yaw in (-14, 0, 14):
+        stripe(P, dark, head, (R, R, R), yaw, 54 - abs(yaw) * 0.5, 0.1)
+    for side in (-1, 1):
+        for p in (-2, 14):
+            stripe(P, dark, head, (R, R, R), side * 78, p, 0.1, across=True)
+        for yaw in (75, 110, 145):
+            stripe(P, dark, BODY, BODY_R, side * yaw, 15, 0.2, width=0.04)
+    stripe(P, dark, BODY, BODY_R, 180, 25, 0.2, width=0.04)
+    # Ringed tail
+    for i in range(7):
+        t = i / 6
+        sph(P, c if i % 2 == 0 else dark, (0, -0.5 - t * 0.35, 0.45 + math.sin(t * math.pi * 0.9) * 0.5), 0.07)
+    # Bowl of curry with rice, tilted to the viewer, and some steam
+    bowl = Vector((0, 0.6, 0.48))
+    rot = (math.radians(-22), 0, 0)
+    cone(P, WHITE, bowl, 0.14, 0.26, 0.18, rot=rot, verts=18)
+    torus(P, "38A0D8", at(bowl, rot, (0, 0, 0.085)), 0.26, 0.02, rot=rot, seg=18, mseg=4)
+    cyl(P, "D8761E", at(bowl, rot, (0, 0, 0.08)), 0.24, 0.03, rot=rot, verts=18)
+    sph(P, "FFFDF0", at(bowl, rot, (-0.09, 0.02, 0.1)), 1, scale=(0.12, 0.11, 0.07), rot=rot)
+    for x, y in ((0.08, 0.05), (0.12, -0.07), (0.02, -0.1)):
+        box(P, "FFD890", at(bowl, rot, (x, y, 0.1)), (0.05, 0.05, 0.05), rot=rot, bevel=0.01)
+    leaf(P, "3E9B3A", at(bowl, rot, (0.0, 0.08, 0.1)), length=0.12, width=0.05, rot=(math.radians(-60), 0, 0.4))
+    for k in range(3):
+        sph(P, "F4F4F4", bowl + Vector((-0.08 + k * 0.08, -0.05, 0.3 + k * 0.1 + (k % 2) * 0.05)), 0.05 - k * 0.008, kind="Glass")
+    paws(P, c, 0.55, 0.5, spread=0.3, r=0.11)
+
+
+def calzone_hydra(P):
+    dough, crimp = "E8B060", "D0903E"
+    sph(P, dough, (0, -0.05, 0.34), 1, scale=(0.66, 0.5, 0.32))
+    for i in range(15):
+        a = math.radians(i * 180 / 14)
+        sph(P, crimp, (math.cos(a) * 0.64, -0.05 + math.sin(a) * 0.48, 0.12), 0.07, scale=(1, 1, 0.7), seg=8, rings=5)
+    # Glowing tomato sauce bursting out of the crust, cheese drips and basil
+    sph(P, "FF3A1A", surface((0, -0.05, 0.34), (0.66, 0.5, 0.32), 0, 55, 0.98), 1, scale=(0.32, 0.06, 0.035), rot=facing(0, 55), kind="Neon")
+    for x in (-0.15, 0.12):
+        sph(P, "FF3A1A", (x, 0.42, 0.3), 0.04, scale=(1, 0.6, 1.8), kind="Neon")
+    for x in (-0.35, 0.3):
+        sph(P, "FFE27A", (x, 0.3, 0.28), 0.045, scale=(1, 0.6, 1.6))
+    leaf(P, "3E9B3A", (0.32, 0.05, 0.6), length=0.2, width=0.08, rot=(math.radians(-50), 0, 0.6))
+    for x, y in ((-0.38, 0.25), (0.38, 0.25), (-0.38, -0.32), (0.38, -0.32)):
+        sph(P, crimp, (x, y, 0.06), 0.11, scale=(1, 1.2, 0.55))
+    # Three heads on long necks: tomato, cheese and basil
+    heads = [(-0.42, 0.15, 1.12, "E8402E", "FFB0A0"), (0.0, 0.24, 1.4, "FFD24A", "FFF2B0"), (0.42, 0.15, 1.12, "5AB84A", "C8F0A0")]
+    for x, y, z, col, snout in heads:
+        h = Vector((x, y, z))
+        base = Vector((x * 0.35, -0.15, 0.52))
+        tip = h - Vector((0, 0.08, 0.18))
+        chain(P, [col], [base + (tip - base) * (k / 4) for k in range(5)], [0.13 - k * 0.008 for k in range(5)])
+        sph(P, col, h, 0.23)
+        sph(P, snout, surface(h, 0.23, 0, -18, 0.85), 0.13, scale=(1, 0.8, 0.7))
+        eyes(P, h, 0.23, spread=32, pitch=10, size=0.075)
+        cheeks(P, h, 0.23, size=0.045)
+        horns(P, "FFF2D0", h, 0.23, spread=30, pitch=58, length=0.14, r=0.04)
+    tomato, cheese, basil = [Vector(hh[:3]) for hh in heads]
+    for k in range(5):
+        leaf(P, "3E9B3A", tomato + Vector((0, -0.05, 0.21)), length=0.13, width=0.04, rot=(math.radians(80), 0, k * 2 * math.pi / 5))
+    for yaw, pitch in ((-50, 30), (40, 45), (100, 10)):
+        sph(P, "E0A41E", surface(cheese, 0.23, yaw, pitch, 0.97), 0.04, scale=(1, 1, 0.6), seg=8, rings=5)
+    leaf(P, "2E8A2E", basil + Vector((0, -0.05, 0.2)), length=0.24, width=0.1, rot=(math.radians(-20), 0, 0))
+
+
+# ---------------------------------------------------------------- world 6, second egg (Bonbon-Ei)
+
+
+def donut_dachshund(P):
+    c, ear = "A8642E", "7A4420"
+    body = Vector((0, -0.1, 0.48))
+    R = (0.36, 0.72, 0.34)
+    sph(P, c, body, 1, scale=R)
+    sph(P, "D8A070", surface(body, R, 0, -40, 0.6), 1, scale=(0.24, 0.5, 0.15))
+    for x, y in ((-0.2, 0.35), (0.2, 0.35), (-0.2, -0.5), (0.2, -0.5)):
+        cyl(P, c, (x, y, 0.12), 0.08, 0.24, verts=8)
+        sph(P, ear, (x, y + 0.03, 0.04), 0.09, scale=(1, 1.3, 0.6))
+    head = Vector((0, 0.62, 0.9))
+    Rh = 0.38
+    sph(P, c, head, Rh)
+    snout_long(P, "C88450", head, Rh, length=0.24, r=0.18, pitch=-20)
+    eyes(P, head, Rh, spread=34, pitch=12, size=0.12)
+    cheeks(P, head, Rh, size=0.07)
+    floppy_ears(P, ear, head, Rh, size=0.2, spread=70, pitch=20)
+    stick(P, c, (0, -0.76, 0.55), (0, -0.95, 0.82), 0.045, r2=0.02)
+    # Pink frosted donut around the middle, with sprinkles
+    d = body + Vector((0, -0.05, 0))
+    ring = (math.radians(90), 0, 0)
+    torus(P, "E0A050", d, 0.4, 0.17, rot=ring, seg=20, mseg=8)
+    torus(P, "FF8FC4", d + Vector((0, 0, 0.04)), 0.4, 0.172, rot=ring, seg=20, mseg=8)
+    colors = ["FFFFFF", "FFE14A", "4FB8FF", "6FD65A", "B06AF0", "FF4F7A"]
+    rnd = random.Random(40)
+    for k in range(18):
+        a = math.radians(rnd.uniform(20, 160))
+        out = Vector((math.cos(a), 0, math.sin(a)))
+        p = d + Vector((0, rnd.uniform(-0.1, 0.1), 0.04)) + out * 0.4 + out * 0.17
+        box(P, colors[k % len(colors)], p, (0.06, 0.02, 0.02), rot=(rnd.uniform(0, 3), rnd.uniform(0, 3), rnd.uniform(0, 3)))
+
+
+def pudding_panda(P):
+    white, black = "F8F8F5", "2A2A30"
+    head, R = critter(P, white, feet_color=black, nose=black, muzzle=WHITE, eye_size=0.13, sclera=WHITE)
+    round_ears(P, black, head, R, size=0.16, spread=42, pitch=46)
+    for side in (-1, 1):
+        sph(P, black, surface(head, R, side * 28, 4, 0.86), 0.18, scale=(0.9, 0.4, 1.25), rot=(0, side * 0.5, -math.radians(side * 28)))
+        sph(P, black, (side * 0.4, 0.15, 0.58), 1, scale=(0.14, 0.14, 0.22))
+    sph(P, black, (0, -0.1, 0.78), 1, scale=(0.5, 0.42, 0.16))
+    # Caramel pudding on a plate on the head
+    top = head + Vector((0, -0.02, R * 0.92))
+    cyl(P, WHITE, top, 0.3, 0.03, verts=18)
+    cone(P, "FFD860", top + Vector((0, 0, 0.16)), 0.27, 0.2, 0.28, verts=16)
+    cyl(P, "A0561E", top + Vector((0, 0, 0.3)), 0.2, 0.03, verts=16)
+    for k in range(6):
+        a = math.radians(k * 60 + 15)
+        sph(P, "A0561E", top + Vector((math.cos(a) * 0.21, math.sin(a) * 0.21, 0.26)), 0.035, scale=(1, 1, 1.8))
+    sph(P, WHITE, top + Vector((0, 0, 0.37)), 0.08, scale=(1, 1, 0.8))
+    sph(P, "E8203A", top + Vector((0, 0, 0.46)), 0.055)
+    stick(P, "3E7A2A", top + Vector((0, 0, 0.5)), top + Vector((0.03, -0.03, 0.6)), 0.01, verts=5)
+    # Spoon in the paw
+    stick(P, "C8D0DA", (0.42, 0.3, 0.45), (0.5, 0.42, 0.85), 0.02, kind="Metal")
+    sph(P, "C8D0DA", (0.51, 0.44, 0.9), 0.06, scale=(1, 0.5, 1.3), kind="Metal")
+
+
+def licorice_panther(P):
+    c = "24242C"
+    head, R = critter(P, c, belly="34343E", feet_color="18181E", muzzle="3A3A46", nose="E86A9A", eye_size=0.14, sclera="C8E85A")
+    pointed_ears(P, c, head, R, size=0.17, height=0.32, inner="E86A9A")
+    for side in (-1, 1):
+        for k in (-1, 1):
+            p = surface(head, R, side * 30, -14, 1.0)
+            box(P, "B8B8C8", p + Vector((side * 0.12, 0.02, k * 0.035)), (0.22, 0.012, 0.012), rot=(0, side * k * 0.15, 0))
+    # Licorice allsorts as a collar under the chin
+    sorts = [("FFE14A", "1A1A20"), ("FF8AC8", "1A1A20"), (WHITE, "1A1A20"), ("6AC8FF", "1A1A20"), ("FF9A3A", "1A1A20")]
+    for k, yaw in enumerate((-48, -24, 0, 24, 48)):
+        p = surface(head, R, yaw, -52, 0.98)
+        light, dark = sorts[k]
+        rot = facing(yaw, -52 + 90)
+        for j, col in enumerate((light, dark, light)):
+            box(P, col, at(p, rot, (0, 0, (j - 1) * 0.045)), (0.13, 0.13, 0.045), rot=rot)
+    # Red and black twisted licorice tail ending in a licorice wheel
+    pts = []
+    for i in range(10):
+        t = i / 9
+        pts.append((0, -0.5 - t * 0.45, 0.4 + math.sin(t * math.pi * 0.8) * 0.65))
+    chain(P, ["E8322E", "1A1A20"], pts, 0.065)
+    wheel = Vector(pts[-1]) + Vector((0, -0.05, 0.12))
+    for k, rr in enumerate((0.07, 0.12, 0.17)):
+        torus(P, "1A1A20", wheel, rr, 0.028, rot=(math.radians(90), 0, 0), seg=16, mseg=5)
+    cyl(P, "FF6AB0", wheel, 0.045, 0.08, rot=(math.radians(90), 0, 0), verts=12)
+
+
+def cake_pegasus(P):
+    c = "FFF2F6"
+    sph(P, c, (0, -0.1, 0.72), 1, scale=(0.45, 0.6, 0.42))
+    legs(P, c, [(-0.24, 0.3), (0.24, 0.3), (-0.24, -0.45), (0.24, -0.45)], height=0.5, r=0.1)
+    for x, y in ((-0.24, 0.3), (0.24, 0.3), (-0.24, -0.45), (0.24, -0.45)):
+        cyl(P, "FFC83A", (x, y, 0.04), 0.11, 0.08, verts=8, kind="Metal")
+    head = Vector((0, 0.42, 1.35))
+    R = 0.42
+    sph(P, c, head, R)
+    snout_long(P, "FFE0EA", head, R, length=0.2, r=0.23, pitch=-25, nose="E87AA0")
+    eyes(P, head, R, spread=34, pitch=12, size=0.13)
+    cheeks(P, head, R, size=0.07)
+    pointed_ears(P, c, head, R, size=0.1, height=0.25, spread=30, pitch=62, inner="FFC2D8")
+    # Whipped cream mane and tail
+    for i in range(5):
+        ico(P, WHITE if i % 2 else "FFC2DC", (0, 0.25 - i * 0.14, 1.78 - i * 0.16), 0.13, subdiv=2, jit=0.02, seed=40 + i)
+    for i in range(3):
+        ico(P, WHITE if i % 2 else "FFC2DC", (0, -0.72 - i * 0.08, 0.85 - i * 0.14), 0.13 - i * 0.02, subdiv=2, jit=0.02, seed=45 + i)
+    # Feathered wings with pink tips
+    for side in (-1, 1):
+        for k in range(3):
+            sph(P, WHITE if k < 2 else "FFD0E2", (side * (0.38 + k * 0.12), -0.22 - k * 0.12, 1.12 + k * 0.1), 1, scale=(0.3, 0.08, 0.12), rot=(0, side * math.radians(-20 - k * 12), side * math.radians(-40)))
+    # Slice of layer cake as a hat, with a strawberry and a lit candle
+    top = head + Vector((0.04, -0.04, R * 0.9))
+    hat = (0, 0, math.radians(-20))
+    wedge = [(-0.24, -0.15), (0.24, -0.15), (0.0, 0.26)]
+    for j, (col, z, h) in enumerate((("FFB8D0", 0.04, 0.08), (WHITE, 0.1, 0.04), ("FFB8D0", 0.16, 0.08), (WHITE, 0.225, 0.05))):
+        grow = 1.0 + 0.03 * (j % 2)
+        flat(P, col, [(x * grow, y * grow) for x, y in wedge], h, c=at(top, hat, (0, 0, z)), rot=(math.radians(90), 0, hat[2]))
+    for x, y in ((-0.12, -0.13), (0.0, -0.14), (0.12, -0.13)):
+        sph(P, WHITE, at(top, hat, (x, y - 0.01, 0.19)), 0.03, scale=(1, 1, 1.8))
+    sph(P, "E8203A", at(top, hat, (-0.05, 0.0, 0.3)), 0.06, scale=(1, 1, 1.2))
+    leaf(P, "3E9B3A", at(top, hat, (-0.05, 0.0, 0.35)), length=0.07, width=0.04, rot=(0, 0.5, 0))
+    cyl(P, "8AD0FF", at(top, hat, (0.07, 0.05, 0.33)), 0.02, 0.16, verts=6)
+    sph(P, "FFC23A", at(top, hat, (0.07, 0.05, 0.45)), 0.035, scale=(1, 1, 1.6), kind="Neon")
+
+
+# ---------------------------------------------------------------- world 7, second egg (Nebula-Ei)
+
+
+def mooncake_bunny(P):
+    fur = "ECE6F8"
+    head, R = critter(P, fur, belly=WHITE, feet_color="CFC4E8", muzzle=WHITE, nose="FF9AB8", eye_size=0.15)
+    long_ears(P, fur, head, R, inner="FFC8DC")
+    flat(P, "FFE66A", crescent_points(0.16), 0.05, c=surface(head, R, 42, 40, 1.0), rot=(math.radians(-40), 0, -math.radians(42)), kind="Neon")
+    # Mooncake with a scalloped rim and flower stamp
+    mc = Vector((0, 0.62, 0.52))
+    face = (math.radians(90), 0, 0)
+    cyl(P, "D9963A", mc, 0.24, 0.12, rot=face, verts=20)
+    for k in range(14):
+        a = k * 2 * math.pi / 14
+        sph(P, "C8822A", mc + Vector((math.cos(a) * 0.22, 0.05, math.sin(a) * 0.22)), 0.035, scale=(1, 0.6, 1), seg=8, rings=5)
+    flat(P, "B87024", star_points(0.12, 0.07, n=6), 0.02, c=mc + Vector((0, 0.065, 0)))
+    sph(P, "E8B050", mc + Vector((0, 0.08, 0)), 0.03, seg=8, rings=5)
+    paws(P, fur, 0.56, 0.5, spread=0.29, r=0.11)
+    tail_ball(P, WHITE, r=0.15)
+
+
+def starfruit_jellyfish(P):
+    bell = Vector((0, 0, 1.0))
+    R = (0.52, 0.5, 0.42)
+    sph(P, "EEF07A", bell, 1, scale=R)
+    torus(P, "D8E040", bell + Vector((0, 0, -0.17)), 0.47, 0.07, seg=20)
+    eyes(P, bell, R, spread=28, pitch=-5, size=0.13)
+    cheeks(P, bell, R, spread=48, pitch=-22)
+    for yaw in (90, 150, 210, 270):
+        sph(P, "FFFFC8", surface(bell, R, yaw, 35, 0.98), 0.06, scale=(1, 0.5, 1), rot=facing(yaw, 35))
+    # Glowing tentacles
+    for k in range(6):
+        a = math.radians(k * 60 + 30)
+        for j in range(6):
+            t = j / 5
+            p = (math.cos(a) * (0.32 - 0.06 * t) + math.sin(t * 6 + k) * 0.05, math.sin(a) * (0.32 - 0.06 * t), 0.78 - t * 0.68)
+            sph(P, "FFE85A" if (j + k) % 2 else "B8F05A", p, 0.075 - t * 0.025, kind="Neon", seg=8, rings=6)
+    # Starfruit slice standing on top
+    top = Vector((0, -0.06, 1.58))
+    flat(P, "FFD62A", star_points(0.28, 0.17), 0.12, c=top)
+    flat(P, "FFF2A0", star_points(0.2, 0.11), 0.02, c=top + Vector((0, 0.065, 0)))
+    for k in range(5):
+        a = math.pi / 2 + k * 2 * math.pi / 5
+        sph(P, "8A6A2A", top + Vector((math.cos(a) * 0.06, 0.08, math.sin(a) * 0.06)), 0.018, scale=(1, 0.6, 1.5), rot=(0, -a + math.pi / 2, 0), seg=6, rings=4)
+    for p in ((0.55, 0.2, 1.35), (-0.58, 0.1, 1.2), (0.5, -0.3, 0.6)):
+        sph(P, "E8FFF0", p, 0.05, kind="Glass")
+
+
+def stardust_lion(P):
+    c = "E8B04A"
+    head, R = critter(P, c, belly="FFE6A8", feet_color="C8902A", muzzle="FFF0C8", nose="6A3A2A", eye_size=0.14)
+    # Starry mane around the face
+    for k in range(16):
+        deg = k * 22.5
+        if 135 < deg < 225:
+            continue
+        phi = math.radians(deg)
+        p = head + Vector((math.sin(phi) * R * 0.98, -0.12, math.cos(phi) * R * 0.98))
+        ico(P, "4A3AA8" if k % 2 else "2E3A8A", p, 0.22, subdiv=1, jit=0.03, seed=50 + k)
+        if k % 2 == 0:
+            flat(P, "FFF2A0", star_points(0.06, 0.025), 0.02, c=p + Vector((0, 0.21, 0.02)), kind="Neon")
+    for k in range(6):
+        phi = math.radians(k * 60 + 30)
+        ico(P, "3A2E8A", head + Vector((math.sin(phi) * R * 0.6, -0.4, math.cos(phi) * R * 0.6)), 0.2, subdiv=1, jit=0.03, seed=70 + k)
+    round_ears(P, c, head, R, size=0.14, spread=42, pitch=50, inner="FFE6A8")
+    tail_curve(P, c, r=0.06, up=0.6, length=0.8, tip="4A3AA8")
+    flat(P, "FFF2A0", star_points(0.09, 0.04), 0.03, c=(0, -1.0, 1.08), kind="Neon")
+    for p in ((0.6, 0.3, 0.9), (-0.62, 0.2, 1.3), (0.55, -0.4, 1.4), (-0.5, -0.5, 0.7)):
+        sph(P, "FFF2A0", p, 0.035, kind="Neon")
+
+
+def galaxy_pizza_leviathan(P):
+    c, light = "2E2A7A", "7A6AE8"
+    # Body humps behind the head, ending in a glassy tail fin
+    pts, radii = [], []
+    for i in range(7):
+        t = i / 6
+        pts.append((math.sin(t * math.pi * 1.2) * 0.08, -0.15 - t * 0.85, 0.42 + math.sin(t * math.pi * 1.5) * 0.25))
+        radii.append(0.34 - t * 0.22)
+    chain(P, [c], pts, radii)
+    tx, ty, tz = pts[-1]
+    flat(P, "C86AFF", [(-0.35, 0.2), (0, -0.05), (0.35, 0.2), (0.25, -0.1), (0, -0.2), (-0.25, -0.1)], 0.05, c=(tx, ty - 0.12, tz), rot=(math.radians(80), 0, 0), kind="Glass")
+    for i in (1, 3):
+        x, y, z = pts[i]
+        sph(P, "8A6AE8", (x, y, z - radii[i] * 0.7), radii[i] * 0.6, scale=(1, 1, 0.45))
+    # Head with an open grin
+    head = Vector((0, 0.3, 0.72))
+    HR = (0.42, 0.5, 0.36)
+    sph(P, c, head, 1, scale=HR)
+    sph(P, light, (0, 0.36, 0.38), 1, scale=(0.36, 0.44, 0.15))
+    sph(P, "1A0E30", (0, 0.5, 0.5), 1, scale=(0.28, 0.28, 0.08))
+    for x in (-0.15, -0.05, 0.05, 0.15):
+        cone(P, WHITE, (x, 0.7, 0.53), 0.03, 0.0, 0.07, rot=(math.pi, 0, 0), verts=5)
+    eyes(P, head + Vector((0, 0, 0.08)), HR, spread=36, pitch=18, size=0.12, sclera=WHITE)
+    cheeks(P, head, HR, spread=55, pitch=-5)
+    for side in (-1, 1):
+        flat(P, "C86AFF", [(0, 0), (-0.32, 0.12), (-0.3, 0.3), (-0.12, 0.26)], 0.03, c=head + Vector((side * 0.38, -0.1, 0.05)), rot=(0, side * 0.4, math.radians(90)), kind="Glass")
+    for yaw, pitch in ((130, 30), (-140, 40), (100, 50), (-90, 20)):
+        sph(P, WHITE, surface(head, HR, yaw, pitch, 0.99), 0.03, seg=6, rings=4, kind="Neon")
+    # Galaxy pizza rising behind like a planet: crust, cheese, glowing pepperoni planets
+    halo = Vector((0, -0.22, 1.32))
+    face = (math.radians(90), 0, 0)
+    cyl(P, "FFD860", halo, 0.46, 0.06, rot=face, verts=24)
+    torus(P, "E8A848", halo, 0.48, 0.07, rot=face, seg=24, mseg=6)
+    for x, z, r in ((-0.22, 0.18, 0.08), (0.18, 0.22, 0.07), (0.25, -0.15, 0.09), (-0.15, -0.2, 0.07), (0.0, 0.02, 0.08)):
+        cyl(P, "FF4A6A", halo + Vector((x, 0.04, z)), r, 0.02, rot=face, verts=12, kind="Neon")
+    torus(P, "FFC8F0", halo + Vector((0.25, 0.05, -0.15)), 0.14, 0.012, rot=(math.radians(70), 0.4, 0), kind="Neon", seg=16, mseg=4)
+    for x, z in ((-0.3, -0.02), (0.05, 0.32), (0.32, 0.05), (-0.05, -0.36)):
+        flat(P, WHITE, star_points(0.04, 0.016), 0.01, c=halo + Vector((x, 0.04, z)), kind="Neon")
+    for x, z in ((0.1, -0.3), (-0.33, 0.12)):
+        torus(P, "3A2A6A", halo + Vector((x, 0.04, z)), 0.035, 0.015, rot=face, seg=10, mseg=4)
+
+
 # ---------------------------------------------------------------- registry
 
 EGGS = {
@@ -1053,6 +1999,14 @@ EGGS = {
     "VolcanoEgg": ["LavaLizard", "ChiliSalamander", "MagmaMole", "JalapenoGolem", "FireWolf", "LavaTitan"],
     "CandyEgg": ["GummyWorm", "LollipopPoodle", "MarshmallowSheep", "ChocoBear", "CottonCandyUnicorn", "CaramelGriffin"],
     "SpaceEgg": ["MoonMouse", "StarCat", "AlienFrog", "RocketDog", "CometWhale", "GalaxyDragon"],
+    # Second egg per world (#39/#40)
+    "StoneOvenEgg": ["RucolaHedgehog", "ParmesanRaccoon", "TruffleFox", "StoneOvenPhoenix"],
+    "BarnEgg": ["PumpkinCat", "ButterDonkey", "HoneyBear", "GoldGrainBull"],
+    "ShellEgg": ["CoconutMonkey", "ShellSeahorse", "SardineShark", "PearlSeaSerpent"],
+    "GlacierEgg": ["MintReindeer", "SundaePolarBear", "VanillaMammoth", "SorbetNarwhal"],
+    "MagmaEgg": ["PepperScorpion", "HabaneroRhino", "CurryTiger", "CalzoneHydra"],
+    "BonbonEgg": ["DonutDachshund", "PuddingPanda", "LicoricePanther", "CakePegasus"],
+    "NebulaEgg": ["MooncakeBunny", "StarfruitJellyfish", "StardustLion", "GalaxyPizzaLeviathan"],
 }
 
 # Background / ground colours of the egg sheets (match the world look).
@@ -1065,6 +2019,9 @@ SHEET_COLORS = {
     "CandyEgg": ("FFE0F0", "FFBEDC"),
     "SpaceEgg": ("1E1E3C", "8C8CA0"),
 }
+SECOND_EGG_WORLD = {"StoneOvenEgg": "GardenEgg", "BarnEgg": "FarmEgg", "ShellEgg": "BeachEgg", "GlacierEgg": "IceEgg", "MagmaEgg": "VolcanoEgg", "BonbonEgg": "CandyEgg", "NebulaEgg": "SpaceEgg"}
+for _second, _first in SECOND_EGG_WORLD.items():
+    SHEET_COLORS[_second] = SHEET_COLORS[_first]
 
 
 def _snake(name):
@@ -1183,11 +2140,12 @@ def export_pet(name):
 def egg_sheet(egg):
     reset_scene()
     objs = []
-    for i, name in enumerate(EGGS[egg]):
+    pets = EGGS[egg]
+    for i, name in enumerate(pets):
         # Camera looks from +Y, so +X is on the left: first pet (most common) on the left.
-        objs += build(name, offset=((2.5 - i) * 1.75, 0, 0))
+        objs += build(name, offset=(((len(pets) - 1) / 2 - i) * 1.75, 0, 0))
     sky, ground = SHEET_COLORS[egg]
-    render(objs, os.path.join(PREVIEW_DIR, f"{egg}.png"), (1200, 400), sky, ground=ground, distance=2.95, yaw=0, lift=0.14, samples=48)
+    render(objs, os.path.join(PREVIEW_DIR, f"{egg}.png"), (200 * len(pets), 400), sky, ground=ground, distance=2.95, yaw=0, lift=0.14, samples=48)
     print(f"sheet {egg}")
 
 

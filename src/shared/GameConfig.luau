@@ -388,8 +388,7 @@ local GameConfig = {
 		GalaxyDragon = { displayName = "Galaxie-Drache", rarity = "Mythic", bonus = 120 },
 
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
-		-- the same rarity in the world's first egg. Until their models exist (C7) they show
-		-- up as a dot in their rarity colour.
+		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
 		-- World 1 (Steinofen-Ei)
 		RucolaHedgehog = { displayName = "Rucola-Igel", rarity = "Rare", bonus = 0.375 },
 		ParmesanRaccoon = { displayName = "Parmesan-Waschbär", rarity = "Epic", bonus = 0.6 },
