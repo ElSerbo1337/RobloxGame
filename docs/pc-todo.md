@@ -600,36 +600,36 @@ So geht's für jeden Schlüssel der Tabelle:
 
 | Schlüssel | Wann | Gesucht wird | Suchbegriffe | Gewählt (Name, ID) |
 | --- | --- | --- | --- | --- |
-| `Collect` | Belag landet auf der Pizza | kurzer, weicher „Plopp“, **< 0,5 s** | *pop*, *plop*, *bubble pop*, *click* | |
-| `Sell` | Verkauf am Ofen, Lieferung | Kasse / Münzen klimpern, ≈ 1 s | *cash register*, *coins*, *purchase*, *ka-ching* | |
-| `Gem` | Gem-Belag, Gem-Belohnung | helles Glitzern / Chime | *sparkle*, *chime*, *magic*, *twinkle* | |
-| `EggCrack` | Ei-Animation, Schale bricht | Ei-/Schale-Knacken, kurz | *egg crack*, *crack*, *shell*, *break* | |
-| `PhoneRing` | Telefon klingelt (alle 3 s) | altes Telefonklingeln, **≤ 3 s** | *phone ring*, *telephone*, *old phone*, *ringing* | |
-| `Music_PizzeriaGarden` | Welt 1 | fröhlich, leicht, loopbar | *happy*, *cheerful*, *ukulele*, *italian* | |
-| `Music_Farm` | Welt 2 | fröhlich-ländlich | *country*, *banjo*, *farm*, *folk* | |
-| `Music_Beach` | Welt 3 | sommerlich | *tropical*, *beach*, *ukulele*, *reggae* | |
-| `Music_Icebergs` | Welt 4 | ruhig-funkelnd | *winter*, *snow*, *bells*, *calm* | |
-| `Music_Volcano` | Welt 5 | spannend, Trommeln | *volcano*, *drums*, *adventure*, *tribal* | |
-| `Music_CandyLand` | Welt 6 | verspielt-süß | *candy*, *cute*, *bubbly*, *playful* | |
-| `Music_Space` | Welt 7 | sphärisch | *space*, *synth*, *ambient*, *cosmic* | |
+| `Collect` | Belag landet auf der Pizza | kurzer, weicher „Plopp“, **< 0,5 s** | *pop*, *plop*, *bubble pop*, *click* || Suction Pop 4 (Pro Sound Effects), 9119669065 |
+| `Sell` | Verkauf am Ofen, Lieferung | Kasse / Münzen klimpern, ≈ 1 s | *cash register*, *coins*, *purchase*, *ka-ching* || Cash Register 1, 9113728625 |
+| `Gem` | Gem-Belag, Gem-Belohnung | helles Glitzern / Chime | *sparkle*, *chime*, *magic*, *twinkle* || Magic Glows Soft Clusters Of Chiming Hits 1, 9116394545 |
+| `EggCrack` | Ei-Animation, Schale bricht | Ei-/Schale-Knacken, kurz | *egg crack*, *crack*, *shell*, *break* || Crack Egg Crunchy 11, 9113959343 |
+| `PhoneRing` | Telefon klingelt (alle 3 s) | altes Telefonklingeln, **≤ 3 s** | *phone ring*, *telephone*, *old phone*, *ringing* || Phone Ring 1920S Hand Crank Rattly Buzz 2, 9117304246 |
+| `Music_PizzeriaGarden` | Welt 1 | fröhlich, leicht, loopbar | *happy*, *cheerful*, *ukulele*, *italian* || Italian Accordion (APM), 1839408249 |
+| `Music_Farm` | Welt 2 | fröhlich-ländlich | *country*, *banjo*, *farm*, *folk* || Country Dew – No Banjo (APM), 9043699640 |
+| `Music_Beach` | Welt 3 | sommerlich | *tropical*, *beach*, *ukulele*, *reggae* || Maui Beach (APM), 9043828544 |
+| `Music_Icebergs` | Welt 4 | ruhig-funkelnd | *winter*, *snow*, *bells*, *calm* || Winter Bells (APM), 9041824482 |
+| `Music_Volcano` | Welt 5 | spannend, Trommeln | *volcano*, *drums*, *adventure*, *tribal* || Jungle Drums (b) (APM), 1839999913 |
+| `Music_CandyLand` | Welt 6 | verspielt-süß | *candy*, *cute*, *bubbly*, *playful* || Bright And Bubbly (APM), 1846441369 |
+| `Music_Space` | Welt 7 | sphärisch | *space*, *synth*, *ambient*, *cosmic* || Cosmic Dust (APM), 1844477817 |
 
-- [ ] `Collect` eingetragen
-- [ ] `Sell` eingetragen
-- [ ] `Gem` eingetragen
-- [ ] `EggCrack` eingetragen
-- [ ] `PhoneRing` eingetragen
-- [ ] `Music_PizzeriaGarden` eingetragen
-- [ ] `Music_Farm` eingetragen
-- [ ] `Music_Beach` eingetragen
-- [ ] `Music_Icebergs` eingetragen
-- [ ] `Music_Volcano` eingetragen
-- [ ] `Music_CandyLand` eingetragen
-- [ ] `Music_Space` eingetragen
+- [x] `Collect` eingetragen
+- [x] `Sell` eingetragen
+- [x] `Gem` eingetragen
+- [x] `EggCrack` eingetragen
+- [x] `PhoneRing` eingetragen
+- [x] `Music_PizzeriaGarden` eingetragen
+- [x] `Music_Farm` eingetragen
+- [x] `Music_Beach` eingetragen
+- [x] `Music_Icebergs` eingetragen
+- [x] `Music_Volcano` eingetragen
+- [x] `Music_CandyLand` eingetragen
+- [x] `Music_Space` eingetragen
 - [ ] Commit `Add sound IDs (#23)`, pushen.
 
 **3. Sound-Test** (nach Schritt 2, **Play**, 1 Spieler):
 
-- [ ] Output ohne Fehler wie „Failed to load sound“ (sonst ID falsch oder nicht öffentlich → anderen Sound wählen).
+- [x] Output ohne Fehler wie „Failed to load sound“ (sonst ID falsch oder nicht öffentlich → anderen Sound wählen).
 - [ ] Plopp beim Sammeln (nicht beim Beitreten, nicht als Dauerfeuer beim Auto-Sammeln), Kasse beim Verkaufen und Liefern, Glitzern bei Gems, Knacken in der Ei-Animation, Klingeln am Telefon.
 - [ ] Musik startet in Welt 1, läuft in Schleife und wechselt beim Betreten jeder anderen Welt (auch per Portal) innerhalb ~1 s. Lautstärke ist leise im Hintergrund, Effekte bleiben gut hörbar.
 
@@ -641,13 +641,13 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler). Für schnelles Testen Münzen
 
 - [ ] Output ohne rote Fehler; Neuer Spieler: `LastWorldId` wird nach dem Start `PizzeriaGarden` (Figur steht in Welt 1).
 - [ ] Zu Fuß über die (freigeschaltete) Barriere in Welt 2 laufen → `LastWorldId` = `Farm`. Zurück in Welt 1 → `PizzeriaGarden`.
-- [ ] Per Portal nach Welt 3 teleportieren → `LastWorldId` = `Beach` sofort nach dem Teleport.
+- [x] Per Portal nach Welt 3 teleportieren → `LastWorldId` = `Beach` sofort nach dem Teleport.
 - [ ] **Tod in Welt 3** (Esc → Reset Character) → Figur erscheint in Welt 3 auf dem Weg zwischen Ei und Ofen, Blick zum Belagfeld; Pizza ist wieder in der Hand. Kein kurzes Aufblitzen/Hängenbleiben in Welt 1, das stört (ein Frame am Welt-1-Spawn ist okay).
 - [ ] Tod in Welt 1 → normaler gelber Spawn in Welt 1.
 - [ ] **Rejoin**: in Welt 3 stehen, Stop, erneut Play (mit API-Zugriff, damit gespeichert wird) → Start in Welt 3.
 - [ ] **Gesperrte Welt**: In der Command Bar (Server) für den Spieler `LastWorldId` im Spielstand auf eine nicht freigeschaltete Welt setzen bzw. mit einem Spielstand ohne diese Welt joinen → Start am normalen Spawn in Welt 1, keine Fehlermeldung.
 - [ ] Alter Spielstand (vor #25, ohne `lastWorldId`) lädt ohne Fehler und startet in Welt 1.
-- [ ] Barriere-Schutz: In einer gesperrten Welt (z. B. per Command Bar hineingesetzt) wird man wie bisher zurückgesetzt und `LastWorldId` ändert sich **nicht** auf die gesperrte Welt.
+- [x] Barriere-Schutz: In einer gesperrten Welt (z. B. per Command Bar hineingesetzt) wird man wie bisher zurückgesetzt und `LastWorldId` ändert sich **nicht** auf die gesperrte Welt.
 - [ ] **Mehrspieler** (2 Spieler): A stirbt in Welt 2, B in Welt 1 → jeder erscheint in seiner eigenen Welt.
 
 ## #34 Session-Lock beim Speichern
@@ -679,9 +679,9 @@ Ohne Neu-Import läuft alles weiter: Die alte Salami wird schon in den neuen Far
 
 **1. Neue Salami importieren** (`assets/models/Salami.fbx`, Teile `Casing`, `Meat`, `Fat`):
 
-- [ ] In **ReplicatedStorage → GameAssets → Models** das alte Model `Salami` löschen.
-- [ ] **Home → Import 3D** → `assets/models/Salami.fbx` → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**. Das neue Model nach `GameAssets/Models` ziehen, Name exakt `Salami` (Teile dürfen `Meat.001` usw. heißen).
-- [ ] Place speichern und **File → Publish to Roblox**.
+- [x] In **ReplicatedStorage → GameAssets → Models** das alte Model `Salami` löschen.
+- [x] **Home → Import 3D** → `assets/models/Salami.fbx` → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**. Das neue Model nach `GameAssets/Models` ziehen, Name exakt `Salami` (Teile dürfen `Meat.001` usw. heißen).
+- [x] Place speichern und **File → Publish to Roblox**.
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler):
 
@@ -699,7 +699,7 @@ Betrifft auch die Beobachtungen „Kamera“ und „Pets am Ofen“ oben. Play i
 
 **Kamera (Invisicam):**
 
-- [ ] Output/Explorer: `StarterPlayer.DevCameraOcclusionMode` und `Players.<Spieler>.DevCameraOcclusionMode` stehen im Play auf `Invisicam`.
+- [x] Output/Explorer: `StarterPlayer.DevCameraOcclusionMode` und `Players.<Spieler>.DevCameraOcclusionMode` stehen im Play auf `Invisicam`.
 - [ ] Rückwärts an Ofen, Shop, Ei-Stand und Telefon heranlaufen (Station zwischen Kamera und Figur): Die Kamera bleibt auf Abstand, die Station wird halb durchsichtig statt heranzuzoomen. In Welt 1 und in mindestens einer späteren Welt prüfen (Welt 7: großer Shop).
 
 **Pets am Ofen:**
@@ -717,7 +717,7 @@ Betrifft auch die Beobachtungen „Kamera“ und „Pets am Ofen“ oben. Play i
 - [ ] In Welt 1 am Spawn und am Ende Richtung Welt 2 umschauen (auch weit herausgezoomt): Keine Schilder anderer Welten (z. B. „Riesiger Pizza-Shop – Upgrades“, „Ofen (Bauernhof) …“) am Himmel oder Horizont.
 - [ ] Schilder in der Nähe (Ofen, Shop, Telefon, Lieferwagen, Portal, Preisschild an der Barriere) erscheinen beim Herangehen wie bisher (ab ca. 150 Studs), Pizza-Zähler und Pet-Namen ab ca. 60 Studs.
 - [ ] Preisschild einer freigeschalteten Barriere bleibt verborgen, das einer gesperrten erscheint.
-- [ ] Zur Ursache: Im Play (Client) in der Befehlsleiste `for _,b in workspace:GetDescendants() do if b:IsA("BillboardGui") and b.MaxDistance == 0 then print(b:GetFullName()) end end` ausführen und Treffer hier notieren (erwartet: keine). So lässt sich klären, ob ein Schild ohne `MaxDistance` die Quelle war oder die Engine `MaxDistance` nicht anwendet.
+- [x] Zur Ursache: Im Play (Client) in der Befehlsleiste `for _,b in workspace:GetDescendants() do if b:IsA("BillboardGui") and b.MaxDistance == 0 then print(b:GetFullName()) end end` ausführen und Treffer hier notieren (erwartet: keine). So lässt sich klären, ob ein Schild ohne `MaxDistance` die Quelle war oder die Engine `MaxDistance` nicht anwendet.
 
 ## #28 Modelle: Telefon, Lieferwagen, Portal, Shop-Stand
 
@@ -727,17 +727,17 @@ Ohne Import läuft alles wie bisher mit den alten Bauteil-Platzhaltern. Mit Impo
 
 **1. Modelle importieren** (4 Dateien in `assets/models/`):
 
-- [ ] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Stations` anlegen.
-- [ ] **Home → Import 3D** → `Telephone.fbx`, `DeliveryVan.fbx`, `PortalArch.fbx`, `PizzaStand.fbx` (gleiche Einstellungen wie bei #16: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus). Die Modelle in `Models/Stations` ziehen. **Namen nicht ändern** (= Dateiname ohne `.fbx`). Größe, Farbe und Position sind egal, das Spiel skaliert und färbt nach den Teilnamen.
-- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Stations:GetChildren())` → **4**.
-- [ ] Place speichern und **File → Publish to Roblox**.
+- [x] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Stations` anlegen.
+- [x] **Home → Import 3D** → `Telephone.fbx`, `DeliveryVan.fbx`, `PortalArch.fbx`, `PizzaStand.fbx` (gleiche Einstellungen wie bei #16: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus). Die Modelle in `Models/Stations` ziehen. **Namen nicht ändern** (= Dateiname ohne `.fbx`). Größe, Farbe und Position sind egal, das Spiel skaliert und färbt nach den Teilnamen.
+- [x] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Stations:GetChildren())` → **4**.
+- [x] Place speichern und **File → Publish to Roblox**.
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch alle Welten):
 
 - [ ] Output ohne rote Fehler.
 - [ ] **Telefon** (rechter Rand, neben dem Lieferwagen): altes rotes Wählscheiben-Telefon auf Holzständer, **Wählscheibe zeigt zur Belag-Fläche** (−X). Schild „📞 Telefon – Aufträge“ sitzt über dem Telefon. Klingeln: „📞 RING!“-Blase erscheint über dem Telefon, Auftrag annehmen funktioniert wie bisher.
-- [ ] **Lieferwagen**: weiß-roter Transporter mit großer Pizza-Box auf dem Dach, **Führerhaus zeigt nach vorne** (−Z, wie der alte Platzhalter). Steht auf dem Boden (Räder nicht im Boden, nicht schwebend). Abgeben an der Seite zur Belag-Fläche funktioniert wie bisher.
-- [ ] **Portal**: runder Steinbogen mit goldenem Schlussstein auf Steinsockel, die Fläche leuchtet **in der Farbe der Welt** (Garten orange, Bauernhof gelb, Strand türkis, Eisberge hellblau, Vulkan rot, Süßigkeitenland pink, Weltraum lila), Funken in heller Weltfarbe. Hineinlaufen öffnet das Portal-Menü, Ankunft vor dem Portal wie bisher.
+- [x] **Lieferwagen**: weiß-roter Transporter mit großer Pizza-Box auf dem Dach, **Führerhaus zeigt nach vorne** (−Z, wie der alte Platzhalter). Steht auf dem Boden (Räder nicht im Boden, nicht schwebend). Abgeben an der Seite zur Belag-Fläche funktioniert wie bisher.
+- [x] **Portal**: runder Steinbogen mit goldenem Schlussstein auf Steinsockel, die Fläche leuchtet **in der Farbe der Welt** (Garten orange, Bauernhof gelb, Strand türkis, Eisberge hellblau, Vulkan rot, Süßigkeitenland pink, Weltraum lila), Funken in heller Weltfarbe. Hineinlaufen öffnet das Portal-Menü, Ankunft vor dem Portal wie bisher.
 - [ ] **Shop-Stand** (Welt 1 sowie die größeren Shops in Welt 4 und 7): Pizzeria-Stand mit rot-weißer Markise mit Bogenkante, Schild mit Pizza, kleiner Ofen und Pizza-Kartons auf der Theke. Die Pizza aus #15 liegt auf der Theke (nicht schwebend, nicht in der Theke). Shop-Menü öffnet in der grünen Zone vor der Theke wie bisher.
 - [ ] Zeigt ein Modell in die falsche Richtung: in `src/shared/ModelLibrary.luau` unter `YAW` den Wert für `Telephone`/`DeliveryVan`/`PortalArch`/`PizzaStand` (jetzt 180) auf 0/90/270 ändern. Ist ein Modell zu groß/klein: Breite in `DeliveryService` (`PHONE_MODEL_WIDTH`, `VAN_MODEL_LENGTH`), `PortalService` (`ARCH_MODEL_WIDTH`) bzw. `ShopService` (`STAND_MODEL_WIDTH`) anpassen.
 - [ ] Unsichtbare Platzhalter stören nicht: Man bleibt nirgends an unsichtbaren Kanten hängen, die nicht zum Modell passen (falls doch: Stelle hier notieren).
@@ -752,7 +752,7 @@ Alle Positionen kommen jetzt aus `src/shared/HudLayout.luau` (Zonen, siehe `docs
 - [ ] Oben Mitte Münzen und Gems, Meldungen direkt darunter (z. B. zu weit weg sammeln → „Zu weit weg!“).
 - [ ] Tutorial-Karte (neuer Spielstand) steht **links oben** unter dem Roblox-Menü-Knopf, verdeckt weder Meldungen noch Münzen. Text gut lesbar, nicht abgeschnitten.
 - [ ] Am Ei stehen: Ei-Vorschau wird nicht von der Tutorial-Karte verdeckt.
-- [ ] Links: runde Knöpfe „Pets“ und darunter „Tränke“ (unter der Tutorial-Karte, nicht darauf). Beide öffnen ihr Menü.
+- [x] Links: runde Knöpfe „Pets“ und darunter „Tränke“ (unter der Tutorial-Karte, nicht darauf). Beide öffnen ihr Menü.
 - [ ] Unten Mitte Pizza-Balken, darüber Auto-Sammeln.
 - [ ] An eine Barriere laufen: Freischalt-Knopf erscheint **rechts neben dem Pizza-Balken**, nicht auf Auto-Sammeln. Text (Welt + Preis) lesbar, Antippen schaltet frei.
 - [ ] Trank trinken: Pille rechts oben (unter Höhe der Gems). Auftrag annehmen: Auftragskarte rechts unter den Pillen; ohne Trank rutscht sie nach oben.
@@ -778,8 +778,8 @@ Nach `git pull` und Rojo-Connect in Studio Play drücken (ein Spielstand mit gen
 - [ ] Bei offenem Shop etwas kaufen: Liste bleibt dort, wo man gerade ist (kein Sprung nach oben).
 - [ ] Trank-Menü öffnen: Untertitel „Gleiche Art nochmal trinken verlängert die Zeit.“ steht **unter** dem X-Knopf, ganz lesbar, nicht abgeschnitten oder verdeckt. Meldungen nach „Trinken“ (z. B. „Davon hast du keinen Trank …“) ebenso.
 - [ ] Trank-Menü: alle drei Trank-Karten passen ins Panel, unterste nicht abgeschnitten (auch im Device-Emulator, kleines Handy).
-- [ ] In jedem Shop (Welt 1, Gem-Tresen, Shop 2, Shop 3) zeigen die Karten „Stufe x / N“, wobei N in allen Shops für dasselbe Upgrade gleich ist (Gesamtzahl der Stufen, z. B. „Stufe 2 / 8“).
-- [ ] Ein Upgrade im kleinen Shop bis zu dessen Grenze kaufen: Knopf zeigt „Weitere Stufen im größeren Shop“ (grau, nicht drückbar), Text lesbar.
+- [x] In jedem Shop (Welt 1, Gem-Tresen, Shop 2, Shop 3) zeigen die Karten „Stufe x / N“, wobei N in allen Shops für dasselbe Upgrade gleich ist (Gesamtzahl der Stufen, z. B. „Stufe 2 / 8“).
+- [x] Ein Upgrade im kleinen Shop bis zu dessen Grenze kaufen: Knopf zeigt „Weitere Stufen im größeren Shop“ (grau, nicht drückbar), Text lesbar.
 - [ ] Ein Upgrade ganz ausbauen: Knopf zeigt „MAX“.
 
 ## #29 Ei-Modelle und Ei-Stände
@@ -790,16 +790,16 @@ Ohne Import läuft alles weiter: Jedes Ei ist dann eine Kugel in seiner Weltfarb
 
 **1. Modelle importieren** (8 Dateien in `assets/models/eggs/`):
 
-- [ ] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Eggs` anlegen.
-- [ ] **Home → Import 3D** → in `assets/models/eggs/` alle 8 `.fbx` markieren (oder über das Namensfeld in Gruppen) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
-- [ ] Die Modelle heißen wie die Dateien: `GardenEgg`, `FarmEgg`, `BeachEgg`, `IceEgg`, `VolcanoEgg`, `CandyEgg`, `SpaceEgg`, `EggStand`. MeshParts heißen `Egg_FFF3DC`, `Egg_FF7A1A_Neon` … bzw. `Stone`, `StandBody`, `StandTrim`, `StandGold`, `EggSign` (Endungen wie `.001` sind ok). Alle in `Models/Eggs` ziehen, **Namen nicht ändern**.
+- [x] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Eggs` anlegen.
+- [x] **Home → Import 3D** → in `assets/models/eggs/` alle 8 `.fbx` markieren (oder über das Namensfeld in Gruppen) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
+- [x] Die Modelle heißen wie die Dateien: `GardenEgg`, `FarmEgg`, `BeachEgg`, `IceEgg`, `VolcanoEgg`, `CandyEgg`, `SpaceEgg`, `EggStand`. MeshParts heißen `Egg_FFF3DC`, `Egg_FF7A1A_Neon` … bzw. `Stone`, `StandBody`, `StandTrim`, `StandGold`, `EggSign` (Endungen wie `.001` sind ok). Alle in `Models/Eggs` ziehen, **Namen nicht ändern**.
 - [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Eggs:GetChildren())` → **8**.
-- [ ] Place speichern und **File → Publish to Roblox**.
+- [x] Place speichern und **File → Publish to Roblox**.
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch die Welten):
 
 - [ ] Output ohne rote Fehler.
-- [ ] In jeder Welt steht ein gestalteter Stand (Steinsockel, heller Zylinder, Ring und Goldperlen in der Akzentfarbe des Eis) mit dem Ei darauf. Das Ei steht auf dem Stand, nicht darin und nicht schwebend.
+- [x] In jeder Welt steht ein gestalteter Stand (Steinsockel, heller Zylinder, Ring und Goldperlen in der Akzentfarbe des Eis) mit dem Ei darauf. Das Ei steht auf dem Stand, nicht darin und nicht schwebend.
 - [ ] Die 7 Eier sind auf einen Blick unterscheidbar und sehen aus wie in `Overview.png`: Garten creme mit roten Punkten, Bauernhof gelb mit braunen Streifen, Strand türkis mit Wellen, Eis hellblau mit Rauten, Vulkan dunkelbraun mit **leuchtenden** Lava-Rissen, Süßigkeiten rosa mit weißem Wirbel, Weltraum lila mit **leuchtenden** Sternen.
 - [ ] Das große Muster-Element (z. B. der große Punkt/Stern) und das Schild zeigen **zum Weg hin (-Z)**. Zeigen Ei oder Schild-Brett nach hinten: in `src/shared/ModelLibrary.luau` `PET_YAW` (gilt auch für Eier) bzw. `YAW.EggStand` (jetzt 180) auf 0 ändern.
 - [ ] Schild vorne am Stand: Name und Preis (z. B. „Garten-Ei / 💰 25“, „Eis-Ei / 💰 12.000“), gut lesbar, liegt genau auf dem hellen Schild-Brett des Modells. Sitzt der Text versetzt: `SIGN_OFFSET` in `src/server/EggService.luau` anpassen.
@@ -821,7 +821,7 @@ Tipp für schnelles Testen: wie bei #11 vorübergehend `Mozzarella.value = 50000
 
 - [ ] Output ohne rote Fehler. Alter Spielstand lädt (Münzen, Pets, Gems wie vorher), Rebirth-Zahl 0.
 - [ ] Links in der Knopf-Spalte (Platz `rebirth`, nach Pets/Tränke bzw. Geschenke) ein runder lila Knopf **„Rebirth“**. Ohne Rebirth kein Abzeichen.
-- [ ] Menü öffnen: „Noch kein Rebirth“, „Münzen ×1 → ×1,5“, „Preis: 4,9 Mrd Münzen“ (seit #41), Fortschrittsbalken mit Prozent, darunter was zurückgesetzt wird und was bleibt. Menü liegt unter Münzen/Gems und über dem Pizza-Balken. X schließt.
+- [x] Menü öffnen: „Noch kein Rebirth“, „Münzen ×1 → ×1,5“, „Preis: 4,9 Mrd Münzen“ (seit #41), Fortschrittsbalken mit Prozent, darunter was zurückgesetzt wird und was bleibt. Menü liegt unter Münzen/Gems und über dem Pizza-Balken. X schließt.
 - [ ] Zu wenig Münzen: „Rebirth!“-Knopf grau, Antippen tut nichts. Fortschrittsbalken wächst beim Verkaufen mit.
 - [ ] Genug Münzen (ohne Menü offen): Knopf **pulsiert** mit Hinweis „Neu! Mehr Münzen“ rechts daneben; nach dem ersten Öffnen hört das Pulsieren auf.
 - [ ] Trank trinken, dann Menü öffnen: rote Warnung „Dein laufender Trank endet beim Rebirth!“, auch im Bestätigungsfenster.
@@ -832,8 +832,8 @@ Tipp für schnelles Testen: wie bei #11 vorübergehend `Mozzarella.value = 50000
 - [ ] Menü erneut: „Rebirths: 1“, „Münzen ×1,5 → ×2“, Preis 500 Mio.
 - [ ] Tod nach dem Rebirth: Respawn in Welt 1.
 - [ ] **Rejoin** (Stop, Play): Rebirth-Zahl, Abzeichen und Multiplikator bleiben; Start in Welt 1.
-- [ ] Server-Schutz (Command Bar im Client): `game.ReplicatedStorage.Remotes.Rebirth:FireServer()` mit zu wenig Münzen → nur Meldung „Nicht genug Münzen!“, nichts wird zurückgesetzt.
-- [ ] Sound: in `src/client/Sounds.luau` für `Rebirth` eine Fanfare suchen (Suchbegriffe dort) und die ID eintragen.
+- [x] Server-Schutz (Command Bar im Client): `game.ReplicatedStorage.Remotes.Rebirth:FireServer()` mit zu wenig Münzen → nur Meldung „Nicht genug Münzen!“, nichts wird zurückgesetzt.
+- [x] Sound: in `src/client/Sounds.luau` für `Rebirth` eine Fanfare suchen (Suchbegriffe dort) und die ID eintragen.
 
 **2. Device-Emulator** (kleines Handy quer):
 
@@ -849,11 +849,11 @@ Vorher: `lune run test` → `0 failed`. Zum schnellen Testen in `src/shared/Game
 - [ ] Links unter „Tränke“ ein runder rosa Knopf „Geschenke“ mit Countdown bis zum nächsten Geschenk (z. B. `4:50`), Countdown läuft sekundenweise.
 - [ ] Beim ersten Mal pulsiert der Knopf, daneben „Neu! Geschenke fürs Spielen“. Nach dem ersten Öffnen hört das auf – auch nach Rejoin (wird gespeichert). Während des Tutorials pulsiert er noch nicht.
 - [ ] Ist ein Geschenk erreicht: rotes „!“ am Knopf, Text „Abholen!“, Knopf hüpft kurz.
-- [ ] Menü: 6 Zeilen 5/10/15/25/40/60 Min mit Belohnung (Münzen-Betrag, 5 Gems, 1 Trank, Münzen groß, 10 Gems, 15 Gems + 1 Trank). Wartende zeigen die Restzeit, erreichte einen grünen „Abholen“-Knopf, abgeholte ein ✓.
-- [ ] „Abholen“ → Statuszeile „Geschenk! +…“, Gem-Sound, Münzen/Gems oben steigen bzw. Trank liegt im Trank-Menü. Nochmal tippen → „schon abgeholt“. Wartendes antippen → „Noch nicht …“.
+- [x] Menü: 6 Zeilen 5/10/15/25/40/60 Min mit Belohnung (Münzen-Betrag, 5 Gems, 1 Trank, Münzen groß, 10 Gems, 15 Gems + 1 Trank). Wartende zeigen die Restzeit, erreichte einen grünen „Abholen“-Knopf, abgeholte ein ✓.
+- [x] „Abholen“ → Statuszeile „Geschenk! +…“, Gem-Sound, Münzen/Gems oben steigen bzw. Trank liegt im Trank-Menü. Nochmal tippen → „schon abgeholt“. Wartendes antippen → „Noch nicht …“.
 - [ ] Münz-Geschenk ist in Welt 1 klein (neuer Spieler: 20 Münzen, das große 54), in höheren Welten / mit Pets / größerer Pizza deutlich mehr.
 - [ ] Menü sitzt unter Münzen/Meldungen und über dem Pizza-Balken (auch im Device-Emulator, kleines Handy: wird kleiner, Knöpfe bleiben antippbar). Auf dem kleinen Handy liegt der Knopf nicht unter dem Joystick.
-- [ ] Es kommen keine „+1 Gem fürs Spielen!“-Meldungen mehr.
+- [x] Es kommen keine „+1 Gem fürs Spielen!“-Meldungen mehr.
 
 **Rejoin** (API-Zugriff an, siehe #3):
 
@@ -868,7 +868,7 @@ Vorher: `lune run test` → `0 failed` (inkl. `tests/LoginCalendar.spec.luau`).
 
 **Automatisches Öffnen** (Play, 1 Spieler, API-Zugriff an, Spielstand mit beendetem Tutorial):
 
-- [ ] Beim ersten Beitreten des Tages öffnet sich das Fenster „Login-Kalender“ von selbst: 7 Kacheln „Tag 1“ … „Tag 7“ mit Belohnung (Münzen, 10 Gems, 1 Trank, Münzen, 20 Gems, 2 Tränke, 50 Gems + 3 Tränke). Die heutige Kachel ist gelb mit „Heute“ und dickem Rand.
+- [x] Beim ersten Beitreten des Tages öffnet sich das Fenster „Login-Kalender“ von selbst: 7 Kacheln „Tag 1“ … „Tag 7“ mit Belohnung (Münzen, 10 Gems, 1 Trank, Münzen, 20 Gems, 2 Tränke, 50 Gems + 3 Tränke). Die heutige Kachel ist gelb mit „Heute“ und dickem Rand.
 - [ ] Fenster sitzt unter Münzen/Meldungen und über dem Pizza-Balken; im Device-Emulator (kleines Handy) wird es kleiner, „Abholen“ und „X“ bleiben antippbar, Texte lesbar.
 - [ ] Stop, erneut Play am selben Tag: Das Fenster öffnet sich **nicht** noch einmal (auch wenn nicht abgeholt).
 - [ ] Neuer Spieler (Spielstand löschen bzw. anderer Test-Account): Das Fenster öffnet sich erst, wenn das Tutorial beendet ist, nicht mittendrin.
@@ -893,8 +893,8 @@ Vorher: `lune run test` → `0 failed` (inkl. `tests/IslandPlan.spec.luau`). Vor
 
 **Einmalig in Studio:**
 
-- [ ] Falls im Workspace noch ein `Baseplate` liegt: löschen und Place speichern/publishen (der Server entfernt ihn sonst beim Start mit einer Warnung `[WorldMap] Baseplate entfernt`). Auch einen alten `SpawnLocation` aus der Vorlage löschen.
-- [ ] Neues Modell importieren: `assets/models/RoundTree.fbx` nach `ReplicatedStorage.GameAssets.Models` (wie in #15). Ohne Import stehen Ersatz-Bäume aus Kugeln da.
+- [x] Falls im Workspace noch ein `Baseplate` liegt: löschen und Place speichern/publishen (der Server entfernt ihn sonst beim Start mit einer Warnung `[WorldMap] Baseplate entfernt`). Auch einen alten `SpawnLocation` aus der Vorlage löschen.
+- [x] Neues Modell importieren: `assets/models/RoundTree.fbx` nach `ReplicatedStorage.GameAssets.Models` (wie in #15). Ohne Import stehen Ersatz-Bäume aus Kugeln da.
 
 **Play (1 Spieler, neuer Spielstand):**
 
@@ -931,7 +931,7 @@ Voraussetzung: **Game Settings → Security → „Enable Studio Access to API S
 
 - [ ] Spawn-Insel: Die drei Tafeln zeigen oben den Titel („⏱ Spielzeit“, „💰 Münzen verdient“, „🔁 Rebirths“) und darunter bis zu 10 Zeilen mit Platz, Anzeigename und Wert. Platz 1–3 in Gold/Silber/Bronze. Text gut lesbar, nichts abgeschnitten (lange Namen enden mit „…“).
 - [ ] Erster Start mit leeren Bestenlisten: Nach dem ersten Einlesen steht „Noch keine Einträge“ (vorher „Bestenliste lädt …“).
-- [ ] Ein paar Minuten spielen (Beläge verkaufen), dann Play stoppen (Verlassen schreibt die Werte) und erneut starten → spätestens nach ca. 2 Minuten steht man auf allen Tafeln, auf denen man einen Wert > 0 hat. Spielzeit z. B. „5 Min.“ bzw. „1 Std. 3 Min.“, Münzen mit Tausenderpunkt (`12.345`).
+- [x] Ein paar Minuten spielen (Beläge verkaufen), dann Play stoppen (Verlassen schreibt die Werte) und erneut starten → spätestens nach ca. 2 Minuten steht man auf allen Tafeln, auf denen man einen Wert > 0 hat. Spielzeit z. B. „5 Min.“ bzw. „1 Std. 3 Min.“, Münzen mit Tausenderpunkt (`12.345`).
 - [ ] Aktualisierung ohne Neustart: im laufenden Spiel weiterspielen; nach dem nächsten automatischen Speichern (alle 2 Minuten) und dem nächsten Einlesen (alle ca. 2 Minuten) steigen die Werte auf den Tafeln.
 - [ ] „Münzen verdient“ zählt Verkauf am Ofen, Lieferauftrag mit Münz-Belohnung, Kalender- und Geschenk-Münzen. Prüfen per Command Bar (Server), z. B. vor und nach einem Verkauf: `print(require(game.ServerScriptService.Server.PlayerStates).get(game.Players:GetPlayers()[1]).totalCoinsEarned)`.
 - [ ] Rebirth durchführen → Münzen auf 0, „Münzen verdient“ bleibt gleich, Rebirths-Tafel zeigt nach dem nächsten Speichern/Einlesen 1.
@@ -959,14 +959,14 @@ Standorte: In Welt 1 (Insel-Look) steht das zweite Ei auf dem zweiten Ei-Platz l
 
 **1. Modelle importieren** (7 neue Dateien in `assets/models/eggs/`):
 
-- [ ] **Home → Import 3D** → `StoneOvenEgg.fbx`, `BarnEgg.fbx`, `ShellEgg.fbx`, `GlacierEgg.fbx`, `MagmaEgg.fbx`, `BonbonEgg.fbx`, `NebulaEgg.fbx` → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**. In **ReplicatedStorage → GameAssets → Models → Eggs** ziehen, **Namen nicht ändern** (MeshParts z. B. `Egg_C9653A`, `Egg_FFD27A_Neon`, `Egg_FFC83A_Metal`).
-- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Eggs:GetChildren())` → **15** (14 Eier + `EggStand`).
-- [ ] Place speichern und **File → Publish to Roblox**.
+- [x] **Home → Import 3D** → `StoneOvenEgg.fbx`, `BarnEgg.fbx`, `ShellEgg.fbx`, `GlacierEgg.fbx`, `MagmaEgg.fbx`, `BonbonEgg.fbx`, `NebulaEgg.fbx` → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**. In **ReplicatedStorage → GameAssets → Models → Eggs** ziehen, **Namen nicht ändern** (MeshParts z. B. `Egg_C9653A`, `Egg_FFD27A_Neon`, `Egg_FFC83A_Metal`).
+- [x] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Eggs:GetChildren())` → **15** (14 Eier + `EggStand`).
+- [x] Place speichern und **File → Publish to Roblox**.
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch die Welten). Zum schnellen Testen vorübergehend `price = 1` beim `StoneOvenEgg` setzen (**nicht committen**, danach zurück auf 125).
 
 - [ ] Output ohne rote Fehler. Im Workspace unter `Eggs` stehen **14** Eier.
-- [ ] **Welt 1:** Zwei Ei-Stände links am Weg: vorne Garten-Ei, dahinter Steinofen-Ei (terrakotta mit leuchtenden Rissen, Goldband, Goldperlen). Schild „Steinofen-Ei / 💰 125“. Kein Stand zeigt mehr „Bald: neues Ei!“.
+- [x] **Welt 1:** Zwei Ei-Stände links am Weg: vorne Garten-Ei, dahinter Steinofen-Ei (terrakotta mit leuchtenden Rissen, Goldband, Goldperlen). Schild „Steinofen-Ei / 💰 125“. Kein Stand zeigt mehr „Bald: neues Ei!“.
 - [ ] **Welt 2–7:** In jeder Welt zwei Stände nebeneinander vor dem Belagfeld (links neben dem ersten Ei das zweite), keiner steckt im Shop, in der Deko oder im Weg. Eier wie in `Overview.png` (zweite Reihe): Scheune rot mit weißen Rauten, Muschel rosa mit Wirbel, Gletscher eisblau mit Sternen, Magma fast schwarz mit leuchtenden Lava-Wellen, Bonbon lila mit gelben Streifen, Nebula dunkelblau mit leuchtenden lila Punkten.
 - [ ] Das zweite Ei ist sofort nach dem Freischalten der Welt nutzbar; in einer noch gesperrten Welt (per Portal nicht erreichbar) geht es nicht.
 - [ ] Ei-Vorschau am zweiten Ei: 4 Pets mit Seltenheit und Chance (Selten 68 %, Episch 25 %, Legendär 6 %, Mythisch 1 %), Preis stimmt. Mit Glücks-Trank verschieben sich die Chancen wie beim ersten Ei.
@@ -1011,16 +1011,16 @@ Vorschau: pro Ei `assets/previews/pets/<EiId>.png` (z. B. `StoneOvenEgg.png`, 4 
 
 **1. Pet-Modelle importieren** (28 neue Dateien in `assets/models/pets/`, gleiche Einstellungen wie bei #16):
 
-- [ ] **Home → Import 3D** → im Dateidialog die 28 neuen `.fbx` markieren (Namen siehe Tabelle; Gruppen über das Namensfeld wie bei #16) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
-- [ ] Die importierten Models (Name = Pet-Id, MeshParts `Pet_9A6A44`, `Pet_FF8A2A_Neon`, `Pet_C8D0DA_Metal`, `Pet_D8F0FF_Glass` …) in **ReplicatedStorage → GameAssets → Models → Pets** ziehen. **Namen nicht ändern.** Größe, Farbe und Position egal.
-- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Pets:GetChildren())` → **70**.
-- [ ] Place speichern und **File → Publish to Roblox**.
+- [x] **Home → Import 3D** → im Dateidialog die 28 neuen `.fbx` markieren (Namen siehe Tabelle; Gruppen über das Namensfeld wie bei #16) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
+- [x] Die importierten Models (Name = Pet-Id, MeshParts `Pet_9A6A44`, `Pet_FF8A2A_Neon`, `Pet_C8D0DA_Metal`, `Pet_D8F0FF_Glass` …) in **ReplicatedStorage → GameAssets → Models → Pets** ziehen. **Namen nicht ändern.** Größe, Farbe und Position egal.
+- [x] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Pets:GetChildren())` → **70**.
+- [x] Place speichern und **File → Publish to Roblox**.
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, zum schnellen Öffnen vorübergehend `price = 1` bei einem zweiten Ei setzen, **nicht committen**):
 
 - [ ] Output ohne rote Fehler.
 - [ ] **Ei-Vorschau** am zweiten Ei jeder Welt: alle 4 Zeilen zeigen das 3D-Pet statt eines farbigen Punkts, nichts abgeschnitten (auch die breiten: Calzone-Hydra, Galaxie-Pizza-Leviathan, Goldkorn-Stier).
-- [ ] **Ei öffnen**: Die Pet-Karte zeigt das 3D-Pet vor dem Kreis in Seltenheitsfarbe.
+- [x] **Ei öffnen**: Die Pet-Karte zeigt das 3D-Pet vor dem Kreis in Seltenheitsfarbe.
 - [ ] **Pet-Menü**: Jede Karte eines neuen Pets zeigt das Modell im runden Feld.
 - [ ] **Folgen**: Je ein neues Pet pro Welt ausrüsten → läuft als Modell hinter dem Spieler, **Gesicht in Laufrichtung**, steht auf dem Boden (Seeschlange, Qualle und Leviathan nicht im Boden, nicht hoch schwebend), Namensschild über dem Kopf. Mythische (Phönix, Stier, Seeschlange, Narwal, Hydra, Pegasus, Leviathan) sind etwas größer als die seltenen.
 - [ ] Neon leuchtet (Ofenglut und Flammen des Phönix, Calzone-Soße, Quallen-Tentakel, Sterne des Löwen, Pepperoni-Planeten), Glas ist durchsichtig (Eisbecher, Seepferdchen-Flossen), Metall glänzt (Goldhörner und Weizen des Stiers, Sardinendose, Löffel des Pandas, Hufe des Pegasus).
@@ -1058,16 +1058,16 @@ Vorschau: `assets/previews/toppings/<BelagId>.png`, `World2.png` … `World7.png
 
 **1. Modelle importieren** (19 Dateien in `assets/models/toppings/`, gleiche Einstellungen wie bei #16):
 
-- [ ] In **ReplicatedStorage → GameAssets → Models** einen Ordner **`Toppings`** anlegen (Rechtsklick → Insert Object → Folder).
-- [ ] **Home → Import 3D** → im Dateidialog in `assets/models/toppings/` alle 19 `.fbx` markieren (oder in Gruppen über das Namensfeld) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**.
-- [ ] Die importierten Models (Name = Belag-Id, MeshParts `Top_6E2662`, `Top_FFA040_Neon`, `Top_A8DCFF_Glass` …, Endungen wie `.001` sind in Ordnung) in den Ordner **`Models/Toppings`** ziehen. **Namen nicht ändern.** Größe, Farbe und Position egal – das Spiel skaliert und färbt nach den Teilnamen.
-- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Toppings:GetChildren())` → **19**.
-- [ ] Place speichern und **File → Publish to Roblox**.
+- [x] In **ReplicatedStorage → GameAssets → Models** einen Ordner **`Toppings`** anlegen (Rechtsklick → Insert Object → Folder).
+- [x] **Home → Import 3D** → im Dateidialog in `assets/models/toppings/` alle 19 `.fbx` markieren (oder in Gruppen über das Namensfeld) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus, sonst Standard → **Import**.
+- [x] Die importierten Models (Name = Belag-Id, MeshParts `Top_6E2662`, `Top_FFA040_Neon`, `Top_A8DCFF_Glass` …, Endungen wie `.001` sind in Ordnung) in den Ordner **`Models/Toppings`** ziehen. **Namen nicht ändern.** Größe, Farbe und Position egal – das Spiel skaliert und färbt nach den Teilnamen.
+- [x] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Toppings:GetChildren())` → **19**.
+- [x] Place speichern und **File → Publish to Roblox**.
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; zum schnellen Hinkommen Münz-Tipp aus #11 oder Portal):
 
 - [ ] Output ohne rote Fehler.
-- [ ] In jeder Welt 2–7 liegen auf dem Belagfeld die Modelle statt der Scheiben; jeder Belag ist von oben und aus der Spielerperspektive gut erkennbar (Vergleich mit `assets/previews/toppings/World<N>.png`). Nichts steckt im Boden oder schwebt.
+- [x] In jeder Welt 2–7 liegen auf dem Belagfeld die Modelle statt der Scheiben; jeder Belag ist von oben und aus der Spielerperspektive gut erkennbar (Vergleich mit `assets/previews/toppings/World<N>.png`). Nichts steckt im Boden oder schwebt.
 - [ ] Anklicken/Antippen eines Modells sammelt den Belag ein (Klick trifft auch auf das Modell, nicht nur auf die unsichtbare Scheibe); Auto-Sammeln und Magnet ziehen das Modell mit.
 - [ ] **Pizza in der Hand**: gesammelte Beläge liegen passend klein auf der Pizza, ragen nicht über den Rand, stehen nicht hoch heraus (besonders Gummibärchen, Alien-Pilz, Marshmallow, Mond-Käse).
 - [ ] **Bestell-Pizza** (Lieferauftrag in Welt 2+): Beläge auf der Pizza mit Bestellzettel ebenso als Modelle; Abgabe am Lieferwagen funktioniert.
@@ -1088,3 +1088,20 @@ Der Rebirth-Knopf pulsierte in jeder Sitzung neu, sobald ein Rebirth leistbar wa
 - [ ] Neuer Spielstand (anderer Test-Spieler oder Spielstand löschen): Knopf pulsiert wieder, bis er einmal geöffnet wurde.
 - [ ] Geschenke-Knopf verhält sich unverändert (pulsiert nur bis zum ersten Öffnen).
 - [ ] Output ohne rote Fehler.
+
+## Studio-Test 17.11.2026 (Phase A + C, lokale Sitzung)
+
+Alle Modell-Importe erledigt: Salami neu, `RoundTree`, `Stations` (4), `Eggs` (15), `Toppings` (19), `Pets` (70). Baseplate gelöscht, Place gespeichert und veröffentlicht. Sound-IDs eingetragen (Effekte von *Pro Sound Effects*, Musik von *APM*, beides offizielle Roblox-Partner, `Rebirth` = Kazoo Fanfare 3, 9114898444). **Anhören konnte ich sie nicht** – bitte einmal reinhören, ob Lautstärke und Auswahl passen. Screenshots: `docs/playtest/19-…` bis `37-…`.
+
+Getestet ohne den Spielstand zurückzusetzen (kein echter Rebirth, kein neuer Spieler). Output ohne rote Fehler, keine `[Save]`-Warnungen, kein „Failed to load sound“.
+
+**Beobachtungen (nicht behoben):**
+
+- **Ei-Vorschau überdeckt das HUD** (`31-ei-vorschau-ueberdeckt-hud.jpg`): Die Vorschau ist ein `BillboardGui` 6 Studs über dem Ei mit fester Pixelgröße. Im kleinen Studio-Fenster (≈ Handy-Höhe) ragt sie oben aus dem Bild; Münzen/Gems liegen über den ersten Pet-Zeilen, und Meldungen („Nicht genug Münzen!“) werden von ihr verdeckt. Steht man vor dem Shop (16 Studs vom Garten-Ei), sind Shop-Menü und Ei-Vorschau gleichzeitig offen. Vorschlag: Vorschau als HUD-Panel über `UiKit.placeMenu` (wie die anderen Menüs) oder ausblenden, solange ein Menü offen ist. Zusätzlich verschiebt das `UIScale` im `root` den Inhalt nach links oben, weil die Billboard-Größe gleich bleibt.
+- **Bestenlisten-Tafeln**: funktionieren („Münzen verdient: filipocool 39.072“), aber die Schrift ist im Verhältnis zur Tafel sehr klein; die Tafeln wirken von weitem leer (`23-spawn-insel.jpg`).
+- **Steinofen-Ei** wirkt fast komplett goldgelb leuchtend statt terrakotta mit Rissen (`21-eier-welt1.jpg`); Neon evtl. zu stark.
+- **Alien-Pilz** (Welt 7) leuchtet sehr stark (Bloom), fast überstrahlt (`30-welt7-belaege.jpg`).
+- `LastWorldId` springt nach einem Teleport per Befehlsleiste erst nach > 3 s um (per Portal sofort) – unkritisch.
+- Spielstand hat Welt 5–7 noch nicht freigeschaltet; Ei-Stände und Lieferauftrag dort nicht aus der Nähe geprüft (Beläge vom Tor aus sichtbar, Barriere-Schutz setzt korrekt vors Tor zurück).
+
+**Nicht getestet:** Mehrspieler, Device-Emulator/Handy, echter Rebirth (würde den Spielstand zurücksetzen), Rejoin-/Tageswechsel-Fälle, verwaister Session-Lock (#34, Studio hart beenden), Stoppuhr-Balancing (#41), Tutorial als neuer Spieler (#23 Teil 1, #17).

@@ -23,57 +23,57 @@ type Entry = { id: string, volume: number, looped: boolean?, search: { string } 
 
 local SOUNDS: { [string]: Entry } = {
 	-- Short "plop" when a topping lands on the pizza.
-	Collect = { id = "", volume = 0.5, search = { "pop", "plop", "bubble pop", "click" } },
+	Collect = { id = "9119669065", volume = 0.5, search = { "pop", "plop", "bubble pop", "click" } },
 	-- Cash register / coins when selling at the oven.
-	Sell = { id = "", volume = 0.6, search = { "cash register", "coins", "purchase", "ka-ching" } },
+	Sell = { id = "9113728625", volume = 0.6, search = { "cash register", "coins", "purchase", "ka-ching" } },
 	-- Sparkle / chime for gems.
-	Gem = { id = "", volume = 0.5, search = { "sparkle", "chime", "magic", "twinkle" } },
+	Gem = { id = "9116394545", volume = 0.5, search = { "sparkle", "chime", "magic", "twinkle" } },
 	-- Egg shell cracking in the hatch animation.
-	EggCrack = { id = "", volume = 0.7, search = { "egg crack", "crack", "shell", "break" } },
+	EggCrack = { id = "9113959343", volume = 0.7, search = { "egg crack", "crack", "shell", "break" } },
 	-- Old phone ringing (delivery service).
-	PhoneRing = { id = "", volume = 0.6, search = { "phone ring", "telephone", "old phone", "ringing" } },
+	PhoneRing = { id = "9117304246", volume = 0.6, search = { "phone ring", "telephone", "old phone", "ringing" } },
 	-- Short fanfare for the rebirth celebration (#35).
-	Rebirth = { id = "", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
+	Rebirth = { id = "9114898444", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
 	-- Background music per world, looped (cheerful, light).
 	Music_PizzeriaGarden = {
-		id = "",
+		id = "1839408249",
 		volume = 0.25,
 		looped = true,
 		search = { "happy", "cheerful", "ukulele", "italian" },
 	},
 	-- Worlds 2-7 (#16).
 	Music_Farm = {
-		id = "",
+		id = "9043699640",
 		volume = 0.25,
 		looped = true,
 		search = { "country", "banjo", "farm", "folk" },
 	},
 	Music_Beach = {
-		id = "",
+		id = "9043828544",
 		volume = 0.25,
 		looped = true,
 		search = { "tropical", "beach", "ukulele", "reggae" },
 	},
 	Music_Icebergs = {
-		id = "",
+		id = "9041824482",
 		volume = 0.25,
 		looped = true,
 		search = { "winter", "snow", "bells", "calm" },
 	},
 	Music_Volcano = {
-		id = "",
+		id = "1839999913",
 		volume = 0.25,
 		looped = true,
 		search = { "volcano", "drums", "adventure", "tribal" },
 	},
 	Music_CandyLand = {
-		id = "",
+		id = "1846441369",
 		volume = 0.25,
 		looped = true,
 		search = { "candy", "cute", "bubbly", "playful" },
 	},
 	Music_Space = {
-		id = "",
+		id = "1844477817",
 		volume = 0.25,
 		looped = true,
 		search = { "space", "synth", "ambient", "cosmic" },
