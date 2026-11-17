@@ -25,8 +25,6 @@ type DeliveryReward = GameRules.DeliveryReward
 
 local PANEL_SIZE = Vector2.new(540, 430)
 local CARD_WIDTH = 260
--- The potion timers (PotionMenu) sit at 22 % height, 3 x 72 px; the order card goes below.
-local CARD_TOP = UDim2.new(1, -16, 0.22, 3 * 72 + 8)
 local RING_EVERY_SECONDS = 3
 
 local DeliveryMenu = {}
@@ -152,14 +150,11 @@ function DeliveryMenu.start()
 	-- Phone panel ------------------------------------------------------------
 	local panel = Instance.new("Frame")
 	panel.Name = "PhonePanel"
-	panel.AnchorPoint = Vector2.new(0.5, 0.5)
-	panel.Position = UDim2.fromScale(0.5, 0.5)
-	panel.Size = UDim2.fromOffset(PANEL_SIZE.X, PANEL_SIZE.Y)
 	panel.BackgroundColor3 = UiKit.CREAM
 	panel.Visible = false
 	UiKit.corner(panel, 24)
 	UiKit.stroke(panel, 4)
-	panel.Parent = gui
+	UiKit.placeMenu(gui, panel, PANEL_SIZE)
 
 	local title = UiKit.label(panel, "📞 Neuer Auftrag!")
 	title.Position = UDim2.fromOffset(24, 14)
@@ -229,15 +224,15 @@ function DeliveryMenu.start()
 	-- Order card (right side) --------------------------------------------------
 	local card = Instance.new("Frame")
 	card.Name = "OrderCard"
-	card.AnchorPoint = Vector2.new(1, 0)
-	card.Position = CARD_TOP
+	card.LayoutOrder = 2
 	card.Size = UDim2.fromOffset(CARD_WIDTH, 0)
 	card.AutomaticSize = Enum.AutomaticSize.Y
 	card.BackgroundColor3 = UiKit.CREAM
 	card.Visible = false
 	UiKit.corner(card, 18)
 	UiKit.stroke(card)
-	card.Parent = gui
+	-- Right column of the HUD grid, below the potion pills.
+	card.Parent = UiKit.rightColumn()
 	local cardPadding = Instance.new("UIPadding")
 	for _, side in { "PaddingTop", "PaddingBottom", "PaddingLeft", "PaddingRight" } do
 		(cardPadding :: any)[side] = UDim.new(0, 10)

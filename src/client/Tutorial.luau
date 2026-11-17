@@ -66,7 +66,7 @@ end
 function Tutorial.start()
 	local player = Players.LocalPlayer
 
-	-- Card (top center, below the coins and messages)
+	-- Card (top left under the Roblox menu, clear of messages and the egg preview)
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "Tutorial"
 	gui.ResetOnSpawn = false
@@ -75,9 +75,7 @@ function Tutorial.start()
 
 	local card = Instance.new("Frame")
 	card.Name = "Card"
-	card.AnchorPoint = Vector2.new(0.5, 0)
-	card.Position = UDim2.new(0.5, 0, 0, 132)
-	card.Size = UDim2.fromOffset(460, 96)
+	UiKit.place(card, "tutorialCard")
 	card.BackgroundColor3 = UiKit.CREAM
 	card.Active = false
 	card.Visible = false
@@ -93,7 +91,7 @@ function Tutorial.start()
 
 	local body = UiKit.label(card, "")
 	body.Position = UDim2.fromOffset(16, 34)
-	body.Size = UDim2.new(1, -32, 0, 54)
+	body.Size = UDim2.new(1, -32, 1, -42)
 	body.TextWrapped = true
 	body.TextXAlignment = Enum.TextXAlignment.Left
 

@@ -8,7 +8,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
@@ -71,25 +70,6 @@ local function label(parent: Instance, text: string): TextLabel
 	return textLabel
 end
 
--- Scales the whole HUD so it stays readable on small phones and large monitors alike.
-local function autoScale(gui: ScreenGui)
-	local uiScale = Instance.new("UIScale")
-	uiScale.Parent = gui
-	local function update()
-		local camera = Workspace.CurrentCamera
-		if camera == nil then
-			return
-		end
-		local size = camera.ViewportSize
-		uiScale.Scale = math.clamp(math.min(size.X / 1100, size.Y / 650), 0.7, 1.4)
-	end
-	update()
-	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(update)
-	if Workspace.CurrentCamera then
-		Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(update)
-	end
-end
-
 local function pop(target: GuiObject)
 	local uiScale = target:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
 	uiScale.Parent = target
@@ -107,14 +87,12 @@ function Hud.start(): GuiObject
 	gui.Name = "Hud"
 	gui.ResetOnSpawn = false
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	autoScale(gui)
+	UiKit.autoScale(gui)
 
 	-- Coins (top center, left of the middle)
 	local coins = Instance.new("Frame")
 	coins.Name = "Coins"
-	coins.AnchorPoint = Vector2.new(1, 0)
-	coins.Position = UDim2.new(0.5, -6, 0, 12)
-	coins.Size = UDim2.fromOffset(240, 60)
+	UiKit.place(coins, "coins")
 	coins.BackgroundColor3 = CREAM
 	corner(coins, 30)
 	stroke(coins)
@@ -136,9 +114,7 @@ function Hud.start(): GuiObject
 	-- Gems (top center, right of the middle): a turquoise diamond icon.
 	local gems = Instance.new("Frame")
 	gems.Name = "Gems"
-	gems.AnchorPoint = Vector2.new(0, 0)
-	gems.Position = UDim2.new(0.5, 6, 0, 12)
-	gems.Size = UDim2.fromOffset(190, 60)
+	UiKit.place(gems, "gems")
 	gems.BackgroundColor3 = CREAM
 	corner(gems, 30)
 	stroke(gems)
@@ -161,9 +137,7 @@ function Hud.start(): GuiObject
 	-- Pizza fill level (bottom center)
 	local pizza = Instance.new("Frame")
 	pizza.Name = "PizzaFill"
-	pizza.AnchorPoint = Vector2.new(0.5, 1)
-	pizza.Position = UDim2.new(0.5, 0, 1, -16)
-	pizza.Size = UDim2.fromOffset(260, 64)
+	UiKit.place(pizza, "pizzaBar")
 	pizza.BackgroundColor3 = CREAM
 	corner(pizza, 32)
 	stroke(pizza)
@@ -185,9 +159,7 @@ function Hud.start(): GuiObject
 	-- Auto-collect switch (bottom center, above the pizza fill). Big for thumbs.
 	local autoButton = Instance.new("TextButton")
 	autoButton.Name = "AutoCollect"
-	autoButton.AnchorPoint = Vector2.new(0.5, 1)
-	autoButton.Position = UDim2.new(0.5, 0, 1, -92)
-	autoButton.Size = UDim2.fromOffset(260, 64)
+	UiKit.place(autoButton, "autoCollect")
 	autoButton.BackgroundColor3 = OFF
 	autoButton.AutoButtonColor = true
 	autoButton.Font = FONT
@@ -207,9 +179,7 @@ function Hud.start(): GuiObject
 	-- Short messages (below the coins)
 	local toast = label(gui, "")
 	toast.Name = "Toast"
-	toast.AnchorPoint = Vector2.new(0.5, 0)
-	toast.Position = UDim2.new(0.5, 0, 0, 84)
-	toast.Size = UDim2.fromOffset(420, 40)
+	UiKit.place(toast, "toast")
 	toast.TextColor3 = CREAM
 	toast.TextStrokeColor3 = DARK
 	toast.TextStrokeTransparency = 0

@@ -69,20 +69,19 @@ function PotionMenu.start()
 	gui.DisplayOrder = 5
 	UiKit.autoScale(gui)
 
-	-- Left side, below the "Pets" button (which is centered at 50 %, 96 px high).
-	local openButton = UiKit.roundButton(gui, "Tränke", Color3.fromRGB(170, 90, 230))
+	-- Left side, the slot after "Pets" in the HUD grid.
+	local openButton = UiKit.sideButton("potions", "Tränke", Color3.fromRGB(170, 90, 230))
 	openButton.Name = "PotionsButton"
-	openButton.AnchorPoint = Vector2.new(0, 0.5)
-	openButton.Position = UDim2.new(0, 16, 0.5, 112)
 
-	-- Running potions: right side, stacked from the upper third downwards.
+	-- Running potions: top of the right column (HUD grid), the order card goes below.
 	local timers = Instance.new("Frame")
 	timers.Name = "PotionTimers"
-	timers.AnchorPoint = Vector2.new(1, 0)
-	timers.Position = UDim2.new(1, -16, 0.22, 0)
-	timers.Size = UDim2.fromOffset(TIMER_SIZE.X, (TIMER_SIZE.Y + 8) * #LOOKS)
+	timers.LayoutOrder = 1
+	timers.Size = UDim2.fromOffset(TIMER_SIZE.X, 0)
+	timers.AutomaticSize = Enum.AutomaticSize.Y
 	timers.BackgroundTransparency = 1
-	timers.Parent = gui
+	timers.Visible = false
+	timers.Parent = UiKit.rightColumn()
 	local timerLayout = Instance.new("UIListLayout")
 	timerLayout.Padding = UDim.new(0, 8)
 	timerLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -117,14 +116,11 @@ function PotionMenu.start()
 	-- Inventory panel
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
-	panel.AnchorPoint = Vector2.new(0.5, 0.5)
-	panel.Position = UDim2.fromScale(0.5, 0.5)
-	panel.Size = UDim2.fromOffset(PANEL_SIZE.X, PANEL_SIZE.Y)
 	panel.BackgroundColor3 = UiKit.CREAM
 	panel.Visible = false
 	UiKit.corner(panel, 24)
 	UiKit.stroke(panel, 4)
-	panel.Parent = gui
+	UiKit.placeMenu(gui, panel, PANEL_SIZE)
 
 	local title = UiKit.label(panel, "Meine Tränke")
 	title.Position = UDim2.fromOffset(24, 14)
@@ -222,10 +218,12 @@ function PotionMenu.start()
 	end
 
 	local function updateTimers()
+		local anyRunning = false
 		for _, look in LOOKS do
 			local left = timeLeft(look.potionId)
 			local timer = timerLabels[look.potionId]
 			local running = left > 0
+			anyRunning = anyRunning or running
 			if timer.frame.Visible ~= running then
 				timer.frame.Visible = running
 				if running then
@@ -237,6 +235,8 @@ function PotionMenu.start()
 			end
 			cards[look.potionId].left.Text = if running then `Läuft: {clockText(left)}` else ""
 		end
+		-- Hidden when empty, so the order card moves up in the right column.
+		timers.Visible = anyRunning
 	end
 
 	local function syncActive()

@@ -11,6 +11,7 @@ local Workspace = game:GetService("Workspace")
 
 local Net = require(ReplicatedStorage.Shared.Net)
 local SignCulling = require(script.Parent.SignCulling)
+local UiKit = require(script.Parent.UiKit)
 
 local TAG = "WorldBarrier"
 -- Show the unlock button within this many studs of a locked barrier (server allows 30).
@@ -56,13 +57,12 @@ local function buildButton(player: Player): (ScreenGui, TextButton)
 	gui.Name = "BarrierUnlock"
 	gui.ResetOnSpawn = false
 	gui.Enabled = false
+	UiKit.autoScale(gui)
 
 	local button = Instance.new("TextButton")
 	button.Name = "Unlock"
-	button.AnchorPoint = Vector2.new(0.5, 1)
-	-- Above the pizza fill bar, clear of the phone joystick (left) and jump button (right).
-	button.Position = UDim2.new(0.5, 0, 1, -100)
-	button.Size = UDim2.fromOffset(340, 96)
+	-- Right of the pizza bar, clear of auto-collect and the phone jump button (HUD grid).
+	UiKit.place(button, "unlockButton")
 	button.BackgroundColor3 = GREEN
 	button.AutoButtonColor = true
 	button.Font = FONT

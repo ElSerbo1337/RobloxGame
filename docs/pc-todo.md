@@ -742,3 +742,29 @@ Ohne Import läuft alles wie bisher mit den alten Bauteil-Platzhaltern. Mit Impo
 - [ ] Zeigt ein Modell in die falsche Richtung: in `src/shared/ModelLibrary.luau` unter `YAW` den Wert für `Telephone`/`DeliveryVan`/`PortalArch`/`PizzaStand` (jetzt 180) auf 0/90/270 ändern. Ist ein Modell zu groß/klein: Breite in `DeliveryService` (`PHONE_MODEL_WIDTH`, `VAN_MODEL_LENGTH`), `PortalService` (`ARCH_MODEL_WIDTH`) bzw. `ShopService` (`STAND_MODEL_WIDTH`) anpassen.
 - [ ] Unsichtbare Platzhalter stören nicht: Man bleibt nirgends an unsichtbaren Kanten hängen, die nicht zum Modell passen (falls doch: Stelle hier notieren).
 - [ ] **Handy** (Device-Emulator): Bildrate an den Stationen bleibt flüssig.
+
+## #20 A1 HUD-Raster ohne Überlappungen
+
+Alle Positionen kommen jetzt aus `src/shared/HudLayout.luau` (Zonen, siehe `docs/ui-style.md` → „HUD-Raster“). Auf dem PC und im Device-Emulator prüfen; falls etwas nicht passt, nur die Zahlen in `HudLayout.zones` ändern und `lune run test` laufen lassen.
+
+**1. PC-Fenster (normale Größe):**
+
+- [ ] Oben Mitte Münzen und Gems, Meldungen direkt darunter (z. B. zu weit weg sammeln → „Zu weit weg!“).
+- [ ] Tutorial-Karte (neuer Spielstand) steht **links oben** unter dem Roblox-Menü-Knopf, verdeckt weder Meldungen noch Münzen. Text gut lesbar, nicht abgeschnitten.
+- [ ] Am Ei stehen: Ei-Vorschau wird nicht von der Tutorial-Karte verdeckt.
+- [ ] Links: runde Knöpfe „Pets“ und darunter „Tränke“ (unter der Tutorial-Karte, nicht darauf). Beide öffnen ihr Menü.
+- [ ] Unten Mitte Pizza-Balken, darüber Auto-Sammeln.
+- [ ] An eine Barriere laufen: Freischalt-Knopf erscheint **rechts neben dem Pizza-Balken**, nicht auf Auto-Sammeln. Text (Welt + Preis) lesbar, Antippen schaltet frei.
+- [ ] Trank trinken: Pille rechts oben (unter Höhe der Gems). Auftrag annehmen: Auftragskarte rechts unter den Pillen; ohne Trank rutscht sie nach oben.
+- [ ] Shop, Gem-Tresen, Pet-Menü, Trank-Menü, Telefon und Teleport öffnen: jedes Menü beginnt **unter** Münzen/Gems/Meldungen und endet über dem Pizza-Balken. Münzen und Gems bleiben beim Kaufen sichtbar und zählen mit; „Nicht genug Münzen!“ ist bei offenem Shop lesbar.
+- [ ] Teleport-Menü: bis zum untersten Eintrag scrollen – er ist vollständig sichtbar und anklickbar.
+- [ ] Pet-Menü: „Löschen“-Bestätigung erscheint mittig im Panel und ist bedienbar.
+
+**2. Device-Emulator** (Test → Device: iPhone SE quer, ein breites Android-Handy quer, iPad):
+
+- [ ] Kein Knopf (Pets, Tränke, Auto-Sammeln, Freischalten) liegt unter dem Joystick (unten links) oder dem Sprung-Knopf (unten rechts).
+- [ ] Auf dem kleinen Handy sitzen „Pets“ und „Tränke“ nebeneinander (zu wenig Höhe für untereinander), auf PC/Tablet untereinander.
+- [ ] Menüs passen ganz zwischen Währungen und Pizza-Balken; Shop, Pets und Teleport werden dabei zuerst niedriger (Liste scrollt), erst dann kleiner. Knöpfe darin bleiben antippbar (sonst `MIN_PANEL_HEIGHT` im Menü senken).
+- [ ] Trank-Pillen + Auftragskarte ragen nicht unter den Sprung-Knopf (der Stapel schrumpft bei Bedarf).
+- [ ] Freischalt-Knopf ist auf dem kleinen Handy schmaler, Text aber noch lesbar.
+- [ ] Output ohne Fehler (rot), auch nach Tod/Respawn (HUD bleibt an seinem Platz).

@@ -15,6 +15,8 @@ type PortalEntry = GameRules.PortalEntry
 
 local PANEL_SIZE = Vector2.new(520, 440)
 local ROW_HEIGHT = 84
+-- The world list scrolls: the panel may get as short as title + one row.
+local MIN_PANEL_HEIGHT = 84 + ROW_HEIGHT + 16
 local PURPLE = Color3.fromRGB(150, 90, 230)
 local GREY = Color3.fromRGB(170, 165, 160)
 local HERE = Color3.fromRGB(240, 170, 60)
@@ -40,13 +42,10 @@ function PortalMenu.start()
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
-	panel.AnchorPoint = Vector2.new(0.5, 0.5)
-	panel.Position = UDim2.fromScale(0.5, 0.5)
-	panel.Size = UDim2.fromOffset(PANEL_SIZE.X, PANEL_SIZE.Y)
 	panel.BackgroundColor3 = UiKit.CREAM
 	UiKit.corner(panel, 24)
 	UiKit.stroke(panel, 4)
-	panel.Parent = gui
+	UiKit.placeMenu(gui, panel, PANEL_SIZE, MIN_PANEL_HEIGHT)
 
 	local title = UiKit.label(panel, "🌀 Teleport")
 	title.Position = UDim2.fromOffset(20, 12)

@@ -9,11 +9,11 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
+local UiKit = require(script.Parent.UiKit)
 
 type ShopOffer = GameRules.ShopOffer
 type PotionOffer = GameRules.PotionOffer
@@ -31,6 +31,8 @@ local RED = Color3.fromRGB(230, 70, 50)
 local PANEL_SIZE = Vector2.new(680, 460)
 local CARD_HEIGHT = 104
 local HEADER_HEIGHT = 44
+-- The offer list scrolls: the panel may get as short as header + one card.
+local MIN_PANEL_HEIGHT = 104 + CARD_HEIGHT + 16
 
 local MESSAGES: { [string]: string } = {
 	NotEnoughCoins = "Nicht genug Münzen!",
@@ -117,25 +119,6 @@ local function bigButton(parent: Instance, text: string, color: Color3, size: UD
 	return button
 end
 
--- Scales the menu so it fits small phones and stays readable on large monitors.
-local function autoScale(gui: ScreenGui)
-	local uiScale = Instance.new("UIScale")
-	uiScale.Parent = gui
-	local function update()
-		local camera = Workspace.CurrentCamera
-		if camera == nil then
-			return
-		end
-		local size = camera.ViewportSize
-		uiScale.Scale = math.clamp(math.min(size.X / (PANEL_SIZE.X + 60), size.Y / (PANEL_SIZE.Y + 40)), 0.45, 1.3)
-	end
-	update()
-	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(update)
-	if Workspace.CurrentCamera then
-		Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(update)
-	end
-end
-
 function ShopMenu.start()
 	local player = Players.LocalPlayer
 	local buyUpgrade = Net.event("BuyUpgrade")
@@ -147,17 +130,14 @@ function ShopMenu.start()
 	gui.DisplayOrder = 5
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Enabled = false
-	autoScale(gui)
+	UiKit.autoScale(gui)
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
-	panel.AnchorPoint = Vector2.new(0.5, 0.5)
-	panel.Position = UDim2.fromScale(0.5, 0.5)
-	panel.Size = UDim2.fromOffset(PANEL_SIZE.X, PANEL_SIZE.Y)
 	panel.BackgroundColor3 = CREAM
 	corner(panel, 24)
 	stroke(panel, 4)
-	panel.Parent = gui
+	UiKit.placeMenu(gui, panel, PANEL_SIZE, MIN_PANEL_HEIGHT)
 
 	local title = label(panel, "Shop", {
 		Position = UDim2.fromOffset(24, 14),

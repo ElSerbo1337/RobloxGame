@@ -16,6 +16,10 @@ local UiKit = require(script.Parent.UiKit)
 
 type PetEntry = { uid: number, petId: string, equipped: boolean }
 
+-- The pet grid scrolls, so the panel may get as short as header + one row of pets.
+local PANEL_SIZE = Vector2.new(640, 560)
+local MIN_PANEL_HEIGHT = 180 + 170 + 16
+
 local PetMenu = {}
 
 local function readPets(player: Player): { PetEntry }
@@ -50,25 +54,17 @@ function PetMenu.start()
 	gui.DisplayOrder = 5
 	UiKit.autoScale(gui)
 
-	-- Left side, vertically centered: big round button.
-	local openButton = UiKit.button(gui, "Pets", Color3.fromRGB(240, 130, 60))
+	-- Left side, first slot of the HUD grid: big round button.
+	local openButton = UiKit.sideButton("pets", "Pets", UiKit.ORANGE)
 	openButton.Name = "PetsButton"
-	openButton.AnchorPoint = Vector2.new(0, 0.5)
-	openButton.Position = UDim2.new(0, 16, 0.5, 0)
-	openButton.Size = UDim2.fromOffset(96, 96)
-	local round = openButton:FindFirstChildOfClass("UICorner") :: UICorner
-	round.CornerRadius = UDim.new(0.5, 0)
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
-	panel.AnchorPoint = Vector2.new(0.5, 0.5)
-	panel.Position = UDim2.fromScale(0.5, 0.5)
-	panel.Size = UDim2.fromOffset(640, 560)
 	panel.BackgroundColor3 = UiKit.CREAM
 	panel.Visible = false
 	UiKit.corner(panel, 28)
 	UiKit.stroke(panel, 4)
-	panel.Parent = gui
+	UiKit.placeMenu(gui, panel, PANEL_SIZE, MIN_PANEL_HEIGHT)
 
 	local title = UiKit.label(panel, "Meine Pets")
 	title.Position = UDim2.fromOffset(24, 14)
