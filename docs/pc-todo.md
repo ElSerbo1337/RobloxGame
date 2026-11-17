@@ -768,3 +768,16 @@ Alle Positionen kommen jetzt aus `src/shared/HudLayout.luau` (Zonen, siehe `docs
 - [ ] Trank-Pillen + Auftragskarte ragen nicht unter den Sprung-Knopf (der Stapel schrumpft bei Bedarf).
 - [ ] Freischalt-Knopf ist auf dem kleinen Handy schmaler, Text aber noch lesbar.
 - [ ] Output ohne Fehler (rot), auch nach Tod/Respawn (HUD bleibt an seinem Platz).
+
+## #21 A2 Menü-Kleinigkeiten: Scroll, Trank-Untertitel, Stufen-Anzeige
+
+Nach `git pull` und Rojo-Connect in Studio Play drücken (ein Spielstand mit genug Münzen und Gems hilft):
+
+- [ ] Shop in Welt 1 betreten, Liste ganz nach unten scrollen, Shop verlassen, wieder betreten: Liste beginnt **oben** (erste Karte sichtbar).
+- [ ] Danach den Gem-Tresen bzw. einen anderen Shop betreten: auch dort beginnt die Liste oben, nicht an der alten Scroll-Position.
+- [ ] Bei offenem Shop etwas kaufen: Liste bleibt dort, wo man gerade ist (kein Sprung nach oben).
+- [ ] Trank-Menü öffnen: Untertitel „Gleiche Art nochmal trinken verlängert die Zeit.“ steht **unter** dem X-Knopf, ganz lesbar, nicht abgeschnitten oder verdeckt. Meldungen nach „Trinken“ (z. B. „Davon hast du keinen Trank …“) ebenso.
+- [ ] Trank-Menü: alle drei Trank-Karten passen ins Panel, unterste nicht abgeschnitten (auch im Device-Emulator, kleines Handy).
+- [ ] In jedem Shop (Welt 1, Gem-Tresen, Shop 2, Shop 3) zeigen die Karten „Stufe x / N“, wobei N in allen Shops für dasselbe Upgrade gleich ist (Gesamtzahl der Stufen, z. B. „Stufe 2 / 8“).
+- [ ] Ein Upgrade im kleinen Shop bis zu dessen Grenze kaufen: Knopf zeigt „Weitere Stufen im größeren Shop“ (grau, nicht drückbar), Text lesbar.
+- [ ] Ein Upgrade ganz ausbauen: Knopf zeigt „MAX“.

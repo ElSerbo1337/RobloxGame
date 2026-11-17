@@ -1,8 +1,10 @@
 --!strict
 -- Shop menu: opens when the server says the player entered a shop stand, closes when
 -- they walk out (or tap X). Shows price, effect and level of every upgrade the shop
--- sells, split into the coin counter ("Münz-Tresen") and the gem counter ("Gem-Tresen");
--- levels only a bigger shop sells are shown as "im größeren Shop erhältlich".
+-- sells, split into the coin counter ("Münz-Tresen") and the gem counter ("Gem-Tresen").
+-- Levels read "Stufe x / total" (all levels of the upgrade, the same in every shop); at this
+-- shop's limit the card says "Weitere Stufen im größeren Shop". The list starts at the top
+-- every time the menu opens.
 -- The gem counter also sells potions (they land in the potion inventory, see PotionMenu).
 -- Buttons only send wishes (BuyUpgrade, BuyPotion); the server decides and answers ShopPurchase.
 
@@ -245,7 +247,7 @@ function ShopMenu.start()
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Color3.fromRGB(110, 80, 55),
 			})
-			label(card, `Stufe {offer.level} von {offer.shopMaxLevel}`, {
+			label(card, `Stufe {offer.level} / {offer.maxLevel}`, {
 				Position = UDim2.fromOffset(14, 76),
 				Size = UDim2.new(0.42, -14, 0, 22),
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -278,7 +280,7 @@ function ShopMenu.start()
 					end
 				end)
 			elseif offer.status == "ShopLevelLimit" then
-				button = bigButton(card, "Im größeren Shop erhältlich", GREY, buttonSize)
+				button = bigButton(card, "Weitere Stufen im größeren Shop", GREY, buttonSize)
 				button.AutoButtonColor = false
 				button.Active = false
 			else
@@ -359,13 +361,18 @@ function ShopMenu.start()
 	end
 
 	local function open(shopId: string, offers: { ShopOffer }, potions: { PotionOffer }?)
-		currentShop = shopId
 		currentOffers = offers
 		currentPotions = potions or {}
 		local shop = GameConfig.shops[shopId]
 		title.Text = if shop then shop.displayName else "Shop"
 		status.Text = ""
+		local reopened = not gui.Enabled or currentShop ~= shopId
+		currentShop = shopId
 		render()
+		if reopened then
+			-- Start at the top, not where the last visited shop was scrolled to.
+			list.CanvasPosition = Vector2.zero
+		end
 		if not gui.Enabled then
 			gui.Enabled = true
 			local scale = panel:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")

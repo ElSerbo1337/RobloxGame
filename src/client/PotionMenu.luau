@@ -24,7 +24,9 @@ local LOOKS: { { potionId: string, icon: string, color: Color3, effect: string }
 	{ potionId = "Speed", icon = "⚡", color = Color3.fromRGB(90, 170, 255), effect = "Speed" },
 }
 
-local PANEL_SIZE = Vector2.new(560, 470)
+-- Subtitle sits below the close button (full width, never covered); the cards follow.
+local PANEL_SIZE = Vector2.new(560, 502)
+local CARDS_TOP = 132
 local CARD_HEIGHT = 112
 local TIMER_SIZE = Vector2.new(230, 64)
 
@@ -128,8 +130,8 @@ function PotionMenu.start()
 	title.TextXAlignment = Enum.TextXAlignment.Left
 
 	local status = UiKit.label(panel, "Gleiche Art nochmal trinken verlängert die Zeit.")
-	status.Position = UDim2.fromOffset(24, 64)
-	status.Size = UDim2.new(1, -48, 0, 28)
+	status.Position = UDim2.fromOffset(24, 94)
+	status.Size = UDim2.new(1, -48, 0, 30)
 	status.TextXAlignment = Enum.TextXAlignment.Left
 	status.TextColor3 = Color3.fromRGB(110, 80, 55)
 	local hint = status.Text
@@ -145,7 +147,7 @@ function PotionMenu.start()
 		local potion = GameConfig.potions[look.potionId]
 		local card = Instance.new("Frame")
 		card.Name = look.potionId
-		card.Position = UDim2.fromOffset(16, 100 + (index - 1) * (CARD_HEIGHT + 10))
+		card.Position = UDim2.fromOffset(16, CARDS_TOP + (index - 1) * (CARD_HEIGHT + 10))
 		card.Size = UDim2.new(1, -32, 0, CARD_HEIGHT)
 		card.BackgroundColor3 = Color3.fromRGB(255, 236, 200)
 		UiKit.corner(card, 16)

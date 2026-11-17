@@ -161,6 +161,32 @@ describe("shopOffers", function()
 		expect(offer.nextValue).toBe(6)
 	end)
 
+	it("reports the total number of levels of an upgrade, the same in every shop", function()
+		local state = rules.newPlayerState()
+
+		for _, shopId in { "SmallShop", "BigShop", "GemShop" } do
+			for _, offer in rules.shopOffers(state, shopId) do
+				if offer.upgrade == "PizzaSpace" then
+					expect(offer.maxLevel).toBe(3)
+				elseif offer.upgrade == "Magnet" then
+					expect(offer.maxLevel).toBe(2)
+				end
+			end
+		end
+	end)
+
+	it("keeps the total level count at the shop's limit, where only a bigger shop sells more", function()
+		local state = playerWithCoins(1000)
+		state = rules.buyUpgrade(state, "SmallShop", "Magnet").state
+
+		local offer = rules.shopOffers(state, "SmallShop")[3]
+
+		expect(offer.status).toBe("ShopLevelLimit")
+		expect(offer.level).toBe(1)
+		expect(offer.shopMaxLevel).toBe(1)
+		expect(offer.maxLevel).toBe(2)
+	end)
+
 	it("marks a fully upgraded offer as max level without a next price", function()
 		local state = rules.buyUpgrade(playerWithCoins(2000), "SmallShop", "Magnet").state
 		state = rules.buyUpgrade(state, "BigShop", "Magnet").state
