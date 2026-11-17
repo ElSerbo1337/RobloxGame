@@ -34,8 +34,10 @@ def rgb(r, g, b):
 
 # Part name -> colour. Same values as ModelLibrary.PALETTE (Roblox side).
 COLORS = {
-    "Meat": (190, 38, 42),
-    "Fat": (255, 196, 186),
+    # Salami (#24): flat, wine red, small irregular cream fat bits, thin darker casing.
+    "Meat": (150, 28, 46),
+    "Fat": (246, 228, 196),
+    "Casing": (98, 22, 34),
     "Cap": (214, 168, 120),
     "Stem": (252, 242, 222),
     "Cheese": (255, 250, 236),
@@ -70,9 +72,10 @@ COLORS = {
     "Ice": (150, 214, 255),
     "Coal": (42, 42, 48),
     "Carrot": (255, 140, 40),
-    "Basalt": (78, 62, 60),
-    "Lava": (255, 112, 30),
-    "Charcoal": (58, 46, 46),
+    # Volcano (#24): lighter rock so the world stays readable, lava stays hot.
+    "Basalt": (112, 86, 80),
+    "Lava": (255, 128, 36),
+    "Charcoal": (88, 66, 60),
     "CandyPink": (255, 92, 162),
     "CandyWhite": (255, 246, 250),
     "CandyRed": (232, 42, 62),
@@ -199,17 +202,32 @@ def jitter(obj, amount, seed):
 
 
 def build_salami():
-    meat = cylinder(1.0, 0.22, 14, loc=(0, 0, 0.11))
-    bpy.ops.object.modifier_add(type="BEVEL")
-    meat.modifiers["Bevel"].width = 0.06
-    meat.modifiers["Bevel"].segments = 1
-    bpy.ops.object.modifier_apply(modifier="Bevel")
+    # A thin slice: darker casing ring, wine-red meat slightly on top of it (so the
+    # casing shows as a thin rim from above) and small flat, irregular fat bits.
+    casing = cylinder(1.0, 0.1, 24, loc=(0, 0, 0.05))
+    finish(casing, "Casing")
+    meat = cylinder(0.93, 0.1, 24, loc=(0, 0, 0.06))
     finish(meat, "Meat")
-    dots = []
-    spots = [(0.0, 0.0, 0.16), (0.5, 0.35, 0.13), (-0.45, 0.42, 0.12), (-0.35, -0.5, 0.14), (0.45, -0.38, 0.11), (0.05, 0.7, 0.09), (0.72, -0.02, 0.08), (-0.72, -0.05, 0.1)]
-    for x, y, r in spots:
-        dots.append(cylinder(r, 0.04, 8, loc=(x, y, 0.235)))
-    join(dots, "Fat")
+    import random
+
+    rnd = random.Random(24)
+    spots = []
+    while len(spots) < 17:
+        a = rnd.uniform(0, 2 * math.pi)
+        d = 0.78 * math.sqrt(rnd.uniform(0.0, 1.0))
+        x, y = math.cos(a) * d, math.sin(a) * d
+        if all(math.hypot(x - sx, y - sy) > 0.27 for sx, sy, _ in spots):
+            spots.append((x, y, rnd.uniform(0.05, 0.1)))
+    bits = []
+    for i, (x, y, r) in enumerate(spots):
+        bit = cylinder(r, 0.02, rnd.choice((5, 6, 7)), loc=(x, y, 0.115), rot=(0, 0, rnd.uniform(0, math.pi)))
+        bit.scale = (rnd.uniform(0.75, 1.3), rnd.uniform(0.7, 1.15), 1)
+        applied(bit)
+        for v in bit.data.vertices:
+            v.co.x += rnd.uniform(-0.25, 0.25) * r
+            v.co.y += rnd.uniform(-0.25, 0.25) * r
+        bits.append(bit)
+    join(bits, "Fat")
 
 
 def build_mushroom():
@@ -651,7 +669,7 @@ WORLD_DECO = {
     "Farm": (["Barn", "HayBale", "Sunflower", "Fence", "Tree"], (255, 232, 190), (196, 170, 100)),
     "Beach": (["PalmTree", "BeachUmbrella", "BeachRock"], (190, 236, 255), (240, 220, 160)),
     "Icebergs": (["SnowPine", "IceCrystal", "Snowman"], (214, 236, 255), (225, 240, 250)),
-    "Volcano": (["LavaMountain", "LavaRock", "DeadTree"], (110, 50, 45), (70, 55, 55)),
+    "Volcano": (["LavaMountain", "LavaRock", "DeadTree"], (255, 170, 120), (128, 96, 86)),
     "CandyLand": (["Lollipop", "CandyCane", "Cupcake"], (255, 224, 240), (255, 190, 220)),
     "Space": (["Planet", "Rocket", "SpaceCrystal", "MoonRock"], (30, 30, 60), (150, 150, 165)),
 }
@@ -767,6 +785,27 @@ def overview():
     setup_render(objs, os.path.join(PREVIEW_DIR, "Overview.png"), size=960, distance=1.95)
 
 
+def salami_check():
+    """Salami slices on the grass and on the pizza, to judge readability (#24)."""
+    reset_scene()
+    build_pizza()
+    for x, y, r in ((-0.35, 0.2, 0.0), (0.3, 0.32, 1.1), (0.05, -0.38, 2.3)):
+        before = set(bpy.context.scene.objects)
+        build_salami()
+        for o in set(bpy.context.scene.objects) - before:
+            o.scale = (0.26, 0.26, 0.26)
+            o.rotation_euler = (0, 0, r)
+            o.location = Vector((x, y, 0.21)) + Vector(o.location) * 0.26
+    for x, y in ((1.5, 0.6), (1.7, -0.5)):
+        before = set(bpy.context.scene.objects)
+        build_salami()
+        for o in set(bpy.context.scene.objects) - before:
+            o.scale = (0.4, 0.4, 0.4)
+            o.location = Vector((x, y, 0)) + Vector(o.location) * 0.4
+    objs = model_objects()
+    setup_render(objs, os.path.join(PREVIEW_DIR, "SalamiCheck.png"), size=960, distance=1.7)
+
+
 def world_overview(world):
     """All deco models of one world side by side (largest first, at the back)."""
     reset_scene()
@@ -787,12 +826,14 @@ def world_overview(world):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    names = [a for a in args if a in MODELS or a == "Overview" or a in WORLD_DECO]
+    names = [a for a in args if a in MODELS or a in ("Overview", "SalamiCheck") or a in WORLD_DECO]
     if not names:
-        names = list(MODELS) + ["Overview"] + list(WORLD_DECO)
+        names = list(MODELS) + ["Overview", "SalamiCheck"] + list(WORLD_DECO)
     for n in names:
         if n == "Overview":
             overview()
+        elif n == "SalamiCheck":
+            salami_check()
         elif n in WORLD_DECO:
             world_overview(n)
         else:

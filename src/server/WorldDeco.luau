@@ -378,14 +378,14 @@ local FALLBACK: { [string]: { Piece } } = {
 			shape = "Ball",
 			size = Vector3.new(1, 1, 1),
 			offset = Vector3.new(0, 0, 0),
-			color = rgb(78, 62, 60),
+			color = rgb(112, 86, 80),
 			material = Enum.Material.Basalt,
 		},
 		{
 			shape = "Cylinder",
 			size = Vector3.new(0.2, 0.04, 0.2),
 			offset = Vector3.new(0, 0.5, 0),
-			color = rgb(255, 112, 30),
+			color = rgb(255, 128, 36),
 			material = Enum.Material.Neon,
 		},
 	},
@@ -394,7 +394,7 @@ local FALLBACK: { [string]: { Piece } } = {
 			shape = "Ball",
 			size = Vector3.new(1, 0.7, 0.9),
 			offset = Vector3.new(0, 0.2, 0),
-			color = rgb(78, 62, 60),
+			color = rgb(112, 86, 80),
 			material = Enum.Material.Basalt,
 		},
 	},
@@ -403,7 +403,7 @@ local FALLBACK: { [string]: { Piece } } = {
 			shape = "Cylinder",
 			size = Vector3.new(0.12, 1.1, 0.12),
 			offset = Vector3.new(0, 0.55, 0),
-			color = rgb(58, 46, 46),
+			color = rgb(88, 66, 60),
 		},
 	},
 	Lollipop = {
@@ -579,7 +579,7 @@ local SPECS: { [string]: WorldDecoSpec } = {
 		},
 	},
 	Volcano = {
-		path = { color = rgb(55, 45, 45), material = Enum.Material.Basalt },
+		path = { color = rgb(92, 70, 64), material = Enum.Material.Basalt },
 		edge = {
 			{ model = "DeadTree", width = { 7, 10 }, weight = 2, collide = true },
 			{ model = "LavaRock", width = { 7, 11 }, weight = 3, collide = true },
@@ -622,6 +622,29 @@ local SPECS: { [string]: WorldDecoSpec } = {
 			{ model = "Planet", width = 60, offset = Vector3.new(70, 70, -90), yaw = 20 },
 		},
 	},
+}
+
+-- Volcano lava accents (#24), relative to the world center. Kept outside the topping
+-- area, the stations, phone/van and the barriers (see decorateWorld).
+local LAVA_COLOR = rgb(255, 128, 36)
+local LAVA_LIGHT = rgb(255, 150, 70)
+local LAVA_POOLS = {
+	Vector3.new(-80, 0, 0),
+	Vector3.new(84, 0, -60),
+	Vector3.new(-30, 0, -84),
+	Vector3.new(30, 0, -84),
+	Vector3.new(-80, 0, -36),
+	Vector3.new(76, 0, -10),
+	Vector3.new(0, 0, -76),
+	Vector3.new(-76, 0, 38),
+}
+local LAVA_CRACKS = {
+	{ at = Vector3.new(-68, 0, -28), length = 14, yaw = 15 },
+	{ at = Vector3.new(-68, 0, 12), length = 12, yaw = -20 },
+	{ at = Vector3.new(68, 0, -40), length = 14, yaw = -10 },
+	{ at = Vector3.new(-48, 0, -70), length = 12, yaw = 75 },
+	{ at = Vector3.new(18, 0, -70), length = 14, yaw = 100 },
+	{ at = Vector3.new(50, 0, -72), length = 10, yaw = 80 },
 }
 
 local function pick(rng: Random, kinds: { PropKind }): PropKind
@@ -743,25 +766,41 @@ function WorldDeco.decorateWorld(folder: Instance, worldId: string, center: Vect
 			Parent = deco,
 		})
 	elseif worldId == "Volcano" then
-		-- Glowing lava pools at the edges (no collision effect, purely visual).
-		for _, spot in
-			{ Vector3.new(-80, 0, 0), Vector3.new(84, 0, -60), Vector3.new(-30, 0, -84), Vector3.new(30, 0, -84) }
-		do
+		-- Glowing lava accents (#24): pools and cracks around the topping area, each with
+		-- a warm light, so the world glows without getting dark. Purely visual.
+		for _, spot in LAVA_POOLS do
 			local pool = part({
 				Name = "LavaPool",
 				Shape = Enum.PartType.Cylinder,
 				Size = Vector3.new(0.2, rng:NextNumber(8, 12), rng:NextNumber(8, 12)),
 				CFrame = CFrame.new(base + spot + Vector3.new(0, 0.12, 0)) * CFrame.Angles(0, 0, math.rad(90)),
-				Color = rgb(255, 112, 30),
+				Color = LAVA_COLOR,
 				Material = Enum.Material.Neon,
 				CanCollide = false,
 				Parent = deco,
 			})
 			local light = Instance.new("PointLight")
-			light.Color = rgb(255, 120, 40)
-			light.Range = 16
-			light.Brightness = 1.5
+			light.Color = LAVA_LIGHT
+			light.Range = 22
+			light.Brightness = 2
 			light.Parent = pool
+		end
+		for _, crack in LAVA_CRACKS do
+			local strip = part({
+				Name = "LavaCrack",
+				Size = Vector3.new(1.2, 0.12, crack.length),
+				CFrame = CFrame.new(base + crack.at + Vector3.new(0, 0.18, 0))
+					* CFrame.Angles(0, math.rad(crack.yaw), 0),
+				Color = LAVA_COLOR,
+				Material = Enum.Material.Neon,
+				CanCollide = false,
+				Parent = deco,
+			})
+			local light = Instance.new("PointLight")
+			light.Color = LAVA_LIGHT
+			light.Range = 14
+			light.Brightness = 1.2
+			light.Parent = strip
 		end
 	elseif worldId == "Space" then
 		-- Glowing crystals light up the night a little.

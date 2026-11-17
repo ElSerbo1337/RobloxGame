@@ -670,3 +670,25 @@ Verwaister Lock (Server stirbt ohne Freigabe):
 Optional (veröffentlichtes Spiel, 2 Server): Spieler wechselt per Teleport/Neubeitritt schnell den Server → auf dem neuen Server ist der zuletzt gespielte Stand da, nie ein älterer. Im Server-Log des neuen Servers ggf. kurz `… belegt, warte …`, dann normales Laden.
 
 Fehler gefunden? Beheben, `lune run test` erneut ausführen, hier abhaken, committen, pushen.
+
+## #24 Salami-Modell und hellerer Vulkan
+
+Vorher: `git pull`, `lune run test` → alle grün (u. a. `WorldLooks` „keeps the volcano readable / fiery“). Vorschau: `assets/previews/Salami.png`, auf Pizza und Boden: `assets/previews/SalamiCheck.png`, Vulkan-Deko: `assets/previews/World_Volcano.png`.
+
+Ohne Neu-Import läuft alles weiter: Die alte Salami wird schon in den neuen Farben (weinrot, cremefarbene Fettaugen) eingefärbt, weil das Spiel nach Teilnamen färbt. Vulkan-Licht, hellerer Boden/Felsen und die zusätzlichen Lava-Akzente brauchen keinen Import.
+
+**1. Neue Salami importieren** (`assets/models/Salami.fbx`, Teile `Casing`, `Meat`, `Fat`):
+
+- [ ] In **ReplicatedStorage → GameAssets → Models** das alte Model `Salami` löschen.
+- [ ] **Home → Import 3D** → `assets/models/Salami.fbx` → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**. Das neue Model nach `GameAssets/Models` ziehen, Name exakt `Salami` (Teile dürfen `Meat.001` usw. heißen).
+- [ ] Place speichern und **File → Publish to Roblox**.
+
+**2. Test** (Rojo verbunden, **Play**, 1 Spieler):
+
+- [ ] Output ohne rote Fehler.
+- [ ] Welt 1: Salami ist eine flache, weinrote Scheibe mit kleinen, unregelmäßigen cremefarbenen Fettstücken und dünnem dunklem Rand – kein Fliegenpilz mehr. Auf dem grünen Boden gut zu sehen und anklickbar.
+- [ ] Salami sammeln: Auf der Hand-Pizza hebt sie sich klar von Soße (hellrot) und Käse (gelb) ab.
+- [ ] Vulkan (Münz-Tipp aus #11): warmes, orangefarbenes Licht von oben, hellerer Basalt-Boden, nur leichter orangefarbener Dunst – Stationen, Schilder, Beläge (Chili, Peperoni, Jalapeño) und Wege gut erkennbar, auch in der Ferne. Die feurige Stimmung bleibt (orange Wolken, Bloom auf der Lava).
+- [ ] Lava-Akzente: 8 leuchtende Lava-Pools und 6 Lava-Risse rund um das Belagfeld, mit warmem Licht. Keiner liegt im Belagfeld, vor Ofen/Shop/Ei/Portal, bei Telefon/Lieferwagen oder im großen Vulkan (hinten links).
+- [ ] Nichts ist überstrahlt. Falls zu hell/zu dunkel: in `src/shared/WorldLooks.luau` (Eintrag `Volcano`) `brightness` bzw. `ambient`/`outdoorAmbient` anpassen und hier notieren.
+- [ ] Bildrate im Vulkan bleibt flüssig (14 zusätzliche Lichter); auf dem Handy-Emulator kurz prüfen.

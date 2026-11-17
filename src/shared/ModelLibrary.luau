@@ -19,8 +19,10 @@ local MODELS_FOLDER = "Models"
 -- so the look never depends on how Studio imported the materials.
 -- Keep in sync with COLORS in tools/blender/build_models.py.
 local PALETTE: { [string]: { color: Color3, material: Enum.Material } } = {
-	Meat = { color = Color3.fromRGB(190, 38, 42), material = Enum.Material.SmoothPlastic },
-	Fat = { color = Color3.fromRGB(255, 196, 186), material = Enum.Material.SmoothPlastic },
+	-- Salami (#24): wine red with cream fat bits and a thin darker casing.
+	Meat = { color = Color3.fromRGB(150, 28, 46), material = Enum.Material.SmoothPlastic },
+	Fat = { color = Color3.fromRGB(246, 228, 196), material = Enum.Material.SmoothPlastic },
+	Casing = { color = Color3.fromRGB(98, 22, 34), material = Enum.Material.SmoothPlastic },
 	Cap = { color = Color3.fromRGB(214, 168, 120), material = Enum.Material.SmoothPlastic },
 	Stem = { color = Color3.fromRGB(252, 242, 222), material = Enum.Material.SmoothPlastic },
 	Cheese = { color = Color3.fromRGB(255, 250, 236), material = Enum.Material.SmoothPlastic },
@@ -59,9 +61,10 @@ local PALETTE: { [string]: { color: Color3, material: Enum.Material } } = {
 	Ice = { color = Color3.fromRGB(150, 214, 255), material = Enum.Material.Glass },
 	Coal = { color = Color3.fromRGB(42, 42, 48), material = Enum.Material.SmoothPlastic },
 	Carrot = { color = Color3.fromRGB(255, 140, 40), material = Enum.Material.SmoothPlastic },
-	Basalt = { color = Color3.fromRGB(78, 62, 60), material = Enum.Material.Basalt },
-	Lava = { color = Color3.fromRGB(255, 112, 30), material = Enum.Material.Neon },
-	Charcoal = { color = Color3.fromRGB(58, 46, 46), material = Enum.Material.SmoothPlastic },
+	-- Volcano (#24): lighter rock so the world stays readable.
+	Basalt = { color = Color3.fromRGB(112, 86, 80), material = Enum.Material.Basalt },
+	Lava = { color = Color3.fromRGB(255, 128, 36), material = Enum.Material.Neon },
+	Charcoal = { color = Color3.fromRGB(88, 66, 60), material = Enum.Material.SmoothPlastic },
 	CandyPink = { color = Color3.fromRGB(255, 92, 162), material = Enum.Material.SmoothPlastic },
 	CandyWhite = { color = Color3.fromRGB(255, 246, 250), material = Enum.Material.SmoothPlastic },
 	Stick = { color = Color3.fromRGB(255, 246, 250), material = Enum.Material.SmoothPlastic },

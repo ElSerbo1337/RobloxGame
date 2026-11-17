@@ -4,7 +4,7 @@
 export type Look = { color: Color3, material: Enum.Material }
 
 local LOOKS: { [string]: Look } = {
-	Salami = { color = Color3.fromRGB(190, 45, 40), material = Enum.Material.SmoothPlastic },
+	Salami = { color = Color3.fromRGB(150, 28, 46), material = Enum.Material.SmoothPlastic },
 	Mushroom = { color = Color3.fromRGB(215, 190, 160), material = Enum.Material.SmoothPlastic },
 	Mozzarella = { color = Color3.fromRGB(250, 248, 235), material = Enum.Material.SmoothPlastic },
 	-- World 2 (Bauernhof)

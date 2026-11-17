@@ -58,8 +58,8 @@ local THEMES: { [string]: Theme } = {
 		material = Enum.Material.Snow,
 	},
 	Volcano = {
-		ground = Color3.fromRGB(70, 55, 55),
-		area = Color3.fromRGB(110, 60, 45),
+		ground = Color3.fromRGB(118, 88, 78),
+		area = Color3.fromRGB(150, 86, 62),
 		accent = Color3.fromRGB(255, 90, 30),
 		material = Enum.Material.Basalt,
 	},
