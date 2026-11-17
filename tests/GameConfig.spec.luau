@@ -481,6 +481,27 @@ describe("GameConfig pets and eggs", function()
 		end
 	end)
 
+	it("gives every egg its own look: base colour, accent colour and one of the known patterns", function()
+		local PATTERNS =
+			{ Spots = true, Stripes = true, Waves = true, Diamonds = true, Cracks = true, Swirl = true, Stars = true }
+		local usedColors, usedPatterns = {}, {}
+		for eggId, egg in GameConfig.eggs do
+			local look = egg.look
+			expect(look ~= nil).toBe(true)
+			expect(string.match(look.color, "^%x%x%x%x%x%x$") ~= nil).toBe(true)
+			expect(string.match(look.accent, "^%x%x%x%x%x%x$") ~= nil).toBe(true)
+			expect(look.color ~= look.accent).toBe(true)
+			expect(PATTERNS[look.pattern]).toBe(true)
+			expect(look.glow == nil or type(look.glow) == "boolean").toBe(true)
+			expect(look.fancy == nil or type(look.fancy) == "boolean").toBe(true)
+			-- Distinguishable at a glance: no two eggs share a base colour or a pattern.
+			expect(usedColors[look.color]).toBe(nil)
+			expect(usedPatterns[look.pattern]).toBe(nil)
+			usedColors[look.color] = eggId
+			usedPatterns[look.pattern] = eggId
+		end
+	end)
+
 	it("makes rarer pets in an egg give a bigger bonus", function()
 		for _, egg in GameConfig.eggs do
 			local entries = table.clone(egg.pets)

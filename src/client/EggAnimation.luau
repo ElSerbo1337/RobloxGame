@@ -147,7 +147,7 @@ function EggAnimation.start()
 	backdrop.Activated:Connect(close)
 
 	-- (eggId, petId, petId?, petId?): one pet id per opened egg.
-	Net.event("EggOpened").OnClientEvent:Connect(function(_eggId: string, ...: string)
+	Net.event("EggOpened").OnClientEvent:Connect(function(eggId: string, ...: string)
 		local petIds = {}
 		for _, petId in { ... } do
 			if GameConfig.pets[petId] then
@@ -168,6 +168,10 @@ function EggAnimation.start()
 		end
 		cards.Visible = false
 
+		-- The cracking egg wears the colour of the opened egg (GameConfig look, #29).
+		local eggConfig = GameConfig.eggs[eggId]
+		local look = eggConfig and eggConfig.look
+		egg.BackgroundColor3 = if look then Color3.fromHex(look.color) else Color3.fromRGB(255, 245, 220)
 		egg.Visible = true
 		egg.Rotation = 0
 		egg.Size = UDim2.fromOffset(180, 230)

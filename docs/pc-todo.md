@@ -781,3 +781,32 @@ Nach `git pull` und Rojo-Connect in Studio Play drücken (ein Spielstand mit gen
 - [ ] In jedem Shop (Welt 1, Gem-Tresen, Shop 2, Shop 3) zeigen die Karten „Stufe x / N“, wobei N in allen Shops für dasselbe Upgrade gleich ist (Gesamtzahl der Stufen, z. B. „Stufe 2 / 8“).
 - [ ] Ein Upgrade im kleinen Shop bis zu dessen Grenze kaufen: Knopf zeigt „Weitere Stufen im größeren Shop“ (grau, nicht drückbar), Text lesbar.
 - [ ] Ein Upgrade ganz ausbauen: Knopf zeigt „MAX“.
+
+## #29 Ei-Modelle und Ei-Stände
+
+Vorher: `git pull`, `lune run test` → alle grün. Vorschau: alle Eier auf ihren Ständen in `assets/previews/eggs/Overview.png`, einzeln `assets/previews/eggs/<EiId>.png` und `EggStand.png`; `FancyDemo.png` zeigt die auffälligere Variante (Goldband, Goldperlen, leuchtendes Muster) für das zweite Ei pro Welt aus Phase C (`fancy = true` im `look` des Eis in `GameConfig`).
+
+Ohne Import läuft alles weiter: Jedes Ei ist dann eine Kugel in seiner Weltfarbe mit drei Punkten in der Akzentfarbe (Vulkan/Weltraum leuchtend), der Stand besteht aus Sockel, Zylinder, farbigem Ring und hellem Schild.
+
+**1. Modelle importieren** (8 Dateien in `assets/models/eggs/`):
+
+- [ ] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Eggs` anlegen.
+- [ ] **Home → Import 3D** → in `assets/models/eggs/` alle 8 `.fbx` markieren (oder über das Namensfeld in Gruppen) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
+- [ ] Die Modelle heißen wie die Dateien: `GardenEgg`, `FarmEgg`, `BeachEgg`, `IceEgg`, `VolcanoEgg`, `CandyEgg`, `SpaceEgg`, `EggStand`. MeshParts heißen `Egg_FFF3DC`, `Egg_FF7A1A_Neon` … bzw. `Stone`, `StandBody`, `StandTrim`, `StandGold`, `EggSign` (Endungen wie `.001` sind ok). Alle in `Models/Eggs` ziehen, **Namen nicht ändern**.
+- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Eggs:GetChildren())` → **8**.
+- [ ] Place speichern und **File → Publish to Roblox**.
+
+**2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch die Welten):
+
+- [ ] Output ohne rote Fehler.
+- [ ] In jeder Welt steht ein gestalteter Stand (Steinsockel, heller Zylinder, Ring und Goldperlen in der Akzentfarbe des Eis) mit dem Ei darauf. Das Ei steht auf dem Stand, nicht darin und nicht schwebend.
+- [ ] Die 7 Eier sind auf einen Blick unterscheidbar und sehen aus wie in `Overview.png`: Garten creme mit roten Punkten, Bauernhof gelb mit braunen Streifen, Strand türkis mit Wellen, Eis hellblau mit Rauten, Vulkan dunkelbraun mit **leuchtenden** Lava-Rissen, Süßigkeiten rosa mit weißem Wirbel, Weltraum lila mit **leuchtenden** Sternen.
+- [ ] Das große Muster-Element (z. B. der große Punkt/Stern) und das Schild zeigen **zum Weg hin (-Z)**. Zeigen Ei oder Schild-Brett nach hinten: in `src/shared/ModelLibrary.luau` `PET_YAW` (gilt auch für Eier) bzw. `YAW.EggStand` (jetzt 180) auf 0 ändern.
+- [ ] Schild vorne am Stand: Name und Preis (z. B. „Garten-Ei / 💰 25“, „Eis-Ei / 💰 12.000“), gut lesbar, liegt genau auf dem hellen Schild-Brett des Modells. Sitzt der Text versetzt: `SIGN_OFFSET` in `src/server/EggService.luau` anpassen.
+- [ ] Man läuft gegen den Stand (kollidiert), steckt aber nicht in unsichtbaren Wänden neben dem Sockel.
+- [ ] **Unverändert:** Ei-Vorschau erscheint beim Herangehen über dem Ei (nicht im Ei, nicht vom Stand verdeckt), „1 öffnen“ / „3 öffnen“ funktionieren, Glücks-Trank-Anzeige, Abstandsprüfung („Zu weit weg!“ ab ca. 18 Studs).
+- [ ] Knack-Animation: Das wackelnde Ei hat die Farbe des geöffneten Eis (z. B. lila beim Weltraum-Ei), danach erscheinen wie bisher die Pet-Karten.
+- [ ] Tutorial-Pfeil „Ei öffnen“ zeigt weiterhin auf den Ei-Stand in Welt 1.
+- [ ] Neon-Teile (Vulkan, Weltraum) leuchten, ohne überstrahlt zu sein.
+
+**Handy** (Device-Emulator): Schild aus 10–15 Studs Entfernung lesbar; Ei-Vorschau-Knöpfe bleiben antippbar.

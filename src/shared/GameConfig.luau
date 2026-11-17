@@ -323,9 +323,14 @@ local GameConfig = {
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
+	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
+	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
+	-- Cracks, Swirl, Stars. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
 			displayName = "Garten-Ei",
+			look = { color = "FFF3DC", accent = "E8452E", pattern = "Spots" },
 			price = 25,
 			pets = {
 				{ pet = "DoughHamster", chance = 50 },
@@ -338,6 +343,7 @@ local GameConfig = {
 		},
 		FarmEgg = {
 			displayName = "Bauernhof-Ei",
+			look = { color = "F2CF6B", accent = "8A5A2B", pattern = "Stripes" },
 			price = 200,
 			pets = {
 				{ pet = "FarmChick", chance = 50 },
@@ -350,6 +356,7 @@ local GameConfig = {
 		},
 		BeachEgg = {
 			displayName = "Strand-Ei",
+			look = { color = "4FCFE0", accent = "FFF1C1", pattern = "Waves" },
 			price = 1500,
 			pets = {
 				{ pet = "SandCrab", chance = 50 },
@@ -362,6 +369,7 @@ local GameConfig = {
 		},
 		IceEgg = {
 			displayName = "Eis-Ei",
+			look = { color = "DDF3FF", accent = "3E9BE6", pattern = "Diamonds" },
 			price = 12000,
 			pets = {
 				{ pet = "IcePenguin", chance = 50 },
@@ -374,6 +382,7 @@ local GameConfig = {
 		},
 		VolcanoEgg = {
 			displayName = "Vulkan-Ei",
+			look = { color = "5A2A24", accent = "FF7A1A", pattern = "Cracks", glow = true },
 			price = 100000,
 			pets = {
 				{ pet = "LavaLizard", chance = 50 },
@@ -386,6 +395,7 @@ local GameConfig = {
 		},
 		CandyEgg = {
 			displayName = "Süßigkeiten-Ei",
+			look = { color = "FF8CC6", accent = "FFFFFF", pattern = "Swirl" },
 			price = 800000,
 			pets = {
 				{ pet = "GummyWorm", chance = 50 },
@@ -398,6 +408,7 @@ local GameConfig = {
 		},
 		SpaceEgg = {
 			displayName = "Weltraum-Ei",
+			look = { color = "3B2A7A", accent = "FFD84A", pattern = "Stars", glow = true },
 			price = 6400000,
 			pets = {
 				{ pet = "MoonMouse", chance = 50 },

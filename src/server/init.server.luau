@@ -80,7 +80,10 @@ for _, world in laterWorlds do
 end
 -- Eggs: world 1 gets its own stand (x = -30 next to the spawn), later worlds use their egg stand.
 local eggSpots = {
-	{ eggId = GameConfig.worlds[1].eggs[1], stand = EggService.buildStand(layout.folder, Vector3.new(-30, 0.1, 66)) },
+	{
+		eggId = GameConfig.worlds[1].eggs[1],
+		stand = EggService.buildStand(layout.folder, Vector3.new(-30, 0.1, 66), GameConfig.worlds[1].eggs[1]),
+	},
 }
 for _, world in laterWorlds do
 	local eggId = world.eggStand:GetAttribute("EggId")

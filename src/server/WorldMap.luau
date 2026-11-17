@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local EggService = require(script.Parent.EggService)
 
 export type Layout = {
 	worldId: string,
@@ -212,18 +213,9 @@ function WorldMap.build(world: any, index: number): Layout
 
 	-- Egg stand on the other side of the entrance; EggService puts the world's egg on it.
 	local eggPos = center + Vector3.new(-30, 0, 68)
-	local eggStand = part({
-		Name = "EggStand",
-		Shape = Enum.PartType.Cylinder,
-		Size = Vector3.new(1.5, 10, 10),
-		CFrame = CFrame.new(eggPos + Vector3.new(0, 0.75, 0)) * CFrame.Angles(0, 0, math.pi / 2),
-		Color = Color3.fromRGB(240, 230, 210),
-		Material = Enum.Material.SmoothPlastic,
-		Parent = folder,
-	})
 	local eggId = world.eggs and world.eggs[1]
+	local eggStand = EggService.buildStand(folder, eggPos, eggId)
 	eggStand:SetAttribute("WorldId", world.id)
-	eggStand:SetAttribute("EggId", eggId)
 
 	-- Barrier on the border to the previous world. Solid for everyone on the server;
 	-- each client makes it passable locally once its player unlocked the world.

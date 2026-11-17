@@ -5,8 +5,9 @@
 -- Every function here falls back gracefully: if a model is missing, nothing happens
 -- and the callers keep their simple placeholder parts.
 -- Models may also sit in subfolders of Models (e.g. Models/Pets, Models/Deco).
--- Pets (tools/blender/build_pets.py) carry their colour in the part name instead of a
--- palette entry: "Pet_F2D49B" or "Pet_FF7A1A_Neon" (materials: Neon, Glass, Metal).
+-- Pets (tools/blender/build_pets.py) and eggs (tools/blender/build_eggs.py) carry their
+-- colour in the part name instead of a palette entry: "Pet_F2D49B", "Pet_FF7A1A_Neon",
+-- "Egg_FFF3DC" or "Egg_FFC83A_Metal" (materials: Neon, Glass, Metal).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -114,6 +115,11 @@ local PALETTE: { [string]: { color: Color3, material: Enum.Material } } = {
 	CounterOven = { color = Color3.fromRGB(226, 112, 62), material = Enum.Material.SmoothPlastic },
 	CounterOvenGlow = { color = Color3.fromRGB(255, 150, 40), material = Enum.Material.Neon },
 	CounterBoxes = { color = Color3.fromRGB(222, 178, 118), material = Enum.Material.SmoothPlastic },
+	-- Egg stand (#29, tools/blender/build_eggs.py). EggService tints StandTrim per egg.
+	StandBody = { color = Color3.fromRGB(255, 244, 222), material = Enum.Material.SmoothPlastic },
+	StandTrim = { color = Color3.fromRGB(240, 130, 60), material = Enum.Material.SmoothPlastic },
+	StandGold = { color = Color3.fromRGB(255, 200, 40), material = Enum.Material.SmoothPlastic },
+	EggSign = { color = Color3.fromRGB(255, 248, 230), material = Enum.Material.SmoothPlastic },
 }
 
 -- Materials a pet part can ask for with a name suffix ("Pet_FF7A1A_Neon").
@@ -136,8 +142,9 @@ local YAW: { [string]: number } = {
 	DeliveryVan = 180,
 	PortalArch = 180,
 	PizzaStand = 180,
+	EggStand = 180,
 }
--- Same fix for every pet (all pets are built facing Blender +Y, like the oven).
+-- Same fix for every pet and egg (all are built facing Blender +Y, like the oven).
 local PET_YAW = 180
 
 local ModelLibrary = {}
@@ -165,27 +172,29 @@ local function source(name: string): Instance?
 	return nil
 end
 
--- Colour and material of a part: palette entry by name, or the colour in a pet part
--- name ("Pet_F2D49B_Neon"). Studio may add suffixes like ".001"; they are ignored.
+-- Colour and material of a part: palette entry by name, or the colour in a pet or egg
+-- part name ("Pet_F2D49B_Neon", "Egg_FFF3DC"). Studio may add suffixes like ".001";
+-- they are ignored.
 local function lookFor(partName: string): { color: Color3, material: Enum.Material }?
 	local base = string.match(partName, "^[^%.]+") or partName
 	local palette = PALETTE[base]
 	if palette then
 		return palette
 	end
-	local hex = string.match(base, "^Pet_(%x%x%x%x%x%x)")
-	if hex == nil then
+	local prefix, hex = string.match(base, "^(%a+)_(%x%x%x%x%x%x)")
+	if hex == nil or (prefix ~= "Pet" and prefix ~= "Egg") then
 		return nil
 	end
-	local suffix = string.match(base, "^Pet_%x+_(%a+)$")
+	local suffix = string.match(base, "^%a+_%x+_(%a+)$")
 	return {
 		color = Color3.fromHex(hex),
 		material = (suffix and PET_MATERIALS[suffix]) or Enum.Material.SmoothPlastic,
 	}
 end
 
+-- Pets and eggs: built facing Blender +Y, turned with PET_YAW.
 local function isPet(name: string): boolean
-	return GameConfig.pets[name] ~= nil
+	return GameConfig.pets[name] ~= nil or GameConfig.eggs[name] ~= nil
 end
 
 function ModelLibrary.has(name: string): boolean
