@@ -126,6 +126,26 @@ function WorldMap.centerOf(index: number): Vector3
 	return Vector3.new(0, GROUND_Y, -WORLD_SIZE * (index - 1))
 end
 
+-- Where players (re)spawn in a world: on the path between egg and oven, facing the
+-- topping area (same spot as world 1's SpawnLocation).
+local SPAWN_OFFSET = Vector3.new(0, 3, 60)
+
+function WorldMap.spawnPointOf(index: number): CFrame
+	local position = WorldMap.centerOf(index) + SPAWN_OFFSET
+	return CFrame.lookAt(position, position - Vector3.zAxis)
+end
+
+-- Index of the world (world 1 included) whose ground rectangle contains the position, or nil.
+function WorldMap.worldIndexAt(position: Vector3): number?
+	for index = 1, #GameConfig.worlds do
+		local offset = position - WorldMap.centerOf(index)
+		if math.abs(offset.X) <= WORLD_SIZE / 2 and math.abs(offset.Z) <= WORLD_SIZE / 2 then
+			return index
+		end
+	end
+	return nil
+end
+
 function WorldMap.build(world: any, index: number): Layout
 	assert(index >= 2, "world 1 is built by World1Map")
 	local theme = THEMES[world.id] or DEFAULT_THEME

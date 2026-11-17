@@ -11,6 +11,7 @@ local Workspace = game:GetService("Workspace")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
+local SpawnService = require(script.Parent.SpawnService)
 local WorldMap = require(script.Parent.WorldMap)
 
 local CHECK_SECONDS = 0.2
@@ -179,6 +180,8 @@ function PortalService.start(portals: { Portal })
 		insidePortal[player] = nil
 		portalClose:FireClient(player)
 		character:PivotTo(target.arrival)
+		-- Respawn in the world the portal sent the player to.
+		SpawnService.enterWorld(player, worldId)
 	end)
 
 	-- Keep an open menu current (e.g. a world unlocked while standing in the portal).

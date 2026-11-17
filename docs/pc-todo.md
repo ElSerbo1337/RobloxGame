@@ -632,3 +632,20 @@ So geht's für jeden Schlüssel der Tabelle:
 - [ ] Output ohne Fehler wie „Failed to load sound“ (sonst ID falsch oder nicht öffentlich → anderen Sound wählen).
 - [ ] Plopp beim Sammeln (nicht beim Beitreten, nicht als Dauerfeuer beim Auto-Sammeln), Kasse beim Verkaufen und Liefern, Glitzern bei Gems, Knacken in der Ei-Animation, Klingeln am Telefon.
 - [ ] Musik startet in Welt 1, läuft in Schleife und wechselt beim Betreten jeder anderen Welt (auch per Portal) innerhalb ~1 s. Lautstärke ist leise im Hintergrund, Effekte bleiben gut hörbar.
+
+## #25 Respawn in der aktuellen Welt
+
+Vorher: `lune run test` → muss `0 failed` melden (Respawn-Tests in `tests/Respawn.spec.luau`).
+
+Studio: Rojo verbinden, dann **Play** (1 Spieler). Für schnelles Testen Münzen per Command Bar geben (Server-Seite) oder einen Spielstand mit freigeschalteten Welten nutzen. Das Attribut `LastWorldId` am Player (Explorer → Players → Name → Attributes) zeigt die gemerkte Welt.
+
+- [ ] Output ohne rote Fehler; Neuer Spieler: `LastWorldId` wird nach dem Start `PizzeriaGarden` (Figur steht in Welt 1).
+- [ ] Zu Fuß über die (freigeschaltete) Barriere in Welt 2 laufen → `LastWorldId` = `Farm`. Zurück in Welt 1 → `PizzeriaGarden`.
+- [ ] Per Portal nach Welt 3 teleportieren → `LastWorldId` = `Beach` sofort nach dem Teleport.
+- [ ] **Tod in Welt 3** (Esc → Reset Character) → Figur erscheint in Welt 3 auf dem Weg zwischen Ei und Ofen, Blick zum Belagfeld; Pizza ist wieder in der Hand. Kein kurzes Aufblitzen/Hängenbleiben in Welt 1, das stört (ein Frame am Welt-1-Spawn ist okay).
+- [ ] Tod in Welt 1 → normaler gelber Spawn in Welt 1.
+- [ ] **Rejoin**: in Welt 3 stehen, Stop, erneut Play (mit API-Zugriff, damit gespeichert wird) → Start in Welt 3.
+- [ ] **Gesperrte Welt**: In der Command Bar (Server) für den Spieler `LastWorldId` im Spielstand auf eine nicht freigeschaltete Welt setzen bzw. mit einem Spielstand ohne diese Welt joinen → Start am normalen Spawn in Welt 1, keine Fehlermeldung.
+- [ ] Alter Spielstand (vor #25, ohne `lastWorldId`) lädt ohne Fehler und startet in Welt 1.
+- [ ] Barriere-Schutz: In einer gesperrten Welt (z. B. per Command Bar hineingesetzt) wird man wie bisher zurückgesetzt und `LastWorldId` ändert sich **nicht** auf die gesperrte Welt.
+- [ ] **Mehrspieler** (2 Spieler): A stirbt in Welt 2, B in Welt 1 → jeder erscheint in seiner eigenen Welt.

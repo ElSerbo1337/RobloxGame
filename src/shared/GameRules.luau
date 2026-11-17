@@ -41,6 +41,9 @@ export type PlayerState = {
 	-- `call` = order offered by the ringing phone, `order` = accepted order being delivered,
 	-- `nextCallAt` = earliest time (server clock, seconds) the phone rings again.
 	delivery: Delivery,
+	-- World the player was last in (walked into or teleported to); "" = none yet.
+	-- Deaths and rejoins spawn there while it is unlocked (see spawnWorld).
+	lastWorldId: string,
 }
 
 export type Delivery = { call: Order?, order: Order?, nextCallAt: number? }
@@ -173,6 +176,7 @@ function GameRules.new(config: any)
 			potions = {},
 			activePotions = {},
 			delivery = {},
+			lastWorldId = "",
 		}
 	end
 
@@ -294,6 +298,33 @@ function GameRules.new(config: any)
 			return fail(state, "WorldLocked")
 		end
 		return { ok = true, state = state }
+	end
+
+	-- The player walked or teleported into a world: remember it as the respawn world.
+	-- Only unlocked worlds count; entering the current world again keeps the same state.
+	function rules.enterWorld(state: PlayerState, worldId: string): Result
+		if findWorld(worldId) == nil then
+			return fail(state, "UnknownWorld")
+		end
+		if not rules.isWorldUnlocked(state, worldId) then
+			return fail(state, "WorldLocked")
+		end
+		if state.lastWorldId == worldId then
+			return { ok = true, state = state }
+		end
+		local newState = table.clone(state)
+		newState.lastWorldId = worldId
+		return { ok = true, state = newState }
+	end
+
+	-- World the player (re)spawns in after death or on join, or nil for the normal start
+	-- (no world visited yet, or the last world is unknown or no longer unlocked).
+	function rules.spawnWorld(state: PlayerState): string?
+		local worldId = state.lastWorldId
+		if worldId ~= "" and rules.isWorldUnlocked(state, worldId) then
+			return worldId
+		end
+		return nil
 	end
 
 	-- Every world in unlock order, as shown in the portal menu.

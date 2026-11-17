@@ -15,6 +15,7 @@ local PlayerStates = require(script.PlayerStates)
 local PortalService = require(script.PortalService)
 local PotionService = require(script.PotionService)
 local ShopService = require(script.ShopService)
+local SpawnService = require(script.SpawnService)
 local ToppingService = require(script.ToppingService)
 local TutorialService = require(script.TutorialService)
 local World1Map = require(script.World1Map)
@@ -53,6 +54,8 @@ for _, world in laterWorlds do
 	OvenService.start(world.sellZone)
 end
 BarrierService.start(laterWorlds)
+-- Respawn (death, rejoin) in the world the player was last in.
+SpawnService.start()
 -- World 1 coin shop: far left of the spawn, outside the topping area (eggs get x = -30).
 local shopStands = { ShopService.buildStand(layout.folder, "World1Shop", Vector3.new(-60, 0.1, 72)) }
 -- Shops of later worlds stand on their world's shop spot; every 3 worlds the building grows by half.
