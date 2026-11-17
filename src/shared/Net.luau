@@ -31,6 +31,10 @@
 -- Rebirth         client -> server  ()                           "do a rebirth now" (client asked to confirm)
 -- Rebirthed       server -> client  (rebirths: number, multiplier: number)  rebirth done: play the celebration
 --                                    (a refused rebirth answers with Notify and the rule's reason)
+-- ClaimGift       client -> server  (index: number)              "give me this play time gift" (index into GameConfig.gifts)
+-- GiftResult      server -> client  (ok: boolean, indexOrReason: number | string, rewards: { GameRules.Reward })
+--                                    result of ClaimGift
+-- HintSeen        client -> server  (hintId: string)             "I opened this new HUD button" (stops its pulsing)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -46,6 +50,10 @@
 --   rewardNow = amount if delivered now }; the client counts secondsLeft down until the next update).
 -- Notify kinds of the delivery: PhoneRinging, OrderAccepted, OrderDeclined, OrderExpired, WrongToppings,
 -- NoOrder, Delivered (amount, rewardKind "Coins" | "Gems" | "Potion", potionId?).
+-- Gifts (see GiftService): Gifts (JSON { ready = gifts ready to claim, nextSeconds = play time until the
+--   next gift (-1 = none left today), gifts = { { minutes, status "Claimed" | "Ready" | "Waiting",
+--   secondsLeft, rewards = { { kind, amount } } } } }; the client counts the seconds down until the
+--   next update), SeenHints (comma-separated GameConfig.hints ids the player has opened).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -78,6 +86,9 @@ local EVENTS = {
 	AnswerPhone = true,
 	Rebirth = true,
 	Rebirthed = true,
+	ClaimGift = true,
+	GiftResult = true,
+	HintSeen = true,
 }
 
 local Net = {}

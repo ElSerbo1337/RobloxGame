@@ -321,7 +321,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [x] Gem-Beläge: zwischen den Belag-Scheiben liegen selten (normal ca. 1 von 150 Spawns, mit Tipp oben oft) **leuchtende türkise Diamanten** mit Glitzern, je nach Wert (1–3) etwas größer.
 - [ ] Gem-Belag antippen (in Reichweite) → verschwindet, Toast „+n Gems!“ (türkis), Gem-Anzeige springt hoch; die Pizza bleibt unverändert. Funktioniert auch mit **voller** Pizza.
 - [ ] Mit Auto-Sammeln drüberlaufen sammelt Gem-Beläge ebenfalls ein (auch mit voller Pizza); normale Beläge bleiben dann liegen.
-- [x] Spielzeit: nach 15 Min. (mit Tipp: 30 s) Toast „+1 Gem fürs Spielen!“ und die Anzeige steigt. Nach Rejoin zählt die angefangene Zeit weiter (wird mitgespeichert). _(Toast „+500 Gem fürs Spielen!“ mit Testwert; Rejoin nicht geprüft)_
+- [x] Spielzeit: nach 15 Min. (mit Tipp: 30 s) Toast „+1 Gem fürs Spielen!“ und die Anzeige steigt. Nach Rejoin zählt die angefangene Zeit weiter (wird mitgespeichert). _(Toast „+500 Gem fürs Spielen!“ mit Testwert; Rejoin nicht geprüft)_ _(entfällt seit #36: Spielzeit-Gems durch Geschenke ersetzt)_
 - [x] Shop in Welt 1 (Schild jetzt „Pizza-Shop – Upgrades“): Menü hat die Abschnitte **„Münz-Tresen“** (gelb) und darunter **„Gem-Tresen“** (türkis) mit Pet-Plätze, Inventar, Laufgeschwindigkeit, 3 Eier auf einmal. Gem-Preise stehen als „50 Gems“ usw. auf türkisen Knöpfen (grau, wenn zu wenig Gems).
 - [ ] Mit zu wenig Gems kaufen → „Nicht genug Gems!“, nichts ändert sich. Münzen werden für Gem-Upgrades **nie** abgezogen.
 - [ ] **Pet-Plätze**: 3 → 4 (50 Gems) → 5 (150 Gems), dann „Im größeren Shop erhältlich“. Im Pet-Menü lassen sich danach 4 bzw. 5 Pets ausrüsten, alle folgen.
@@ -839,3 +839,25 @@ Tipp für schnelles Testen: wie bei #11 vorübergehend `Mozzarella.value = 50000
 
 - [ ] Rebirth-Knopf liegt nicht unter dem Joystick; Abzeichen und Hinweis-Blase sind lesbar und verdecken keine anderen Knöpfe.
 - [ ] Menü und Bestätigung passen ganz ins Bild, „Ja“/„Nein“ antippbar.
+
+## #36 C3 Spielzeit-Geschenke
+
+Vorher: `lune run test` → `0 failed`. Zum schnellen Testen in `src/shared/GameConfig.luau` die `gifts`-Minuten vorübergehend klein setzen (z. B. 0.5 / 1 / 1.5 / 2 / 2.5 / 3) – danach zurücksetzen. Die Spielzeit wird alle 10 s gutgeschrieben.
+
+**Knopf und Menü** (Play, 1 Spieler, Spielstand mit beendetem Tutorial):
+
+- [ ] Links unter „Tränke“ ein runder rosa Knopf „Geschenke“ mit Countdown bis zum nächsten Geschenk (z. B. `4:50`), Countdown läuft sekundenweise.
+- [ ] Beim ersten Mal pulsiert der Knopf, daneben „Neu! Geschenke fürs Spielen“. Nach dem ersten Öffnen hört das auf – auch nach Rejoin (wird gespeichert). Während des Tutorials pulsiert er noch nicht.
+- [ ] Ist ein Geschenk erreicht: rotes „!“ am Knopf, Text „Abholen!“, Knopf hüpft kurz.
+- [ ] Menü: 6 Zeilen 5/10/15/25/40/60 Min mit Belohnung (Münzen-Betrag, 5 Gems, 1 Trank, Münzen groß, 10 Gems, 15 Gems + 1 Trank). Wartende zeigen die Restzeit, erreichte einen grünen „Abholen“-Knopf, abgeholte ein ✓.
+- [ ] „Abholen“ → Statuszeile „Geschenk! +…“, Gem-Sound, Münzen/Gems oben steigen bzw. Trank liegt im Trank-Menü. Nochmal tippen → „schon abgeholt“. Wartendes antippen → „Noch nicht …“.
+- [ ] Münz-Geschenk ist in Welt 1 klein (neuer Spieler: 20 Münzen, das große 54), in höheren Welten / mit Pets / größerer Pizza deutlich mehr.
+- [ ] Menü sitzt unter Münzen/Meldungen und über dem Pizza-Balken (auch im Device-Emulator, kleines Handy: wird kleiner, Knöpfe bleiben antippbar). Auf dem kleinen Handy liegt der Knopf nicht unter dem Joystick.
+- [ ] Es kommen keine „+1 Gem fürs Spielen!“-Meldungen mehr.
+
+**Rejoin** (API-Zugriff an, siehe #3):
+
+- [ ] Ein paar Minuten spielen, ein Geschenk abholen, verlassen, neu beitreten: Countdown läuft an derselben Stelle weiter, abgeholtes Geschenk bleibt ✓, nicht abgeholte bleiben „Abholen“.
+- [ ] Alter Spielstand (vor #36) lädt ohne Fehler, Gems bleiben, Tages-Spielzeit startet bei 0.
+
+**Tageswechsel** (optional, Mitternacht deutscher Zeit): Nach Mitternacht beginnt die Tages-Spielzeit bei 0 und alle Geschenke sind wieder offen; Output ohne Fehler.

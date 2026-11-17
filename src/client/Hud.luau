@@ -269,8 +269,6 @@ function Hud.start(): GuiObject
 			showToast(`+{formatNumber(amount)} Münzen`, COIN)
 		elseif kind == "Gems" and amount then
 			showToast(`+{formatNumber(amount)} Gems!`, GEM)
-		elseif kind == "PlaytimeGems" and amount then
-			showToast(`+{formatNumber(amount)} Gem fürs Spielen!`, GEM)
 		elseif MESSAGES[kind] then
 			local color = if kind == "PizzaFull"
 					or kind == "NotEnoughCoins"

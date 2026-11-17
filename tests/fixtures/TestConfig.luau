@@ -94,9 +94,18 @@ return {
 		toppingChance = 0,
 		toppingMin = 1,
 		toppingMax = 3,
-		-- One gem per this many seconds of play time.
-		playtimeSeconds = 900,
-		playtimeGems = 1,
+	},
+	-- New HUD buttons that pulse until the player opened them once.
+	hints = { "Gifts" },
+	-- Income estimate: rounds (collect + sell a full pizza) per minute.
+	income = { roundsPerMinute = 2 },
+	-- Play time gifts: reached after `minutes` of play time on a (German) day.
+	-- Coins = `incomeMinutes` x the income estimate; Potion = random potion.
+	gifts = {
+		{ minutes = 5, rewards = { { kind = "Coins", incomeMinutes = 2 } } },
+		{ minutes = 10, rewards = { { kind = "Gems", amount = 5 } } },
+		{ minutes = 15, rewards = { { kind = "Potion", amount = 1 } } },
+		{ minutes = 20, rewards = { { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 2 } } },
 	},
 	-- Potions: bought with gems, drunk from the potion inventory, active for `durationSeconds`.
 	potions = {

@@ -65,6 +65,11 @@ local MIGRATIONS: { [number]: (save: { [string]: any }) -> () } = {
 		save.rebirthMultiplier = nil
 		save.rebirths = if type(multiplier) == "number" then math.max(0, math.round((multiplier - 1) / 0.5)) else 0
 	end,
+	[4] = function(save)
+		-- v5: play time gifts replace the play time gems. The leftover play time towards
+		-- the next gem is dropped; daily and total play time start at 0.
+		save.playtimeSeconds = nil
+	end,
 }
 
 -- `fresh` is a brand-new PlayerState (rules.newPlayerState()); it provides the

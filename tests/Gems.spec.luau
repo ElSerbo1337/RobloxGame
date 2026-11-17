@@ -32,11 +32,10 @@ describe("gems", function()
 		expect(rules.newPlayerState().gems).toBe(0)
 	end)
 
-	it("an old save without gems loads with 0 gems and no play time", function()
+	it("an old save without gems loads with 0 gems", function()
 		local loaded = SaveData.load({ version = 2, coins = 5, pizza = {} }, rules.newPlayerState()).state
 
 		expect(loaded.gems).toBe(0)
-		expect(loaded.playtimeSeconds).toBe(0)
 	end)
 end)
 
@@ -103,44 +102,6 @@ describe("gem topping", function()
 	it("clamps the gem amount to the configured 1-3", function()
 		expect(rules.collectTopping(player(0, 0), "Gem", 1, 50).state.gems).toBe(3)
 		expect(rules.collectTopping(player(0, 0), "Gem", 1, nil).state.gems).toBe(1)
-	end)
-end)
-
-describe("play time gems", function()
-	it("credits 1 gem per 15 minutes of play time", function()
-		local result = rules.addPlayTime(player(0, 0), 900)
-
-		expect(result.ok).toBe(true)
-		expect(result.gemsEarned).toBe(1)
-		expect(result.state.gems).toBe(1)
-		expect(result.state.playtimeSeconds).toBe(0)
-	end)
-
-	it("keeps unfinished play time and carries it over", function()
-		local state = player(0, 0)
-		for _ = 1, 14 do
-			state = rules.addPlayTime(state, 60).state
-		end
-		expect(state.gems).toBe(0)
-		expect(state.playtimeSeconds).toBe(840)
-
-		local result = rules.addPlayTime(state, 90)
-
-		expect(result.gemsEarned).toBe(1)
-		expect(result.state.gems).toBe(1)
-		expect(result.state.playtimeSeconds).toBe(30)
-	end)
-
-	it("credits several gems for a long stretch at once", function()
-		expect(rules.addPlayTime(player(0, 2), 2 * 900 + 10).state.gems).toBe(4)
-	end)
-
-	it("ignores zero, negative and non-finite time", function()
-		for _, seconds in { 0, -100, 0 / 0, math.huge } do
-			local result = rules.addPlayTime(player(0, 0), seconds)
-			expect(result.ok).toBe(false)
-			expect(result.reason).toBe("InvalidTime")
-		end
 	end)
 end)
 

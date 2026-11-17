@@ -26,10 +26,17 @@ export type PlayerState = {
 	nextPetUid: number,
 	-- Uids of equipped pets (follow the player and add their coin bonus).
 	equipped: { number },
-	-- Second currency: from gem toppings and play time, spent at the gem counter.
+	-- Second currency: from gem toppings, deliveries and gifts, spent at the gem counter.
 	gems: number,
-	-- Play time not yet turned into gems (seconds).
-	playtimeSeconds: number,
+	-- Play time gifts: seconds played on German day `playtimeDay` (see dayNumber; 0 = never)
+	-- and the indices (into config.gifts) of the gifts claimed on that day.
+	dailyPlaytimeSeconds: number,
+	playtimeDay: number,
+	giftsClaimed: { number },
+	-- Seconds played in total (never reset).
+	totalPlaytimeSeconds: number,
+	-- Ids (config.hints) of new HUD buttons the player has opened once (they stop pulsing).
+	seenHints: { string },
 	-- Current step of the new-player tutorial (index into the tutorial steps;
 	-- past the last step = finished, never shown again).
 	tutorialStep: number,
@@ -75,13 +82,14 @@ export type Result = {
 	-- | "UnknownPotion" | "NoPotion" | "OrderToppingsOnly"
 	-- | "TutorialRunning" | "CallWaiting" | "OrderActive" | "PhoneNotReady" | "NoCall" | "NoOrder"
 	-- | "OrderExpired" | "WrongToppings" | "NotExpired"
+	-- | "UnknownGift" | "GiftNotReady" | "GiftClaimed" | "UnknownHint" | "HintSeen"
 	reason: string?,
 	state: PlayerState,
 }
 
 export type SellResult = Result & { coinsEarned: number }
 
--- Collecting a gem topping or adding play time can earn gems (0 otherwise).
+-- Collecting a gem topping can earn gems (0 otherwise).
 export type GemResult = Result & { gemsEarned: number }
 
 -- One upgrade as shown in a shop menu.
@@ -162,10 +170,80 @@ export type RebirthOffer = {
 	potionWarning: boolean,
 }
 
+-- A reward as configured for gifts (and the login calendar): `amount` of gems or
+-- potions, or coins worth `incomeMinutes` of the income estimate.
+export type RewardSpec = { kind: string, amount: number?, incomeMinutes: number? }
+
+-- A reward as paid out / shown: "Coins" | "Gems" | "Potion", how many, and which potion
+-- (set once a potion reward was drawn).
+export type Reward = { kind: string, amount: number, potionId: string? }
+
+-- One play time gift as shown in the gifts menu.
+export type GiftEntry = {
+	index: number,
+	-- Play time of the day at which it is reached.
+	minutes: number,
+	-- "Claimed" | "Ready" | "Waiting"
+	status: string,
+	-- Seconds of play time until it is reached (0 once reached).
+	secondsLeft: number,
+	rewards: { Reward },
+}
+
+export type GiftStatus = {
+	gifts: { GiftEntry },
+	-- Reached but not claimed yet today.
+	readyCount: number,
+	-- Seconds of play time until the next gift is reached (nil = all reached today).
+	nextSeconds: number?,
+}
+
+export type RewardsResult = Result & { rewards: { Reward } }
+
 -- Bump together with a migration step in SaveData when a field changes shape.
-local STATE_VERSION = 4
+local STATE_VERSION = 5
+
+local DAY_SECONDS = 24 * 3600
+
+-- Days since 1970-01-01 of a proleptic Gregorian date (Howard Hinnant's days_from_civil).
+local function daysFromCivil(year: number, month: number, day: number): number
+	local y = if month <= 2 then year - 1 else year
+	local era = y // 400
+	local yearOfEra = y - era * 400
+	local dayOfYear = (153 * (if month > 2 then month - 3 else month + 9) + 2) // 5 + day - 1
+	local dayOfEra = yearOfEra * 365 + yearOfEra // 4 - yearOfEra // 100 + dayOfYear
+	return era * 146097 + dayOfEra - 719468
+end
+
+-- Year (UTC) of a day count since 1970-01-01 (inverse of daysFromCivil, year only).
+local function yearOfDays(days: number): number
+	local z = days + 719468
+	local era = z // 146097
+	local dayOfEra = z - era * 146097
+	local yearOfEra = (dayOfEra - dayOfEra // 1460 + dayOfEra // 36524 - dayOfEra // 146096) // 365
+	local dayOfYear = dayOfEra - (365 * yearOfEra + yearOfEra // 4 - yearOfEra // 100)
+	local monthIndex = (5 * dayOfYear + 2) // 153 -- 0 = March
+	return yearOfEra + era * 400 + (if monthIndex >= 10 then 1 else 0)
+end
+
+-- Unix time of the EU clock change in `year`: last Sunday of `month`, 01:00 UTC.
+local function clockChange(year: number, month: number): number
+	local lastDay = daysFromCivil(year, month, 31)
+	local weekday = (lastDay + 4) % 7 -- 0 = Sunday (1970-01-01 was a Thursday)
+	return (lastDay - weekday) * DAY_SECONDS + 3600
+end
 
 local GameRules = {}
+
+-- Number of the calendar day in German time (CET/CEST, EU rule: summer time from the
+-- last Sunday of March to the last Sunday of October, 01:00 UTC each) for a Unix time:
+-- days since 1970-01-01 there. Daily resets (gifts, login calendar) compare these numbers.
+function GameRules.dayNumber(unixSeconds: number): number
+	local year = yearOfDays(unixSeconds // DAY_SECONDS)
+	local summer = unixSeconds >= clockChange(year, 3) and unixSeconds < clockChange(year, 10)
+	local offset = if summer then 2 * 3600 else 3600
+	return (unixSeconds + offset) // DAY_SECONDS
+end
 
 function GameRules.new(config: any)
 	local rules = {}
@@ -173,6 +251,8 @@ function GameRules.new(config: any)
 	local function fail(state: PlayerState, reason: string): Result
 		return { ok = false, reason = reason, state = state }
 	end
+
+	rules.dayNumber = GameRules.dayNumber
 
 	function rules.newPlayerState(): PlayerState
 		return {
@@ -187,7 +267,11 @@ function GameRules.new(config: any)
 			nextPetUid = 1,
 			equipped = {},
 			gems = 0,
-			playtimeSeconds = 0,
+			dailyPlaytimeSeconds = 0,
+			playtimeDay = 0,
+			giftsClaimed = {},
+			totalPlaytimeSeconds = 0,
+			seenHints = {},
 			tutorialStep = 1,
 			potions = {},
 			activePotions = {},
@@ -485,19 +569,45 @@ function GameRules.new(config: any)
 		return collectWithin(state, toppingId, distance, rules.autoCollectRadius(state), gems)
 	end
 
-	-- Credits play time; every full `gems.playtimeSeconds` gives `gems.playtimeGems`.
-	-- The rest is kept in the state (and saved), so no play time is lost between sessions.
-	function rules.addPlayTime(state: PlayerState, seconds: number): GemResult
+	-- Credits play time at Unix time `now`: to the play time of the (German) day and to the
+	-- total. On a new day the day's play time and claimed gifts start over first.
+	function rules.addPlayTime(state: PlayerState, seconds: number, now: number): Result
 		if not (seconds > 0 and seconds < math.huge) then
-			return { ok = false, reason = "InvalidTime", state = state, gemsEarned = 0 }
+			return fail(state, "InvalidTime")
 		end
-		local total = state.playtimeSeconds + seconds
-		local periods = math.floor(total / config.gems.playtimeSeconds)
-		local earned = periods * config.gems.playtimeGems
+		local today = rules.dayNumber(now)
 		local newState = table.clone(state)
-		newState.playtimeSeconds = total - periods * config.gems.playtimeSeconds
-		newState.gems = state.gems + earned
-		return { ok = true, state = newState, gemsEarned = earned }
+		if state.playtimeDay ~= today then
+			newState.playtimeDay = today
+			newState.dailyPlaytimeSeconds = 0
+			newState.giftsClaimed = {}
+		end
+		newState.dailyPlaytimeSeconds += seconds
+		newState.totalPlaytimeSeconds = state.totalPlaytimeSeconds + seconds
+		return { ok = true, state = newState }
+	end
+
+	-- Seconds played on the German day of `now` (0 when the last play time was on another day).
+	function rules.dailyPlaytime(state: PlayerState, now: number): number
+		return if state.playtimeDay == rules.dayNumber(now) then state.dailyPlaytimeSeconds else 0
+	end
+
+	function rules.hasSeenHint(state: PlayerState, hintId: string): boolean
+		return table.find(state.seenHints, hintId) ~= nil
+	end
+
+	-- Remembers that the player opened a new HUD button (config.hints) once.
+	function rules.markHintSeen(state: PlayerState, hintId: string): Result
+		if not table.find(config.hints, hintId) then
+			return fail(state, "UnknownHint")
+		end
+		if rules.hasSeenHint(state, hintId) then
+			return fail(state, "HintSeen")
+		end
+		local newState = table.clone(state)
+		newState.seenHints = table.clone(state.seenHints)
+		table.insert(newState.seenHints, hintId)
+		return { ok = true, state = newState }
 	end
 
 	function rules.setAutoCollect(state: PlayerState, enabled: boolean): Result
@@ -877,6 +987,17 @@ function GameRules.new(config: any)
 		return highest
 	end
 
+	-- A random potion id, all potions equally likely (one random draw): delivery orders,
+	-- gifts and the login calendar hand out potions this way.
+	local function randomPotionId(random: () -> number): string
+		local potionIds = {}
+		for potionId in config.potions do
+			table.insert(potionIds, potionId)
+		end
+		table.sort(potionIds)
+		return potionIds[math.min(#potionIds, 1 + math.floor(random() * #potionIds))]
+	end
+
 	-- A new order for this player: toppings of the highest unlocked world (by spawn
 	-- weight), between delivery.minToppings and the pizza space in total.
 	local function newOrder(state: PlayerState, random: () -> number): Order
@@ -899,14 +1020,126 @@ function GameRules.new(config: any)
 			local spread = delivery.gemsBaseMax - delivery.gemsMin + 1
 			order.gems = delivery.gemsMin + math.min(spread - 1, math.floor(random() * spread))
 		elseif order.reward == "Potion" then
-			local potionIds = {}
-			for potionId in config.potions do
-				table.insert(potionIds, potionId)
-			end
-			table.sort(potionIds)
-			order.potionId = potionIds[math.min(#potionIds, 1 + math.floor(random() * #potionIds))]
+			order.potionId = randomPotionId(random)
 		end
 		return order
+	end
+
+	-- Estimated coins per minute, deterministic (no potions, no luck): average topping
+	-- value of the highest unlocked world (by spawn weight) x pizza space x
+	-- income.roundsPerMinute x coin multiplier (pets, rebirths). Gift and login calendar
+	-- coins are worth minutes of this.
+	function rules.incomePerMinute(state: PlayerState): number
+		local totalWeight, totalValue = 0, 0
+		for _, spawn in highestUnlockedWorld(state).toppingSpawns do
+			totalWeight += spawn.weight
+			totalValue += spawn.weight * config.toppings[spawn.topping].value
+		end
+		if totalWeight <= 0 then
+			return 0
+		end
+		return totalValue
+			/ totalWeight
+			* rules.pizzaCapacity(state)
+			* config.income.roundsPerMinute
+			* rules.coinMultiplier(state)
+	end
+
+	-- Coins worth `minutes` of the income estimate (rounded down).
+	function rules.incomeCoins(state: PlayerState, minutes: number): number
+		return math.floor(minutes * rules.incomePerMinute(state) + 1e-6)
+	end
+
+	-- Configured rewards as they would be paid out now (coins from the income estimate;
+	-- potions not drawn yet).
+	local function previewRewards(state: PlayerState, specs: { RewardSpec }): { Reward }
+		local rewards = {}
+		for _, spec in specs do
+			local amount = if spec.kind == "Coins"
+				then rules.incomeCoins(state, spec.incomeMinutes or 0)
+				else spec.amount or 0
+			table.insert(rewards, { kind = spec.kind, amount = amount })
+		end
+		return rewards
+	end
+
+	-- Pays configured rewards into a copy of the state; each potion reward draws one
+	-- random potion (like delivery orders). Returns the new state and what was paid.
+	local function payRewards(
+		state: PlayerState,
+		specs: { RewardSpec },
+		random: () -> number
+	): (PlayerState, { Reward })
+		local newState = table.clone(state)
+		newState.potions = table.clone(state.potions)
+		local paid = previewRewards(state, specs)
+		for _, reward in paid do
+			if reward.kind == "Coins" then
+				newState.coins += reward.amount
+			elseif reward.kind == "Gems" then
+				newState.gems += reward.amount
+			elseif reward.kind == "Potion" then
+				local potionId = randomPotionId(random)
+				reward.potionId = potionId
+				newState.potions[potionId] = (newState.potions[potionId] or 0) + reward.amount
+			end
+		end
+		return newState, paid
+	end
+
+	-- Indices of the gifts claimed on the German day of `now`.
+	local function claimedToday(state: PlayerState, now: number): { number }
+		return if state.playtimeDay == rules.dayNumber(now) then state.giftsClaimed else {}
+	end
+
+	-- All play time gifts of the day of `now` (config.gifts order): claimed, ready to
+	-- claim or still waiting, with time left and rewards.
+	function rules.giftStatus(state: PlayerState, now: number): GiftStatus
+		local played = rules.dailyPlaytime(state, now)
+		local claimed = claimedToday(state, now)
+		local gifts, readyCount, nextSeconds = {}, 0, nil
+		for index, gift in config.gifts do
+			local secondsLeft = math.max(0, gift.minutes * 60 - played)
+			local status = if table.find(claimed, index)
+				then "Claimed"
+				elseif secondsLeft <= 0 then "Ready"
+				else "Waiting"
+			if status == "Ready" then
+				readyCount += 1
+			elseif status == "Waiting" and (nextSeconds == nil or secondsLeft < nextSeconds) then
+				nextSeconds = secondsLeft
+			end
+			table.insert(gifts, {
+				index = index,
+				minutes = gift.minutes,
+				status = status,
+				secondsLeft = secondsLeft,
+				rewards = previewRewards(state, gift.rewards),
+			})
+		end
+		return { gifts = gifts, readyCount = readyCount, nextSeconds = nextSeconds }
+	end
+
+	-- Claims gift `index` (into config.gifts): only once its play time is reached
+	-- today, and once per day.
+	function rules.claimGift(state: PlayerState, index: number, now: number, random: () -> number): RewardsResult
+		local function reject(reason: string): RewardsResult
+			return { ok = false, reason = reason, state = state, rewards = {} }
+		end
+		local gift = config.gifts[index]
+		if gift == nil then
+			return reject("UnknownGift")
+		end
+		if table.find(claimedToday(state, now), index) then
+			return reject("GiftClaimed")
+		end
+		if rules.dailyPlaytime(state, now) < gift.minutes * 60 then
+			return reject("GiftNotReady")
+		end
+		local newState, paid = payRewards(state, gift.rewards, random)
+		newState.giftsClaimed = table.clone(state.giftsClaimed)
+		table.insert(newState.giftsClaimed, index)
+		return { ok = true, state = newState, rewards = paid }
 	end
 
 	-- The order the ringing phone offers (nil = phone is quiet).

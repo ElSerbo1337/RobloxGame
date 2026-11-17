@@ -564,10 +564,11 @@ describe("GameConfig gems", function()
 		expect(GameConfig.toppings[GameConfig.gems.toppingId]).toBeNil()
 	end)
 
-	it("gives 1 gem per 15 minutes of play time", function()
-		local state = rules.addPlayTime(rules.newPlayerState(), 15 * 60).state
+	it("gives no gems for play time any more (play time gifts instead)", function()
+		local state = rules.addPlayTime(rules.newPlayerState(), 60 * 60, 1768431600).state
 
-		expect(state.gems).toBe(1)
+		expect(state.gems).toBe(0)
+		expect(GameConfig.gems.playtimeSeconds).toBeNil()
 	end)
 
 	it("has a gem counter for pet slots, inventory, walk speed and opening 3 eggs", function()
@@ -800,5 +801,70 @@ describe("GameConfig rebirth", function()
 	it("gives +50 % coins per rebirth and makes every rebirth pricier than the one before", function()
 		expect(GameConfig.rebirth.multiplierPerRebirth).toBe(0.5)
 		expect(GameConfig.rebirth.priceFactor > 1).toBe(true)
+	end)
+end)
+
+describe("GameConfig play time gifts", function()
+	local rules = GameRules.new(GameConfig)
+
+	local function kinds(gift: any): string
+		local parts = {}
+		for _, reward in gift.rewards do
+			table.insert(parts, `{reward.kind} {reward.amount or reward.incomeMinutes}`)
+		end
+		return table.concat(parts, " + ")
+	end
+
+	it("gives gifts after 5 / 10 / 15 / 25 / 40 / 60 minutes of play time a day", function()
+		local minutes = {}
+		for _, gift in GameConfig.gifts do
+			table.insert(minutes, gift.minutes)
+		end
+
+		expect(minutes).toEqual({ 5, 10, 15, 25, 40, 60 })
+	end)
+
+	it("has strictly rising thresholds", function()
+		for index = 2, #GameConfig.gifts do
+			expect(GameConfig.gifts[index].minutes > GameConfig.gifts[index - 1].minutes).toBe(true)
+		end
+	end)
+
+	it("gives small coins, 5 gems, 1 potion, big coins, 10 gems, 15 gems + 1 potion", function()
+		local gifts = GameConfig.gifts
+		expect(gifts[1].rewards[1].kind).toBe("Coins")
+		expect(kinds(gifts[2])).toBe("Gems 5")
+		expect(kinds(gifts[3])).toBe("Potion 1")
+		expect(gifts[4].rewards[1].kind).toBe("Coins")
+		expect(gifts[4].rewards[1].incomeMinutes > gifts[1].rewards[1].incomeMinutes).toBe(true)
+		expect(kinds(gifts[5])).toBe("Gems 10")
+		expect(kinds(gifts[6])).toBe("Gems 15 + Potion 1")
+	end)
+
+	it("only uses known reward kinds", function()
+		for _, gift in GameConfig.gifts do
+			for _, reward in gift.rewards do
+				expect(reward.kind == "Coins" or reward.kind == "Gems" or reward.kind == "Potion").toBe(true)
+			end
+		end
+	end)
+
+	it("pays a new player a few rounds' worth of coins with the first gift", function()
+		local coins = rules.giftStatus(rules.newPlayerState(), 1768431600).gifts[1].rewards[1].amount
+
+		expect(coins >= 10).toBe(true)
+	end)
+
+	it("estimates more income in every later world", function()
+		local state = rules.newPlayerState()
+		local previous = rules.incomePerMinute(state)
+		local unlocked = {}
+		for index = 2, #GameConfig.worlds do
+			table.insert(unlocked, GameConfig.worlds[index].id)
+			state.unlockedWorlds = table.clone(unlocked)
+			local income = rules.incomePerMinute(state)
+			expect(income > previous).toBe(true)
+			previous = income
+		end
 	end)
 end)

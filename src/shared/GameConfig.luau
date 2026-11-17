@@ -191,9 +191,31 @@ local GameConfig = {
 		toppingChance = 1 / 150,
 		toppingMin = 1,
 		toppingMax = 3,
-		-- `playtimeGems` per full `playtimeSeconds` of play time (1 per 15 min).
-		playtimeSeconds = 900,
-		playtimeGems = 1,
+	},
+
+	-- New HUD buttons that pulse (with a short explanation) until the player opened them
+	-- once; remembered per player (GameRules.markHintSeen).
+	hints = { "Gifts" },
+
+	-- Income estimate (GameRules.incomePerMinute): average topping value of the highest
+	-- unlocked world x pizza space x rounds per minute x coin multiplier (pets, rebirths).
+	-- Coins of gifts and the login calendar are worth minutes of this.
+	income = {
+		-- Assumed rounds per minute (collect a full pizza and sell it).
+		roundsPerMinute = 2,
+	},
+
+	-- Play time gifts: reached after `minutes` of play time on a German day (the day's
+	-- play time starts over at midnight German time), each claimable once per day.
+	-- Reward kinds: Coins (`incomeMinutes` x the income estimate), Gems / Potion (`amount`;
+	-- a potion is a random one, like delivery orders).
+	gifts = {
+		{ minutes = 5, rewards = { { kind = "Coins", incomeMinutes = 3 } } },
+		{ minutes = 10, rewards = { { kind = "Gems", amount = 5 } } },
+		{ minutes = 15, rewards = { { kind = "Potion", amount = 1 } } },
+		{ minutes = 25, rewards = { { kind = "Coins", incomeMinutes = 8 } } },
+		{ minutes = 40, rewards = { { kind = "Gems", amount = 10 } } },
+		{ minutes = 60, rewards = { { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 1 } } },
 	},
 
 	-- Potions: bought with gems at a shop's gem counter, kept in the potion inventory and
