@@ -20,10 +20,17 @@ export type Targets = {
 	OpenEgg: Instance,
 }
 
-function TutorialService.start(targets: Targets)
+-- Tag of the waypoint at the bridge head of world 1 (#27): while the player is still
+-- on the spawn island side of it (larger Z), the client points there first.
+TutorialService.WAYPOINT_TAG = "TutorialWaypoint"
+
+function TutorialService.start(targets: Targets, waypoint: BasePart?)
 	for stepId, target in targets :: { [string]: Instance } do
 		target:SetAttribute("TutorialStep", stepId)
 		CollectionService:AddTag(target, TutorialService.TAG)
+	end
+	if waypoint then
+		CollectionService:AddTag(waypoint, TutorialService.WAYPOINT_TAG)
 	end
 end
 

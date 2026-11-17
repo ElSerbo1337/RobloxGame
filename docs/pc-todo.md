@@ -886,3 +886,41 @@ Vorher: `lune run test` → `0 failed` (inkl. `tests/LoginCalendar.spec.luau`).
 - [ ] Alter Spielstand (vor #37) lädt ohne Fehler und startet bei Tag 1.
 
 **Serie** (optional, über mehrere echte Tage oder mit vorübergehend verstellter Zeit): am Folgetag ist Tag 2 „Heute“ und Tag 1 ✓; nach einem ausgelassenen Tag wieder Tag 1; nach Tag 7 wieder Tag 1. Neuer Tag beginnt um Mitternacht deutscher Zeit; bleibt man über Mitternacht im Spiel, wird der nächste Tag nach spätestens 15 s abholbar (über „📅 Kalender“).
+
+## #27 B1 Insel-Bauweise: Spawn-Insel und Welt 1 (Prototyp)
+
+Vorher: `lune run test` → `0 failed` (inkl. `tests/IslandPlan.spec.luau`). Vorschau-Renders zum Vergleich: `assets/previews/islands/`.
+
+**Einmalig in Studio:**
+
+- [ ] Falls im Workspace noch ein `Baseplate` liegt: löschen und Place speichern/publishen (der Server entfernt ihn sonst beim Start mit einer Warnung `[WorldMap] Baseplate entfernt`). Auch einen alten `SpawnLocation` aus der Vorlage löschen.
+- [ ] Neues Modell importieren: `assets/models/RoundTree.fbx` nach `ReplicatedStorage.GameAssets.Models` (wie in #15). Ohne Import stehen Ersatz-Bäume aus Kugeln da.
+
+**Play (1 Spieler, neuer Spielstand):**
+
+- [ ] Output ohne rote Fehler. Start auf der **Spawn-Insel** am gelben Spawn, Blick auf den Pizza-Brunnen (Wasserspritzer) und die Brücke.
+- [ ] Spawn-Insel: runder, unregelmäßiger Umriss mit Felskante darunter, Hecke am Rand, Bäume, Teich mit Wasserfall, Portal-Tor links vorne, drei Tafeln „⏱ Spielzeit“, „💰 Münzen verdient“, „🔁 Rebirths“ mit „Bestenliste kommt bald!“ (Text auf der Vorderseite, Richtung Brunnen).
+- [ ] Tutorial-Karte erscheint auf der Spawn-Insel; Pfeil und Leuchtlinie zeigen zuerst auf den **Brückenkopf von Welt 1**, nach dem Überqueren der Brücke auf die Beläge.
+- [ ] Hängebrücke (Holzplanken, Pfosten, Seile) begehbar, leicht durchhängend, man kann nicht seitlich herunterfallen (unsichtbare Wand), springen hilft nicht.
+- [ ] Welt 1 als Insel wie in `World1_Overview.jpg`: Hauptweg aus Platten, links Portal, Shop, Ei-Stand mit Garten-Ei und ein zweiter Ei-Stand „Bald: neues Ei!“, rechts Ofen mit oranger Verkaufszone, Telefon, Lieferwagen. Alle Stationen zeigen mit der Front zum Weg.
+- [ ] **Kamera:** In der Verkaufszone, am Shop, am Ei, am Telefon, am Lieferwagen und im Portal bleibt die Kamera frei (keine Wand/kein Baum zwischen Kamera und Figur). Ofen-Animation fliegt in die Ofenöffnung.
+- [ ] Sammeln, Verkaufen, Shop kaufen, Ei öffnen, Lieferauftrag (Telefon → Lieferwagen) funktionieren wie vorher; Tutorial lässt sich komplett abschließen.
+- [ ] Hinten in Welt 1: Terrassen mit Stufen (begehbar), Riesen-Pizza als Wahrzeichen, Teich mit Wasserfall rechts vorne. Pets laufen nicht durch die Hecke/Wand.
+- [ ] **Rand:** An keiner Stelle der Inseln kann man herunterfallen (Rand abgehen, gegen die Wand springen).
+- [ ] **Absturz:** Mit Command Bar (Server) eine Figur unter die Insel setzen, z. B. `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, 0))` → sie landet sofort am Spawn der aktuellen Welt (neuer Spieler: Spawn-Insel; nach Betreten von Welt 1: Welt 1 vorne am Weg).
+- [ ] Tod (Reset Character) nach Betreten von Welt 1 → Respawn in Welt 1 am Brückenende (nicht auf der Spawn-Insel). Rejoin → Start in Welt 1.
+
+**Welt 2–7 (alter Look an der Kette):**
+
+- [ ] Hinter Welt 1 führt eine Brücke zu Welt 2; am Brückenkopf steht ein **leuchtendes Tor** in Weltfarbe mit Preisschild „🔒 Bauernhof 1.500 Münzen“. Durchlaufen geht nicht.
+- [ ] Vor dem Tor erscheint der Freischalt-Knopf; mit genug Münzen freischalten → Tor wird durchsichtig/passierbar, Preisschild verschwindet. Andere Spieler bleiben stecken.
+- [ ] Welt 2–7 sind über Brücken erreichbar und spielbar wie vorher (Ofen, Ei, Shop, Portal, Telefon/Wagen, Deko). Ränder haben unsichtbare Wände, unter den Platten hängt ein Felsblock.
+- [ ] Portal in Welt 1 / auf der Spawn-Insel: Menü öffnet, Teleport in jede freigeschaltete Welt, Ankunft vor deren Portal; danach Tod → Respawn in dieser Welt.
+- [ ] Welt-Atmosphäre/Musik wechselt beim Betreten einer Insel; auf Brücken bleibt der Look der verlassenen Welt, auf der Spawn-Insel der von Welt 1.
+- [ ] Ferne Schilder (Tore, Shops anderer Welten) sind aus Welt 1 nicht am Himmel zu sehen (#22).
+
+**2 Spieler + Device-Emulator (kleines Handy):**
+
+- [ ] Beide starten auf der Spawn-Insel; einer schaltet Welt 2 frei, der andere bleibt am Tor stecken.
+- [ ] Auf dem Handy: Brücke und Plattenwege gut begehbar, Freischalt-Knopf am Tor antippbar.
+

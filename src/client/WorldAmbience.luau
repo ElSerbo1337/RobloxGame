@@ -9,12 +9,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local IslandPlan = require(ReplicatedStorage.Shared.IslandPlan)
 local WorldLooks = require(ReplicatedStorage.Shared.WorldLooks)
 local Sounds = require(script.Parent.Sounds)
 
--- Worlds are 200 studs long and lie one after another along -Z; world 1 is centered
--- at Z = 0 (see WorldMap). Used only to pick the look, never for game rules.
-local WORLD_LENGTH = 200
+-- Island chain from IslandPlan (#27): the spawn island, then the worlds along -Z.
+-- Used only to pick the look, never for game rules.
+local plan = IslandPlan.new(GameConfig.islands, GameConfig.worlds)
 local CHECK_SECONDS = 1
 local DEFAULT_WORLD = "PizzeriaGarden"
 
@@ -75,10 +76,17 @@ local function apply(look: WorldLooks.Look)
 	Sounds.playMusic(look.music)
 end
 
-local function worldAt(position: Vector3): string
-	local index = math.floor((WORLD_LENGTH / 2 - position.Z) / WORLD_LENGTH) + 1
-	local world = GameConfig.worlds[math.clamp(index, 1, #GameConfig.worlds)]
-	return if world then world.id else DEFAULT_WORLD
+-- World look for a position: its island's world; the spawn island looks like world 1;
+-- on a bridge the look of the world being left stays (nil).
+local function worldAt(position: Vector3): string?
+	local index = plan.worldIndexAt(position.X, position.Z)
+	if index then
+		return GameConfig.worlds[index].id
+	end
+	if position.Z > plan.worldCenter(1)[3] + GameConfig.islands.worldHalfSize then
+		return DEFAULT_WORLD
+	end
+	return nil
 end
 
 function WorldAmbience.start()
@@ -88,7 +96,7 @@ function WorldAmbience.start()
 	local function update()
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-		local worldId = if root then worldAt(root.Position) else current or DEFAULT_WORLD
+		local worldId = (if root then worldAt(root.Position) else nil) or current or DEFAULT_WORLD
 		if worldId ~= current then
 			current = worldId
 			apply(WorldLooks[worldId] or WorldLooks[DEFAULT_WORLD])

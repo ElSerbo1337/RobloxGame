@@ -353,6 +353,31 @@ def build_tree():
     join(light, "LeavesLight")
 
 
+def build_round_tree():
+    # Island look (#27): short thick trunk, one big round crown with two lighter bumps.
+    trunk = cylinder(0.36, 1.7, 8, loc=(0, 0, 0.85))
+    bm = bmesh.new()
+    bm.from_mesh(trunk.data)
+    for v in bm.verts:
+        if v.co.z > 0:
+            v.co.x *= 0.75
+            v.co.y *= 0.75
+    bm.to_mesh(trunk.data)
+    bm.free()
+    finish(trunk, "Wood")
+    crown = uv_sphere(1.55, 16, 10, loc=(0, 0, 3.0))
+    bpy.context.view_layer.objects.active = crown
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    jitter(crown, 0.04, 70)
+    finish(crown, "Leaves")
+    bumps = [uv_sphere(0.85, 12, 8, loc=(0.85, 0.75, 3.75)), uv_sphere(0.7, 12, 8, loc=(-0.95, 0.55, 3.35))]
+    for i, b in enumerate(bumps):
+        bpy.context.view_layer.objects.active = b
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        jitter(b, 0.03, 80 + i)
+    join(bumps, "LeavesLight")
+
+
 def build_bush():
     blobs = [ico(0.75, 1, loc=(0, 0, 0.55)), ico(0.6, 1, loc=(0.7, 0.15, 0.42)), ico(0.55, 1, loc=(-0.65, 0.1, 0.4))]
     for i, b in enumerate(blobs):
@@ -822,6 +847,8 @@ MODELS = {
     "PizzaOven": build_oven,
     "Tree": build_tree,
     "Bush": build_bush,
+    # Island look (#27)
+    "RoundTree": build_round_tree,
     # Worlds 2-7 (#16)
     "HayBale": build_hay_bale,
     "Sunflower": build_sunflower,

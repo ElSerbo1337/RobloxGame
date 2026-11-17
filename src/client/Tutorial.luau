@@ -15,6 +15,7 @@ local GameConfig = require(game:GetService("ReplicatedStorage").Shared.GameConfi
 local UiKit = require(script.Parent.UiKit)
 
 local TAG = "TutorialTarget"
+local WAYPOINT_TAG = "TutorialWaypoint"
 local ARROW_HEIGHT = 7
 -- Seconds between searches for the nearest topping.
 local RETARGET_SECONDS = 0.25
@@ -214,6 +215,14 @@ function Tutorial.start()
 			local target = findTarget(currentStep)
 			local root = rootPart()
 			local position = if target then targetPosition(target, root and root.Position) else nil
+			-- From the spawn island the way leads over the bridge first (#27): the
+			-- waypoint sits at world 1's bridge head, the spawn island lies beyond it (+Z).
+			local waypoint = CollectionService:GetTagged(WAYPOINT_TAG)[1]
+			if position and root and waypoint and waypoint:IsA("BasePart") then
+				if root.Position.Z > waypoint.Position.Z + 2 and position.Z < waypoint.Position.Z then
+					position = waypoint.Position
+				end
+			end
 			hasTarget = position ~= nil
 			if position then
 				anchor.WorldPosition = position

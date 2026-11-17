@@ -1,43 +1,46 @@
 --!strict
--- Builds every world after the first by the same pattern, driven by GameConfig.worlds:
--- ground, topping area, oven with sell zone, egg stand and the barrier in front of it.
--- World n lies directly behind world n - 1 along -Z; the barrier sits on their border.
+-- Builds the flying islands (#27) from the island plan (ReplicatedStorage.Shared.IslandPlan):
+-- the spawn island, the bridges, and every world. Worlds in GameConfig.islands.newStyle
+-- are islands in the shared floor plan; the others keep their old square look (worlds
+-- 2-7 until B5/B6) but hang on the same chain with bridges, gates and walls.
 -- Adding a world = config entry (+ optional theme below), no new map code.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local EggService = require(script.Parent.EggService)
+local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local IslandBuilder = require(script.Parent.IslandBuilder)
+local IslandPlan = require(ReplicatedStorage.Shared.IslandPlan)
+local WorldDeco = require(script.Parent.WorldDeco)
 
 export type Layout = {
 	worldId: string,
+	index: number,
 	folder: Folder,
 	-- Toppings spawn on a rectangle centered here (y = ground surface).
 	toppingAreaCenter: Vector3,
 	toppingAreaSize: Vector2,
 	toppingsFolder: Folder,
 	sellZone: BasePart,
-	-- Blocks the way in until the player unlocked this world (tag "WorldBarrier").
-	barrier: BasePart,
+	-- Gate barrier on the bridge head (tag "WorldBarrier"); nil for world 1.
+	barrier: BasePart?,
 	-- Ground rectangle of the world (y ignored); players without access are sent back.
 	boundsCenter: Vector3,
 	boundsSize: Vector2,
-	-- Where players without access are put back (in front of the barrier, previous world).
+	-- Where players without access are put back (on the bridge in front of the gate).
 	returnPoint: Vector3,
-	-- Where the world's egg sits (attributes WorldId, EggId); the egg service hooks in here.
-	eggStand: BasePart,
-	-- Free ground spot left of the egg stand for a shop stand facing -Z (worlds with a shop).
-	shopSpot: Vector3,
+	-- Egg stand drums (attributes WorldId, EggId); EggService puts the eggs on them.
+	eggStands: { BasePart },
+	-- Ground point and facing of the world's shop stand (worlds with a shop).
+	shopSpot: CFrame,
+	isIsland: boolean,
 }
 
 type Theme = { ground: Color3, area: Color3, accent: Color3, material: Enum.Material }
 
-local GROUND_Y = 0.1
--- Same size as world 1 (World1Map), so the worlds line up edge to edge.
-local WORLD_SIZE = 200
-local BARRIER_HEIGHT = 40
+local HALF = GameConfig.islands.worldHalfSize
 
 local THEMES: { [string]: Theme } = {
 	Farm = {
@@ -86,6 +89,9 @@ local DEFAULT_THEME: Theme = {
 
 local WorldMap = {}
 
+local plan = IslandPlan.new(GameConfig.islands, GameConfig.worlds)
+WorldMap.plan = plan
+
 local function part(props: { [string]: any }): Part
 	local p = Instance.new("Part")
 	p.Anchored = true
@@ -122,50 +128,191 @@ local function formatCoins(value: number): string
 	return (string.gsub(formatted, "^%.", ""))
 end
 
--- World 1 (index 1) is built by World1Map and centered at the origin.
-function WorldMap.centerOf(index: number): Vector3
-	return Vector3.new(0, GROUND_Y, -WORLD_SIZE * (index - 1))
+local function isNewStyle(index: number): boolean
+	return GameConfig.islands.newStyle[GameConfig.worlds[index].id] == true
 end
 
--- Where players (re)spawn in a world: on the path between egg and oven, facing the
--- topping area (same spot as world 1's SpawnLocation).
-local SPAWN_OFFSET = Vector3.new(0, 3, 60)
+function WorldMap.centerOf(index: number): Vector3
+	return IslandBuilder.vector(plan.worldCenter(index))
+end
 
+-- Ground point and facing of a station of world `index` ("Oven", "Portal", "Phone", ...).
+function WorldMap.station(index: number, name: string): CFrame?
+	local station = plan.worldIsland(index).stations[name]
+	return if station then IslandBuilder.station(station) else nil
+end
+
+-- Where players (re)spawn in a world: the world's spawn spot, facing the field (-Z).
 function WorldMap.spawnPointOf(index: number): CFrame
-	local position = WorldMap.centerOf(index) + SPAWN_OFFSET
+	local ground = (WorldMap.station(index, "Spawn") :: CFrame).Position
+	local position = ground + Vector3.new(0, 3, 0)
 	return CFrame.lookAt(position, position - Vector3.zAxis)
 end
 
--- Index of the world (world 1 included) whose ground rectangle contains the position, or nil.
-function WorldMap.worldIndexAt(position: Vector3): number?
-	for index = 1, #GameConfig.worlds do
-		local offset = position - WorldMap.centerOf(index)
-		if math.abs(offset.X) <= WORLD_SIZE / 2 and math.abs(offset.Z) <= WORLD_SIZE / 2 then
-			return index
-		end
-	end
-	return nil
+-- Spawn point on the spawn island (new players, and players without a respawn world).
+function WorldMap.startSpawnPoint(): CFrame
+	local ground = IslandBuilder.vector(plan.spawnIsland().stations.Spawn.position)
+	local position = ground + Vector3.new(0, 3, 0)
+	return CFrame.lookAt(position, position - Vector3.zAxis)
 end
 
-function WorldMap.build(world: any, index: number): Layout
-	assert(index >= 2, "world 1 is built by World1Map")
+-- Ground point and facing of a station on the spawn island ("Portal", "Fountain", ...).
+function WorldMap.spawnStation(name: string): CFrame
+	return IslandBuilder.station(plan.spawnIsland().stations[name])
+end
+
+-- Index of the world whose island contains the position, or nil (spawn island, bridges).
+function WorldMap.worldIndexAt(position: Vector3): number?
+	return plan.worldIndexAt(position.X, position.Z)
+end
+
+-- True once a character fell below the islands.
+function WorldMap.hasFallen(position: Vector3): boolean
+	return plan.hasFallen(position.Y)
+end
+
+-- Oven box with glowing opening and the sell zone in front of it, at `cf` (front -Z).
+local function buildOven(folder: Instance, cf: CFrame, world: any, color: Color3, material: Enum.Material): BasePart
+	local oven = part({
+		Name = "Oven",
+		Size = Vector3.new(12, 9, 8),
+		CFrame = cf * CFrame.new(0, 4.5, 0),
+		Color = color,
+		Material = material,
+		Parent = folder,
+	})
+	part({
+		Name = "OvenOpening",
+		Size = Vector3.new(6, 3.5, 0.2),
+		CFrame = cf * CFrame.new(0, 3, -4.05),
+		Color = Color3.fromRGB(255, 120, 30),
+		Material = Enum.Material.Neon,
+		CanCollide = false,
+		Parent = folder,
+	})
+	sign(
+		folder,
+		oven,
+		if world.id == GameConfig.worlds[1].id
+			then "Ofen – hier verkaufen"
+			else `Ofen ({world.displayName}) – hier verkaufen`
+	)
+	return part({
+		Name = "SellZone",
+		Size = Vector3.new(14, 6, 10),
+		CFrame = cf * CFrame.new(0, 3, -9.5),
+		Color = Color3.fromRGB(255, 150, 40),
+		Material = Enum.Material.ForceField,
+		Transparency = 0.3,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+		Parent = folder,
+	})
+end
+
+-- Glowing gate on the bridge head of world `index` (>= 2). Its barrier is solid for
+-- everyone on the server; each client makes it passable once its player unlocked the world.
+local function buildGate(folder: Instance, world: any, index: number): (BasePart, Vector3)
+	local gate = plan.gate(index)
+	local gateModel = Instance.new("Model")
+	gateModel.Name = "Gate"
+	IslandBuilder.parts(gate.parts, gateModel)
+	gateModel.Parent = folder
+	local barrier = IslandBuilder.part(gate.barrier, folder)
+	barrier.CastShadow = false
+	barrier:SetAttribute("WorldId", world.id)
+	barrier:SetAttribute("WorldName", world.displayName)
+	barrier:SetAttribute("UnlockPrice", world.unlockPrice)
+	CollectionService:AddTag(barrier, "WorldBarrier")
+	sign(
+		barrier,
+		barrier,
+		`🔒 {world.displayName}\n{formatCoins(world.unlockPrice)} Münzen`,
+		-barrier.Size.Y / 2 + 9,
+		"PriceSign"
+	)
+	return barrier, IslandBuilder.vector(gate.returnPoint)
+end
+
+local function toppingsFolder(folder: Instance): Folder
+	local toppings = Instance.new("Folder")
+	toppings.Name = "Toppings"
+	toppings.Parent = folder
+	return toppings
+end
+
+-- World in the new island look, built from the shared floor plan.
+local function buildIsland(world: any, index: number): Layout
+	local island = plan.worldIsland(index)
+	local center = IslandBuilder.vector(island.center)
+	local folder = IslandBuilder.island(island, `World{index}_{world.id}`, Workspace)
+	folder.Parent = nil
+
+	local ovenCf = IslandBuilder.station(island.stations.Oven)
+	local sellZone = buildOven(folder, ovenCf, world, Color3.fromRGB(226, 112, 62), Enum.Material.SmoothPlastic)
+	WorldDeco.dressOven(folder)
+
+	local eggStands = {}
+	for i, name in { "Egg1", "Egg2" } do
+		local station = island.stations[name]
+		local eggId = world.eggs and world.eggs[i]
+		local stand = EggService.buildStand(folder, IslandBuilder.vector(station.position), eggId, station.yaw)
+		stand:SetAttribute("WorldId", world.id)
+		table.insert(eggStands, stand)
+	end
+
+	local barrier, returnPoint = nil, center + Vector3.new(0, 3, HALF + 12)
+	if index >= 2 then
+		barrier, returnPoint = buildGate(folder, world, index)
+	end
+
+	local field = island.field :: any
+	local fieldCenter = IslandBuilder.vector(field.center)
+	local toppings = toppingsFolder(folder)
+	folder.Parent = Workspace
+	return {
+		worldId = world.id,
+		index = index,
+		folder = folder,
+		toppingAreaCenter = fieldCenter,
+		toppingAreaSize = Vector2.new(field.size[1], field.size[2]),
+		toppingsFolder = toppings,
+		sellZone = sellZone,
+		barrier = barrier,
+		boundsCenter = center,
+		boundsSize = Vector2.new(2 * HALF, 2 * HALF),
+		returnPoint = returnPoint,
+		eggStands = eggStands,
+		shopSpot = IslandBuilder.station(island.stations.Shop),
+		isIsland = true,
+	}
+end
+
+-- World in the old square look (worlds 2-7 until B5/B6), on the island chain.
+local function buildClassic(world: any, index: number): Layout
 	local theme = THEMES[world.id] or DEFAULT_THEME
+	local island = plan.worldIsland(index)
 	local center = WorldMap.centerOf(index)
 
 	local folder = Instance.new("Folder")
 	folder.Name = `World{index}_{world.id}`
+	-- Walls along the rim and a rock underside from the plan; the ground is the old plate.
+	IslandBuilder.parts(island.parts, folder)
 
 	part({
 		Name = "Ground",
-		Size = Vector3.new(WORLD_SIZE, 1, WORLD_SIZE),
+		Size = Vector3.new(2 * HALF, 1, 2 * HALF),
 		Position = center - Vector3.new(0, 0.5, 0),
 		Color = theme.ground,
 		Material = theme.material,
 		Parent = folder,
 	})
 
-	local areaCenter = center + Vector3.new(0, 0, -10)
-	local areaSize = Vector2.new(120, 100)
+	local field = island.field :: any
+	local areaCenter = IslandBuilder.vector(field.center)
+	local areaSize = Vector2.new(field.size[1], field.size[2])
 	part({
 		Name = "ToppingArea",
 		Size = Vector3.new(areaSize.X + 6, 0.1, areaSize.Y + 6),
@@ -176,101 +323,141 @@ function WorldMap.build(world: any, index: number): Layout
 		Parent = folder,
 	})
 
-	-- Oven near the entrance, same spot as in world 1.
-	local ovenPos = center + Vector3.new(30, 0, 68)
-	local oven = part({
-		Name = "Oven",
-		Size = Vector3.new(12, 9, 8),
-		Position = ovenPos + Vector3.new(0, 4.5, 0),
-		Color = theme.accent,
-		Material = Enum.Material.Brick,
-		Parent = folder,
-	})
-	part({
-		Name = "OvenOpening",
-		Size = Vector3.new(6, 3.5, 0.2),
-		Position = ovenPos + Vector3.new(0, 3, -4.05),
-		Color = Color3.fromRGB(255, 120, 30),
-		Material = Enum.Material.Neon,
-		CanCollide = false,
-		Parent = folder,
-	})
-	sign(folder, oven, `Ofen ({world.displayName}) – hier verkaufen`)
-
-	local sellZone = part({
-		Name = "SellZone",
-		Size = Vector3.new(14, 6, 10),
-		Position = ovenPos + Vector3.new(0, 3, -9.5),
-		Color = Color3.fromRGB(255, 150, 40),
-		Material = Enum.Material.ForceField,
-		Transparency = 0.3,
-		CanCollide = false,
-		CanQuery = false,
-		CanTouch = false,
-		CastShadow = false,
-		Parent = folder,
-	})
-
-	-- Egg stand on the other side of the entrance; EggService puts the world's egg on it.
-	local eggPos = center + Vector3.new(-30, 0, 68)
+	-- Oven near the entrance, egg stand on the other side of the path.
+	local sellZone =
+		buildOven(folder, IslandBuilder.station(island.stations.Oven), world, theme.accent, Enum.Material.Brick)
 	local eggId = world.eggs and world.eggs[1]
-	local eggStand = EggService.buildStand(folder, eggPos, eggId)
+	local eggStand = EggService.buildStand(folder, IslandBuilder.vector(island.stations.Egg1.position), eggId)
 	eggStand:SetAttribute("WorldId", world.id)
 
-	-- Barrier on the border to the previous world. Solid for everyone on the server;
-	-- each client makes it passable locally once its player unlocked the world.
-	local border = center + Vector3.new(0, 0, WORLD_SIZE / 2)
-	local barrier = part({
-		Name = "Barrier",
-		Size = Vector3.new(WORLD_SIZE, BARRIER_HEIGHT, 2),
-		Position = border + Vector3.new(0, BARRIER_HEIGHT / 2, 0),
-		Color = theme.accent,
-		Material = Enum.Material.ForceField,
-		Transparency = 0.2,
-		CastShadow = false,
-		Parent = folder,
-	})
-	barrier:SetAttribute("WorldId", world.id)
-	barrier:SetAttribute("WorldName", world.displayName)
-	barrier:SetAttribute("UnlockPrice", world.unlockPrice)
-	CollectionService:AddTag(barrier, "WorldBarrier")
-	sign(
-		barrier,
-		barrier,
-		`🔒 {world.displayName}\n{formatCoins(world.unlockPrice)} Münzen`,
-		-BARRIER_HEIGHT / 2 + 9,
-		"PriceSign"
-	)
-
-	local toppingsFolder = Instance.new("Folder")
-	toppingsFolder.Name = "Toppings"
-	toppingsFolder.Parent = folder
-
+	local barrier, returnPoint = buildGate(folder, world, index)
+	local toppings = toppingsFolder(folder)
 	folder.Parent = Workspace
 
 	return {
 		worldId = world.id,
+		index = index,
 		folder = folder,
 		toppingAreaCenter = areaCenter,
 		toppingAreaSize = areaSize,
-		toppingsFolder = toppingsFolder,
+		toppingsFolder = toppings,
 		sellZone = sellZone,
 		barrier = barrier,
 		boundsCenter = center,
-		boundsSize = Vector2.new(WORLD_SIZE, WORLD_SIZE),
-		returnPoint = border + Vector3.new(0, 3, 10),
-		eggStand = eggStand,
-		shopSpot = center + Vector3.new(-72, 0, 72),
+		boundsSize = Vector2.new(2 * HALF, 2 * HALF),
+		returnPoint = returnPoint,
+		eggStands = { eggStand },
+		shopSpot = IslandBuilder.station(island.stations.Shop),
+		isIsland = false,
 	}
 end
 
--- Builds worlds 2..n from the config, in unlock order.
+function WorldMap.build(world: any, index: number): Layout
+	if isNewStyle(index) then
+		return buildIsland(world, index)
+	end
+	return buildClassic(world, index)
+end
+
+-- Builds every world from the config, in unlock order (world 1 first).
 function WorldMap.buildAll(): { Layout }
 	local layouts = {}
-	for index = 2, #GameConfig.worlds do
-		table.insert(layouts, WorldMap.build(GameConfig.worlds[index], index))
+	for index, world in GameConfig.worlds do
+		table.insert(layouts, WorldMap.build(world, index))
 	end
 	return layouts
+end
+
+-- Spawn island: SpawnLocation, pizza fountain, leaderboard boards (placeholder text
+-- until #38), the trees and the rim. The portal gate is built by PortalService.
+local BOARD_TITLES = { "⏱ Spielzeit", "💰 Münzen verdient", "🔁 Rebirths" }
+
+function WorldMap.buildSpawnIsland(): Folder
+	local island = plan.spawnIsland()
+	local folder = IslandBuilder.island(island, "SpawnIsland", Workspace)
+
+	local spawn = Instance.new("SpawnLocation")
+	spawn.Name = "Spawn"
+	spawn.Anchored = true
+	spawn.Size = Vector3.new(12, 1, 12)
+	spawn.CFrame = IslandBuilder.station(island.stations.Spawn) + Vector3.new(0, 0.5, 0)
+	spawn.Color = Color3.fromRGB(255, 200, 80)
+	spawn.Material = Enum.Material.SmoothPlastic
+	spawn.Neutral = true
+	spawn.Duration = 0
+	spawn.Parent = folder
+
+	-- Leaderboards: the panels come from the plan, the text goes on their front.
+	local index = 0
+	for _, panel in folder:GetChildren() do
+		if panel:IsA("BasePart") and panel.Name == "BoardPanel" then
+			index += 1
+			local gui = Instance.new("SurfaceGui")
+			gui.Name = "Leaderboard"
+			gui.Face = Enum.NormalId.Front
+			gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+			gui.PixelsPerStud = 40
+			gui.LightInfluence = 0.2
+			gui.MaxDistance = 150
+			gui:SetAttribute("Board", index)
+			local label = Instance.new("TextLabel")
+			label.Name = "Text"
+			label.Size = UDim2.fromScale(1, 1)
+			label.BackgroundTransparency = 1
+			label.Font = Enum.Font.FredokaOne
+			label.TextScaled = true
+			label.TextColor3 = Color3.fromRGB(60, 35, 20)
+			label.Text = `{BOARD_TITLES[index] or "Bestenliste"}\nBestenliste kommt bald!`
+			label.Parent = gui
+			local padding = Instance.new("UIPadding")
+			padding.PaddingTop = UDim.new(0.1, 0)
+			padding.PaddingBottom = UDim.new(0.1, 0)
+			padding.PaddingLeft = UDim.new(0.06, 0)
+			padding.PaddingRight = UDim.new(0.06, 0)
+			padding.Parent = label
+			gui.Parent = panel
+		end
+	end
+	return folder
+end
+
+-- Bridges between all islands (spawn -> world 1 -> world 2 ...).
+function WorldMap.buildBridges(): Folder
+	local folder = Instance.new("Folder")
+	folder.Name = "Bridges"
+	for i, bridge in plan.bridges() do
+		local model = Instance.new("Model")
+		model.Name = `Bridge{i}`
+		IslandBuilder.parts(bridge.parts, model)
+		model.Parent = folder
+	end
+	folder.Parent = Workspace
+	return folder
+end
+
+-- Invisible point at the bridge head of world 1: the tutorial arrow leads there first
+-- while the player is still on the spawn island or the bridge.
+function WorldMap.buildTutorialWaypoint(): BasePart
+	local front = IslandBuilder.vector(plan.worldIsland(1).openings.front :: { number })
+	return part({
+		Name = "TutorialWaypoint",
+		Size = Vector3.new(2, 2, 2),
+		Position = front + Vector3.new(0, 1, -4),
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		Parent = Workspace,
+	})
+end
+
+-- The islands float: a Baseplate from the place template would be a floor under them.
+function WorldMap.removeBaseplate()
+	local baseplate = Workspace:FindFirstChild("Baseplate")
+	if baseplate and baseplate:IsA("BasePart") then
+		warn("[WorldMap] Baseplate entfernt (die Inseln schweben) – bitte in Studio löschen und speichern.")
+		baseplate:Destroy()
+	end
 end
 
 return WorldMap

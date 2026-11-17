@@ -17,9 +17,8 @@ local WorldMap = require(script.Parent.WorldMap)
 
 local CHECK_SECONDS = 0.2
 local TELEPORT_COOLDOWN = 1
--- Portal spot relative to each world's center: right of the oven, near the entrance
--- (world 1: spawn at x = 0, oven x = 30, egg x = -30, shop x = -60).
-local PORTAL_OFFSET = Vector3.new(65, 0, 70)
+-- The spawn island's portal gate has no world of its own.
+local SPAWN_PORTAL_ID = "SpawnIsland"
 local RING_SIZE = 12
 -- Width of the stone arch model (#28) = width of the placeholder base.
 local ARCH_MODEL_WIDTH = RING_SIZE + 4
@@ -49,7 +48,8 @@ end
 
 -- Portal facing −Z: the round stone arch model with a glowing face in the world's
 -- colour or, until it is imported, a ring of blocks around a glowing disk.
-function PortalService.build(parent: Instance, world: any, groundPosition: Vector3): Portal
+-- `yaw` turns the whole portal around its ground point (island worlds face the path, #27).
+function PortalService.build(parent: Instance, world: any, groundPosition: Vector3, yaw: number?): Portal
 	local model = Instance.new("Model")
 	model.Name = `Portal_{world.id}`
 
@@ -143,24 +143,34 @@ function PortalService.build(parent: Instance, world: any, groundPosition: Vecto
 		sparkles.Color = ColorSequence.new(color:Lerp(Color3.new(1, 1, 1), 0.5))
 	end
 
+	local base = CFrame.new(groundPosition) * CFrame.Angles(0, yaw or 0, 0)
+	model.WorldPivot = CFrame.new(groundPosition)
+	model:PivotTo(base)
 	model.Parent = parent
-	local arrival = groundPosition + ARRIVAL_OFFSET
+	-- Arrival in front of the portal, looking away from it.
 	return {
 		worldId = world.id,
 		zone = zone,
-		arrival = CFrame.lookAt(arrival, arrival - Vector3.zAxis),
+		arrival = base * CFrame.new(ARRIVAL_OFFSET),
 	}
 end
 
--- One portal per configured world, at the same spot in every world.
+-- One portal per configured world on its station spot (WorldMap), plus the portal gate
+-- on the spawn island (#27; it belongs to no world, so no menu entry counts as "here").
 function PortalService.buildAll(): { Portal }
 	local folder = Instance.new("Folder")
 	folder.Name = "Portals"
 	folder.Parent = Workspace
 	local portals = {}
 	for index, world in GameConfig.worlds do
-		table.insert(portals, PortalService.build(folder, world, WorldMap.centerOf(index) + PORTAL_OFFSET))
+		local spot = WorldMap.station(index, "Portal") :: CFrame
+		local _, yaw = spot:ToEulerAnglesYXZ()
+		table.insert(portals, PortalService.build(folder, world, spot.Position, yaw))
 	end
+	local spawnSpot = WorldMap.spawnStation("Portal")
+	local _, spawnYaw = spawnSpot:ToEulerAnglesYXZ()
+	local spawnWorld = { id = SPAWN_PORTAL_ID, color = GameConfig.worlds[1].color }
+	table.insert(portals, PortalService.build(folder, spawnWorld, spawnSpot.Position, spawnYaw))
 	return portals
 end
 

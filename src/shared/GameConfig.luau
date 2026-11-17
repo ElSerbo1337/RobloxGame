@@ -523,6 +523,70 @@ local GameConfig = {
 		},
 	},
 
+	-- Flying islands (#27): spawn island, then world 1, 2, ... in a chain along -Z, all at
+	-- the same height, joined by bridges. Geometry is planned by IslandPlan (pure) and
+	-- built by the server; local coordinates below: x = right of the main path, z = +front
+	-- (where the bridge arrives), studs.
+	islands = {
+		groundY = 0.1,
+		-- World islands are at most this far from their center (topping field unchanged).
+		worldHalfSize = 100,
+		spawnRadius = 62,
+		bridgeLength = 40,
+		bridgeWidth = 12,
+		-- Invisible collision wall around every island and along every bridge.
+		wallHeight = 24,
+		-- Below this height a character has fallen off and respawns in its current world.
+		fallY = -70,
+		-- Main path from the arriving bridge to the field (and from the field to the next bridge).
+		pathWidth = 12,
+		-- Worlds already rebuilt as islands; the others keep the old square look for now
+		-- (B5/B6) but hang on the chain with bridges, gates and walls.
+		newStyle = { PizzeriaGarden = true },
+		-- Shared floor plan of every world island. Stations left of the path (x < 0) face
+		-- +X, right of it (x > 0) face -X, so the camera stays over the path while using them.
+		layout = {
+			spawn = { 0, 86 },
+			field = { center = { 0, -25 }, size = { 120, 100 } },
+			oven = { 31, 84 },
+			portal = { -30, 86 },
+			shop = { -31, 68 },
+			eggs = { { -27, 52 }, { -27, 38 } },
+			phone = { 24, 66 },
+			van = { 31, 47 },
+			landmark = { -48, -86 },
+			pond = { 72, 58 },
+			-- Raised grass terraces behind the field (x, z, radius, height).
+			terraces = { { -48, -86, 15, 4 }, { 50, -84, 13, 3 } },
+		},
+		-- Spawn island floor plan (bridge to world 1 leaves at -z).
+		spawnLayout = {
+			spawn = { 0, 26 },
+			fountain = { 0, 0 },
+			portal = { -34, -12 },
+			boards = { { -30, 20 }, { 0, 42 }, { 30, 20 } },
+			pond = { 38, -8 },
+		},
+		-- Colours (RGB 0-255) of the new island look, per world (others use PizzeriaGarden).
+		themes = {
+			PizzeriaGarden = {
+				grass = { 104, 196, 72 },
+				grassLight = { 132, 214, 88 },
+				field = { 146, 222, 100 },
+				cliff = { 168, 120, 84 },
+				cliffDark = { 132, 92, 66 },
+				cliffLight = { 196, 150, 104 },
+				rim = { 66, 150, 60 },
+				path = { 236, 214, 170 },
+				pathDark = { 214, 188, 142 },
+				water = { 70, 190, 240 },
+				wood = { 160, 104, 58 },
+				rope = { 222, 196, 140 },
+				flowers = { { 255, 110, 150 }, { 255, 220, 70 }, { 160, 130, 255 }, { 255, 255, 255 } },
+			},
+		},
+	},
+
 	-- Worlds in unlock order. `unlockPrice` is paid once per player at the barrier in
 	-- front of the world (0 = open from the start). `toppingSpawns` weights are relative chances.
 	worlds = {

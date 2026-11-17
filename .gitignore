@@ -15,3 +15,7 @@ desktop.ini
 
 # Claude lokal
 .claude/settings.local.json
+
+# Build output (island plan export for the preview renders)
+build/
+__pycache__/

@@ -37,6 +37,24 @@ function SpawnService.enterWorld(player: Player, worldId: string)
 	end
 end
 
+-- World index the player respawns in, or nil for the start (spawn island).
+local function respawnIndex(state: any): number?
+	local worldId = PlayerStates.rules.spawnWorld(state)
+	return if worldId then indexById[worldId] else nil
+end
+
+-- A character that fell off the islands is put back on the spawn of its current world
+-- (the same place a death would respawn it), without waiting for a death.
+local function catchFall(player: Player, character: Model, root: BasePart)
+	local state = PlayerStates.get(player)
+	if state == nil then
+		return
+	end
+	local index = respawnIndex(state)
+	root.AssemblyLinearVelocity = Vector3.zero
+	character:PivotTo(if index then WorldMap.spawnPointOf(index) else WorldMap.startSpawnPoint())
+end
+
 -- Moves a new character to the spawn of the player's world. Waits until the state is
 -- loaded (on join the character can appear before the save is read).
 local function place(player: Player, character: Model)
@@ -56,10 +74,9 @@ local function place(player: Player, character: Model)
 	if player.Character ~= character then
 		return
 	end
-	local worldId = PlayerStates.rules.spawnWorld(state)
-	local index = if worldId then indexById[worldId] else nil
-	-- World 1 and "start" use the normal SpawnLocation in world 1.
-	if index and index > 1 then
+	local index = respawnIndex(state)
+	-- "Start" (no respawn world yet) uses the SpawnLocation on the spawn island (#27).
+	if index then
 		character:PivotTo(WorldMap.spawnPointOf(index))
 	end
 	placed[player] = character
@@ -83,13 +100,16 @@ function SpawnService.start()
 		placed[player] = nil
 	end)
 
-	-- Walking across a world border counts as entering that world.
+	-- Walking across a world border counts as entering that world; falling off an island
+	-- (below GameConfig.islands.fallY) puts the character back on its world's spawn.
 	task.spawn(function()
 		while true do
 			task.wait(CHECK_SECONDS)
 			for player, character in placed do
 				local root = character:FindFirstChild("HumanoidRootPart") :: BasePart?
-				if player.Character == character and root then
+				if player.Character == character and root and WorldMap.hasFallen(root.Position) then
+					catchFall(player, character, root)
+				elseif player.Character == character and root then
 					local index = WorldMap.worldIndexAt(root.Position)
 					if index then
 						SpawnService.enterWorld(player, GameConfig.worlds[index].id)

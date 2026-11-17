@@ -1,0 +1,187 @@
+--!strict
+-- Turns the island plan (ReplicatedStorage.Shared.IslandPlan, pure data) into parts and
+-- models (#27). Knows nothing about the layout itself: every position, size and colour
+-- comes from the plan, so the Blender previews (tools/blender/render_islands.py) show
+-- exactly what is built here.
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local IslandPlan = require(ReplicatedStorage.Shared.IslandPlan)
+local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
+
+local IslandBuilder = {}
+
+local SHAPES: { [string]: Enum.PartType } = {
+	Block = Enum.PartType.Block,
+	Ball = Enum.PartType.Ball,
+	Cylinder = Enum.PartType.Cylinder,
+}
+
+local function toCFrame(c: { number }): CFrame
+	return CFrame.new(c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11], c[12])
+end
+
+local function rgb(c: { number }): Color3
+	return Color3.fromRGB(c[1], c[2], c[3])
+end
+
+function IslandBuilder.toCFrame(c: { number }): CFrame
+	return toCFrame(c)
+end
+
+function IslandBuilder.vector(p: { number }): Vector3
+	return Vector3.new(p[1], p[2], p[3])
+end
+
+-- One part from a PartSpec.
+function IslandBuilder.part(spec: IslandPlan.PartSpec, parent: Instance): BasePart
+	local p: BasePart
+	if spec.shape == "Wedge" then
+		p = Instance.new("WedgePart")
+	else
+		local block = Instance.new("Part")
+		block.Shape = SHAPES[spec.shape] or Enum.PartType.Block
+		p = block
+	end
+	p.Name = spec.name
+	p.Anchored = true
+	p.TopSurface = Enum.SurfaceType.Smooth
+	p.BottomSurface = Enum.SurfaceType.Smooth
+	p.Size = Vector3.new(spec.size[1], spec.size[2], spec.size[3])
+	p.CFrame = toCFrame(spec.cframe)
+	p.Color = rgb(spec.color)
+	p.Material = (Enum.Material :: any)[spec.material] or Enum.Material.SmoothPlastic
+	p.Transparency = spec.transparency or 0
+	p.CanCollide = spec.collide
+	if not spec.collide then
+		p.CanQuery = false
+	end
+	p.CanTouch = false
+	if spec.role then
+		p:SetAttribute("IslandRole", spec.role)
+	end
+	if spec.role == "Wall" then
+		-- Invisible: no shadow, and the camera/clicks look through it.
+		p.CastShadow = false
+	elseif spec.role == "Waterfall" then
+		p.CastShadow = false
+		local mist = Instance.new("ParticleEmitter")
+		mist.Color = ColorSequence.new(Color3.fromRGB(235, 248, 255))
+		mist.LightEmission = 0.4
+		mist.Transparency = NumberSequence.new(0.4, 1)
+		mist.Size = NumberSequence.new(1.5, 4)
+		mist.Rate = 12
+		mist.Lifetime = NumberRange.new(1.2, 2)
+		mist.Speed = NumberRange.new(4, 8)
+		mist.EmissionDirection = Enum.NormalId.Bottom
+		mist.Parent = p
+	elseif spec.name == "FountainSpout" then
+		local spray = Instance.new("ParticleEmitter")
+		spray.Color = ColorSequence.new(Color3.fromRGB(190, 235, 255))
+		spray.LightEmission = 0.3
+		spray.Transparency = NumberSequence.new(0.2, 1)
+		spray.Size = NumberSequence.new(0.6, 0.2)
+		spray.Rate = 40
+		spray.Lifetime = NumberRange.new(1, 1.4)
+		spray.Speed = NumberRange.new(10, 13)
+		spray.SpreadAngle = Vector2.new(18, 18)
+		spray.Acceleration = Vector3.new(0, -30, 0)
+		spray.Parent = p
+	elseif spec.material == "Neon" and spec.role == "Glow" then
+		local light = Instance.new("PointLight")
+		light.Color = p.Color
+		light.Range = 10
+		light.Brightness = 1.2
+		light.Parent = p
+	end
+	p.Parent = parent
+	return p
+end
+
+function IslandBuilder.parts(specs: { IslandPlan.PartSpec }, parent: Instance)
+	for _, spec in specs do
+		IslandBuilder.part(spec, parent)
+	end
+end
+
+-- Stand-ins while the Blender models are not imported (same proportions).
+local function fallbackTree(parent: Instance, model: IslandPlan.ModelSpec)
+	local w = model.width
+	local base = IslandBuilder.vector(model.position)
+	local group = Instance.new("Model")
+	group.Name = model.model
+	local trunk = Instance.new("Part")
+	trunk.Name = "Wood"
+	trunk.Anchored = true
+	trunk.Shape = Enum.PartType.Cylinder
+	trunk.Size = Vector3.new(w * 0.55, w * 0.22, w * 0.22)
+	trunk.CFrame = CFrame.new(base + Vector3.new(0, w * 0.27, 0)) * CFrame.Angles(0, 0, math.pi / 2)
+	trunk.Color = Color3.fromRGB(150, 96, 52)
+	trunk.Material = Enum.Material.SmoothPlastic
+	trunk.Parent = group
+	for i, ball in { { 0.95, Vector3.new(0, 0.95, 0) }, { 0.5, Vector3.new(0.27, 1.2, -0.24) } } do
+		local crown = Instance.new("Part")
+		crown.Name = if i == 1 then "Leaves" else "LeavesLight"
+		crown.Anchored = true
+		crown.Shape = Enum.PartType.Ball
+		crown.Size = Vector3.one * w * (ball[1] :: number)
+		crown.Position = base + (ball[2] :: Vector3) * w
+		crown.Color = if i == 1 then Color3.fromRGB(96, 196, 82) else Color3.fromRGB(140, 220, 96)
+		crown.Material = Enum.Material.SmoothPlastic
+		crown.CanCollide = false
+		crown.Parent = group
+	end
+	group.Parent = parent
+end
+
+local function fallbackBush(parent: Instance, model: IslandPlan.ModelSpec)
+	local bush = Instance.new("Part")
+	bush.Name = "Bush"
+	bush.Anchored = true
+	bush.Shape = Enum.PartType.Ball
+	bush.Size = Vector3.one * model.width * 0.75
+	bush.Position = IslandBuilder.vector(model.position) + Vector3.new(0, model.width * 0.25, 0)
+	bush.Color = Color3.fromRGB(96, 196, 82)
+	bush.Material = Enum.Material.SmoothPlastic
+	bush.CanCollide = false
+	bush.Parent = parent
+end
+
+function IslandBuilder.models(models: { IslandPlan.ModelSpec }, parent: Instance)
+	for _, model in models do
+		local cframe = CFrame.new(IslandBuilder.vector(model.position)) * CFrame.Angles(0, model.yaw, 0)
+		if ModelLibrary.place(model.model, model.width, cframe, parent, model.collide) == nil then
+			if model.model == "Bush" then
+				fallbackBush(parent, model)
+			else
+				fallbackTree(parent, model)
+			end
+		end
+	end
+end
+
+-- Whole island: parts and models into a folder `name` under `parent`.
+function IslandBuilder.island(island: IslandPlan.Island, name: string, parent: Instance): Folder
+	local folder = Instance.new("Folder")
+	folder.Name = name
+	IslandBuilder.parts(island.parts, folder)
+	IslandBuilder.models(island.models, folder)
+	folder.Parent = parent
+	return folder
+end
+
+-- Ground point of a station as a CFrame (yaw 0 = front faces -Z).
+function IslandBuilder.station(station: IslandPlan.Station): CFrame
+	return CFrame.new(IslandBuilder.vector(station.position)) * CFrame.Angles(0, station.yaw, 0)
+end
+
+-- Turns a model built facing -Z at `ground` by `yaw` around that ground point.
+function IslandBuilder.turn(model: Model, ground: Vector3, yaw: number)
+	if yaw == 0 then
+		return
+	end
+	model.WorldPivot = CFrame.new(ground)
+	model:PivotTo(CFrame.new(ground) * CFrame.Angles(0, yaw, 0))
+end
+
+return IslandBuilder

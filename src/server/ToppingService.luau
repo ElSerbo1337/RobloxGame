@@ -27,7 +27,7 @@ local FULL_NOTICE_SECONDS = 3
 
 type PlayerState = GameRules.PlayerState
 
--- What ToppingService needs from a world's map (World1Map and WorldMap layouts both fit).
+-- What ToppingService needs from a world's map (WorldMap layouts).
 export type Layout = {
 	toppingAreaCenter: Vector3,
 	toppingAreaSize: Vector2,

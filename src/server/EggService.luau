@@ -105,7 +105,8 @@ local function buildSign(parent: Instance, ground: Vector3, eggId: string?, visi
 	label.Font = Enum.Font.FredokaOne
 	label.TextScaled = true
 	label.TextColor3 = DARK
-	label.Text = if egg then `{egg.displayName}\n💰 {formatNumber(egg.price)}` else "Ei"
+	-- A spot without an egg yet: the second egg per world (#39) comes later.
+	label.Text = if egg then `{egg.displayName}\n💰 {formatNumber(egg.price)}` else "Bald: neues Ei!"
 	label.Parent = gui
 	local padding = Instance.new("UIPadding")
 	padding.PaddingTop = UDim.new(0.08, 0)
@@ -113,10 +114,11 @@ local function buildSign(parent: Instance, ground: Vector3, eggId: string?, visi
 	padding.Parent = label
 end
 
--- Builds the egg stand for `eggId` standing on `ground`, front (sign) facing -Z.
+-- Builds the egg stand for `eggId` standing on `ground`, front (sign) facing -Z, turned
+-- by `yaw` (island worlds turn it towards the main path, #27).
 -- Returns the drum: a cylinder lying on its side (height along X), its top is where
--- the egg goes (attribute EggId). Used for world 1 and by WorldMap for later worlds.
-function EggService.buildStand(parent: Instance, ground: Vector3, eggId: string?): BasePart
+-- the egg goes (attribute EggId). Used by WorldMap for every world.
+function EggService.buildStand(parent: Instance, ground: Vector3, eggId: string?, yaw: number?): BasePart
 	local folder = Instance.new("Model")
 	folder.Name = "EggStandLook"
 	local trim = trimColor(eggId)
@@ -150,6 +152,10 @@ function EggService.buildStand(parent: Instance, ground: Vector3, eggId: string?
 		})
 	end
 	buildSign(folder, ground, eggId, not dressed)
+	if yaw and yaw ~= 0 then
+		folder.WorldPivot = CFrame.new(ground)
+		folder:PivotTo(CFrame.new(ground) * CFrame.Angles(0, yaw, 0))
+	end
 	folder.Parent = parent
 
 	local stand = part({

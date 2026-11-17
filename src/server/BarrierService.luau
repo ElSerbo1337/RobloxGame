@@ -1,5 +1,5 @@
 --!strict
--- Barriers between worlds: handles unlock requests and keeps players out of worlds
+-- Barriers between worlds (glowing gates on the bridge heads, #27): handles unlock requests and keeps players out of worlds
 -- they have not unlocked. Unlocking is decided by the game rules; the barrier is only
 -- made passable on the unlocking player's client, so the server checks positions too.
 
@@ -52,10 +52,10 @@ function BarrierService.start(layouts: { WorldMap.Layout })
 		local layout = byWorld[worldId]
 		local state = PlayerStates.get(player)
 		local root = rootOf(player)
-		if layout == nil or state == nil or root == nil then
+		if layout == nil or layout.barrier == nil or state == nil or root == nil then
 			return
 		end
-		if distanceToBarrier(layout.barrier, root.Position) > UNLOCK_RANGE then
+		if distanceToBarrier(layout.barrier :: BasePart, root.Position) > UNLOCK_RANGE then
 			notify:FireClient(player, "OutOfRange")
 			return
 		end

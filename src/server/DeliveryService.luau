@@ -27,10 +27,6 @@ local CHECK_SECONDS = 0.25
 -- How often the rules are asked about ringing/expiry and the HUD order card is re-synced.
 local RULES_SECONDS = 1
 local SYNC_SECONDS = 5
--- Spots relative to each world's center: right edge of the station row, beside the portal
--- (world 1: oven x = 30, portal x = 65 / z = 70, topping area up to x = 63, z = 43).
-local PHONE_OFFSET = Vector3.new(78, 0, 46)
-local VAN_OFFSET = Vector3.new(78, 0, 14)
 -- Blender models (#28), widest side in studs; used once imported, else the parts below.
 local PHONE_MODEL_WIDTH = 2.2
 local VAN_MODEL_LENGTH = 13.2
@@ -194,18 +190,28 @@ local function buildVan(parent: Instance, ground: Vector3): BasePart
 	return invisibleZone("VanZone", Vector3.new(7, 7, 14), ground + Vector3.new(-6.5, 3.5, 0), model)
 end
 
--- One phone and one van per configured world, at the same spot in every world.
+-- One phone and one van per configured world, on the station spots of its island.
 function DeliveryService.buildAll(): { Station }
 	local folder = Instance.new("Folder")
 	folder.Name = "Delivery"
 	folder.Parent = Workspace
 	local stations = {}
+	-- Phone and van are built facing -X (their hand-over side); the station yaw from
+	-- WorldMap is for a -Z facing station, so turn by yaw - 90 degrees.
+	local function placed(zone: BasePart, spot: CFrame): BasePart
+		local _, yaw = spot:ToEulerAnglesYXZ()
+		local model = zone.Parent :: Model
+		model.WorldPivot = CFrame.new(spot.Position)
+		model:PivotTo(CFrame.new(spot.Position) * CFrame.Angles(0, yaw - math.pi / 2, 0))
+		return zone
+	end
 	for index, world in GameConfig.worlds do
-		local center = WorldMap.centerOf(index)
+		local phone = WorldMap.station(index, "Phone") :: CFrame
+		local van = WorldMap.station(index, "Van") :: CFrame
 		table.insert(stations, {
 			worldId = world.id,
-			phoneZone = buildPhone(folder, center + PHONE_OFFSET),
-			vanZone = buildVan(folder, center + VAN_OFFSET),
+			phoneZone = placed(buildPhone(folder, phone.Position), phone),
+			vanZone = placed(buildVan(folder, van.Position), van),
 		})
 	end
 	return stations
