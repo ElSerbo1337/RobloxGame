@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
 local SpawnService = require(script.Parent.SpawnService)
@@ -20,6 +21,8 @@ local TELEPORT_COOLDOWN = 1
 -- (world 1: spawn at x = 0, oven x = 30, egg x = -30, shop x = -60).
 local PORTAL_OFFSET = Vector3.new(65, 0, 70)
 local RING_SIZE = 12
+-- Width of the stone arch model (#28) = width of the placeholder base.
+local ARCH_MODEL_WIDTH = RING_SIZE + 4
 -- Arrival in front of the portal (−Z), outside its zone so the menu does not pop up again.
 local ARRIVAL_OFFSET = Vector3.new(0, 3, -12)
 
@@ -44,7 +47,8 @@ local function part(props: { [string]: any }): Part
 	return p
 end
 
--- Placeholder portal: a ring of blocks around a glowing disk, facing −Z.
+-- Portal facing −Z: the round stone arch model with a glowing face in the world's
+-- colour or, until it is imported, a ring of blocks around a glowing disk.
 function PortalService.build(parent: Instance, world: any, groundPosition: Vector3): Portal
 	local model = Instance.new("Model")
 	model.Name = `Portal_{world.id}`
@@ -121,6 +125,23 @@ function PortalService.build(parent: Instance, world: any, groundPosition: Vecto
 		CastShadow = false,
 		Parent = model,
 	})
+
+	local look = ModelLibrary.dressPlaceholder(
+		model,
+		"PortalArch",
+		ARCH_MODEL_WIDTH,
+		CFrame.new(groundPosition),
+		{ "Base", "Ring", "Swirl" }
+	)
+	if look and world.color then
+		local color = Color3.fromRGB(world.color[1], world.color[2], world.color[3])
+		for _, descendant in look:GetDescendants() do
+			if descendant:IsA("BasePart") and string.match(descendant.Name, "^PortalGlow") then
+				descendant.Color = color
+			end
+		end
+		sparkles.Color = ColorSequence.new(color:Lerp(Color3.new(1, 1, 1), 0.5))
+	end
 
 	model.Parent = parent
 	local arrival = groundPosition + ARRIVAL_OFFSET

@@ -88,10 +88,29 @@ COLORS = {
     "Crystal": (110, 255, 212),
     "Hull": (240, 240, 246),
     "Fin": (232, 62, 62),
+    # Stations (#28): phone, delivery van, portal, shop stand
+    "PhoneRed": (220, 50, 45),
+    "Dial": (252, 242, 222),
+    "Receiver": (60, 35, 20),
+    "Brass": (232, 184, 72),
+    "VanBody": (255, 248, 230),
+    "VanRed": (230, 70, 50),
+    "VanStripe": (255, 150, 40),
+    "Tire": (50, 45, 45),
+    "Hubcap": (200, 200, 210),
+    "Lamp": (255, 236, 150),
+    "PizzaBox": (222, 178, 118),
+    "BoxLogo": (214, 52, 34),
+    "ArchStone": (170, 160, 178),
+    "Keystone": (232, 184, 72),
+    "PortalGlow": (255, 150, 60),
+    "AwningRed": (220, 60, 50),
+    "AwningWhite": (255, 250, 240),
+    "SignBoard": (250, 235, 200),
 }
 
 # Parts with these colours glow (Neon in Roblox) or are see-through (Glass).
-GLOWING = {"Glow", "Lava", "Crystal"}
+GLOWING = {"Glow", "Lava", "Crystal", "Lamp", "PortalGlow"}
 GLASSY = {"Ice"}
 
 _materials = {}
@@ -633,6 +652,168 @@ def build_rocket():
     finish(flame, "Glow")
 
 
+# ---------------------------------------------------------------- stations (#28)
+# Built in studs (1 Blender unit = 1 stud), front facing +Y like the oven.
+
+
+def build_telephone():
+    # Old rotary phone on a wooden stand. Widest part: the 2.0 wide table top.
+    post = applied(cylinder(0.32, 3.2, 8, loc=(0, 0, 1.6)))
+    foot = applied(cylinder(0.85, 0.25, 10, loc=(0, 0, 0.125)))
+    plate = applied(cube((2.0, 1.6, 0.22), loc=(0, 0, 3.31)))
+    join([post, foot, plate], "Wood")
+    # Body: wide at the bottom, narrower on top (a frustum), slightly tilted forward.
+    body = cone(0.85, 0.6, 0.95, 4, loc=(0, 0, 3.9), rot=(0, 0, math.pi / 4))
+    applied(body)
+    body.scale = (1.0, 0.85, 1.0)
+    applied(body)
+    finish(body, "PhoneRed")
+    # Rotary dial on the sloped front: built flat at the origin, then tilted into place.
+    tilt = (math.radians(-58), 0, 0)
+    dial = finish(cylinder(0.42, 0.08, 16), "Dial")
+    holes = [cylinder(0.06, 0.1, 6, loc=(math.cos(a) * 0.28, math.sin(a) * 0.28, 0.02)) for a in (math.radians(-50 + i * 30) for i in range(10))]
+    holes.append(cylinder(0.11, 0.1, 8, loc=(0, 0, 0.03)))
+    holes = join([applied(h) for h in holes], "Receiver", "DialHoles")
+    for o in (dial, holes):
+        o.rotation_euler = tilt
+        o.location = (0, 0.46, 4.0)
+        applied(o)
+    # Cradle forks and the handset lying across them (left-right).
+    forks = [applied(cube((0.12, 0.3, 0.3), loc=(x, -0.1, 4.45))) for x in (-0.55, 0.55)]
+    join(forks, "Brass")
+    grip = applied(cylinder(0.13, 1.5, 8, loc=(0, -0.1, 4.68), rot=(0, math.pi / 2, 0)))
+    cups = [applied(uv_sphere(0.26, 10, 6, loc=(x, -0.1, 4.62), scale=(1, 1.05, 0.75))) for x in (-0.78, 0.78)]
+    join([grip] + cups, "Receiver")
+    # Curly cord from the handset to the side of the body.
+    cord = []
+    for i in range(7):
+        cord.append(applied(cylinder(0.07, 0.06, 6, loc=(-0.9 - 0.04 * i, -0.1 + 0.02 * i, 4.4 - i * 0.09), rot=(0, math.pi / 2, 0))))
+    join(cord, "Receiver", "Cord")
+
+
+def beveled(obj, width):
+    """Rounds the edges of an object (after applying its scale, so the bevel is even)."""
+    applied(obj)
+    mod = obj.modifiers.new("Bevel", "BEVEL")
+    mod.width = width
+    mod.segments = 2
+    bpy.ops.object.modifier_apply(modifier="Bevel")
+    return obj
+
+
+def build_van():
+    # Cartoon delivery van, front (cab) facing +Y, 12.5 long, 6 wide.
+    cargo = beveled(cube((6.0, 8.6, 6.0), loc=(0, -1.95, 4.0)), 0.35)
+    finish(cargo, "VanBody")
+    cab = beveled(cube((5.8, 3.8, 3.9), loc=(0, 4.25, 3.05)), 0.5)
+    hood = applied(cube((5.6, 1.0, 1.4), loc=(0, 6.1, 2.0)))
+    bumper_back = applied(cube((6.1, 0.4, 0.6), loc=(0, -6.3, 1.4)))
+    join([applied(cab), hood, bumper_back], "VanRed")
+    stripe = applied(cube((6.08, 8.68, 0.9), loc=(0, -1.95, 3.2)))
+    finish(stripe, "VanStripe")
+    windshield = applied(cube((5.0, 0.12, 1.5), loc=(0, 6.16, 3.95)))
+    side_l = applied(cube((0.12, 2.0, 1.4), loc=(-2.88, 4.3, 3.9)))
+    side_r = applied(cube((0.12, 2.0, 1.4), loc=(2.88, 4.3, 3.9)))
+    join([windshield, side_l, side_r], "Ice", "Windows")
+    lamps = [applied(cylinder(0.32, 0.12, 10, loc=(x, 6.62, 2.1), rot=(math.pi / 2, 0, 0))) for x in (-2.2, 2.2)]
+    join(lamps, "Lamp")
+    grille = applied(cube((2.4, 0.1, 0.7), loc=(0, 6.62, 1.9)))
+    finish(grille, "Tire", "Grille")
+    tires, hubs = [], []
+    for x in (-2.9, 2.9):
+        for y in (-4.0, 4.0):
+            tires.append(applied(cylinder(1.1, 0.9, 14, loc=(x, y, 1.1), rot=(0, math.pi / 2, 0))))
+            hubs.append(applied(cylinder(0.5, 0.95, 10, loc=(x * 1.02, y, 1.1), rot=(0, math.pi / 2, 0))))
+    join(tires, "Tire")
+    join(hubs, "Hubcap")
+    # Big pizza box on the roof, lid slightly open, and a logo on both sides.
+    box = applied(cube((4.2, 4.2, 0.7), loc=(0, -1.6, 7.35)))
+    lid = cube((4.2, 4.2, 0.12), loc=(0, -1.6, 7.75))
+    applied(lid)
+    lid.rotation_euler = (math.radians(-10), 0, 0)
+    applied(lid)
+    join([box, lid], "PizzaBox")
+    logos = [applied(cylinder(1.4, 0.06, 18, loc=(0, -1.6, 7.88), rot=(math.radians(-10), 0, 0)))]
+    for x in (-3.04, 3.04):
+        logos.append(applied(cylinder(1.5, 0.06, 18, loc=(x, -1.4, 4.8), rot=(0, math.pi / 2, 0))))
+    join(logos, "BoxLogo")
+    slices = []
+    for x in (-3.08, 3.08):
+        for i in range(3):
+            a = i * math.tau / 3 + math.pi / 2
+            slices.append(applied(cylinder(0.28, 0.06, 8, loc=(x, -1.4 + math.cos(a) * 0.7, 4.8 + math.sin(a) * 0.7), rot=(0, math.pi / 2, 0))))
+    join(slices, "Melt", "LogoDots")
+
+
+def build_portal():
+    # Round stone arch (ring of chunky stones) on a stepped base, glowing face inside.
+    # 16 wide (the base), ring center at height 7, face in the X-Z plane.
+    base = applied(cube((16.0, 6.0, 0.6), loc=(0, 0, 0.3)))
+    step = applied(cube((12.0, 4.4, 0.5), loc=(0, 0, 0.85)))
+    join([base, step], "Stone")
+    stones = []
+    segments = 16
+    for i in range(segments):
+        a = (i + 0.5) * math.tau / segments
+        stone = cube((1.8, 1.9, 2.5), loc=(math.cos(a) * 6.1, 0, 7.0 + math.sin(a) * 6.1))
+        stone.rotation_euler = (0, -a, 0)
+        applied(stone)
+        jitter(stone, 0.12, 90 + i)
+        stones.append(stone)
+    cut_below(join(stones, "ArchStone"), 0.6)
+    key = applied(cube((2.2, 2.3, 1.4), loc=(0, 0, 13.4)))
+    jitter(key, 0.08, 120)
+    finish(key, "Keystone")
+    glow = applied(cylinder(5.3, 0.3, 32, loc=(0, 0, 7.0), rot=(math.pi / 2, 0, 0)))
+    finish(glow, "PortalGlow")
+
+
+def build_pizza_stand():
+    # Pizzeria stand with a striped, scalloped awning. Counter top at 3.9 (like the
+    # placeholder), 13 wide (the awning). Front (customer side) faces +Y.
+    counter = applied(cube((12.0, 3.0, 3.5), loc=(0, 0, 1.75)))
+    finish(counter, "Wood")
+    top = applied(cube((12.6, 3.6, 0.4), loc=(0, 0, 3.7)))
+    finish(top, "SignBoard", "CounterTop")
+    panels = [applied(cube((3.4, 0.1, 2.4), loc=(x, 1.52, 1.75))) for x in (-4.0, 0.0, 4.0)]
+    join(panels, "AwningRed", "CounterPanels")
+    posts = [applied(cube((0.6, 0.6, 9.0), loc=(x, -1.2, 4.5))) for x in (-5.8, 5.8)]
+    join(posts, "Wood", "Posts")
+    reds, whites = [], []
+    stripes = 8
+    width = 13.0 / stripes
+    for i in range(stripes):
+        x = -6.5 + (i + 0.5) * width
+        stripe = cube((width, 5.0, 0.3), loc=(x, 0.2, 9.3))
+        stripe.rotation_euler = (math.radians(-15), 0, 0)
+        applied(stripe)
+        flap = applied(uv_sphere(width / 2, 10, 5, loc=(x, 2.62, 8.55), scale=(1, 0.12, 0.8)))
+        cut_below(flap, 8.15)
+        (reds if i % 2 == 0 else whites).extend([stripe, flap])
+    join(reds, "AwningRed")
+    join(whites, "AwningWhite")
+    # Sign board on the awning with a pizza on it.
+    board = applied(cube((6.0, 0.4, 1.8), loc=(0, -1.5, 11.0)))
+    finish(board, "SignBoard")
+    crust = applied(cylinder(0.75, 0.15, 16, loc=(-2.0, -1.25, 11.0), rot=(math.pi / 2, 0, 0)))
+    finish(crust, "Crust", "SignCrust")
+    sauce = applied(cylinder(0.6, 0.08, 16, loc=(-2.0, -1.15, 11.0), rot=(math.pi / 2, 0, 0)))
+    finish(sauce, "Sauce", "SignSauce")
+    dots = [applied(cylinder(0.14, 0.06, 8, loc=(-2.0 + x, -1.1, 11.0 + z), rot=(math.pi / 2, 0, 0))) for x, z in ((0.25, 0.2), (-0.25, 0.15), (0.05, -0.3))]
+    join(dots, "Meat", "SignSalami")
+    letters = [applied(cube((0.5, 0.1, 0.9), loc=(-0.6 + i * 0.8, -1.25, 11.0))) for i in range(4)]
+    join(letters, "AwningRed", "SignText")
+    # Small brick pizza oven on the counter's back and a stack of boxes.
+    oven = applied(uv_sphere(1.0, 10, 6, loc=(4.0, -0.6, 3.9), scale=(1, 1, 0.8)))
+    cut_below(oven, 3.9)
+    finish(oven, "Dome", "CounterOven")
+    mouth = applied(cylinder(0.45, 0.1, 10, loc=(4.0, 0.38, 4.2), rot=(math.pi / 2, 0, 0)))
+    cut_below(mouth, 3.95)
+    finish(mouth, "Glow", "CounterOvenGlow")
+    boxes = [applied(cube((1.4, 1.4, 0.3), loc=(-4.2, -0.4, 4.05 + i * 0.32))) for i in range(3)]
+    join(boxes, "PizzaBox", "CounterBoxes")
+
+
 MODELS = {
     "Salami": build_salami,
     "Mushroom": build_mushroom,
@@ -662,6 +843,11 @@ MODELS = {
     "Planet": build_planet,
     "SpaceCrystal": build_space_crystal,
     "Rocket": build_rocket,
+    # Stations (#28)
+    "Telephone": build_telephone,
+    "DeliveryVan": build_van,
+    "PortalArch": build_portal,
+    "PizzaStand": build_pizza_stand,
 }
 
 # Deco of worlds 2-7, for the per-world overview renders.
@@ -672,6 +858,8 @@ WORLD_DECO = {
     "Volcano": (["LavaMountain", "LavaRock", "DeadTree"], (255, 170, 120), (128, 96, 86)),
     "CandyLand": (["Lollipop", "CandyCane", "Cupcake"], (255, 224, 240), (255, 190, 220)),
     "Space": (["Planet", "Rocket", "SpaceCrystal", "MoonRock"], (30, 30, 60), (150, 150, 165)),
+    # Not a world: the four station models of #28 side by side.
+    "Stations": (["PortalArch", "PizzaStand", "DeliveryVan", "Telephone"], (255, 236, 200), (150, 215, 120)),
 }
 
 # ---------------------------------------------------------------- render

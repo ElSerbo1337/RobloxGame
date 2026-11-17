@@ -718,3 +718,27 @@ Betrifft auch die Beobachtungen „Kamera“ und „Pets am Ofen“ oben. Play i
 - [ ] Schilder in der Nähe (Ofen, Shop, Telefon, Lieferwagen, Portal, Preisschild an der Barriere) erscheinen beim Herangehen wie bisher (ab ca. 150 Studs), Pizza-Zähler und Pet-Namen ab ca. 60 Studs.
 - [ ] Preisschild einer freigeschalteten Barriere bleibt verborgen, das einer gesperrten erscheint.
 - [ ] Zur Ursache: Im Play (Client) in der Befehlsleiste `for _,b in workspace:GetDescendants() do if b:IsA("BillboardGui") and b.MaxDistance == 0 then print(b:GetFullName()) end end` ausführen und Treffer hier notieren (erwartet: keine). So lässt sich klären, ob ein Schild ohne `MaxDistance` die Quelle war oder die Engine `MaxDistance` nicht anwendet.
+
+## #28 Modelle: Telefon, Lieferwagen, Portal, Shop-Stand
+
+Vorher: `git pull`, `lune run test` → alle grün. Vorschau: `assets/previews/Telephone.png`, `DeliveryVan.png`, `PortalArch.png`, `PizzaStand.png` und alle vier nebeneinander in `assets/previews/World_Stations.png`.
+
+Ohne Import läuft alles wie bisher mit den alten Bauteil-Platzhaltern. Mit Import liegen die Platzhalter unsichtbar unter dem Modell (Kollision, Telefon-Klingeln, Schilder und Zonen bleiben gleich).
+
+**1. Modelle importieren** (4 Dateien in `assets/models/`):
+
+- [ ] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Stations` anlegen.
+- [ ] **Home → Import 3D** → `Telephone.fbx`, `DeliveryVan.fbx`, `PortalArch.fbx`, `PizzaStand.fbx` (gleiche Einstellungen wie bei #16: *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus). Die Modelle in `Models/Stations` ziehen. **Namen nicht ändern** (= Dateiname ohne `.fbx`). Größe, Farbe und Position sind egal, das Spiel skaliert und färbt nach den Teilnamen.
+- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Stations:GetChildren())` → **4**.
+- [ ] Place speichern und **File → Publish to Roblox**.
+
+**2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch alle Welten):
+
+- [ ] Output ohne rote Fehler.
+- [ ] **Telefon** (rechter Rand, neben dem Lieferwagen): altes rotes Wählscheiben-Telefon auf Holzständer, **Wählscheibe zeigt zur Belag-Fläche** (−X). Schild „📞 Telefon – Aufträge“ sitzt über dem Telefon. Klingeln: „📞 RING!“-Blase erscheint über dem Telefon, Auftrag annehmen funktioniert wie bisher.
+- [ ] **Lieferwagen**: weiß-roter Transporter mit großer Pizza-Box auf dem Dach, **Führerhaus zeigt nach vorne** (−Z, wie der alte Platzhalter). Steht auf dem Boden (Räder nicht im Boden, nicht schwebend). Abgeben an der Seite zur Belag-Fläche funktioniert wie bisher.
+- [ ] **Portal**: runder Steinbogen mit goldenem Schlussstein auf Steinsockel, die Fläche leuchtet **in der Farbe der Welt** (Garten orange, Bauernhof gelb, Strand türkis, Eisberge hellblau, Vulkan rot, Süßigkeitenland pink, Weltraum lila), Funken in heller Weltfarbe. Hineinlaufen öffnet das Portal-Menü, Ankunft vor dem Portal wie bisher.
+- [ ] **Shop-Stand** (Welt 1 sowie die größeren Shops in Welt 4 und 7): Pizzeria-Stand mit rot-weißer Markise mit Bogenkante, Schild mit Pizza, kleiner Ofen und Pizza-Kartons auf der Theke. Die Pizza aus #15 liegt auf der Theke (nicht schwebend, nicht in der Theke). Shop-Menü öffnet in der grünen Zone vor der Theke wie bisher.
+- [ ] Zeigt ein Modell in die falsche Richtung: in `src/shared/ModelLibrary.luau` unter `YAW` den Wert für `Telephone`/`DeliveryVan`/`PortalArch`/`PizzaStand` (jetzt 180) auf 0/90/270 ändern. Ist ein Modell zu groß/klein: Breite in `DeliveryService` (`PHONE_MODEL_WIDTH`, `VAN_MODEL_LENGTH`), `PortalService` (`ARCH_MODEL_WIDTH`) bzw. `ShopService` (`STAND_MODEL_WIDTH`) anpassen.
+- [ ] Unsichtbare Platzhalter stören nicht: Man bleibt nirgends an unsichtbaren Kanten hängen, die nicht zum Modell passen (falls doch: Stelle hier notieren).
+- [ ] **Handy** (Device-Emulator): Bildrate an den Stationen bleibt flüssig.

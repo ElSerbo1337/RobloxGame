@@ -16,6 +16,7 @@ local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
+local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
 local WorldMap = require(script.Parent.WorldMap)
@@ -30,6 +31,9 @@ local SYNC_SECONDS = 5
 -- (world 1: oven x = 30, portal x = 65 / z = 70, topping area up to x = 63, z = 43).
 local PHONE_OFFSET = Vector3.new(78, 0, 46)
 local VAN_OFFSET = Vector3.new(78, 0, 14)
+-- Blender models (#28), widest side in studs; used once imported, else the parts below.
+local PHONE_MODEL_WIDTH = 2.2
+local VAN_MODEL_LENGTH = 13.2
 
 export type Station = { worldId: string, phoneZone: BasePart, vanZone: BasePart }
 
@@ -85,8 +89,9 @@ local function invisibleZone(name: string, size: Vector3, position: Vector3, par
 	})
 end
 
--- Placeholder phone: a red retro phone on a post. The client finds it by the
--- "Handset" part (attribute DeliveryPhone) and makes it ring for its own player.
+-- Phone: the rotary phone model (facing the topping area, -X) or, until it is imported,
+-- a red retro phone on a post. The client finds it by the "Handset" part (attribute
+-- DeliveryPhone) and makes it ring for its own player; with the model it stays invisible.
 local function buildPhone(parent: Instance, ground: Vector3): BasePart
 	local model = Instance.new("Model")
 	model.Name = "DeliveryPhone"
@@ -116,11 +121,19 @@ local function buildPhone(parent: Instance, ground: Vector3): BasePart
 	})
 	handset:SetAttribute("DeliveryPhone", true)
 	sign(model, handset, "📞 Telefon – Aufträge", 3)
+	ModelLibrary.dressPlaceholder(
+		model,
+		"Telephone",
+		PHONE_MODEL_WIDTH,
+		CFrame.lookAt(ground, ground - Vector3.xAxis),
+		{ "Post", "Handset", "Receiver" }
+	)
 	model.Parent = parent
 	return invisibleZone("PhoneZone", Vector3.new(10, 8, 10), ground + Vector3.new(0, 4, 0), model)
 end
 
--- Placeholder delivery van: box truck along Z, the hand-over zone on its −X side.
+-- Delivery van: the van model with the pizza box on its roof or, until it is imported,
+-- a box truck from parts. Along Z, cab at −Z, the hand-over zone on its −X side.
 local function buildVan(parent: Instance, ground: Vector3): BasePart
 	local model = Instance.new("Model")
 	model.Name = "DeliveryVan"
@@ -169,6 +182,13 @@ local function buildVan(parent: Instance, ground: Vector3): BasePart
 		})
 	end
 	sign(model, body, "🚚 Lieferwagen – Bestellung abgeben", 5)
+	ModelLibrary.dressPlaceholder(
+		model,
+		"DeliveryVan",
+		VAN_MODEL_LENGTH,
+		CFrame.new(ground),
+		{ "Cargo", "Cab", "Window", "Stripe", "Wheel" }
+	)
 	model.Parent = parent
 	-- Hand-over zone beside the van, towards the topping area.
 	return invisibleZone("VanZone", Vector3.new(7, 7, 14), ground + Vector3.new(-6.5, 3.5, 0), model)

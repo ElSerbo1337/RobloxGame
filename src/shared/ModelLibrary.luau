@@ -79,6 +79,41 @@ local PALETTE: { [string]: { color: Color3, material: Enum.Material } } = {
 	Crystal = { color = Color3.fromRGB(110, 255, 212), material = Enum.Material.Neon },
 	Hull = { color = Color3.fromRGB(240, 240, 246), material = Enum.Material.SmoothPlastic },
 	Fin = { color = Color3.fromRGB(232, 62, 62), material = Enum.Material.SmoothPlastic },
+	-- Stations (#28): phone, delivery van, portal, shop stand
+	PhoneRed = { color = Color3.fromRGB(220, 50, 45), material = Enum.Material.SmoothPlastic },
+	Dial = { color = Color3.fromRGB(252, 242, 222), material = Enum.Material.SmoothPlastic },
+	DialHoles = { color = Color3.fromRGB(60, 35, 20), material = Enum.Material.SmoothPlastic },
+	Receiver = { color = Color3.fromRGB(60, 35, 20), material = Enum.Material.SmoothPlastic },
+	Cord = { color = Color3.fromRGB(60, 35, 20), material = Enum.Material.SmoothPlastic },
+	Brass = { color = Color3.fromRGB(232, 184, 72), material = Enum.Material.SmoothPlastic },
+	VanBody = { color = Color3.fromRGB(255, 248, 230), material = Enum.Material.SmoothPlastic },
+	VanRed = { color = Color3.fromRGB(230, 70, 50), material = Enum.Material.SmoothPlastic },
+	VanStripe = { color = Color3.fromRGB(255, 150, 40), material = Enum.Material.SmoothPlastic },
+	Windows = { color = Color3.fromRGB(150, 214, 255), material = Enum.Material.Glass },
+	Lamp = { color = Color3.fromRGB(255, 236, 150), material = Enum.Material.Neon },
+	Grille = { color = Color3.fromRGB(50, 45, 45), material = Enum.Material.SmoothPlastic },
+	Tire = { color = Color3.fromRGB(50, 45, 45), material = Enum.Material.SmoothPlastic },
+	Hubcap = { color = Color3.fromRGB(200, 200, 210), material = Enum.Material.SmoothPlastic },
+	PizzaBox = { color = Color3.fromRGB(222, 178, 118), material = Enum.Material.SmoothPlastic },
+	BoxLogo = { color = Color3.fromRGB(214, 52, 34), material = Enum.Material.SmoothPlastic },
+	LogoDots = { color = Color3.fromRGB(255, 214, 92), material = Enum.Material.SmoothPlastic },
+	ArchStone = { color = Color3.fromRGB(170, 160, 178), material = Enum.Material.Slate },
+	Keystone = { color = Color3.fromRGB(232, 184, 72), material = Enum.Material.SmoothPlastic },
+	-- Default colour; the portal recolours it to its world's colour (GameConfig worlds[].color).
+	PortalGlow = { color = Color3.fromRGB(255, 150, 60), material = Enum.Material.Neon },
+	CounterTop = { color = Color3.fromRGB(250, 235, 200), material = Enum.Material.SmoothPlastic },
+	CounterPanels = { color = Color3.fromRGB(220, 60, 50), material = Enum.Material.SmoothPlastic },
+	Posts = { color = Color3.fromRGB(150, 96, 52), material = Enum.Material.Wood },
+	AwningRed = { color = Color3.fromRGB(220, 60, 50), material = Enum.Material.Fabric },
+	AwningWhite = { color = Color3.fromRGB(255, 250, 240), material = Enum.Material.Fabric },
+	SignBoard = { color = Color3.fromRGB(250, 235, 200), material = Enum.Material.SmoothPlastic },
+	SignCrust = { color = Color3.fromRGB(214, 140, 60), material = Enum.Material.SmoothPlastic },
+	SignSauce = { color = Color3.fromRGB(214, 52, 34), material = Enum.Material.SmoothPlastic },
+	SignSalami = { color = Color3.fromRGB(190, 38, 42), material = Enum.Material.SmoothPlastic },
+	SignText = { color = Color3.fromRGB(220, 60, 50), material = Enum.Material.SmoothPlastic },
+	CounterOven = { color = Color3.fromRGB(226, 112, 62), material = Enum.Material.SmoothPlastic },
+	CounterOvenGlow = { color = Color3.fromRGB(255, 150, 40), material = Enum.Material.Neon },
+	CounterBoxes = { color = Color3.fromRGB(222, 178, 118), material = Enum.Material.SmoothPlastic },
 }
 
 -- Materials a pet part can ask for with a name suffix ("Pet_FF7A1A_Neon").
@@ -96,6 +131,11 @@ local YAW: { [string]: number } = {
 	PizzaOven = 180,
 	Barn = 180,
 	Snowman = 180,
+	-- Stations (#28), all built facing Blender +Y.
+	Telephone = 180,
+	DeliveryVan = 180,
+	PortalArch = 180,
+	PizzaStand = 180,
 }
 -- Same fix for every pet (all pets are built facing Blender +Y, like the oven).
 local PET_YAW = 180
@@ -231,6 +271,35 @@ function ModelLibrary.place(name: string, width: number, cframe: CFrame, parent:
 		end
 	end
 	model.Parent = parent
+	return model
+end
+
+-- Replaces a placeholder built from parts with the model (stations, #28): places the
+-- model inside `container` and makes the placeholder parts named in `hide` invisible.
+-- Hidden parts keep their collision, attributes and children (signs, particles), so the
+-- station works exactly as before. Changes nothing and returns nil if not imported.
+function ModelLibrary.dressPlaceholder(
+	container: Instance,
+	name: string,
+	width: number,
+	cframe: CFrame,
+	hide: { string }
+): Model?
+	local model = ModelLibrary.place(name, width, cframe, container)
+	if model == nil then
+		return nil
+	end
+	model.Name = "Look"
+	local hidden: { [string]: boolean } = {}
+	for _, partName in hide do
+		hidden[partName] = true
+	end
+	for _, child in container:GetChildren() do
+		if child:IsA("BasePart") and hidden[child.Name] then
+			child.Transparency = 1
+			child.CastShadow = false
+		end
+	end
 	return model
 end
 

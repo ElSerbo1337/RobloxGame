@@ -9,10 +9,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
+local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
 
 local CHECK_SECONDS = 0.2
+-- Width of the pizzeria stand model (#28) = width of the placeholder awning.
+local STAND_MODEL_WIDTH = 13
 
 export type Stand = { shopId: string, zone: BasePart }
 
@@ -35,8 +38,9 @@ local function part(props: { [string]: any }): Part
 	return p
 end
 
--- Builds a placeholder shop stand (counter, striped awning, sign) facing -Z at
--- `groundPosition` and returns it with the zone in front of the counter.
+-- Builds a shop stand facing -Z at `groundPosition` and returns it with the zone in
+-- front of the counter: the pizzeria stand model or, until it is imported, a counter
+-- with a striped awning from parts (kept invisible under the model for collisions).
 -- `scale` (default 1) makes the whole building bigger, e.g. for the shops in later worlds.
 function ShopService.buildStand(parent: Instance, shopId: string, groundPosition: Vector3, scale: number?): Stand
 	local shop = GameConfig.shops[shopId]
@@ -118,6 +122,14 @@ function ShopService.buildStand(parent: Instance, shopId: string, groundPosition
 		CastShadow = false,
 		Parent = model,
 	})
+
+	ModelLibrary.dressPlaceholder(
+		model,
+		"PizzaStand",
+		STAND_MODEL_WIDTH * k,
+		CFrame.new(groundPosition),
+		{ "Counter", "CounterTop", "Post", "Awning" }
+	)
 
 	model.Parent = parent
 	return { shopId = shopId, zone = zone }

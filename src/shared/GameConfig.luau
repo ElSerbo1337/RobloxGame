@@ -472,6 +472,8 @@ local GameConfig = {
 			id = "PizzeriaGarden",
 			displayName = "Pizzeria-Garten",
 			unlockPrice = 0,
+			-- World colour (RGB 0-255), e.g. the glowing face of the world's portal.
+			color = { 255, 150, 60 },
 			toppingSpawns = {
 				{ topping = "Salami", weight = 60 },
 				{ topping = "Mushroom", weight = 30 },
@@ -484,6 +486,7 @@ local GameConfig = {
 			id = "Farm",
 			displayName = "Bauernhof",
 			unlockPrice = 1500,
+			color = { 250, 210, 70 },
 			toppingSpawns = {
 				{ topping = "Onion", weight = 45 },
 				{ topping = "BellPepper", weight = 30 },
@@ -496,6 +499,7 @@ local GameConfig = {
 			id = "Beach",
 			displayName = "Strand",
 			unlockPrice = 15000,
+			color = { 60, 200, 230 },
 			toppingSpawns = {
 				{ topping = "Tuna", weight = 55 },
 				{ topping = "Shrimp", weight = 30 },
@@ -507,6 +511,7 @@ local GameConfig = {
 			id = "Icebergs",
 			displayName = "Eisberge",
 			unlockPrice = 150000,
+			color = { 150, 225, 255 },
 			toppingSpawns = {
 				{ topping = "FrozenPeas", weight = 55 },
 				{ topping = "Salmon", weight = 30 },
@@ -518,6 +523,7 @@ local GameConfig = {
 			id = "Volcano",
 			displayName = "Vulkan",
 			unlockPrice = 1500000,
+			color = { 255, 80, 30 },
 			toppingSpawns = {
 				{ topping = "Chili", weight = 55 },
 				{ topping = "Pepperoni", weight = 30 },
@@ -529,6 +535,7 @@ local GameConfig = {
 			id = "CandyLand",
 			displayName = "Süßigkeitenland",
 			unlockPrice = 15000000,
+			color = { 255, 110, 200 },
 			toppingSpawns = {
 				{ topping = "ChocolateChips", weight = 55 },
 				{ topping = "GummyBears", weight = 30 },
@@ -540,6 +547,7 @@ local GameConfig = {
 			id = "Space",
 			displayName = "Weltraum",
 			unlockPrice = 150000000,
+			color = { 150, 100, 255 },
 			toppingSpawns = {
 				{ topping = "MoonCheese", weight = 55 },
 				{ topping = "StarOlives", weight = 30 },

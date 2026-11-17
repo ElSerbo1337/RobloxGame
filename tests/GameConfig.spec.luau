@@ -156,6 +156,21 @@ describe("GameConfig", function()
 		expect(rules.isWorldUnlocked(state, "Icebergs")).toBe(true)
 	end)
 
+	it("gives every world its own portal colour (RGB 0-255)", function()
+		local seen = {}
+		for _, world in GameConfig.worlds do
+			local color = world.color
+			expect(type(color)).toBe("table")
+			expect(#color).toBe(3)
+			for _, channel in color do
+				expect(channel >= 0 and channel <= 255).toBe(true)
+			end
+			local key = table.concat(color, ",")
+			expect(seen[key]).toBe(nil)
+			seen[key] = true
+		end
+	end)
+
 	it("makes every world cost more to unlock than the one before, starting free", function()
 		expect(GameConfig.worlds[1].unlockPrice).toBe(0)
 		for i = 2, #GameConfig.worlds do
