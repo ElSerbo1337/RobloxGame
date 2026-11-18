@@ -1133,3 +1133,33 @@ Vorschau: `assets/previews/islands/World2_Overview.jpg`, `World3_Overview.jpg`, 
 - [ ] Pets laufen nicht durch Zaun/Felsen/Eisrand und nicht über die Inselkante.
 - [ ] **Handy** (Device-Emulator): Welt 2–4 ohne spürbares Ruckeln (viele Rand-Teile), Freischalt-Knopf am Tor antippbar.
 - [ ] Was nicht passt (Farben, Größen, Wahrzeichen): hier notieren.
+
+## #32 B6 Welt 5–7 als Inseln (Vulkan, Süßigkeitenland, Weltraum)
+
+Jetzt sind **alle sieben Welten Inseln** im freigegebenen Stil, mit gleichem Grundriss (`GameConfig.islands.layout`). Weltspezifisch sind nur Thema, Rand, Wahrzeichen, Deko und Brücke (`GameConfig.islands.themes`, gebaut von `src/shared/IslandPlan.luau`). Der alte Klassik-Code ist entfernt (`WorldMap.buildClassic`, `WorldDeco.decorateWorld`, `IslandPlan.classicWorld`, `GameConfig.islands.newStyle`). Alle Shops stehen jetzt in normaler Größe, auch der in Welt 7. Ein neuer Modell-Import ist nicht nötig: Die Deko nutzt die schon importierten Modelle aus `Models/Deco` (#16). Ohne Import erscheinen Ersatzteile.
+
+| Welt | Boden/Feld | Rand | Wahrzeichen (hinten links) | Deko | Brücke hinein |
+| --- | --- | --- | --- | --- | --- |
+| 5 Vulkan | warmer, heller Fels, helles Aschefeld | Basaltsäulen | Stufenvulkan mit leuchtendem Krater und drei Lavaströmen | Lavafelsen, tote Bäume, Lavateich mit Lavafall, 4 Lavarisse | Basaltbrücke (Steinplatten, 3 Lavafugen, Säulen seitlich und darunter) |
+| 6 Süßigkeitenland | rosa, Feld mintgrün | Zuckerguss mit Pfefferminz und Gummidrops | Schichttorte mit Guss, Kerzen, Kirsche | Lollis, Cupcakes, Zuckerstangen, Schokoladensee mit Schokofall | Zuckerstangen-Brücke (Waffelplatten, gestreifte Geländer, große Zuckerstangen an den Ecken) |
+| 7 Weltraum | heller Mondboden, Feld violett | weiße Mondbasis-Paneele, kleine leuchtende Pfosten-Spitzen | Rakete auf Startrampe mit Service-Turm; Planet schwebt über der rechten Terrasse | Mondfelsen, kleine Kristalle, Sternenlicht-Teich | Leuchtbrücke (helle Metallplatten, je ein Leuchtstreifen an den Kanten, Glas-Paneele) |
+
+Vorschau: `assets/previews/islands/World5_Overview.jpg` bis `World7_Overview.jpg`, `World<N>_Landmark.jpg`, `Bridge_Basalt.jpg`, `Bridge_Candy.jpg`, `Bridge_Light.jpg` und `Islands_FullChain.jpg` (ganze Kette). Die Weltraum-Bilder sind mit Nachthimmel gerendert. Vorher: `lune run test` → `0 failed`.
+
+**Play (1 Spieler; Münz-Tipp aus #11 oder vorhandener Spielstand mit Welt 5–7):**
+
+- [ ] Output ohne rote Fehler.
+- [ ] Welt 5–7 sehen aus wie in den Vorschau-Bildern: runder Umriss mit Felskante, Rand im Welt-Stil, Wahrzeichen hinten links, Teich mit Fall rechts vorne, Terrassen mit Stufen begehbar.
+- [ ] **Brücken:** Welt 4 → 5 Basaltbrücke, Welt 5 → 6 Zuckerstangen-Brücke, Welt 6 → 7 Leuchtbrücke. Alle begehbar, kein Stolpern am Übergang Brücke/Insel und über die Lavafugen, seitlich nicht herunterfallen (unsichtbare Wand).
+- [ ] **Barrieren-Tore** am Brückenkopf von Welt 5, 6 und 7: leuchtend in Weltfarbe, Preisschild (z. B. „🔒 Vulkan / 310.000 Münzen“), Freischalt-Knopf davor; freischalten → Tor passierbar. Große Zuckerstangen und Säulen stehen nicht im Tor.
+- [ ] **Stationen** in Welt 5, 6 und 7 (gleiche Plätze wie Welt 1): Ofen mit Verkaufszone, **beide Ei-Stände** (Vulkan-/Magma-Ei, Süßigkeiten-/Bonbon-Ei, Weltraum-/Nebula-Ei), Portal (Menü, Teleport, Ankunft vor dem Portal), Telefon und Lieferwagen (Auftrag annehmen und abgeben). In Welt 7 der **Riesige Pizza-Shop** am Shop-Platz links, jetzt in normaler Größe (vorher 2×), kaufen klappt, ragt nicht in den Ei-Stand.
+- [ ] **Belag-Modelle (#18)** auf den neuen Feldern gut erkennbar: Chili/Peperoni/Jalapeño auf dem hellen Aschefeld, Schoko-Stücke/Gummibärchen/Marshmallow auf dem mintgrünen Feld, Mond-Käse/Sternen-Oliven/Alien-Pilz auf dem violetten Feld (nachts). Falls etwas schlecht lesbar ist: Farbe `field` im Theme notieren.
+- [ ] **Vulkan hell genug (#24):** alles gut erkennbar, Lava (Krater, Risse, Teich, Lavafugen der Brücke) leuchtet, aber nichts überstrahlt.
+- [ ] **Weltraum nachts:** Leuchtstreifen der Brücke, Pfosten-Spitzen am Rand, Lampen an der Startrampe und Kristalle leuchten dezent, kein Überstrahlen (Bloom). Wenn doch: notieren, welches Teil.
+- [ ] **Kamera** an jeder Station von Welt 5–7 frei (kein Fels, keine Zuckerstange zwischen Kamera und Figur).
+- [ ] **Rand:** in Welt 5–7 nirgends herunterfallen (Rand ablaufen). Absturz per Command Bar, z. B. Welt 6: `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, -1200))` → Respawn am Spawn der aktuellen Welt. Tod (Reset) in Welt 7 → Respawn in Welt 7.
+- [ ] Deko steht auf dem Boden (nicht schwebend, nicht im Boden), passende Größe: Lavafelsen, tote Bäume, Lollis, Cupcakes, Zuckerstangen, Mondfelsen, Kristalle. Nur der **Planet** schwebt absichtlich über der rechten Terrasse in Welt 7.
+- [ ] Welt-Atmosphäre/Musik wechselt beim Betreten jeder Insel (WorldLooks unverändert); ferne Schilder (Tore, Shop Welt 7) sind aus Welt 5/6 nicht am Himmel zu sehen (SignCulling).
+- [ ] Pets laufen nicht durch Basaltsäulen, Pfefferminz oder Paneele und nicht über die Inselkante.
+- [ ] **Handy** (Device-Emulator): Welt 5–7 ohne spürbares Ruckeln, Freischalt-Knopf am Tor antippbar.
+- [ ] Was nicht passt (Farben, Größen, Wahrzeichen): hier notieren.

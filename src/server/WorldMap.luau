@@ -1,10 +1,8 @@
 --!strict
 -- Builds the flying islands (#27) from the island plan (ReplicatedStorage.Shared.IslandPlan):
--- the spawn island, the bridges, and every world. Worlds in GameConfig.islands.newStyle
--- are islands in the shared floor plan with their theme (GameConfig.islands.themes:
--- rim, landmark, bridge, decoration); the others keep their old square look (worlds
--- 5-7 until B6) but hang on the same chain with bridges, gates and walls.
--- Adding a world = config entry (+ island theme), no new map code.
+-- the spawn island, the bridges, and every world. Every world is an island in the shared
+-- floor plan with its theme (GameConfig.islands.themes: rim, landmark, bridge,
+-- decoration). Adding a world = config entry (+ island theme), no new map code.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -36,57 +34,9 @@ export type Layout = {
 	eggStands: { BasePart },
 	-- Ground point and facing of the world's shop stand (worlds with a shop).
 	shopSpot: CFrame,
-	isIsland: boolean,
 }
-
-type Theme = { ground: Color3, area: Color3, accent: Color3, material: Enum.Material }
 
 local HALF = GameConfig.islands.worldHalfSize
-
-local THEMES: { [string]: Theme } = {
-	Farm = {
-		ground = Color3.fromRGB(196, 170, 100),
-		area = Color3.fromRGB(150, 120, 70),
-		accent = Color3.fromRGB(200, 60, 50),
-		material = Enum.Material.Ground,
-	},
-	Beach = {
-		ground = Color3.fromRGB(240, 220, 160),
-		area = Color3.fromRGB(225, 200, 135),
-		accent = Color3.fromRGB(40, 170, 200),
-		material = Enum.Material.Sand,
-	},
-	Icebergs = {
-		ground = Color3.fromRGB(225, 240, 250),
-		area = Color3.fromRGB(180, 215, 240),
-		accent = Color3.fromRGB(90, 150, 230),
-		material = Enum.Material.Snow,
-	},
-	Volcano = {
-		ground = Color3.fromRGB(118, 88, 78),
-		area = Color3.fromRGB(150, 86, 62),
-		accent = Color3.fromRGB(255, 90, 30),
-		material = Enum.Material.Basalt,
-	},
-	CandyLand = {
-		ground = Color3.fromRGB(255, 190, 220),
-		area = Color3.fromRGB(255, 230, 245),
-		accent = Color3.fromRGB(150, 90, 230),
-		material = Enum.Material.SmoothPlastic,
-	},
-	Space = {
-		ground = Color3.fromRGB(150, 150, 165),
-		area = Color3.fromRGB(110, 105, 140),
-		accent = Color3.fromRGB(120, 255, 200),
-		material = Enum.Material.Slate,
-	},
-}
-local DEFAULT_THEME: Theme = {
-	ground = Color3.fromRGB(120, 180, 120),
-	area = Color3.fromRGB(150, 200, 130),
-	accent = Color3.fromRGB(80, 120, 220),
-	material = Enum.Material.Grass,
-}
 
 local WorldMap = {}
 
@@ -127,10 +77,6 @@ local function formatCoins(value: number): string
 	local text = tostring(math.floor(value))
 	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
 	return (string.gsub(formatted, "^%.", ""))
-end
-
-local function isNewStyle(index: number): boolean
-	return GameConfig.islands.newStyle[GameConfig.worlds[index].id] == true
 end
 
 function WorldMap.centerOf(index: number): Vector3
@@ -250,8 +196,8 @@ local function toppingsFolder(folder: Instance): Folder
 	return toppings
 end
 
--- World in the new island look, built from the shared floor plan.
-local function buildIsland(world: any, index: number): Layout
+-- World island, built from the shared floor plan.
+function WorldMap.build(world: any, index: number): Layout
 	local island = plan.worldIsland(index)
 	local center = IslandBuilder.vector(island.center)
 	local folder = IslandBuilder.island(island, `World{index}_{world.id}`, Workspace)
@@ -293,81 +239,7 @@ local function buildIsland(world: any, index: number): Layout
 		returnPoint = returnPoint,
 		eggStands = eggStands,
 		shopSpot = IslandBuilder.station(island.stations.Shop),
-		isIsland = true,
 	}
-end
-
--- World in the old square look (worlds 5-7 until B6), on the island chain.
-local function buildClassic(world: any, index: number): Layout
-	local theme = THEMES[world.id] or DEFAULT_THEME
-	local island = plan.worldIsland(index)
-	local center = WorldMap.centerOf(index)
-
-	local folder = Instance.new("Folder")
-	folder.Name = `World{index}_{world.id}`
-	-- Walls along the rim and a rock underside from the plan; the ground is the old plate.
-	IslandBuilder.parts(island.parts, folder)
-
-	part({
-		Name = "Ground",
-		Size = Vector3.new(2 * HALF, 1, 2 * HALF),
-		Position = center - Vector3.new(0, 0.5, 0),
-		Color = theme.ground,
-		Material = theme.material,
-		Parent = folder,
-	})
-
-	local field = island.field :: any
-	local areaCenter = IslandBuilder.vector(field.center)
-	local areaSize = Vector2.new(field.size[1], field.size[2])
-	part({
-		Name = "ToppingArea",
-		Size = Vector3.new(areaSize.X + 6, 0.1, areaSize.Y + 6),
-		Position = areaCenter + Vector3.new(0, 0.05, 0),
-		Color = theme.area,
-		Material = theme.material,
-		CanCollide = false,
-		Parent = folder,
-	})
-
-	-- Oven near the entrance, both egg stands on the other side of the path.
-	local sellZone =
-		buildOven(folder, IslandBuilder.station(island.stations.Oven), world, theme.accent, Enum.Material.Brick)
-	local eggStands = {}
-	for i, name in { "Egg1", "Egg2" } do
-		local eggId = world.eggs and world.eggs[i]
-		local stand = EggService.buildStand(folder, IslandBuilder.vector(island.stations[name].position), eggId)
-		stand:SetAttribute("WorldId", world.id)
-		table.insert(eggStands, stand)
-	end
-
-	local barrier, returnPoint = buildGate(folder, world, index)
-	local toppings = toppingsFolder(folder)
-	folder.Parent = Workspace
-
-	return {
-		worldId = world.id,
-		index = index,
-		folder = folder,
-		toppingAreaCenter = areaCenter,
-		toppingAreaSize = areaSize,
-		toppingsFolder = toppings,
-		sellZone = sellZone,
-		barrier = barrier,
-		boundsCenter = center,
-		boundsSize = Vector2.new(2 * HALF, 2 * HALF),
-		returnPoint = returnPoint,
-		eggStands = eggStands,
-		shopSpot = IslandBuilder.station(island.stations.Shop),
-		isIsland = false,
-	}
-end
-
-function WorldMap.build(world: any, index: number): Layout
-	if isNewStyle(index) then
-		return buildIsland(world, index)
-	end
-	return buildClassic(world, index)
 end
 
 -- Builds every world from the config, in unlock order (world 1 first).

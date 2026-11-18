@@ -24,7 +24,6 @@ local ToppingService = require(script.ToppingService)
 local TutorialService = require(script.TutorialService)
 local IslandBuilder = require(script.IslandBuilder)
 local LeaderboardService = require(script.LeaderboardService)
-local WorldDeco = require(script.WorldDeco)
 local WorldMap = require(script.WorldMap)
 
 -- Create remotes before any client asks for them.
@@ -74,15 +73,14 @@ end
 BarrierService.start(laterWorlds)
 -- Respawn (death, fall, rejoin) in the world the player was last in.
 SpawnService.start()
--- Shops stand on their world's shop spot, facing the path; in the old square worlds
--- every 3 worlds the building grows by half.
+-- Shops stand on their world's shop spot, facing the path (all in normal size, so the
+-- big shops do not reach into the egg stands).
 local shopStands = {}
 for _, world in worlds do
 	for shopId, shop in GameConfig.shops do
 		if shop.worldId == world.worldId then
-			local scale = if world.isIsland then 1 else 1 + 0.5 * math.floor((world.index - 1) / 3)
 			local spot = world.shopSpot
-			local stand = ShopService.buildStand(world.folder, shopId, spot.Position, scale)
+			local stand = ShopService.buildStand(world.folder, shopId, spot.Position, 1)
 			local _, yaw = spot:ToEulerAnglesYXZ()
 			IslandBuilder.turn(stand.zone.Parent :: Model, spot.Position, yaw)
 			if shopId == "World1Shop" then
@@ -94,14 +92,6 @@ for _, world in worlds do
 	end
 end
 ShopService.start(shopStands)
--- Look of the old square worlds (#16): themed paths, props and landmarks (island worlds
--- get theirs from the island plan).
-for _, world in laterWorlds do
-	if not world.isIsland then
-		WorldDeco.dressOven(world.folder)
-		WorldDeco.decorateWorld(world.folder, world.worldId, world.boundsCenter)
-	end
-end
 -- Eggs on the egg stands of every world (two per world, #39).
 local eggSpots = {}
 for _, world in worlds do

@@ -223,15 +223,13 @@ describe("island shape", function()
 	end)
 end)
 
--- Indices of the worlds already built as islands (world 1 and the rebuilt ones).
-local NEW_STYLE = {}
-for index, world in GameConfig.worlds do
-	if cfg.newStyle[world.id] then
-		table.insert(NEW_STYLE, index)
-	end
+-- Every world is an island in the shared floor plan (#27, #31, #32).
+local WORLD_INDICES = {}
+for index in GameConfig.worlds do
+	table.insert(WORLD_INDICES, index)
 end
 
-for _, worldIndex in NEW_STYLE do
+for _, worldIndex in WORLD_INDICES do
 	describe(`world island layout (shared floor plan), world {worldIndex}`, function()
 		local island = plan.worldIsland(worldIndex)
 		local center = island.center
@@ -380,7 +378,7 @@ for _, worldIndex in NEW_STYLE do
 end
 
 describe("egg spots in every world", function()
-	it("gives every world island, the old-style ones included, two separate egg stands", function()
+	it("gives every world island two separate egg stands", function()
 		for index = 1, WORLD_COUNT do
 			local island = plan.worldIsland(index)
 			local first, second = island.stations.Egg1, island.stations.Egg2
@@ -459,7 +457,7 @@ describe("gates", function()
 	end)
 end)
 
-describe("world themes (worlds 2-4, #31)", function()
+describe("world themes (worlds 2-7, #31, #32)", function()
 	local function indexOf(id: string): number
 		for index, world in GameConfig.worlds do
 			if world.id == id then
@@ -477,17 +475,20 @@ describe("world themes (worlds 2-4, #31)", function()
 		return count
 	end
 
-	it("builds farm, beach and icebergs as islands with their own theme", function()
-		for _, id in { "Farm", "Beach", "Icebergs" } do
-			expect(cfg.newStyle[id]).toBe(true)
+	local THEMED = { "Farm", "Beach", "Icebergs", "Volcano", "CandyLand", "Space" }
+
+	it("builds every world as an island, worlds 2-7 with their own theme", function()
+		for index = 1, WORLD_COUNT do
+			expect(plan.worldIsland(index).kind).toBe("world")
+		end
+		for _, id in THEMED do
 			expect(cfg.themes[id] ~= nil).toBe(true)
-			expect(plan.worldIsland(indexOf(id)).kind).toBe("world")
 		end
 	end)
 
 	it("gives every island world its own landmark, rim and ground colour", function()
 		local landmarks, rims, grounds = {}, {}, {}
-		for _, index in NEW_STYLE do
+		for _, index in WORLD_INDICES do
 			local theme = cfg.themes[GameConfig.worlds[index].id]
 			local landmark = theme.landmark or "GiantPizza"
 			local rim = theme.rimStyle or "Hedge"
@@ -500,7 +501,7 @@ describe("world themes (worlds 2-4, #31)", function()
 	end)
 
 	it("puts the landmark parts at the back of the island", function()
-		for _, id in { "Farm", "Beach", "Icebergs" } do
+		for _, id in THEMED do
 			local island = plan.worldIsland(indexOf(id))
 			local fieldBack = island.field.center[3] - island.field.size[2] / 2
 			for _, spec in island.parts do
@@ -512,7 +513,14 @@ describe("world themes (worlds 2-4, #31)", function()
 	end)
 
 	it("uses the world's own decoration models", function()
-		local expected = { Farm = "HayBale", Beach = "PalmTree", Icebergs = "SnowPine" }
+		local expected = {
+			Farm = "HayBale",
+			Beach = "PalmTree",
+			Icebergs = "SnowPine",
+			Volcano = "DeadTree",
+			CandyLand = "Lollipop",
+			Space = "MoonRock",
+		}
 		for id, model in expected do
 			local found = false
 			for _, m in plan.worldIsland(indexOf(id)).models do
@@ -531,13 +539,73 @@ describe("world themes (worlds 2-4, #31)", function()
 		expect(walk.Stilt ~= nil and walk.HandRail ~= nil and walk.Rope == nil).toBe(true)
 		local ice = names(bridges[indexOf("Icebergs")].parts)
 		expect(ice.IceSlab ~= nil and ice.IceRail ~= nil and ice.Rope == nil).toBe(true)
+		local basalt = names(bridges[indexOf("Volcano")].parts)
+		expect(basalt.BasaltSlab ~= nil and basalt.BasaltColumn ~= nil and basalt.Rope == nil).toBe(true)
+		local candy = names(bridges[indexOf("CandyLand")].parts)
+		expect(candy.WaferSlab ~= nil and candy.CaneRail ~= nil and candy.CaneHook ~= nil).toBe(true)
+		local light = names(bridges[indexOf("Space")].parts)
+		expect(light.LightSlab ~= nil and light.LightStrip ~= nil and light.Rope == nil).toBe(true)
+	end)
+
+	it("keeps glowing lights few on every island and bridge (no glare)", function()
+		local function lights(parts: { IslandPlan.PartSpec }): number
+			local count = 0
+			for _, spec in parts do
+				-- The server gives every Neon part with role Glow a PointLight.
+				if spec.role == "Glow" and spec.material == "Neon" then
+					count += 1
+				end
+			end
+			return count
+		end
+		for index = 1, WORLD_COUNT do
+			expect(lights(plan.worldIsland(index).parts) <= 6).toBe(true)
+		end
+		for _, bridge in plan.bridges() do
+			expect(lights(bridge.parts) <= 4).toBe(true)
+		end
+	end)
+
+	it("keeps the volcano light enough to see everything (#24)", function()
+		local theme = cfg.themes.Volcano
+		local function brightness(c: { number }): number
+			return 0.299 * c[1] + 0.587 * c[2] + 0.114 * c[3]
+		end
+		expect(brightness(theme.grass) > 120).toBe(true)
+		expect(brightness(theme.field) > 160).toBe(true)
+		expect(brightness(theme.path) > 160).toBe(true)
+		-- Lava glows around the island: crater, cracks and the lava pond.
+		local glows = 0
+		for _, spec in plan.worldIsland(indexOf("Volcano")).parts do
+			if spec.material == "Neon" then
+				glows += 1
+			end
+		end
+		expect(glows >= 5).toBe(true)
+	end)
+
+	it("lets the planet float above the space terrace", function()
+		local island = plan.worldIsland(indexOf("Space"))
+		local found = false
+		for _, m in island.models do
+			if m.model == "Planet" then
+				found = true
+				expect(m.position[2] > island.center[2] + 10).toBe(true)
+			end
+		end
+		expect(found).toBe(true)
 	end)
 
 	it("keeps every bridge deck walkable and level with the islands at both ends", function()
 		for _, bridge in plan.bridges() do
 			local deck = 0
 			for _, spec in bridge.parts do
-				if spec.role == "Bridge" and spec.collide and (spec.name == "Plank" or spec.name == "IceSlab") then
+				local isDeck = spec.name == "Plank"
+					or spec.name == "IceSlab"
+					or spec.name == "BasaltSlab"
+					or spec.name == "WaferSlab"
+					or spec.name == "LightSlab"
+				if spec.role == "Bridge" and spec.collide and isDeck then
 					deck += 1
 					local top = spec.cframe[2] + spec.size[2] / 2
 					expect(math.abs(top - cfg.groundY) < 2.5).toBe(true)

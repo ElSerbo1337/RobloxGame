@@ -236,13 +236,6 @@ def build_scene(data, avatars):
         for model in island["models"]:
             place_model(model["model"], model["width"], model["position"], model["yaw"])
         st = island["stations"]
-        if island["kind"] == "classic":
-            # Old square world: flat ground in the world's old colour (WorldMap look).
-            c = island["center"]
-            half = cfg["worldHalfSize"]
-            batch.add({"shape": "Block", "size": [2 * half, 1, 2 * half], "cframe": [c[0], c[1] - 0.5, c[2], 1, 0, 0, 0, 1, 0, 0, 0, 1],
-                       "color": [196, 170, 100]})
-            continue
         if island["kind"] == "spawn":
             sp = st["Spawn"]["position"]
             batch.add({"shape": "Block", "size": [12, 1, 12], "cframe": [sp[0], gy + 0.5, sp[2], 1, 0, 0, 0, 1, 0, 0, 0, 1],
@@ -285,7 +278,7 @@ def build_scene(data, avatars):
                 avatar((0, gy, island["center"][2] + 96), 0)
 
 
-def setup(resolution):
+def setup(resolution, night=False):
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
@@ -309,12 +302,18 @@ def setup(resolution):
     ramp.color_ramp.elements[0].color = (lin(205), lin(232), lin(255), 1)
     ramp.color_ramp.elements[1].position = 0.75
     ramp.color_ramp.elements[1].color = (lin(110), lin(175), lin(245), 1)
+    if night:
+        # World 7 (WorldLooks: night with purple ambient light).
+        ramp.color_ramp.elements[0].color = (lin(70), lin(60), lin(120), 1)
+        ramp.color_ramp.elements[1].color = (lin(14), lin(12), lin(40), 1)
     links.new(ramp.outputs["Color"], bg.inputs["Color"])
     bg.inputs["Strength"].default_value = 1.0
     bpy.ops.object.light_add(type="SUN", rotation=(math.radians(42), math.radians(8), math.radians(-30)))
     sun = bpy.context.active_object
-    sun.data.energy = 3.6
+    sun.data.energy = 1.4 if night else 3.6
     sun.data.angle = math.radians(6)
+    if night:
+        sun.data.color = (0.75, 0.75, 1.0)
 
 
 def camera(name, eye, target, lens):
@@ -348,8 +347,23 @@ VIEWS = {
     "World4_Landmark": ((10, 22, -750), (-40, 10, -806), 30, (1600, 900)),
     "Bridge_Beach": ((40, 14, -330), (0, -2, -360), 28, (1600, 900)),
     "Bridge_Ice": ((40, 14, -570), (0, -2, -600), 28, (1600, 900)),
+    # Worlds 5-7 (#32): world 5 at z = -960, world 6 at -1200, world 7 at -1440.
+    "World5_Overview": ((150, 150, -785), (0, -6, -965), 32, (1600, 900)),
+    "World6_Overview": ((150, 150, -1025), (0, -6, -1205), 32, (1600, 900)),
+    "World7_Overview": ((150, 150, -1265), (0, -6, -1445), 32, (1600, 900)),
+    "World5_Landmark": ((10, 22, -990), (-40, 10, -1046), 30, (1600, 900)),
+    "World6_Landmark": ((10, 22, -1230), (-40, 10, -1286), 30, (1600, 900)),
+    "World7_Landmark": ((10, 22, -1470), (-40, 12, -1526), 30, (1600, 900)),
+    "Bridge_Basalt": ((40, 14, -810), (0, -2, -840), 28, (1600, 900)),
+    "Bridge_Candy": ((40, 14, -1050), (0, -2, -1080), 28, (1600, 900)),
+    "Bridge_Light": ((40, 14, -1290), (0, -2, -1320), 28, (1600, 900)),
+    # The whole chain, spawn island (z = +202) to world 7 (z = -1440).
+    "Islands_FullChain": ((900, 620, 300), (0, -20, -620), 32, (1920, 820)),
 }
 
+
+# Views rendered under the night sky of world 7.
+NIGHT_VIEWS = {"World7_Overview", "World7_Landmark", "Bridge_Light"}
 
 # Player figures for scale in the player-perspective views.
 AVATARS = {"Spawn_Player": ("spawn",), "World1_Player": ("path",), "World1_Stations": ("oven",)}
@@ -358,7 +372,7 @@ AVATARS = {"Spawn_Player": ("spawn",), "World1_Player": ("path",), "World1_Stati
 def render(data, view):
     eye, target, lens, resolution = VIEWS[view]
     build_scene(data, AVATARS.get(view, ()))
-    setup(resolution)
+    setup(resolution, view in NIGHT_VIEWS)
     camera(view, eye, target, lens)
     os.makedirs(OUT_DIR, exist_ok=True)
     # JPEG keeps the big previews small in the repo.

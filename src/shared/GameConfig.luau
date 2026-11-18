@@ -625,7 +625,7 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },
 		},
-		-- Shop 2: everything from shop 1 plus higher levels; a bigger building in world 4.
+		-- Shop 2: everything from shop 1 plus higher levels, in world 4.
 		World4Shop = {
 			worldId = "Icebergs",
 			displayName = "Großer Pizza-Shop",
@@ -642,7 +642,7 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },
 		},
-		-- Shop 3: the biggest shop with every upgrade up to its last level; a 2x building in world 7.
+		-- Shop 3: the biggest shop with every upgrade up to its last level, in world 7.
 		World7Shop = {
 			worldId = "Space",
 			displayName = "Riesiger Pizza-Shop",
@@ -678,9 +678,6 @@ local GameConfig = {
 		fallY = -70,
 		-- Main path from the arriving bridge to the field (and from the field to the next bridge).
 		pathWidth = 12,
-		-- Worlds already rebuilt as islands; the others keep the old square look for now
-		-- (B6) but hang on the chain with bridges, gates and walls.
-		newStyle = { PizzeriaGarden = true, Farm = true, Beach = true, Icebergs = true },
 		-- Shared floor plan of every world island. Stations left of the path (x < 0) face
 		-- +X, right of it (x > 0) face -X, so the camera stays over the path while using them.
 		layout = {
@@ -707,14 +704,21 @@ local GameConfig = {
 		},
 		-- Look of each island world (others use PizzeriaGarden). Colours are RGB 0-255.
 		-- Optional per world (defaults = world 1):
-		--   rimStyle     "Hedge" | "Fence" | "Rocks" | "IceEdge" (low visible rim)
-		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" (back left terrace)
-		--   bridge       "Rope" | "Boardwalk" | "Ice": style of the bridge leading INTO the world
+		--   rimStyle     "Hedge" | "Fence" | "Rocks" | "IceEdge" | "Basalt" | "Peppermint" | "Moonbase"
+		--                (low visible rim)
+		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
+		--                | "Rocket" (back left terrace)
+		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
+		--                the bridge leading INTO the world
 		--   trees        tree models scattered along the rim (ModelLibrary names)
+		--   treeScale    size factor for those (default 1: 10-16 studs wide)
 		--   accents      { model, width } props along the field's long sides
-		--   terraceProps { terrace, model, width, at = { x, z }, yaw?, collide? } on a terrace
+		--   terraceProps { terrace, model, width, at = { x, z }, yaw?, collide?, lift? } on a
+		--                terrace (lift = studs above the terrace top, e.g. a floating planet)
 		--   fieldRows    colour of furrows across the topping field
 		--   flowerStems  false = flowers are pebbles/shells lying on the ground
+		--   cracks       glowing cracks in the ground { x, z, length, yaw (degrees) } in the
+		--                colour `glow` (Neon with a small light each, so keep them few)
 		themes = {
 			PizzeriaGarden = {
 				grass = { 104, 196, 72 },
@@ -814,6 +818,105 @@ local GameConfig = {
 				terraceProps = {
 					{ terrace = 2, model = "Snowman", width = 5, at = { -3, 1 }, yaw = 160, collide = true },
 					{ terrace = 2, model = "IceCrystal", width = 6, at = { 5, -3 }, yaw = 30, collide = true },
+				},
+			},
+			-- World 5: warm basalt island with a lava pond, basalt-column rim and a volcano.
+			-- Kept light (#24): light ash ground and field, lava only as a few accents.
+			Volcano = {
+				grass = { 188, 138, 112 },
+				grassLight = { 208, 160, 132 },
+				field = { 224, 194, 166 },
+				cliff = { 150, 108, 92 },
+				cliffDark = { 120, 88, 80 },
+				cliffLight = { 182, 136, 114 },
+				rim = { 120, 98, 94 },
+				rimStyle = "Basalt",
+				path = { 216, 190, 168 },
+				pathDark = { 196, 168, 146 },
+				water = { 255, 122, 40 },
+				waterfall = { 255, 150, 60 },
+				wood = { 132, 100, 88 },
+				woodDark = { 104, 80, 74 },
+				rope = { 200, 170, 150 },
+				glow = { 255, 128, 36 },
+				flowers = { { 255, 140, 50 }, { 255, 200, 80 }, { 236, 92, 56 } },
+				flowerStems = false,
+				landmark = "Volcano",
+				bridge = "Basalt",
+				trees = { "LavaRock", "DeadTree", "LavaRock" },
+				treeScale = 0.75,
+				accents = { { model = "LavaRock", width = 5 }, { model = "DeadTree", width = 5 } },
+				terraceProps = {
+					{ terrace = 2, model = "LavaRock", width = 9, at = { -3, 2 }, yaw = 40, collide = true },
+					{ terrace = 2, model = "DeadTree", width = 6, at = { 5, -4 }, yaw = 120 },
+				},
+				cracks = { { -78, -30, 12, 20 }, { 80, -40, 12, -15 }, { 18, -90, 12, 80 }, { -70, 20, 10, -25 } },
+			},
+			-- World 6: pink candy island with a chocolate lake, peppermint rim and a layer cake.
+			CandyLand = {
+				grass = { 255, 188, 220 },
+				grassLight = { 255, 210, 232 },
+				field = { 198, 238, 214 },
+				cliff = { 218, 156, 102 },
+				cliffDark = { 156, 98, 64 },
+				cliffLight = { 244, 200, 146 },
+				rim = { 232, 42, 62 },
+				rimStyle = "Peppermint",
+				path = { 156, 98, 64 },
+				pathDark = { 132, 82, 54 },
+				water = { 124, 74, 46 },
+				waterfall = { 150, 94, 60 },
+				wood = { 255, 246, 250 },
+				woodDark = { 240, 214, 226 },
+				rope = { 255, 246, 250 },
+				frosting = { 255, 246, 250 },
+				candy = { { 255, 92, 162 }, { 120, 200, 242 }, { 255, 220, 70 }, { 150, 220, 110 }, { 190, 140, 255 } },
+				flowers = {
+					{ 255, 92, 162 },
+					{ 120, 200, 242 },
+					{ 255, 220, 70 },
+					{ 150, 220, 110 },
+					{ 190, 140, 255 },
+				},
+				flowerStems = false,
+				landmark = "Cake",
+				bridge = "CandyCane",
+				trees = { "Lollipop" },
+				accents = { { model = "Cupcake", width = 5 }, { model = "CandyCane", width = 2.5 } },
+				terraceProps = {
+					{ terrace = 2, model = "Cupcake", width = 9, at = { -3, 2 }, collide = true },
+					{ terrace = 2, model = "Lollipop", width = 5, at = { 6, -3 }, yaw = 30 },
+				},
+			},
+			-- World 7: moon island at night with a starlight pond, a moon-base rim, a rocket on
+			-- its launch pad and a planet floating above the right terrace. Ground kept light;
+			-- glowing parts only as small tips (Neon is strong at night).
+			Space = {
+				grass = { 176, 172, 208 },
+				grassLight = { 200, 196, 228 },
+				field = { 150, 140, 206 },
+				cliff = { 124, 120, 156 },
+				cliffDark = { 100, 96, 132 },
+				cliffLight = { 156, 152, 186 },
+				rim = { 226, 230, 242 },
+				rimStyle = "Moonbase",
+				path = { 214, 218, 232 },
+				pathDark = { 188, 194, 214 },
+				water = { 110, 214, 255 },
+				waterfall = { 170, 236, 255 },
+				wood = { 200, 204, 220 },
+				woodDark = { 150, 156, 176 },
+				rope = { 226, 230, 242 },
+				glow = { 120, 255, 210 },
+				flowers = { { 120, 255, 210 }, { 255, 230, 120 }, { 190, 150, 255 } },
+				flowerStems = false,
+				landmark = "Rocket",
+				bridge = "Light",
+				trees = { "MoonRock" },
+				accents = { { model = "SpaceCrystal", width = 3 }, { model = "MoonRock", width = 4 } },
+				terraceProps = {
+					{ terrace = 2, model = "Planet", width = 12, at = { 0, 0 }, yaw = 20, lift = 14 },
+					{ terrace = 2, model = "SpaceCrystal", width = 4, at = { 5, -4 }, yaw = 60 },
 				},
 			},
 		},

@@ -34,7 +34,7 @@ export type ModelSpec = { model: string, width: number, position: { number }, ya
 export type Station = { position: { number }, yaw: number }
 
 export type Island = {
-	-- "spawn", "world" (new island look) or "classic" (old square world, B6 pending)
+	-- "spawn" or "world"
 	kind: string,
 	worldIndex: number?,
 	center: { number },
@@ -216,7 +216,9 @@ end
 
 -- One rim edge p -> q (ground points) in a world's own style (theme.rimStyle; the
 -- default "Hedge" is built in shell): "Fence" (farm: posts and two rails), "Rocks"
--- (beach: round boulders) or "IceEdge" (icebergs: ice blocks with crystal spikes).
+-- (beach: round boulders), "IceEdge" (icebergs: ice blocks with crystal spikes),
+-- "Basalt" (volcano: basalt columns), "Peppermint" (candy land: icing with standing
+-- peppermints and gumdrops) or "Moonbase" (space: low panels with glowing post tips).
 -- `inward` points into the island; everything stays low so the view stays open.
 local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: V, i: number, theme: any)
 	local dir = sub(q, p)
@@ -287,6 +289,116 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 				})
 			)
 		end
+	elseif style == "Basalt" then
+		-- Columns of different heights, a little apart.
+		local columns = math.max(1, math.floor(len / 4 + 0.5))
+		local tones = { theme.rim, theme.cliff, theme.cliffLight }
+		for k = 1, columns do
+			local t = (k - 0.5) / columns
+			local h = 1.8 + noise(i, k + 4) * 1.8
+			local d = 1.9 + noise(k, i) * 0.6
+			local at = add(add(p, scale(dir, t)), add(inset, v(0, h / 2, 0)))
+			table.insert(
+				parts,
+				disc(at, d, h, {
+					name = "BasaltColumn",
+					color = tones[(i + k) % #tones + 1],
+					role = "Rim",
+				})
+			)
+		end
+	elseif style == "Peppermint" then
+		-- Low icing along the edge ...
+		local frosting = theme.frosting or { 255, 246, 250 }
+		table.insert(
+			parts,
+			spec(
+				"Block",
+				v(1.8, 1.1, len + 0.4),
+				along(add(scale(add(p, q), 0.5), add(inset, v(0, 0.55, 0))), dir),
+				{ name = "Icing", color = frosting, role = "Rim" }
+			)
+		)
+		local at = add(p, inset)
+		if i % 2 == 0 then
+			-- ... a peppermint standing on its edge, facing out of the island ...
+			local back = cross(inward, { 0, 1, 0 })
+			local center = add(at, v(0, 1.8, 0))
+			table.insert(
+				parts,
+				spec("Cylinder", v(0.8, 3.4, 3.4), matrix(center, inward, { 0, 1, 0 }, back), {
+					name = "Peppermint",
+					color = theme.rim,
+					role = "Rim",
+				})
+			)
+			table.insert(
+				parts,
+				spec("Cylinder", v(0.9, 1.4, 1.4), matrix(center, inward, { 0, 1, 0 }, back), {
+					name = "PeppermintCenter",
+					color = frosting,
+					collide = false,
+					role = "Rim",
+				})
+			)
+		else
+			-- ... or a gumdrop (short drum with a round top).
+			local candy = theme.candy or { theme.rim }
+			local color = candy[math.floor(noise(i, 21) * #candy) + 1]
+			table.insert(
+				parts,
+				disc(add(at, v(0, 0.8, 0)), 2.6, 1.6, { name = "Gumdrop", color = color, role = "Rim" })
+			)
+			table.insert(
+				parts,
+				ball(add(at, v(0, 1.6, 0)), 2.6, { name = "GumdropTop", color = color, collide = false, role = "Rim" })
+			)
+		end
+	elseif style == "Moonbase" then
+		-- Low white panel with a see-through strip on top; every third corner a post with a
+		-- small glowing tip.
+		local center = add(scale(add(p, q), 0.5), add(inset, v(0, 0.7, 0)))
+		table.insert(
+			parts,
+			spec(
+				"Block",
+				v(1, 1.4, len + 0.3),
+				along(center, dir),
+				{ name = "MoonPanel", color = theme.rim, role = "Rim" }
+			)
+		)
+		table.insert(
+			parts,
+			spec("Block", v(0.6, 0.4, len + 0.3), along(add(center, v(0, 0.9, 0)), dir), {
+				name = "MoonPanelStrip",
+				color = theme.water,
+				material = "Glass",
+				collide = false,
+				transparency = 0.3,
+				role = "Rim",
+			})
+		)
+		if i % 3 == 0 then
+			local post = add(p, inset)
+			table.insert(
+				parts,
+				spec("Block", v(0.8, 2.6, 0.8), yawed(add(post, v(0, 1.3, 0)), 0), {
+					name = "MoonPost",
+					color = theme.woodDark,
+					role = "Rim",
+				})
+			)
+			table.insert(
+				parts,
+				ball(add(post, v(0, 2.9, 0)), 0.7, {
+					name = "MoonPostTip",
+					color = theme.glow,
+					material = "Neon",
+					collide = false,
+					role = "Rim",
+				})
+			)
+		end
 	end
 end
 
@@ -345,31 +457,6 @@ local function roundOutline(shape: Shape): ({ { number } }, { [number]: boolean 
 		if not nearFront and not nearBack then
 			table.insert(points, { cx + x, cz + z })
 		end
-	end
-	return points, openingEdges
-end
-
--- Old square world (200 x 200) with openings for the bridges.
-local function squareOutline(center: V, half: number, w: number, openFront: boolean, openBack: boolean)
-	local cx, cz = center[1], center[3]
-	local points: { { number } } = {}
-	local openingEdges: { [number]: boolean } = {}
-	local function push(x: number, z: number)
-		table.insert(points, { cx + x, cz + z })
-	end
-	push(half, -half)
-	push(half, half)
-	if openFront then
-		push(w, half)
-		openingEdges[#points] = true
-		push(-w, half)
-	end
-	push(-half, half)
-	push(-half, -half)
-	if openBack then
-		push(-w, -half)
-		openingEdges[#points] = true
-		push(w, -half)
 	end
 	return points, openingEdges
 end
@@ -680,7 +767,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 					local d = math.sqrt(dx * dx + dz * dz)
 					local x = p[1] - dx / d * inset + (noise(i, seed + ring) - 0.5) * 4
 					local z = p[2] - dz / d * inset + (noise(seed + ring, i) - 0.5) * 4
-					local width = 10 + noise(i * 3, seed) * 6
+					local width = (10 + noise(i * 3, seed) * 6) * (theme.treeScale or 1)
 					local r = width / 2
 					if IslandPlan.isInsideOutline(outline, x, z) and not keepOut(x, z, r) then
 						-- Not too close to the trees already placed.
@@ -1056,11 +1143,316 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		end
 	end
 
+	-- World 5 landmark: a stepped volcano in warm rock (not too dark, #24) with a glowing
+	-- crater and three lava streams running down the steps towards the path.
+	local function volcano(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local layers = { { 27, 5 }, { 22, 5 }, { 17.5, 5 }, { 13.5, 4.5 }, { 10.5, 4 } }
+		local tones = { theme.cliffLight, theme.cliff, theme.grassLight }
+		local y = baseY
+		for k, layer in layers do
+			table.insert(
+				parts,
+				disc(v(at[1], y + layer[2] / 2, at[3]), layer[1], layer[2], {
+					name = "VolcanoRock",
+					color = tones[(k - 1) % #tones + 1],
+					role = "Landmark",
+				})
+			)
+			y += layer[2]
+		end
+		-- Crater: a darker rim ring and the lava pool inside (the only light).
+		table.insert(
+			parts,
+			disc(
+				v(at[1], y + 0.4, at[3]),
+				9,
+				0.8,
+				{ name = "VolcanoCrater", color = theme.cliffDark, role = "Landmark" }
+			)
+		)
+		table.insert(
+			parts,
+			disc(v(at[1], y + 0.85, at[3]), 6.6, 0.3, {
+				name = "VolcanoLava",
+				color = theme.glow,
+				material = "Neon",
+				collide = false,
+				role = "Glow",
+			})
+		)
+		-- Lava streams: on every step a strip over the ledge and down its face.
+		for _, angle in { 15, -60, 200 } do
+			local a = math.rad(angle)
+			local out = v(math.cos(a), 0, math.sin(a))
+			local top = baseY
+			for k, layer in layers do
+				local r = layer[1] / 2
+				local inner = if k < #layers then layers[k + 1][1] / 2 else 3.2
+				local faceTop = top + layer[2]
+				-- Face of this layer.
+				table.insert(
+					parts,
+					spec(
+						"Block",
+						v(0.3, layer[2], 1.4),
+						along(add(v(at[1], top + layer[2] / 2, at[3]), scale(out, r + 0.1)), v(-out[3], 0, out[1])),
+						{
+							name = "LavaStream",
+							color = theme.glow,
+							material = "Neon",
+							collide = false,
+							role = "Landmark",
+						}
+					)
+				)
+				-- Ledge on top of it, from the next layer (or over the crater rim) out to the edge.
+				local ledgeY = faceTop + (if k < #layers then 0.05 else 0.85)
+				table.insert(
+					parts,
+					beam(
+						add(v(at[1], ledgeY, at[3]), scale(out, inner - 0.2)),
+						add(v(at[1], ledgeY, at[3]), scale(out, r + 0.25)),
+						1.4,
+						0.2,
+						{
+							name = "LavaStream",
+							color = theme.glow,
+							material = "Neon",
+							collide = false,
+							role = "Landmark",
+						}
+					)
+				)
+				top = faceTop
+			end
+		end
+		-- Boulders around the foot (behind and beside the volcano).
+		for k = 0, 4 do
+			local a = math.rad(-170 + k * 40)
+			table.insert(
+				parts,
+				ball(v(at[1] + math.cos(a) * 13.5, baseY + 0.8, at[3] + math.sin(a) * 13.5), 3 + noise(k, 5), {
+					name = "VolcanoBoulder",
+					color = theme.cliff,
+					role = "Landmark",
+				})
+			)
+		end
+	end
+
+	-- World 6 landmark: a three-tier layer cake with icing drips, candles and a cherry.
+	local function cake(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local frosting = theme.frosting or { 255, 246, 250 }
+		local candy = theme.candy or { theme.rim }
+		table.insert(
+			parts,
+			disc(v(at[1], baseY + 0.5, at[3]), 23, 1, { name = "CakePlate", color = frosting, role = "Landmark" })
+		)
+		local y = baseY + 1
+		local tiers = { { 19, 5, theme.cliff }, { 14, 4.5, theme.cliffLight }, { 9, 4, theme.cliff } }
+		for k, tier in tiers do
+			local d, h = tier[1], tier[2]
+			table.insert(
+				parts,
+				disc(v(at[1], y + h / 2, at[3]), d, h, { name = "CakeTier", color = tier[3], role = "Landmark" })
+			)
+			local icing = candy[(k - 1) % #candy + 1]
+			table.insert(
+				parts,
+				disc(
+					v(at[1], y + h + 0.4, at[3]),
+					d + 0.6,
+					0.8,
+					{ name = "CakeIcing", color = icing, role = "Landmark" }
+				)
+			)
+			-- Drips down the side.
+			local drips = math.floor(d * 0.6)
+			for j = 1, drips do
+				local a = j / drips * math.pi * 2
+				table.insert(
+					parts,
+					ball(
+						v(at[1] + math.cos(a) * (d / 2), y + h - 0.4 - noise(j, k) * 0.6, at[3] + math.sin(a) * (d / 2)),
+						1.2,
+						{
+							name = "CakeDrip",
+							color = icing,
+							collide = false,
+							role = "Landmark",
+						}
+					)
+				)
+			end
+			y += h + 0.8
+		end
+		-- Cherry on top, three candles around it (small flames, no light).
+		table.insert(
+			parts,
+			ball(v(at[1], y + 1.3, at[3]), 2.8, { name = "CakeCherry", color = { 220, 30, 50 }, role = "Landmark" })
+		)
+		for k = 0, 2 do
+			local a = k / 3 * math.pi * 2 + 0.5
+			local p = v(at[1] + math.cos(a) * 3, y, at[3] + math.sin(a) * 3)
+			table.insert(
+				parts,
+				disc(add(p, v(0, 1.5, 0)), 0.7, 3, {
+					name = "CakeCandle",
+					color = candy[k % #candy + 2] or frosting,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+			table.insert(
+				parts,
+				ball(add(p, v(0, 3.4, 0)), 0.7, {
+					name = "CakeFlame",
+					color = { 255, 214, 92 },
+					material = "Neon",
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+	end
+
+	-- World 7 landmark: a rocket on its launch pad next to a service tower.
+	local function rocket(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local white = { 244, 246, 252 }
+		local red = { 226, 62, 70 }
+		table.insert(
+			parts,
+			disc(
+				v(at[1], baseY + 0.75, at[3]),
+				18,
+				1.5,
+				{ name = "LaunchPad", color = theme.woodDark, role = "Landmark" }
+			)
+		)
+		table.insert(
+			parts,
+			disc(
+				v(at[1], baseY + 1.6, at[3]),
+				11,
+				0.2,
+				{ name = "LaunchPadMark", color = { 255, 206, 70 }, collide = false, role = "Landmark" }
+			)
+		)
+		local foot = baseY + 1.5
+		table.insert(
+			parts,
+			disc(
+				v(at[1], foot + 1, at[3]),
+				3.6,
+				2,
+				{ name = "RocketNozzle", color = { 90, 92, 110 }, role = "Landmark" }
+			)
+		)
+		table.insert(
+			parts,
+			disc(v(at[1], foot + 9.5, at[3]), 6, 15, { name = "RocketBody", color = white, role = "Landmark" })
+		)
+		table.insert(
+			parts,
+			disc(v(at[1], foot + 13.5, at[3]), 6.2, 1.2, { name = "RocketBand", color = red, role = "Landmark" })
+		)
+		for k, d in { 5.2, 4, 2.7, 1.3 } do
+			table.insert(
+				parts,
+				disc(v(at[1], foot + 17 + (k - 1) * 1.3 + 0.65, at[3]), d, 1.3, {
+					name = "RocketNose",
+					color = red,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Round window facing the path (+X) and the front (+Z).
+		local look = unit(v(1, 0, 1))
+		table.insert(
+			parts,
+			spec(
+				"Cylinder",
+				v(0.4, 2.2, 2.2),
+				matrix(add(v(at[1], foot + 11, at[3]), scale(look, 3)), look, { 0, 1, 0 }, cross(look, { 0, 1, 0 })),
+				{
+					name = "RocketWindow",
+					color = theme.water,
+					material = "Glass",
+					transparency = 0.2,
+					role = "Landmark",
+				}
+			)
+		)
+		-- Four fins.
+		for k = 0, 3 do
+			local a = k * math.pi / 2 + math.pi / 4
+			local out = v(math.cos(a), 0, math.sin(a))
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(0.5, 5, 2.6),
+					along(add(v(at[1], foot + 3.5, at[3]), scale(out, 3.6)), out),
+					{ name = "RocketFin", color = red, role = "Landmark" }
+				)
+			)
+		end
+		-- Service tower beside the rocket (towards the back), with an arm to the hull.
+		local tower = v(at[1] - 1, foot, at[3] - 8)
+		for _, c in { { -1.5, -1.5 }, { 1.5, -1.5 }, { -1.5, 1.5 }, { 1.5, 1.5 } } do
+			table.insert(
+				parts,
+				spec("Block", v(0.6, 20, 0.6), yawed(add(tower, v(c[1], 10, c[2])), 0), {
+					name = "TowerLeg",
+					color = theme.wood,
+					role = "Landmark",
+				})
+			)
+		end
+		for h = 4, 20, 4 do
+			table.insert(
+				parts,
+				spec("Block", v(3.6, 0.4, 3.6), yawed(add(tower, v(0, h, 0)), 0), {
+					name = "TowerDeck",
+					color = theme.woodDark,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		table.insert(
+			parts,
+			beam(add(tower, v(0.5, 14, 1.5)), v(at[1], foot + 14, at[3] - 2.8), 0.8, 0.6, {
+				name = "TowerArm",
+				color = theme.woodDark,
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		-- Small lamps on the pad edge (glowing, no light of their own).
+		for k = 0, 3 do
+			local a = k * math.pi / 2
+			table.insert(
+				parts,
+				ball(v(at[1] + math.cos(a) * 8.2, baseY + 1.8, at[3] + math.sin(a) * 8.2), 0.8, {
+					name = "PadLamp",
+					color = theme.glow,
+					material = "Neon",
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+	end
+
 	local LANDMARKS = {
 		GiantPizza = giantPizza,
 		Windmill = windmill,
 		Lighthouse = lighthouse,
 		IcePeak = icePeak,
+		Volcano = volcano,
+		Cake = cake,
+		Rocket = rocket,
 	}
 
 	local function localToWorld(center: V, p: { number }): V
@@ -1308,7 +1700,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 
 	-- ---------------------------------------------------------------- world islands
 
-	local function newStyleWorld(index: number, world: any): Island
+	local function worldIsland(index: number, world: any): Island
 		local center = plan.worldCenter(index)
 		local island = newIsland("world", center)
 		island.worldIndex = index
@@ -1441,14 +1833,37 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 				table.insert(island.models, {
 					model = prop.model,
 					width = prop.width,
-					position = v(center[1] + t[1] + prop.at[1], groundY + t[4], center[3] + t[2] + prop.at[2]),
+					position = v(
+						center[1] + t[1] + prop.at[1],
+						groundY + t[4] + (prop.lift or 0),
+						center[3] + t[2] + prop.at[2]
+					),
 					yaw = math.rad(prop.yaw or 0),
 					collide = prop.collide == true,
 				})
 			end
 		end
 
+		-- Glowing cracks in the ground (volcano lava): Neon with a small light each.
+		local cracks = theme.cracks or {}
+		for _, crack in cracks do
+			table.insert(
+				island.parts,
+				spec(
+					"Block",
+					v(1.2, 0.12, crack[3]),
+					yawed(v(center[1] + crack[1], groundY + 0.08, center[3] + crack[2]), math.rad(crack[4])),
+					{ name = "LavaCrack", color = theme.glow, material = "Neon", collide = false, role = "Glow" }
+				)
+			)
+		end
+
 		local function keepOut(x: number, z: number, r: number): boolean
+			for _, crack in cracks do
+				if math.sqrt((x - center[1] - crack[1]) ^ 2 + (z - center[3] - crack[2]) ^ 2) < crack[3] / 2 + r then
+					return true
+				end
+			end
 			local f = island.field :: any
 			if
 				math.abs(x - f.center[1]) < f.size[1] / 2 + r + 2
@@ -1511,72 +1926,6 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		return island
 	end
 
-	-- Old square world (look from WorldMap) on the chain: walls, openings, a rock underside.
-	-- Stations keep their old spots so worlds 5-7 play as before (B6 rebuilds them).
-	local function classicWorld(index: number): Island
-		local center = plan.worldCenter(index)
-		local island = newIsland("classic", center)
-		island.worldIndex = index
-		local openings
-		island.outline, openings = squareOutline(center, half, bridgeWidth / 2, true, index < #worlds)
-		island.openings.front = v(center[1], groundY, center[3] + half)
-		if index < #worlds then
-			island.openings.back = v(center[1], groundY, center[3] - half)
-		end
-		local count = #island.outline
-		for i = 1, count do
-			if not openings[i] then
-				local p, q = island.outline[i], island.outline[i % count + 1]
-				local a, b = v(p[1], groundY, p[2]), v(q[1], groundY, q[2])
-				local dir = sub(b, a)
-				table.insert(
-					island.parts,
-					spec(
-						"Block",
-						v(1, wallHeight + 1, length(dir) + 0.5),
-						along(add(scale(add(a, b), 0.5), v(0, (wallHeight - 1) / 2, 0)), dir),
-						{
-							name = "IslandWall",
-							color = { 255, 255, 255 },
-							transparency = 1,
-							role = "Wall",
-						}
-					)
-				)
-			end
-		end
-		local rock = { 132, 112, 100 }
-		for k, layer in { { 2 * half, 8 }, { 2 * half * 0.8, 10 }, { 2 * half * 0.5, 10 } } do
-			local top = groundY - 1 - (k - 1) * 8
-			table.insert(
-				island.parts,
-				spec("Block", v(layer[1], layer[2], layer[1]), yawed(v(center[1], top - layer[2] / 2, center[3]), 0), {
-					name = "Underside",
-					color = rock,
-					collide = false,
-					role = "Cliff",
-				})
-			)
-		end
-		local function old(x: number, z: number, yaw: number): Station
-			return { position = v(center[1] + x, groundY, center[3] + z), yaw = yaw }
-		end
-		island.stations = {
-			Spawn = old(0, 60, 0),
-			Oven = old(30, 68, 0),
-			Egg1 = old(-30, 68, 0),
-			-- Second egg (#39) next to the first, between it and the shop.
-			Egg2 = old(-48, 68, 0),
-			Shop = old(-72, 72, 0),
-			Portal = old(65, 70, 0),
-			-- Phone and van face -X like before (see DeliveryService).
-			Phone = old(78, 46, math.pi / 2),
-			Van = old(78, 14, math.pi / 2),
-		}
-		island.field = { center = v(center[1], groundY, center[3] - 10), size = { 120, 100 } }
-		return island
-	end
-
 	local cache: { [number]: Island } = {}
 	function plan.worldIsland(index: number): Island
 		local cached = cache[index]
@@ -1585,7 +1934,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		end
 		local world = worlds[index]
 		assert(world, `no world {index}`)
-		local island = if config.newStyle[world.id] then newStyleWorld(index, world) else classicWorld(index)
+		local island = worldIsland(index, world)
 		cache[index] = island
 		return island
 	end
@@ -1871,7 +2220,279 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		return { fromZ = fromZ, toZ = toZ, parts = parts }
 	end
 
-	local BRIDGES = { Rope = ropeBridge, Boardwalk = boardwalk, Ice = iceBridge }
+	-- Basalt bridge (to the volcano): a straight deck of stone slabs with a few glowing
+	-- lava seams, basalt columns along the sides and columns hanging below.
+	local function basaltBridge(fromZ: number, toZ: number, theme: any): Bridge
+		local parts: { PartSpec } = {}
+		local len = fromZ - toZ
+		local slabs = math.floor(len / 4)
+		local step = len / slabs
+		for i = 0, slabs - 1 do
+			local z = fromZ - (i + 0.5) * step
+			table.insert(
+				parts,
+				spec("Block", v(bridgeWidth, 1, step - 0.15), yawed(v(0, groundY - 0.5, z), 0), {
+					name = "BasaltSlab",
+					color = if i % 2 == 0 then theme.path else theme.pathDark,
+					role = "Bridge",
+				})
+			)
+			-- Lava between some of the slabs (each one a small light, so only three).
+			if i % 3 == 2 and i < slabs - 1 then
+				table.insert(
+					parts,
+					spec("Block", v(bridgeWidth - 1.5, 0.1, 0.35), yawed(v(0, groundY + 0.02, z - step / 2), 0), {
+						name = "LavaSeam",
+						color = theme.glow,
+						material = "Neon",
+						collide = false,
+						role = "Glow",
+					})
+				)
+			end
+		end
+		-- Thick rock beam under the deck with columns hanging from it.
+		table.insert(
+			parts,
+			spec("Block", v(bridgeWidth - 2, 2.5, len), yawed(v(0, groundY - 2.2, (fromZ + toZ) / 2), 0), {
+				name = "BasaltBeam",
+				color = theme.cliff,
+				collide = false,
+				role = "Bridge",
+			})
+		)
+		for k = 1, math.floor(len / 5) - 1 do
+			for _, sx in { -1, 1 } do
+				local h = 3 + noise(k, sx + 3) * 5
+				table.insert(
+					parts,
+					disc(v(sx * (bridgeWidth / 2 - 2.2), groundY - 3.4 - h / 2, fromZ - k * 5), 2.2, h, {
+						name = "HangingColumn",
+						color = if (k + sx) % 2 == 0 then theme.cliffDark else theme.cliff,
+						collide = false,
+						role = "Bridge",
+					})
+				)
+			end
+		end
+		-- Low basalt columns along both sides (clear of the gate pillars at the ends).
+		local columns = math.floor((len - 6) / 2.5)
+		for k = 0, columns do
+			local z = fromZ - 3 - k * (len - 6) / columns
+			for _, sx in { -1, 1 } do
+				local h = 1.6 + noise(k, sx) * 1.6
+				table.insert(
+					parts,
+					disc(v(sx * (bridgeWidth / 2 + 0.5), groundY + h / 2, z), 1.8, h, {
+						name = "BasaltColumn",
+						color = if (k + sx) % 3 == 0 then theme.cliffLight else theme.rim,
+						role = "Bridge",
+					})
+				)
+			end
+		end
+		bridgeWalls(parts, fromZ, toZ)
+		return { fromZ = fromZ, toZ = toZ, parts = parts }
+	end
+
+	-- Candy cane bridge (to candy land): wafer slabs, striped rails on striped posts and a
+	-- big candy cane at every corner.
+	local function candyCaneBridge(fromZ: number, toZ: number, theme: any): Bridge
+		local parts: { PartSpec } = {}
+		local len = fromZ - toZ
+		local frosting = theme.frosting or { 255, 246, 250 }
+		local red = theme.rim
+		local pink = { 255, 170, 200 }
+		local planks = math.floor(len / 2)
+		local step = len / planks
+		for i = 0, planks - 1 do
+			local z = fromZ - (i + 0.5) * step
+			table.insert(
+				parts,
+				spec("Block", v(bridgeWidth, 0.7, step - 0.2), yawed(v(0, groundY - 0.35, z), 0), {
+					name = "WaferSlab",
+					color = if i % 2 == 0 then frosting else pink,
+					role = "Bridge",
+				})
+			)
+		end
+		table.insert(
+			parts,
+			spec("Block", v(bridgeWidth - 1, 1.2, len), yawed(v(0, groundY - 1.3, (fromZ + toZ) / 2), 0), {
+				name = "WaferBeam",
+				color = theme.cliff,
+				collide = false,
+				role = "Bridge",
+			})
+		)
+		-- Striped hand rails (red and white pieces).
+		local pieces = math.floor(len / 2)
+		for _, sx in { -1, 1 } do
+			local x = sx * (bridgeWidth / 2 + 0.3)
+			for k = 0, pieces - 1 do
+				local z0 = fromZ - k * len / pieces
+				local z1 = fromZ - (k + 1) * len / pieces
+				table.insert(
+					parts,
+					beam(v(x, groundY + 2.8, z0), v(x, groundY + 2.8, z1), 0.6, 0.6, {
+						name = "CaneRail",
+						color = if k % 2 == 0 then red else frosting,
+						collide = false,
+						role = "Rope",
+					})
+				)
+			end
+		end
+		-- Striped posts under the rails, clear of the corner canes.
+		local posts = math.floor((len - 10) / 8)
+		for k = 0, posts do
+			local z = fromZ - 5 - k * (len - 10) / posts
+			for _, sx in { -1, 1 } do
+				local x = sx * (bridgeWidth / 2 + 0.3)
+				for j = 0, 3 do
+					table.insert(
+						parts,
+						disc(v(x, groundY + 0.35 + j * 0.7, z), 0.9, 0.7, {
+							name = "CaneStripe",
+							color = if j % 2 == 0 then red else frosting,
+							role = "Bridge",
+						})
+					)
+				end
+			end
+		end
+		-- A big candy cane at every corner, hooked towards the deck.
+		for _, z in { fromZ - 2.5, toZ + 3.5 } do
+			for _, sx in { -1, 1 } do
+				local x = sx * (bridgeWidth / 2 + 1.2)
+				for j = 0, 7 do
+					table.insert(
+						parts,
+						disc(v(x, groundY + 0.45 + j * 0.9, z), 1.3, 0.9, {
+							name = "CaneStripe",
+							color = if j % 2 == 0 then red else frosting,
+							role = "Bridge",
+						})
+					)
+				end
+				local top = groundY + 7.2
+				for j = 0, 5 do
+					local a = j / 5 * math.pi
+					table.insert(
+						parts,
+						ball(v(x - sx * 1.2 + sx * 1.2 * math.cos(a), top + 1.2 * math.sin(a), z), 1.3, {
+							name = "CaneHook",
+							color = if j % 2 == 0 then frosting else red,
+							collide = false,
+							role = "Bridge",
+						})
+					)
+				end
+			end
+		end
+		bridgeWalls(parts, fromZ, toZ)
+		return { fromZ = fromZ, toZ = toZ, parts = parts }
+	end
+
+	-- Light bridge (into space): pale metal slabs with a glowing strip along each edge,
+	-- see-through side panels and posts with small glowing tips.
+	local function lightBridge(fromZ: number, toZ: number, theme: any): Bridge
+		local parts: { PartSpec } = {}
+		local len = fromZ - toZ
+		local slabs = math.floor(len / 4)
+		local step = len / slabs
+		for i = 0, slabs - 1 do
+			local z = fromZ - (i + 0.5) * step
+			table.insert(
+				parts,
+				spec("Block", v(bridgeWidth, 0.8, step - 0.1), yawed(v(0, groundY - 0.4, z), 0), {
+					name = "LightSlab",
+					color = if i % 2 == 0 then theme.path else theme.pathDark,
+					role = "Bridge",
+				})
+			)
+		end
+		table.insert(
+			parts,
+			spec("Block", v(bridgeWidth - 3, 0.8, len), yawed(v(0, groundY - 1.2, (fromZ + toZ) / 2), 0), {
+				name = "LightBeam",
+				color = theme.woodDark,
+				collide = false,
+				role = "Bridge",
+			})
+		)
+		for _, sx in { -1, 1 } do
+			-- One glowing strip per side (one light each).
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(0.5, 0.15, len - 2),
+					yawed(v(sx * (bridgeWidth / 2 - 0.5), groundY + 0.07, (fromZ + toZ) / 2), 0),
+					{
+						name = "LightStrip",
+						color = theme.glow,
+						material = "Neon",
+						collide = false,
+						role = "Glow",
+					}
+				)
+			)
+			local panels = math.floor((len - 4) / 4)
+			for k = 0, panels - 1 do
+				local z = fromZ - 2 - (k + 0.5) * (len - 4) / panels
+				table.insert(
+					parts,
+					spec(
+						"Block",
+						v(0.3, 2.2, (len - 4) / panels - 0.6),
+						yawed(v(sx * (bridgeWidth / 2 + 0.3), groundY + 1.3, z), 0),
+						{
+							name = "LightPanel",
+							color = theme.water,
+							material = "Glass",
+							transparency = 0.4,
+							role = "Bridge",
+						}
+					)
+				)
+			end
+			for k = 0, panels do
+				local z = fromZ - 2 - k * (len - 4) / panels
+				table.insert(
+					parts,
+					spec("Block", v(0.6, 3, 0.6), yawed(v(sx * (bridgeWidth / 2 + 0.3), groundY + 1.5, z), 0), {
+						name = "LightPost",
+						color = theme.wood,
+						role = "Bridge",
+					})
+				)
+				if k % 2 == 0 then
+					table.insert(
+						parts,
+						ball(v(sx * (bridgeWidth / 2 + 0.3), groundY + 3.25, z), 0.6, {
+							name = "LightPostTip",
+							color = theme.glow,
+							material = "Neon",
+							collide = false,
+							role = "Bridge",
+						})
+					)
+				end
+			end
+		end
+		bridgeWalls(parts, fromZ, toZ)
+		return { fromZ = fromZ, toZ = toZ, parts = parts }
+	end
+
+	local BRIDGES = {
+		Rope = ropeBridge,
+		Boardwalk = boardwalk,
+		Ice = iceBridge,
+		Basalt = basaltBridge,
+		CandyCane = candyCaneBridge,
+		Light = lightBridge,
+	}
 
 	-- Bridge into world `index`, in the style of the world it leads to (theme.bridge).
 	local function bridgeInto(index: number, fromZ: number, toZ: number): Bridge
