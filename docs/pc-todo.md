@@ -1120,16 +1120,16 @@ Vorschau: `assets/previews/islands/World2_Overview.jpg`, `World3_Overview.jpg`, 
 
 **Play (1 Spieler; Münz-Tipp aus #11 oder vorhandener Spielstand mit Welt 2–4):**
 
-- [ ] Output ohne rote Fehler.
-- [ ] Welt 2–4 sehen aus wie in den Vorschau-Bildern: runder Umriss mit Felskante, Rand im Welt-Stil, Wahrzeichen hinten links, Teich mit Wasserfall rechts vorne, Terrassen mit Stufen begehbar.
-- [ ] **Brücken:** Welt 1 → 2 Hängebrücke, Welt 2 → 3 Holzsteg, Welt 3 → 4 Eisbrücke. Alle begehbar, kein Stolpern am Übergang Brücke/Insel, seitlich nicht herunterfallen (unsichtbare Wand), Springen hilft nicht.
-- [ ] **Barrieren-Tore** am Brückenkopf von Welt 2, 3 und 4: leuchtend in Weltfarbe, Preisschild „🔒 Bauernhof / 170 Münzen“ usw.; Freischalt-Knopf erscheint davor; freischalten → Tor passierbar, Schild verschwindet. Mit der vorübergehenden Änderung aus #43 (`requiredRebirths`, **nicht committen**) zeigen die Tore weiter „Ab X Rebirths“.
-- [ ] **Stationen** in Welt 2, 3 und 4 (gleiche Plätze wie Welt 1): Ofen mit Verkaufszone (Verkaufen + Animation in die Ofenöffnung), **beide Ei-Stände** mit ihren Ei-Modellen (#39/#29, z. B. Bauernhof-Ei und Scheunen-Ei), Portal (Menü, Teleport, Ankunft vor dem Portal), Telefon und Lieferwagen (Auftrag annehmen und abgeben). In Welt 4 der **Große Pizza-Shop** am Shop-Platz links (jetzt in normaler Größe statt 1,5×, damit er nicht in den Ei-Stand ragt) – kaufen klappt.
-- [ ] **Belag-Modelle (#18)** auf den neuen Feldern gut erkennbar: Zwiebel/Paprika/Mais/Schinken auf dem braunen Acker, Thunfisch/Garnele/Ananas auf hellem Sand, Erbsen/Lachs/Salat auf dem hellblauen Eisfeld. Falls etwas schlecht lesbar ist: Farbe `field` im Theme notieren.
-- [ ] **Kamera** an jeder Station von Welt 2–4 frei (kein Baum, Zaun, Fels zwischen Kamera und Figur).
-- [ ] **Rand:** in Welt 2–4 nirgends herunterfallen (Rand ablaufen). Absturz per Command Bar, z. B. Welt 3: `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, -480))` → Respawn am Spawn der aktuellen Welt (#25). Tod (Reset) in Welt 3 → Respawn in Welt 3.
-- [ ] Welt-Atmosphäre/Musik wechselt beim Betreten jeder Insel (WorldLooks unverändert); ferne Schilder (Tore, Shop Welt 4) sind aus Welt 1/2 nicht am Himmel zu sehen (SignCulling).
-- [ ] Deko: Palmen, Schneetannen, Heuballen, Sonnenblumen, Scheune, Schneemänner stehen auf dem Boden (nicht schwebend, nicht im Boden), passende Größe. Leuchtturm-Lampe und Eiskristalle leuchten dezent (nicht überstrahlt).
+- [x] Output ohne rote Fehler.
+- [x] Welt 2–4 sehen aus wie in den Vorschau-Bildern: runder Umriss mit Felskante, Rand im Welt-Stil, Wahrzeichen hinten links, Teich mit Wasserfall rechts vorne, Terrassen mit Stufen begehbar.
+- [x] **Brücken:** Welt 1 → 2 Hängebrücke, Welt 2 → 3 Holzsteg, Welt 3 → 4 Eisbrücke. Alle begehbar, kein Stolpern am Übergang Brücke/Insel, seitlich nicht herunterfallen (unsichtbare Wand), Springen hilft nicht.
+- [x] **Barrieren-Tore** am Brückenkopf von Welt 2, 3 und 4: leuchtend in Weltfarbe, Preisschild „🔒 Bauernhof / 170 Münzen“ usw.; Freischalt-Knopf erscheint davor; freischalten → Tor passierbar, Schild verschwindet. Mit der vorübergehenden Änderung aus #43 (`requiredRebirths`, **nicht committen**) zeigen die Tore weiter „Ab X Rebirths“.
+- [x] **Stationen** in Welt 2, 3 und 4 (gleiche Plätze wie Welt 1): Ofen mit Verkaufszone (Verkaufen + Animation in die Ofenöffnung), **beide Ei-Stände** mit ihren Ei-Modellen (#39/#29, z. B. Bauernhof-Ei und Scheunen-Ei), Portal (Menü, Teleport, Ankunft vor dem Portal), Telefon und Lieferwagen (Auftrag annehmen und abgeben). In Welt 4 der **Große Pizza-Shop** am Shop-Platz links (jetzt in normaler Größe statt 1,5×, damit er nicht in den Ei-Stand ragt) – kaufen klappt.
+- [x] **Belag-Modelle (#18)** auf den neuen Feldern gut erkennbar: Zwiebel/Paprika/Mais/Schinken auf dem braunen Acker, Thunfisch/Garnele/Ananas auf hellem Sand, Erbsen/Lachs/Salat auf dem hellblauen Eisfeld. Falls etwas schlecht lesbar ist: Farbe `field` im Theme notieren.
+- [x] **Kamera** an jeder Station von Welt 2–4 frei (kein Baum, Zaun, Fels zwischen Kamera und Figur).
+- [x] **Rand:** in Welt 2–4 nirgends herunterfallen (Rand ablaufen). Absturz per Command Bar, z. B. Welt 3: `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, -480))` → Respawn am Spawn der aktuellen Welt (#25). Tod (Reset) in Welt 3 → Respawn in Welt 3.
+- [x] Welt-Atmosphäre/Musik wechselt beim Betreten jeder Insel (WorldLooks unverändert); ferne Schilder (Tore, Shop Welt 4) sind aus Welt 1/2 nicht am Himmel zu sehen (SignCulling).
+- [x] Deko: Palmen, Schneetannen, Heuballen, Sonnenblumen, Scheune, Schneemänner stehen auf dem Boden (nicht schwebend, nicht im Boden), passende Größe. Leuchtturm-Lampe und Eiskristalle leuchten dezent (nicht überstrahlt).
 - [ ] Pets laufen nicht durch Zaun/Felsen/Eisrand und nicht über die Inselkante.
 - [ ] **Handy** (Device-Emulator): Welt 2–4 ohne spürbares Ruckeln (viele Rand-Teile), Freischalt-Knopf am Tor antippbar.
 - [ ] Was nicht passt (Farben, Größen, Wahrzeichen): hier notieren.
@@ -1148,18 +1148,42 @@ Vorschau: `assets/previews/islands/World5_Overview.jpg` bis `World7_Overview.jpg
 
 **Play (1 Spieler; Münz-Tipp aus #11 oder vorhandener Spielstand mit Welt 5–7):**
 
-- [ ] Output ohne rote Fehler.
-- [ ] Welt 5–7 sehen aus wie in den Vorschau-Bildern: runder Umriss mit Felskante, Rand im Welt-Stil, Wahrzeichen hinten links, Teich mit Fall rechts vorne, Terrassen mit Stufen begehbar.
-- [ ] **Brücken:** Welt 4 → 5 Basaltbrücke, Welt 5 → 6 Zuckerstangen-Brücke, Welt 6 → 7 Leuchtbrücke. Alle begehbar, kein Stolpern am Übergang Brücke/Insel und über die Lavafugen, seitlich nicht herunterfallen (unsichtbare Wand).
-- [ ] **Barrieren-Tore** am Brückenkopf von Welt 5, 6 und 7: leuchtend in Weltfarbe, Preisschild (z. B. „🔒 Vulkan / 310.000 Münzen“), Freischalt-Knopf davor; freischalten → Tor passierbar. Große Zuckerstangen und Säulen stehen nicht im Tor.
-- [ ] **Stationen** in Welt 5, 6 und 7 (gleiche Plätze wie Welt 1): Ofen mit Verkaufszone, **beide Ei-Stände** (Vulkan-/Magma-Ei, Süßigkeiten-/Bonbon-Ei, Weltraum-/Nebula-Ei), Portal (Menü, Teleport, Ankunft vor dem Portal), Telefon und Lieferwagen (Auftrag annehmen und abgeben). In Welt 7 der **Riesige Pizza-Shop** am Shop-Platz links, jetzt in normaler Größe (vorher 2×), kaufen klappt, ragt nicht in den Ei-Stand.
-- [ ] **Belag-Modelle (#18)** auf den neuen Feldern gut erkennbar: Chili/Peperoni/Jalapeño auf dem hellen Aschefeld, Schoko-Stücke/Gummibärchen/Marshmallow auf dem mintgrünen Feld, Mond-Käse/Sternen-Oliven/Alien-Pilz auf dem violetten Feld (nachts). Falls etwas schlecht lesbar ist: Farbe `field` im Theme notieren.
-- [ ] **Vulkan hell genug (#24):** alles gut erkennbar, Lava (Krater, Risse, Teich, Lavafugen der Brücke) leuchtet, aber nichts überstrahlt.
-- [ ] **Weltraum nachts:** Leuchtstreifen der Brücke, Pfosten-Spitzen am Rand, Lampen an der Startrampe und Kristalle leuchten dezent, kein Überstrahlen (Bloom). Wenn doch: notieren, welches Teil.
-- [ ] **Kamera** an jeder Station von Welt 5–7 frei (kein Fels, keine Zuckerstange zwischen Kamera und Figur).
-- [ ] **Rand:** in Welt 5–7 nirgends herunterfallen (Rand ablaufen). Absturz per Command Bar, z. B. Welt 6: `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, -1200))` → Respawn am Spawn der aktuellen Welt. Tod (Reset) in Welt 7 → Respawn in Welt 7.
-- [ ] Deko steht auf dem Boden (nicht schwebend, nicht im Boden), passende Größe: Lavafelsen, tote Bäume, Lollis, Cupcakes, Zuckerstangen, Mondfelsen, Kristalle. Nur der **Planet** schwebt absichtlich über der rechten Terrasse in Welt 7.
-- [ ] Welt-Atmosphäre/Musik wechselt beim Betreten jeder Insel (WorldLooks unverändert); ferne Schilder (Tore, Shop Welt 7) sind aus Welt 5/6 nicht am Himmel zu sehen (SignCulling).
+- [x] Output ohne rote Fehler.
+- [x] Welt 5–7 sehen aus wie in den Vorschau-Bildern: runder Umriss mit Felskante, Rand im Welt-Stil, Wahrzeichen hinten links, Teich mit Fall rechts vorne, Terrassen mit Stufen begehbar.
+- [x] **Brücken:** Welt 4 → 5 Basaltbrücke, Welt 5 → 6 Zuckerstangen-Brücke, Welt 6 → 7 Leuchtbrücke. Alle begehbar, kein Stolpern am Übergang Brücke/Insel und über die Lavafugen, seitlich nicht herunterfallen (unsichtbare Wand).
+- [x] **Barrieren-Tore** am Brückenkopf von Welt 5, 6 und 7: leuchtend in Weltfarbe, Preisschild (z. B. „🔒 Vulkan / 310.000 Münzen“), Freischalt-Knopf davor; freischalten → Tor passierbar. Große Zuckerstangen und Säulen stehen nicht im Tor.
+- [x] **Stationen** in Welt 5, 6 und 7 (gleiche Plätze wie Welt 1): Ofen mit Verkaufszone, **beide Ei-Stände** (Vulkan-/Magma-Ei, Süßigkeiten-/Bonbon-Ei, Weltraum-/Nebula-Ei), Portal (Menü, Teleport, Ankunft vor dem Portal), Telefon und Lieferwagen (Auftrag annehmen und abgeben). In Welt 7 der **Riesige Pizza-Shop** am Shop-Platz links, jetzt in normaler Größe (vorher 2×), kaufen klappt, ragt nicht in den Ei-Stand.
+- [x] **Belag-Modelle (#18)** auf den neuen Feldern gut erkennbar: Chili/Peperoni/Jalapeño auf dem hellen Aschefeld, Schoko-Stücke/Gummibärchen/Marshmallow auf dem mintgrünen Feld, Mond-Käse/Sternen-Oliven/Alien-Pilz auf dem violetten Feld (nachts). Falls etwas schlecht lesbar ist: Farbe `field` im Theme notieren.
+- [x] **Vulkan hell genug (#24):** alles gut erkennbar, Lava (Krater, Risse, Teich, Lavafugen der Brücke) leuchtet, aber nichts überstrahlt.
+- [x] **Weltraum nachts:** Leuchtstreifen der Brücke, Pfosten-Spitzen am Rand, Lampen an der Startrampe und Kristalle leuchten dezent, kein Überstrahlen (Bloom). Wenn doch: notieren, welches Teil.
+- [x] **Kamera** an jeder Station von Welt 5–7 frei (kein Fels, keine Zuckerstange zwischen Kamera und Figur).
+- [x] **Rand:** in Welt 5–7 nirgends herunterfallen (Rand ablaufen). Absturz per Command Bar, z. B. Welt 6: `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, -1200))` → Respawn am Spawn der aktuellen Welt. Tod (Reset) in Welt 7 → Respawn in Welt 7.
+- [x] Deko steht auf dem Boden (nicht schwebend, nicht im Boden), passende Größe: Lavafelsen, tote Bäume, Lollis, Cupcakes, Zuckerstangen, Mondfelsen, Kristalle. Nur der **Planet** schwebt absichtlich über der rechten Terrasse in Welt 7.
+- [x] Welt-Atmosphäre/Musik wechselt beim Betreten jeder Insel (WorldLooks unverändert); ferne Schilder (Tore, Shop Welt 7) sind aus Welt 5/6 nicht am Himmel zu sehen (SignCulling).
 - [ ] Pets laufen nicht durch Basaltsäulen, Pfefferminz oder Paneele und nicht über die Inselkante.
 - [ ] **Handy** (Device-Emulator): Welt 5–7 ohne spürbares Ruckeln, Freischalt-Knopf am Tor antippbar.
 - [ ] Was nicht passt (Farben, Größen, Wahrzeichen): hier notieren.
+
+## Studio-Test 18./19.11.2026 (Phase B #33 + offene Punkte vom 17.11.)
+
+Dein echter Spielstand wurde vorher gesichert (DataStore-Schlüssel `backup_18nov_player_372358501`) und am Ende 1:1 wiederhergestellt (76.108 Münzen, 0 Rebirths, Welten bis Eisberge, 9 Pets). Getestet wurde mit einer Kopie, in der alle Welten frei waren. Output: keine roten Spiel-Fehler, keine `[Save]`-Warnungen. Screenshots: `docs/playtest/38-…` bis `59-…`.
+
+**#31/#32 Inseln (alle 7 Welten):** Inseln, Wahrzeichen, Rand-Stile, Teiche, beide Ei-Stände, Ofen, Shop (Welt 4/7 normale Größe), Telefon, Lieferwagen und Portal stehen überall richtig (`38`–`45`). Brücken Basalt/Zuckerstange/Leucht sehen gut aus (`46`, `47`). Die Kamera war an Ofen, Ei, Shop, Telefon, Lieferwagen und Portal in Welt 2–7 überall frei (`48`). **Rand:** An 22 Punkten pro Insel (alle 15°, außer Brückenrichtung) wurde die Figur 2 s mit Schwung nach außen geschoben, in allen 7 Welten: **0 Abstürze**. Brücken-Seitenwände halten auch. **Absturz** unter Welt 6 → zurück an den Spawn von Welt 6; **Tod** in Welt 7 → Respawn in Welt 7. Tore nach Rebirth wieder zu, „🔒 Bauernhof 170 Münzen“ (`55`). Nicht einzeln geprüft: Pets an Zäunen und Felsen, Bildrate auf dem Handy pro Welt.
+
+**2 Spieler** (Server + 2 Clients): Beide starten auf der Spawn-Insel und sehen sich, ohne Fehler. Nicht geprüft: „einer schaltet frei, der andere bleibt stecken“, weil Test-Spieler ohne Münzen starten. Ein neu hinzugefügter Client bekommt eine neue Test-ID (-3), daher Rejoin-Tests mit deinem Konto.
+
+**Neuer Spieler / Tutorial** (Test-Spieler, dein Stand unberührt): Schritt 1 → 2 → 3 klappt, Pizza-Platz Stufe 1 kostet 12, mit 2 Münzen „Nicht genug Münzen!“ und der Schritt bleibt 3/4. Nach **4 Runden** 13 Münzen → Kauf, Pizza 0/3, Schritt 4/4 → Ei öffnen → Tutorial fertig. **Danach** öffnet sich der Login-Kalender von selbst (vorher nicht), und der Geschenke-Hinweis pulsiert erst jetzt (`50`).
+
+**Rejoin:** Login-Serie Tag 3 nach Mitternacht (Tag 1+2 ✓, `51`). Speed-Trank läuft weiter (9:45 → 9:14 nach ~40 s), Lieferauftrag läuft in Echtzeit weiter (2:56 → 2:17), Geschenk-Countdown zählt nur Spielzeit (3:17 → 2:53), der Kalender öffnet nicht noch einmal, Start in der zuletzt besuchten Welt (`52`).
+
+**Echter Rebirth** (mit 5 Mrd in der Test-Kopie): Warnung „Dein laufender Trank endet beim Rebirth!“, Bestätigung, danach Welt 1, Münzen 0, Pizza 0/2, Trank und Auftrag weg, „Rebirth 1! ×1,5 Münzen“, Abzeichen „1“, Pets und Gems bleiben (`53`). Menü danach: „Rebirths: 1“, „×1,5 → ×2“, 14,7 Mrd (`54`). Nach Rejoin bleibt alles, Start in Welt 1. Der Knopf pulsiert nicht, weil er schon einmal geöffnet war (Hinweis gespeichert).
+
+**Handy** (Device-Emulator, Samsung Galaxy A06 800×360): Seitenknöpfe nebeneinander, nichts unter Joystick oder Sprung-Knopf (`56`). Probleme siehe unten.
+
+**Gefundene Probleme (als GitHub-Issues):**
+
+1. **Ei-Vorschau** ragt auf niedrigen Bildschirmen oben aus dem Bild, sodass oft nur „1 öffnen“ am oberen Rand zu sehen ist (`49`). Am Shop ist sie gleichzeitig mit dem Shop-Menü offen; auf dem Handy hängt sie über den Roblox-Knöpfen (`58`). Bestätigt den Befund vom 17.11.
+2. **Roblox-Chatfenster** liegt oben links über „Pets“ und „Geschenke“. Fährt man mit der Maus darüber, öffnet sich der Chat und schluckt die Klicks (`59`).
+3. **Kleines Handy:** Menüs werden sehr klein, die Schrift ist kaum lesbar (`57`). Das Shop-Menü zeigt nur eine halbe Karte mit abgeschnittenem Kauf-Knopf (`58`). Pets- und Trank-Menü können gleichzeitig offen sein und überlappen sich.
+
+**Kleinigkeiten:** Vulkan-Wahrzeichen wirkt sehr hell, fast wie eine Sandpyramide (`45`). Hinweis: Die Rebirths-Bestenliste kann kurz „1“ für dich zeigen (aus dem Test), bis dein Stand beim nächsten Spielen neu gespeichert wird.
