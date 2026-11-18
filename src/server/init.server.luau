@@ -94,7 +94,8 @@ for _, world in worlds do
 	end
 end
 ShopService.start(shopStands)
--- Look of worlds 2-7 (#16): themed paths, props and landmarks (world 1 is an island).
+-- Look of the old square worlds (#16): themed paths, props and landmarks (island worlds
+-- get theirs from the island plan).
 for _, world in laterWorlds do
 	if not world.isIsland then
 		WorldDeco.dressOven(world.folder)

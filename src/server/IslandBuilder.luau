@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local IslandPlan = require(ReplicatedStorage.Shared.IslandPlan)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
+local WorldDeco = require(script.Parent.WorldDeco)
 
 local IslandBuilder = {}
 
@@ -153,7 +154,10 @@ function IslandBuilder.models(models: { IslandPlan.ModelSpec }, parent: Instance
 		if ModelLibrary.place(model.model, model.width, cframe, parent, model.collide) == nil then
 			if model.model == "Bush" then
 				fallbackBush(parent, model)
-			else
+			elseif
+				model.model == "RoundTree"
+				or not WorldDeco.fallback(parent, model.model, model.width, cframe, model.collide)
+			then
 				fallbackTree(parent, model)
 			end
 		end

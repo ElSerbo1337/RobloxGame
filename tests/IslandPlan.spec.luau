@@ -223,125 +223,161 @@ describe("island shape", function()
 	end)
 end)
 
-describe("world island layout (shared floor plan)", function()
-	local island = plan.worldIsland(1)
-	local center = island.center
-
-	local function insideOutline(x: number, z: number): boolean
-		return plan.isInsideOutline(island.outline, x, z)
+-- Indices of the worlds already built as islands (world 1 and the rebuilt ones).
+local NEW_STYLE = {}
+for index, world in GameConfig.worlds do
+	if cfg.newStyle[world.id] then
+		table.insert(NEW_STYLE, index)
 	end
+end
 
-	it("has every station of the floor plan, two egg spots included", function()
-		for _, name in { "Spawn", "Oven", "Shop", "Egg1", "Egg2", "Phone", "Van", "Portal", "Landmark" } do
-			expect(island.stations[name] ~= nil).toBe(true)
+for _, worldIndex in NEW_STYLE do
+	describe(`world island layout (shared floor plan), world {worldIndex}`, function()
+		local island = plan.worldIsland(worldIndex)
+		local center = island.center
+
+		local function insideOutline(x: number, z: number): boolean
+			return plan.isInsideOutline(island.outline, x, z)
 		end
-	end)
 
-	it("places the stations left and right of the main path, facing it", function()
-		for _, name in { "Oven", "Shop", "Egg1", "Egg2", "Phone", "Van", "Portal" } do
-			local station = island.stations[name]
-			local side = station.position[1] - center[1]
-			expect(math.abs(side) > cfg.pathWidth / 2 + 4).toBe(true)
-			-- Front direction of a station turned by yaw from facing -Z.
-			local frontX = -math.sin(station.yaw)
-			expect(frontX * side < 0).toBe(true)
-		end
-	end)
-
-	it("puts the stations between the arriving bridge and the topping field", function()
-		local fieldFront = island.field.center[3] + island.field.size[2] / 2
-		for _, name in { "Spawn", "Oven", "Shop", "Egg1", "Egg2", "Phone", "Van", "Portal" } do
-			local station = island.stations[name]
-			expect(station.position[3] > fieldFront + 8).toBe(true)
-			expect(station.position[3] < island.openings.front[3]).toBe(true)
-		end
-		-- Landmark at the back, behind the field.
-		local fieldBack = island.field.center[3] - island.field.size[2] / 2
-		expect(island.stations.Landmark.position[3] < fieldBack).toBe(true)
-	end)
-
-	it("keeps the field, the stations and the decoration on the island", function()
-		local f = island.field
-		for _, sx in { -1, 1 } do
-			for _, sz in { -1, 1 } do
-				expect(insideOutline(f.center[1] + sx * f.size[1] / 2, f.center[3] + sz * f.size[2] / 2)).toBe(true)
+		it("has every station of the floor plan, two egg spots included", function()
+			for _, name in { "Spawn", "Oven", "Shop", "Egg1", "Egg2", "Phone", "Van", "Portal", "Landmark" } do
+				expect(island.stations[name] ~= nil).toBe(true)
 			end
-		end
-		for _, station in island.stations do
-			expect(insideOutline(station.position[1], station.position[3])).toBe(true)
-		end
-		for _, model in island.models do
-			expect(insideOutline(model.position[1], model.position[3])).toBe(true)
-		end
-	end)
+		end)
 
-	it("keeps trees and props off the field, the paths and the station fronts", function()
-		local f = island.field
-		for _, model in island.models do
-			local x, z, r = model.position[1], model.position[3], model.width / 2
-			local onField = math.abs(x - f.center[1]) < f.size[1] / 2 + r
-				and math.abs(z - f.center[3]) < f.size[2] / 2 + r
-			expect(onField).toBe(false)
-			expect(math.abs(x - center[1]) < cfg.pathWidth / 2 + r).toBe(false)
-			for name, station in island.stations do
-				if name ~= "Landmark" then
-					local d = math.sqrt((x - station.position[1]) ^ 2 + (z - station.position[3]) ^ 2)
-					expect(d > r + 9).toBe(true)
+		it("places the stations left and right of the main path, facing it", function()
+			for _, name in { "Oven", "Shop", "Egg1", "Egg2", "Phone", "Van", "Portal" } do
+				local station = island.stations[name]
+				local side = station.position[1] - center[1]
+				expect(math.abs(side) > cfg.pathWidth / 2 + 4).toBe(true)
+				-- Front direction of a station turned by yaw from facing -Z.
+				local frontX = -math.sin(station.yaw)
+				expect(frontX * side < 0).toBe(true)
+			end
+		end)
+
+		it("puts the stations between the arriving bridge and the topping field", function()
+			local fieldFront = island.field.center[3] + island.field.size[2] / 2
+			for _, name in { "Spawn", "Oven", "Shop", "Egg1", "Egg2", "Phone", "Van", "Portal" } do
+				local station = island.stations[name]
+				expect(station.position[3] > fieldFront + 8).toBe(true)
+				expect(station.position[3] < island.openings.front[3]).toBe(true)
+			end
+			-- Landmark at the back, behind the field.
+			local fieldBack = island.field.center[3] - island.field.size[2] / 2
+			expect(island.stations.Landmark.position[3] < fieldBack).toBe(true)
+		end)
+
+		it("keeps the field, the stations and the decoration on the island", function()
+			local f = island.field
+			for _, sx in { -1, 1 } do
+				for _, sz in { -1, 1 } do
+					expect(insideOutline(f.center[1] + sx * f.size[1] / 2, f.center[3] + sz * f.size[2] / 2)).toBe(true)
 				end
 			end
-		end
-	end)
+			for _, station in island.stations do
+				expect(insideOutline(station.position[1], station.position[3])).toBe(true)
+			end
+			for _, model in island.models do
+				expect(insideOutline(model.position[1], model.position[3])).toBe(true)
+			end
+		end)
 
-	it("keeps the camera free while a station is used (nothing between player and camera)", function()
-		local solids = solidParts(island)
-		for _, name in { "Oven", "Shop", "Egg1", "Egg2", "Phone", "Van", "Portal" } do
-			local station = island.stations[name]
-			local fx, fz = -math.sin(station.yaw), -math.cos(station.yaw)
-			-- Player stands in front of the station, the camera ~14 studs behind and above.
-			local standX, standZ = station.position[1] + fx * 9, station.position[3] + fz * 9
-			for step = 0, 28 do
-				local t = step / 28
-				local p = { standX + fx * 14 * t, center[2] + 3 + 5 * t, standZ + fz * 14 * t }
-				for _, spec in solids do
-					if insidePart(spec, p) then
-						error(`{name}: camera path blocked by {spec.name}`)
-					end
-				end
-				for _, model in island.models do
-					if model.collide then
-						local d = math.sqrt((p[1] - model.position[1]) ^ 2 + (p[3] - model.position[3]) ^ 2)
-						expect(d > model.width / 2).toBe(true)
+		it("keeps trees and props off the field, the paths and the station fronts", function()
+			local f = island.field
+			for _, model in island.models do
+				local x, z, r = model.position[1], model.position[3], model.width / 2
+				local onField = math.abs(x - f.center[1]) < f.size[1] / 2 + r
+					and math.abs(z - f.center[3]) < f.size[2] / 2 + r
+				expect(onField).toBe(false)
+				expect(math.abs(x - center[1]) < cfg.pathWidth / 2 + r).toBe(false)
+				for name, station in island.stations do
+					if name ~= "Landmark" then
+						local d = math.sqrt((x - station.position[1]) ^ 2 + (z - station.position[3]) ^ 2)
+						expect(d > r + 9).toBe(true)
 					end
 				end
 			end
-		end
-	end)
+		end)
 
-	it("has water: a pond with a waterfall over the rim, and raised terraces", function()
-		local water, fall, terraces = 0, 0, 0
-		for _, spec in island.parts do
-			if spec.role == "Water" then
-				water += 1
-			elseif spec.role == "Waterfall" then
-				fall += 1
-				expect(spec.size[2] > 20).toBe(true)
-			elseif spec.role == "Terrace" then
-				terraces += 1
-				expect(spec.cframe[2] + spec.size[2] / 2 > center[2] + 2).toBe(true)
+		it("keeps the camera free while a station is used (nothing between player and camera)", function()
+			local solids = solidParts(island)
+			for _, name in { "Oven", "Shop", "Egg1", "Egg2", "Phone", "Van", "Portal" } do
+				local station = island.stations[name]
+				local fx, fz = -math.sin(station.yaw), -math.cos(station.yaw)
+				-- Player stands in front of the station, the camera ~14 studs behind and above.
+				local standX, standZ = station.position[1] + fx * 9, station.position[3] + fz * 9
+				for step = 0, 28 do
+					local t = step / 28
+					local p = { standX + fx * 14 * t, center[2] + 3 + 5 * t, standZ + fz * 14 * t }
+					for _, spec in solids do
+						if insidePart(spec, p) then
+							error(`{name}: camera path blocked by {spec.name}`)
+						end
+					end
+					for _, model in island.models do
+						if model.collide then
+							local d = math.sqrt((p[1] - model.position[1]) ^ 2 + (p[3] - model.position[3]) ^ 2)
+							expect(d > model.width / 2).toBe(true)
+						end
+					end
+				end
 			end
-		end
-		expect(water > 0).toBe(true)
-		expect(fall > 0).toBe(true)
-		expect(terraces > 0).toBe(true)
-	end)
+		end)
 
-	it("uses only SmoothPlastic (plus glowing and see-through accents) in the new style", function()
-		local allowed = { SmoothPlastic = true, Neon = true, Glass = true, ForceField = true }
-		for _, spec in island.parts do
-			expect(allowed[spec.material] == true).toBe(true)
-		end
+		it("has water: a pond with a waterfall over the rim, and raised terraces", function()
+			local water, fall, terraces = 0, 0, 0
+			for _, spec in island.parts do
+				if spec.role == "Water" then
+					water += 1
+				elseif spec.role == "Waterfall" then
+					fall += 1
+					expect(spec.size[2] > 20).toBe(true)
+				elseif spec.role == "Terrace" then
+					terraces += 1
+					expect(spec.cframe[2] + spec.size[2] / 2 > center[2] + 2).toBe(true)
+				end
+			end
+			expect(water > 0).toBe(true)
+			expect(fall > 0).toBe(true)
+			expect(terraces > 0).toBe(true)
+		end)
+
+		it("uses only SmoothPlastic (plus glowing and see-through accents) in the new style", function()
+			local allowed = { SmoothPlastic = true, Neon = true, Glass = true, ForceField = true }
+			for _, spec in island.parts do
+				expect(allowed[spec.material] == true).toBe(true)
+			end
+		end)
+
+		it("hangs a rock cliff below the rim and walls in the rim", function()
+			local lowest, walls = 0, 0
+			for _, spec in island.parts do
+				if spec.role == "Cliff" then
+					lowest = math.min(lowest, spec.cframe[2] - spec.size[2] / 2)
+				elseif spec.role == "Wall" then
+					walls += 1
+				end
+			end
+			expect(lowest < center[2] - 20).toBe(true)
+			expect(walls >= 24).toBe(true)
+		end)
+
+		it("has a landmark and a visible rim", function()
+			local landmark, rim = 0, 0
+			for _, spec in island.parts do
+				if spec.role == "Landmark" then
+					landmark += 1
+				elseif spec.role == "Rim" then
+					rim += 1
+				end
+			end
+			expect(landmark >= 5).toBe(true)
+			expect(rim >= 20).toBe(true)
+		end)
 	end)
-end)
+end
 
 describe("egg spots in every world", function()
 	it("gives every world island, the old-style ones included, two separate egg stands", function()
@@ -420,5 +456,94 @@ describe("gates", function()
 		local front = plan.worldIsland(2).openings.front
 		expect(gate.returnPoint[3] > front[3] + 3).toBe(true)
 		expect(plan.worldIndexAt(gate.returnPoint[1], gate.returnPoint[3])).toBe(nil)
+	end)
+end)
+
+describe("world themes (worlds 2-4, #31)", function()
+	local function indexOf(id: string): number
+		for index, world in GameConfig.worlds do
+			if world.id == id then
+				return index
+			end
+		end
+		error(`no world {id}`)
+	end
+
+	local function names(parts: { IslandPlan.PartSpec }): { [string]: number }
+		local count = {}
+		for _, spec in parts do
+			count[spec.name] = (count[spec.name] or 0) + 1
+		end
+		return count
+	end
+
+	it("builds farm, beach and icebergs as islands with their own theme", function()
+		for _, id in { "Farm", "Beach", "Icebergs" } do
+			expect(cfg.newStyle[id]).toBe(true)
+			expect(cfg.themes[id] ~= nil).toBe(true)
+			expect(plan.worldIsland(indexOf(id)).kind).toBe("world")
+		end
+	end)
+
+	it("gives every island world its own landmark, rim and ground colour", function()
+		local landmarks, rims, grounds = {}, {}, {}
+		for _, index in NEW_STYLE do
+			local theme = cfg.themes[GameConfig.worlds[index].id]
+			local landmark = theme.landmark or "GiantPizza"
+			local rim = theme.rimStyle or "Hedge"
+			local ground = table.concat(theme.grass, ",")
+			expect(landmarks[landmark]).toBe(nil)
+			expect(rims[rim]).toBe(nil)
+			expect(grounds[ground]).toBe(nil)
+			landmarks[landmark], rims[rim], grounds[ground] = true, true, true
+		end
+	end)
+
+	it("puts the landmark parts at the back of the island", function()
+		for _, id in { "Farm", "Beach", "Icebergs" } do
+			local island = plan.worldIsland(indexOf(id))
+			local fieldBack = island.field.center[3] - island.field.size[2] / 2
+			for _, spec in island.parts do
+				if spec.role == "Landmark" then
+					expect(spec.cframe[3] < fieldBack).toBe(true)
+				end
+			end
+		end
+	end)
+
+	it("uses the world's own decoration models", function()
+		local expected = { Farm = "HayBale", Beach = "PalmTree", Icebergs = "SnowPine" }
+		for id, model in expected do
+			local found = false
+			for _, m in plan.worldIsland(indexOf(id)).models do
+				found = found or m.model == model
+			end
+			expect(found).toBe(true)
+		end
+	end)
+
+	it("leads into each world over a matching bridge", function()
+		local bridges = plan.bridges()
+		-- Bridge k leads into world k (bridge 1 starts at the spawn island).
+		expect(names(bridges[indexOf("PizzeriaGarden")].parts).Rope ~= nil).toBe(true)
+		expect(names(bridges[indexOf("Farm")].parts).Rope ~= nil).toBe(true)
+		local walk = names(bridges[indexOf("Beach")].parts)
+		expect(walk.Stilt ~= nil and walk.HandRail ~= nil and walk.Rope == nil).toBe(true)
+		local ice = names(bridges[indexOf("Icebergs")].parts)
+		expect(ice.IceSlab ~= nil and ice.IceRail ~= nil and ice.Rope == nil).toBe(true)
+	end)
+
+	it("keeps every bridge deck walkable and level with the islands at both ends", function()
+		for _, bridge in plan.bridges() do
+			local deck = 0
+			for _, spec in bridge.parts do
+				if spec.role == "Bridge" and spec.collide and (spec.name == "Plank" or spec.name == "IceSlab") then
+					deck += 1
+					local top = spec.cframe[2] + spec.size[2] / 2
+					expect(math.abs(top - cfg.groundY) < 2.5).toBe(true)
+				end
+			end
+			expect(deck >= 8).toBe(true)
+		end
 	end)
 end)

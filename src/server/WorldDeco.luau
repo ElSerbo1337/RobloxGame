@@ -1,6 +1,7 @@
 --!strict
--- Decoration and nicer models on top of the code-built maps of worlds 2-7 (#15, #16);
--- world 1 is an island now and gets its look from IslandPlan (#27).
+-- Decoration and nicer models on top of the code-built maps of worlds 5-7 (#15, #16);
+-- worlds 1-4 are islands now and get their look from IslandPlan (#27, #31). The
+-- stand-ins below are also used for the island decoration before the Studio import.
 -- Uses the imported Blender models (ModelLibrary) where they exist; otherwise
 -- simple low-poly parts, so the game also looks fine before the Studio import.
 -- Changes nothing the game logic uses: sell zones, oven openings, shop zones stay.
@@ -343,6 +344,16 @@ local function fallback(parent: Instance, name: string, width: number, cframe: C
 		end
 	end
 	model.Parent = parent
+end
+
+-- Stand-in parts for a deco model that is not imported yet (also used for the island
+-- decoration, see IslandBuilder). Returns false if there is no stand-in for `name`.
+function WorldDeco.fallback(parent: Instance, name: string, width: number, cframe: CFrame, collide: boolean): boolean
+	if FALLBACK[name] == nil then
+		return false
+	end
+	fallback(parent, name, width, cframe, collide)
+	return true
 end
 
 -- Places a deco model (imported, else its stand-in).

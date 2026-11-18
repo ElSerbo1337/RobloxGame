@@ -679,8 +679,8 @@ local GameConfig = {
 		-- Main path from the arriving bridge to the field (and from the field to the next bridge).
 		pathWidth = 12,
 		-- Worlds already rebuilt as islands; the others keep the old square look for now
-		-- (B5/B6) but hang on the chain with bridges, gates and walls.
-		newStyle = { PizzeriaGarden = true },
+		-- (B6) but hang on the chain with bridges, gates and walls.
+		newStyle = { PizzeriaGarden = true, Farm = true, Beach = true, Icebergs = true },
 		-- Shared floor plan of every world island. Stations left of the path (x < 0) face
 		-- +X, right of it (x > 0) face -X, so the camera stays over the path while using them.
 		layout = {
@@ -705,7 +705,16 @@ local GameConfig = {
 			boards = { { -30, 20 }, { 0, 42 }, { 30, 20 } },
 			pond = { 38, -8 },
 		},
-		-- Colours (RGB 0-255) of the new island look, per world (others use PizzeriaGarden).
+		-- Look of each island world (others use PizzeriaGarden). Colours are RGB 0-255.
+		-- Optional per world (defaults = world 1):
+		--   rimStyle     "Hedge" | "Fence" | "Rocks" | "IceEdge" (low visible rim)
+		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" (back left terrace)
+		--   bridge       "Rope" | "Boardwalk" | "Ice": style of the bridge leading INTO the world
+		--   trees        tree models scattered along the rim (ModelLibrary names)
+		--   accents      { model, width } props along the field's long sides
+		--   terraceProps { terrace, model, width, at = { x, z }, yaw?, collide? } on a terrace
+		--   fieldRows    colour of furrows across the topping field
+		--   flowerStems  false = flowers are pebbles/shells lying on the ground
 		themes = {
 			PizzeriaGarden = {
 				grass = { 104, 196, 72 },
@@ -721,6 +730,91 @@ local GameConfig = {
 				wood = { 160, 104, 58 },
 				rope = { 222, 196, 140 },
 				flowers = { { 255, 110, 150 }, { 255, 220, 70 }, { 160, 130, 255 }, { 255, 255, 255 } },
+			},
+			-- World 2: meadow with a ploughed field, white fence, windmill and red barn.
+			Farm = {
+				grass = { 124, 196, 76 },
+				grassLight = { 150, 214, 92 },
+				field = { 182, 136, 88 },
+				fieldRows = { 156, 112, 70 },
+				cliff = { 176, 124, 82 },
+				cliffDark = { 140, 96, 64 },
+				cliffLight = { 214, 176, 128 },
+				rim = { 250, 246, 236 },
+				rimStyle = "Fence",
+				path = { 226, 190, 132 },
+				pathDark = { 204, 166, 110 },
+				water = { 80, 186, 236 },
+				wood = { 168, 110, 62 },
+				woodDark = { 128, 82, 48 },
+				rope = { 222, 196, 140 },
+				flowers = { { 255, 206, 40 }, { 255, 255, 255 }, { 255, 140, 60 }, { 220, 90, 160 } },
+				landmark = "Windmill",
+				bridge = "Rope",
+				trees = { "RoundTree", "Tree" },
+				accents = { { model = "HayBale", width = 6 }, { model = "Sunflower", width = 4 } },
+				terraceProps = {
+					{ terrace = 2, model = "Barn", width = 20, at = { 0, -1 }, yaw = 200, collide = true },
+				},
+			},
+			-- World 3: sandy island with palms, a turquoise lagoon, boulder rim and lighthouse.
+			Beach = {
+				grass = { 242, 220, 160 },
+				grassLight = { 248, 232, 186 },
+				field = { 228, 200, 146 },
+				cliff = { 210, 170, 116 },
+				cliffDark = { 178, 136, 92 },
+				cliffLight = { 232, 200, 146 },
+				rim = { 196, 186, 172 },
+				rimStyle = "Rocks",
+				path = { 214, 168, 112 },
+				pathDark = { 188, 140, 90 },
+				water = { 50, 206, 220 },
+				waterfall = { 150, 236, 245 },
+				wood = { 196, 146, 92 },
+				woodDark = { 150, 104, 64 },
+				rope = { 232, 210, 160 },
+				flowers = { { 255, 170, 180 }, { 255, 246, 236 }, { 255, 190, 120 }, { 240, 120, 120 } },
+				flowerStems = false,
+				landmark = "Lighthouse",
+				bridge = "Boardwalk",
+				trees = { "PalmTree" },
+				accents = { { model = "BeachUmbrella", width = 8 }, { model = "BeachRock", width = 4 } },
+				terraceProps = {
+					{ terrace = 2, model = "BeachUmbrella", width = 9, at = { -4, 2 } },
+					{ terrace = 2, model = "BeachRock", width = 5, at = { 5, -4 }, collide = true },
+				},
+			},
+			-- World 4: snowy island with pines, ice-block rim, frozen pond and an ice peak.
+			Icebergs = {
+				grass = { 236, 244, 252 },
+				grassLight = { 248, 252, 255 },
+				field = { 214, 234, 250 },
+				cliff = { 150, 196, 230 },
+				cliffDark = { 112, 164, 210 },
+				cliffLight = { 196, 226, 248 },
+				rim = { 176, 218, 248 },
+				rimStyle = "IceEdge",
+				path = { 196, 226, 248 },
+				pathDark = { 170, 208, 240 },
+				water = { 120, 200, 240 },
+				waterfall = { 200, 240, 255 },
+				wood = { 150, 104, 70 },
+				woodDark = { 112, 76, 52 },
+				rope = { 220, 236, 248 },
+				snow = { 248, 252, 255 },
+				ice = { 170, 222, 255 },
+				iceDark = { 130, 196, 240 },
+				flowers = { { 150, 214, 255 }, { 255, 255, 255 }, { 190, 170, 255 } },
+				flowerStems = false,
+				landmark = "IcePeak",
+				bridge = "Ice",
+				trees = { "SnowPine" },
+				accents = { { model = "Snowman", width = 4.5 }, { model = "IceCrystal", width = 3.5 } },
+				terraceProps = {
+					{ terrace = 2, model = "Snowman", width = 5, at = { -3, 1 }, yaw = 160, collide = true },
+					{ terrace = 2, model = "IceCrystal", width = 6, at = { 5, -3 }, yaw = 30, collide = true },
+				},
 			},
 		},
 	},

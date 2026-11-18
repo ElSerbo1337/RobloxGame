@@ -34,7 +34,7 @@ export type ModelSpec = { model: string, width: number, position: { number }, ya
 export type Station = { position: { number }, yaw: number }
 
 export type Island = {
-	-- "spawn", "world" (new island look) or "classic" (old square world, B5/B6 pending)
+	-- "spawn", "world" (new island look) or "classic" (old square world, B6 pending)
 	kind: string,
 	worldIndex: number?,
 	center: { number },
@@ -210,6 +210,84 @@ end
 
 local function ball(center: V, diameter: number, props: Props): PartSpec
 	return spec("Ball", v(diameter, diameter, diameter), yawed(center, 0), props)
+end
+
+-- ------------------------------------------------------------------ rim styles
+
+-- One rim edge p -> q (ground points) in a world's own style (theme.rimStyle; the
+-- default "Hedge" is built in shell): "Fence" (farm: posts and two rails), "Rocks"
+-- (beach: round boulders) or "IceEdge" (icebergs: ice blocks with crystal spikes).
+-- `inward` points into the island; everything stays low so the view stays open.
+local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: V, i: number, theme: any)
+	local dir = sub(q, p)
+	local len = length(dir)
+	local inset = scale(inward, 1.6)
+	if style == "Fence" then
+		local post = add(p, inset)
+		table.insert(
+			parts,
+			disc(add(post, v(0, 1.6, 0)), 0.9, 3.2, { name = "FencePost", color = theme.wood, role = "Rim" })
+		)
+		table.insert(
+			parts,
+			ball(
+				add(post, v(0, 3.3, 0)),
+				1.1,
+				{ name = "FencePostCap", color = theme.wood, collide = false, role = "Rim" }
+			)
+		)
+		for _, h in { 1.2, 2.5 } do
+			local a, b = add(p, add(inset, v(0, h, 0))), add(q, add(inset, v(0, h, 0)))
+			table.insert(parts, beam(a, b, 0.35, 0.5, { name = "FenceRail", color = theme.rim, role = "Rim" }))
+		end
+	elseif style == "Rocks" then
+		local stones = math.max(1, math.floor(len / 5 + 0.5))
+		for k = 1, stones do
+			local t = (k - 0.5) / stones
+			local d = 2.6 + noise(i, k) * 1.8
+			local at = add(add(p, scale(dir, t)), add(inset, v(0, d * 0.3, 0)))
+			table.insert(
+				parts,
+				ball(at, d, {
+					name = "RimRock",
+					color = if (i + k) % 3 == 0 then theme.cliffLight else theme.rim,
+					role = "Rim",
+				})
+			)
+		end
+	elseif style == "IceEdge" then
+		local h = 1.8 + noise(i, 3) * 1.4
+		local center = add(scale(add(p, q), 0.5), add(inset, v(0, h / 2, 0)))
+		table.insert(
+			parts,
+			spec("Block", v(2, h, len + 0.4), along(center, dir), { name = "IceRim", color = theme.rim, role = "Rim" })
+		)
+		table.insert(
+			parts,
+			spec(
+				"Block",
+				v(2.3, 0.5, len + 0.6),
+				along(add(center, v(0, h / 2 + 0.2, 0)), dir),
+				{ name = "IceRimSnow", color = theme.snow or { 248, 252, 255 }, collide = false, role = "Rim" }
+			)
+		)
+		if i % 3 == 0 then
+			-- Crystal spike leaning outwards a little.
+			local foot = add(p, add(inset, v(0, h, 0)))
+			local tip = add(foot, add(scale(inward, -0.8), v(0, 3.2 + noise(i, 9) * 1.6, 0)))
+			table.insert(
+				parts,
+				beam(foot, tip, 0.9, 0.9, {
+					name = "IceSpike",
+					color = theme.ice,
+					material = "Glass",
+					collide = false,
+					transparency = 0.15,
+					role = "Rim",
+				})
+			)
+		end
+	end
 end
 
 -- ------------------------------------------------------------------ outlines
@@ -455,7 +533,10 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 				if dot(inward, sub(v(center[1], groundY, center[3]), mid)) < 0 then
 					inward = scale(inward, -1)
 				end
-				if theme.rim and not gapNear(p, q) then
+				local style = theme.rimStyle or "Hedge"
+				if theme.rim and not gapNear(p, q) and style ~= "Hedge" then
+					rimPiece(parts, style, p, q, inward, i, theme)
+				elseif theme.rim and not gapNear(p, q) then
 					local hedgeCenter = add(mid, add(scale(inward, 1.6), v(0, 1.1, 0)))
 					table.insert(
 						parts,
@@ -570,7 +651,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 				yawed(v(rimX + sideX * 1.1, groundY - fallHeight / 2 + 0.2, at[3]), 0),
 				{
 					name = "Waterfall",
-					color = { 170, 225, 255 },
+					color = theme.waterfall or { 170, 225, 255 },
 					material = "Glass",
 					collide = false,
 					transparency = 0.2,
@@ -582,7 +663,14 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 	end
 
 	-- Round trees and bushes around the rim, clear of everything that matters.
-	local function scatterTrees(island: Island, keepOut: (x: number, z: number, r: number) -> boolean, seed: number)
+	local function scatterTrees(
+		island: Island,
+		keepOut: (x: number, z: number, r: number) -> boolean,
+		seed: number,
+		theme: any
+	)
+		-- Tree models of the world's theme (default: round trees), picked deterministically.
+		local kinds: { string } = theme.trees or { "RoundTree" }
 		local outline = island.outline
 		local center = island.center
 		for ring, inset in { 9, 20 } do
@@ -606,7 +694,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 						end
 						if free then
 							table.insert(island.models, {
-								model = "RoundTree",
+								model = kinds[math.floor(noise(i * 5, seed + ring) * #kinds) + 1],
 								width = width,
 								position = v(x, groundY, z),
 								yaw = noise(i, seed * 7) * math.pi * 2,
@@ -626,13 +714,16 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			local colors = theme.flowers
 			table.insert(
 				island.parts,
-				ball(v(x, groundY + 0.9, z), 1.1, {
+				ball(v(x, groundY + (if theme.flowerStems == false then 0.35 else 0.9), z), 1.1, {
 					name = "Flower",
 					color = colors[math.floor(noise(i * 2, seed) * #colors) + 1],
 					collide = false,
 					role = "Deco",
 				})
 			)
+			if theme.flowerStems == false then
+				continue
+			end
 			table.insert(
 				island.parts,
 				spec("Block", v(0.3, 0.9, 0.3), yawed(v(x, groundY + 0.4, z), 0), {
@@ -731,6 +822,246 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			disc(v(at[1], baseY + 9, at[3]), 2.2, 6, { name = "PizzaStand", color = theme.wood, role = "Landmark" })
 		)
 	end
+
+	-- Rotation about the world Z axis by `a` (blades of the windmill face +Z, the front).
+	local function rolled(p: V, a: number): { number }
+		local c, s = math.cos(a), math.sin(a)
+		return matrix(p, { c, s, 0 }, { -s, c, 0 }, { 0, 0, 1 })
+	end
+
+	-- World 2 landmark: a windmill (stone tower, red cap, four sails facing the front).
+	local function windmill(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local stone = theme.cliffLight
+		local white = { 250, 246, 236 }
+		local red = { 204, 62, 52 }
+		for k, layer in { { 11, 6 }, { 9.6, 6 }, { 8.4, 6 } } do
+			local y = baseY + (k - 1) * 6 + layer[2] / 2
+			table.insert(
+				parts,
+				disc(v(at[1], y, at[3]), layer[1], layer[2], {
+					name = "MillTower",
+					color = if k % 2 == 0 then white else stone,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Door and two windows on the front side.
+		local front = at[3] + 4.9
+		table.insert(
+			parts,
+			spec("Block", v(3, 4.2, 1), yawed(v(at[1], baseY + 2.1, front + 0.5), 0), {
+				name = "MillDoor",
+				color = theme.wood,
+				role = "Landmark",
+			})
+		)
+		for _, h in { 8.5, 14 } do
+			table.insert(
+				parts,
+				spec("Block", v(1.6, 1.6, 0.6), yawed(v(at[1], baseY + h, at[3] + 4.6 - (h - 8.5) * 0.11), 0), {
+					name = "MillWindow",
+					color = { 90, 60, 40 },
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Cap: three shrinking red discs, a ball on top.
+		for k, d in { 9.6, 7.4, 4.8 } do
+			table.insert(
+				parts,
+				disc(v(at[1], baseY + 18.6 + (k - 1) * 1.5, at[3]), d, 1.6, {
+					name = "MillCap",
+					color = red,
+					role = "Landmark",
+				})
+			)
+		end
+		table.insert(
+			parts,
+			ball(v(at[1], baseY + 22.6, at[3]), 2, { name = "MillCapTop", color = red, role = "Landmark" })
+		)
+		-- Hub and four sails (lattice frame + cream sail), tilted 20 degrees.
+		local hub = v(at[1], baseY + 16, at[3] + 5.6)
+		table.insert(
+			parts,
+			spec("Cylinder", v(2.4, 2.2, 2.2), matrix(hub, { 0, 0, 1 }, { 0, 1, 0 }, { -1, 0, 0 }), {
+				name = "MillHub",
+				color = theme.wood,
+				role = "Landmark",
+			})
+		)
+		for k = 0, 3 do
+			local a = math.rad(20) + k * math.pi / 2
+			local dir = v(-math.sin(a), math.cos(a), 0)
+			table.insert(
+				parts,
+				spec("Block", v(0.7, 15, 0.5), rolled(add(add(hub, v(0, 0, 0.8)), scale(dir, 8)), a), {
+					name = "MillArm",
+					color = theme.wood,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+			local side = v(math.cos(a), math.sin(a), 0)
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(3.4, 11, 0.25),
+					rolled(add(add(hub, v(0, 0, 0.6)), add(scale(dir, 9), scale(side, 2))), a),
+					{
+						name = "MillSail",
+						color = white,
+						collide = false,
+						role = "Landmark",
+					}
+				)
+			)
+		end
+	end
+
+	-- World 3 landmark: a striped lighthouse with a glowing lamp.
+	local function lighthouse(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local red = { 226, 64, 56 }
+		local white = { 250, 246, 236 }
+		table.insert(
+			parts,
+			disc(
+				v(at[1], baseY + 1, at[3]),
+				12,
+				2,
+				{ name = "LighthouseBase", color = theme.cliffLight, role = "Landmark" }
+			)
+		)
+		local y = baseY + 2
+		for k = 1, 5 do
+			local d = 8.6 - (k - 1) * 0.55
+			table.insert(
+				parts,
+				disc(v(at[1], y + 2.2, at[3]), d, 4.4, {
+					name = "LighthouseTower",
+					color = if k % 2 == 1 then red else white,
+					role = "Landmark",
+				})
+			)
+			y += 4.4
+		end
+		table.insert(
+			parts,
+			disc(
+				v(at[1], y + 0.4, at[3]),
+				9.4,
+				0.8,
+				{ name = "LighthouseGallery", color = { 70, 70, 80 }, role = "Landmark" }
+			)
+		)
+		for k = 0, 7 do
+			local a = k / 8 * math.pi * 2
+			table.insert(
+				parts,
+				disc(v(at[1] + math.cos(a) * 4.3, y + 1.6, at[3] + math.sin(a) * 4.3), 0.35, 1.8, {
+					name = "LighthouseRail",
+					color = { 70, 70, 80 },
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		table.insert(
+			parts,
+			disc(v(at[1], y + 2.6, at[3]), 5, 3.6, {
+				name = "LighthouseLantern",
+				color = { 200, 236, 255 },
+				material = "Glass",
+				collide = false,
+				transparency = 0.35,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			ball(v(at[1], y + 2.6, at[3]), 2.4, {
+				name = "LighthouseLamp",
+				color = { 255, 226, 120 },
+				material = "Neon",
+				collide = false,
+				role = "Glow",
+			})
+		)
+		for k, d in { 6, 4.2, 2.4 } do
+			table.insert(
+				parts,
+				disc(v(at[1], y + 4.8 + (k - 1) * 1.1, at[3]), d, 1.2, {
+					name = "LighthouseRoof",
+					color = red,
+					role = "Landmark",
+				})
+			)
+		end
+	end
+
+	-- World 4 landmark: an iceberg peak of leaning ice shards with snow on top.
+	local function icePeak(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		table.insert(
+			parts,
+			disc(v(at[1], baseY + 1.2, at[3]), 20, 2.4, { name = "IceMound", color = theme.snow, role = "Landmark" })
+		)
+		local shards = {
+			-- offset x, offset z, width, height, lean x, lean z
+			{ 0, 0, 7, 28, 0.6, -0.4 },
+			{ -4.5, 2, 5, 19, -3, 1.5 },
+			{ 4.5, 1.5, 5, 17, 3, 1 },
+			{ 1.5, -4.5, 5.5, 21, 1, -3 },
+			{ -2.5, 4.5, 4, 12, -1.5, 3 },
+			{ 5.5, -3, 3.5, 11, 3, -1.5 },
+		}
+		for k, s in shards do
+			local foot = v(at[1] + s[1], baseY + 1.5, at[3] + s[2])
+			local tip = v(at[1] + s[1] + s[5], baseY + s[4], at[3] + s[2] + s[6])
+			table.insert(
+				parts,
+				beam(foot, tip, s[3], s[3], {
+					name = "IceShard",
+					color = if k % 2 == 1 then theme.ice else theme.iceDark,
+					role = "Landmark",
+				})
+			)
+			-- Snow cap on the tip.
+			table.insert(
+				parts,
+				ball(add(tip, v(0, -0.6, 0)), s[3] * 0.9, {
+					name = "IceShardSnow",
+					color = theme.snow,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Glowing crystals at the foot.
+		for k = 0, 4 do
+			local a = k / 5 * math.pi * 2 + 0.4
+			local foot = v(at[1] + math.cos(a) * 8, baseY + 2.2, at[3] + math.sin(a) * 8)
+			table.insert(
+				parts,
+				beam(foot, add(foot, v(math.cos(a) * 1.2, 3.2, math.sin(a) * 1.2)), 1.1, 1.1, {
+					name = "IceCrystalGlow",
+					color = { 150, 225, 255 },
+					material = "Glass",
+					collide = false,
+					transparency = 0.1,
+					role = "Landmark",
+				})
+			)
+		end
+	end
+
+	local LANDMARKS = {
+		GiantPizza = giantPizza,
+		Windmill = windmill,
+		Lighthouse = lighthouse,
+		IcePeak = icePeak,
+	}
 
 	local function localToWorld(center: V, p: { number }): V
 		return v(center[1] + p[1], groundY, center[3] + p[2])
@@ -968,7 +1299,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			end
 			return false
 		end
-		scatterTrees(island, keepOut, 3)
+		scatterTrees(island, keepOut, 3, theme)
 		for i, spot in { { -20, -30 }, { 22, -32 }, { -46, 6 }, { 48, 30 }, { -18, 34 }, { 18, 36 } } do
 			flowers(island, localToWorld(c, spot), 8, 6, theme, i * 11)
 		end
@@ -1040,6 +1371,28 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			)
 		)
 
+		-- Furrows across the field (farm): thin darker strips, purely visual.
+		if theme.fieldRows then
+			local rows = math.floor(island.field.size[2] / 10)
+			for k = 1, rows - 1 do
+				local z = fieldBack + k * island.field.size[2] / rows
+				table.insert(
+					island.parts,
+					spec(
+						"Block",
+						v(island.field.size[1] + 2, 0.1, 1.6),
+						yawed(v(fieldCenter[1], groundY + 0.1, z), 0),
+						{
+							name = "FieldRow",
+							color = theme.fieldRows,
+							collide = false,
+							role = "Field",
+						}
+					)
+				)
+			end
+		end
+
 		-- Main path: bridge -> field, field -> next bridge; plate pads in front of the stations.
 		plates(
 			island.parts,
@@ -1079,7 +1432,21 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 				landmarkBase = groundY + t[4]
 			end
 		end
-		giantPizza(island.parts, landmark, landmarkBase, theme)
+		local buildLandmark = LANDMARKS[theme.landmark or "GiantPizza"] or giantPizza
+		buildLandmark(island.parts, landmark, landmarkBase, theme)
+		-- Props on the other terraces (e.g. the farm's barn), standing on the terrace top.
+		for _, prop in theme.terraceProps or {} do
+			local t = layout.terraces[prop.terrace]
+			if t then
+				table.insert(island.models, {
+					model = prop.model,
+					width = prop.width,
+					position = v(center[1] + t[1] + prop.at[1], groundY + t[4], center[3] + t[2] + prop.at[2]),
+					yaw = math.rad(prop.yaw or 0),
+					collide = prop.collide == true,
+				})
+			end
+		end
 
 		local function keepOut(x: number, z: number, r: number): boolean
 			local f = island.field :: any
@@ -1118,7 +1485,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			end
 			return false
 		end
-		scatterTrees(island, keepOut, index * 13)
+		scatterTrees(island, keepOut, index * 13, theme)
 
 		-- Bushes and flower beds along the field's long sides and around the pond.
 		local fieldHalfX = layout.field.size[1] / 2
@@ -1126,9 +1493,12 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			for _, sx in { -1, 1 } do
 				local at = v(center[1] + sx * (fieldHalfX + 9), groundY, z)
 				if IslandPlan.isInsideOutline(island.outline, at[1], at[3]) and not keepOut(at[1], at[3], 2.5) then
+					-- Theme accents ({ model, width }) take turns; default: bushes.
+					local accents = theme.accents or { { model = "Bush", width = 5 } }
+					local accent = accents[(i + (if sx > 0 then 1 else 0)) % #accents + 1]
 					table.insert(island.models, {
-						model = "Bush",
-						width = 5 + noise(i, sx) * 2,
+						model = accent.model,
+						width = accent.width + noise(i, sx) * accent.width * 0.4,
 						position = at,
 						yaw = noise(sx, i) * 6,
 						collide = false,
@@ -1142,7 +1512,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 	end
 
 	-- Old square world (look from WorldMap) on the chain: walls, openings, a rock underside.
-	-- Stations keep their old spots so worlds 2-7 play as before (B5/B6 rebuild them).
+	-- Stations keep their old spots so worlds 5-7 play as before (B6 rebuilds them).
 	local function classicWorld(index: number): Island
 		local center = plan.worldCenter(index)
 		local island = newIsland("classic", center)
@@ -1317,12 +1687,205 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		return { fromZ = fromZ, toZ = toZ, parts = parts }
 	end
 
+	-- Invisible walls along both sides of a bridge.
+	local function bridgeWalls(parts: { PartSpec }, fromZ: number, toZ: number)
+		for _, sx in { -1, 1 } do
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(1, wallHeight + 1, fromZ - toZ + 1),
+					yawed(v(sx * (bridgeWidth / 2 + 0.5), groundY + (wallHeight - 1) / 2, (fromZ + toZ) / 2), 0),
+					{
+						name = "BridgeWall",
+						color = { 255, 255, 255 },
+						transparency = 1,
+						role = "Wall",
+					}
+				)
+			)
+		end
+	end
+
+	-- Straight wooden boardwalk (to the beach): flat planks across, a stilt frame below
+	-- and a low hand rail on posts.
+	local function boardwalk(fromZ: number, toZ: number, theme: any): Bridge
+		local parts: { PartSpec } = {}
+		local len = fromZ - toZ
+		local planks = math.floor(len / 1.6)
+		local step = len / planks
+		for i = 0, planks - 1 do
+			local z = fromZ - (i + 0.5) * step
+			table.insert(
+				parts,
+				spec("Block", v(bridgeWidth + 0.6, 0.6, step - 0.2), yawed(v(0, groundY - 0.3, z), 0), {
+					name = "Plank",
+					color = if i % 4 == 0 then theme.woodDark else theme.wood,
+					role = "Bridge",
+				})
+			)
+		end
+		-- Two long beams under the planks and stilts with cross braces every 10 studs.
+		for _, sx in { -1, 1 } do
+			local x = sx * (bridgeWidth / 2 - 1)
+			table.insert(
+				parts,
+				spec("Block", v(1, 1, len), yawed(v(x, groundY - 1.1, (fromZ + toZ) / 2), 0), {
+					name = "BoardwalkBeam",
+					color = theme.woodDark,
+					role = "Bridge",
+				})
+			)
+		end
+		local posts = math.floor(len / 8)
+		for k = 0, posts do
+			-- End posts stay clear of the gate pillars on the bridge head.
+			local z = fromZ - 1.5 - k * (len - 3) / posts
+			for _, sx in { -1, 1 } do
+				local x = sx * (bridgeWidth / 2 + 0.3)
+				-- Rail post above the deck, stilt below it.
+				table.insert(
+					parts,
+					spec("Block", v(0.8, 3.4, 0.8), yawed(v(x, groundY + 1.7, z), 0), {
+						name = "BridgePost",
+						color = theme.woodDark,
+						role = "Bridge",
+					})
+				)
+				if k > 0 and k < posts then
+					table.insert(
+						parts,
+						spec("Block", v(1, 7, 1), yawed(v(sx * (bridgeWidth / 2 - 1), groundY - 5, z), 0), {
+							name = "Stilt",
+							color = theme.woodDark,
+							collide = false,
+							role = "Bridge",
+						})
+					)
+				end
+			end
+			if k > 0 and k < posts then
+				table.insert(
+					parts,
+					spec("Block", v(bridgeWidth - 1, 0.6, 0.6), yawed(v(0, groundY - 6.5, z), 0), {
+						name = "StiltBrace",
+						color = theme.woodDark,
+						collide = false,
+						role = "Bridge",
+					})
+				)
+			end
+		end
+		for _, sx in { -1, 1 } do
+			local x = sx * (bridgeWidth / 2 + 0.3)
+			table.insert(
+				parts,
+				spec("Block", v(0.6, 0.5, len), yawed(v(x, groundY + 3.2, (fromZ + toZ) / 2), 0), {
+					name = "HandRail",
+					color = theme.wood,
+					collide = false,
+					role = "Rope",
+				})
+			)
+		end
+		bridgeWalls(parts, fromZ, toZ)
+		return { fromZ = fromZ, toZ = toZ, parts = parts }
+	end
+
+	-- Ice bridge (to the icebergs): a slightly arched deck of ice slabs, low ice walls with
+	-- snow on top and crystal pillars at both ends.
+	local function iceBridge(fromZ: number, toZ: number, theme: any): Bridge
+		local parts: { PartSpec } = {}
+		local len = fromZ - toZ
+		local rise = 1.6
+		local function deckY(t: number): number
+			return groundY + rise * 4 * t * (1 - t)
+		end
+		local slabs = math.floor(len / 4)
+		local step = len / slabs
+		for i = 0, slabs - 1 do
+			local t0, t1 = i / slabs, (i + 1) / slabs
+			local p = v(0, deckY(t0) - 0.4, fromZ - i * step)
+			local q = v(0, deckY(t1) - 0.4, fromZ - (i + 1) * step)
+			local dir = sub(q, p)
+			table.insert(
+				parts,
+				spec("Block", v(bridgeWidth, 0.8, length(dir) + 0.1), along(scale(add(p, q), 0.5), dir), {
+					name = "IceSlab",
+					color = if i % 2 == 0 then theme.path else theme.pathDark,
+					role = "Bridge",
+				})
+			)
+			-- Arch below the deck.
+			local under = 1.6 + 3 * (1 - 4 * ((t0 + t1) / 2) * (1 - (t0 + t1) / 2))
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(bridgeWidth - 2, under, length(dir) + 0.1),
+					along(add(scale(add(p, q), 0.5), v(0, -0.4 - under / 2, 0)), dir),
+					{ name = "IceArch", color = theme.iceDark, collide = false, role = "Bridge" }
+				)
+			)
+			for _, sx in { -1, 1 } do
+				local x = sx * (bridgeWidth / 2 + 0.4)
+				local a, b = add(p, v(x, 1.2, 0)), add(q, v(x, 1.2, 0))
+				table.insert(
+					parts,
+					beam(a, b, 1, 2.4, {
+						name = "IceRail",
+						color = theme.ice,
+						material = "Glass",
+						transparency = 0.2,
+						role = "Bridge",
+					})
+				)
+				table.insert(
+					parts,
+					beam(add(a, v(0, 1.35, 0)), add(b, v(0, 1.35, 0)), 1.3, 0.4, {
+						name = "IceRailSnow",
+						color = theme.snow,
+						collide = false,
+						role = "Bridge",
+					})
+				)
+			end
+		end
+		-- Crystal pillars at both ends.
+		for _, z in { fromZ - 2.5, toZ + 3.5 } do
+			for _, sx in { -1, 1 } do
+				local foot = v(sx * (bridgeWidth / 2 + 1.2), groundY, z)
+				table.insert(
+					parts,
+					beam(foot, add(foot, v(sx * 0.6, 7, 0)), 1.6, 1.6, {
+						name = "IcePillar",
+						color = theme.ice,
+						material = "Glass",
+						transparency = 0.1,
+						role = "Bridge",
+					})
+				)
+			end
+		end
+		bridgeWalls(parts, fromZ, toZ)
+		return { fromZ = fromZ, toZ = toZ, parts = parts }
+	end
+
+	local BRIDGES = { Rope = ropeBridge, Boardwalk = boardwalk, Ice = iceBridge }
+
+	-- Bridge into world `index`, in the style of the world it leads to (theme.bridge).
+	local function bridgeInto(index: number, fromZ: number, toZ: number): Bridge
+		local theme = themeOf(worlds[index].id)
+		local build = BRIDGES[theme.bridge or "Rope"] or ropeBridge
+		return build(fromZ, toZ, theme)
+	end
+
 	function plan.bridges(): { Bridge }
 		local bridges = {}
-		table.insert(bridges, ropeBridge(spawnCenter[3] - spawnRadius, plan.worldCenter(1)[3] + half, defaultTheme))
+		table.insert(bridges, bridgeInto(1, spawnCenter[3] - spawnRadius, plan.worldCenter(1)[3] + half))
 		for index = 1, #worlds - 1 do
 			local fromZ = plan.worldCenter(index)[3] - half
-			table.insert(bridges, ropeBridge(fromZ, fromZ - bridgeLength, themeOf(worlds[index].id)))
+			table.insert(bridges, bridgeInto(index + 1, fromZ, fromZ - bridgeLength))
 		end
 		return bridges
 	end

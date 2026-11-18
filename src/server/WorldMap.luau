@@ -1,9 +1,10 @@
 --!strict
 -- Builds the flying islands (#27) from the island plan (ReplicatedStorage.Shared.IslandPlan):
 -- the spawn island, the bridges, and every world. Worlds in GameConfig.islands.newStyle
--- are islands in the shared floor plan; the others keep their old square look (worlds
--- 2-7 until B5/B6) but hang on the same chain with bridges, gates and walls.
--- Adding a world = config entry (+ optional theme below), no new map code.
+-- are islands in the shared floor plan with their theme (GameConfig.islands.themes:
+-- rim, landmark, bridge, decoration); the others keep their old square look (worlds
+-- 5-7 until B6) but hang on the same chain with bridges, gates and walls.
+-- Adding a world = config entry (+ island theme), no new map code.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -296,7 +297,7 @@ local function buildIsland(world: any, index: number): Layout
 	}
 end
 
--- World in the old square look (worlds 2-7 until B5/B6), on the island chain.
+-- World in the old square look (worlds 5-7 until B6), on the island chain.
 local function buildClassic(world: any, index: number): Layout
 	local theme = THEMES[world.id] or DEFAULT_THEME
 	local island = plan.worldIsland(index)

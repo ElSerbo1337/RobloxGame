@@ -1105,3 +1105,31 @@ Getestet ohne den Spielstand zurückzusetzen (kein echter Rebirth, kein neuer Sp
 - Spielstand hat Welt 5–7 noch nicht freigeschaltet; Ei-Stände und Lieferauftrag dort nicht aus der Nähe geprüft (Beläge vom Tor aus sichtbar, Barriere-Schutz setzt korrekt vors Tor zurück).
 
 **Nicht getestet:** Mehrspieler, Device-Emulator/Handy, echter Rebirth (würde den Spielstand zurücksetzen), Rejoin-/Tageswechsel-Fälle, verwaister Session-Lock (#34, Studio hart beenden), Stoppuhr-Balancing (#41), Tutorial als neuer Spieler (#23 Teil 1, #17).
+
+## #31 B5 Welt 2–4 als Inseln (Bauernhof, Strand, Eisberge)
+
+Bauernhof, Strand und Eisberge sind jetzt Inseln im freigegebenen Stil von Welt 1: gleicher Grundriss (`GameConfig.islands.layout`), nur Thema, Rand, Wahrzeichen, Deko und Brücke sind weltspezifisch (`GameConfig.islands.themes`, gebaut von `src/shared/IslandPlan.luau`). Welt 5–7 bleiben im alten Look an der Kette (#32). Kein neuer Modell-Import nötig: Bäume und Deko nutzen die schon importierten Modelle aus `Models/Deco` (#16) und `RoundTree` (#27); ohne Import erscheinen Ersatzteile.
+
+| Welt | Boden/Feld | Rand | Wahrzeichen (hinten links) | Deko | Brücke hinein |
+| --- | --- | --- | --- | --- | --- |
+| 2 Bauernhof | Wiese, gepflügtes Feld mit Furchen | weißer Holzzaun | Windmühle, rote Scheune auf der rechten Terrasse | Rund- und Obstbäume, Heuballen, Sonnenblumen | Holz-Hängebrücke |
+| 3 Strand | Sand | runde Felsbrocken | Leuchtturm (rot-weiß, leuchtende Lampe) | Palmen, Sonnenschirme, Steine, Muscheln, türkise Lagune mit Wasserfall | Holzsteg auf Stelzen mit Handlauf |
+| 4 Eisberge | Schnee, hellblaues Feld | Eisblöcke mit Schnee und Eiszacken | Eisberg-Gipfel aus Eisschollen mit Schneekappen | Schneetannen, Schneemänner, Eiskristalle, Eisteich | Eisbrücke (leicht gewölbt, Eisgeländer, Kristallsäulen) |
+
+Vorschau: `assets/previews/islands/World2_Overview.jpg`, `World3_Overview.jpg`, `World4_Overview.jpg`, `World<N>_Landmark.jpg`, `Bridge_Beach.jpg`, `Bridge_Ice.jpg`, `Islands_Chain.jpg`. Vorher: `lune run test` → `0 failed`.
+
+**Play (1 Spieler; Münz-Tipp aus #11 oder vorhandener Spielstand mit Welt 2–4):**
+
+- [ ] Output ohne rote Fehler.
+- [ ] Welt 2–4 sehen aus wie in den Vorschau-Bildern: runder Umriss mit Felskante, Rand im Welt-Stil, Wahrzeichen hinten links, Teich mit Wasserfall rechts vorne, Terrassen mit Stufen begehbar.
+- [ ] **Brücken:** Welt 1 → 2 Hängebrücke, Welt 2 → 3 Holzsteg, Welt 3 → 4 Eisbrücke. Alle begehbar, kein Stolpern am Übergang Brücke/Insel, seitlich nicht herunterfallen (unsichtbare Wand), Springen hilft nicht.
+- [ ] **Barrieren-Tore** am Brückenkopf von Welt 2, 3 und 4: leuchtend in Weltfarbe, Preisschild „🔒 Bauernhof / 170 Münzen“ usw.; Freischalt-Knopf erscheint davor; freischalten → Tor passierbar, Schild verschwindet. Mit der vorübergehenden Änderung aus #43 (`requiredRebirths`, **nicht committen**) zeigen die Tore weiter „Ab X Rebirths“.
+- [ ] **Stationen** in Welt 2, 3 und 4 (gleiche Plätze wie Welt 1): Ofen mit Verkaufszone (Verkaufen + Animation in die Ofenöffnung), **beide Ei-Stände** mit ihren Ei-Modellen (#39/#29, z. B. Bauernhof-Ei und Scheunen-Ei), Portal (Menü, Teleport, Ankunft vor dem Portal), Telefon und Lieferwagen (Auftrag annehmen und abgeben). In Welt 4 der **Große Pizza-Shop** am Shop-Platz links (jetzt in normaler Größe statt 1,5×, damit er nicht in den Ei-Stand ragt) – kaufen klappt.
+- [ ] **Belag-Modelle (#18)** auf den neuen Feldern gut erkennbar: Zwiebel/Paprika/Mais/Schinken auf dem braunen Acker, Thunfisch/Garnele/Ananas auf hellem Sand, Erbsen/Lachs/Salat auf dem hellblauen Eisfeld. Falls etwas schlecht lesbar ist: Farbe `field` im Theme notieren.
+- [ ] **Kamera** an jeder Station von Welt 2–4 frei (kein Baum, Zaun, Fels zwischen Kamera und Figur).
+- [ ] **Rand:** in Welt 2–4 nirgends herunterfallen (Rand ablaufen). Absturz per Command Bar, z. B. Welt 3: `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, -480))` → Respawn am Spawn der aktuellen Welt (#25). Tod (Reset) in Welt 3 → Respawn in Welt 3.
+- [ ] Welt-Atmosphäre/Musik wechselt beim Betreten jeder Insel (WorldLooks unverändert); ferne Schilder (Tore, Shop Welt 4) sind aus Welt 1/2 nicht am Himmel zu sehen (SignCulling).
+- [ ] Deko: Palmen, Schneetannen, Heuballen, Sonnenblumen, Scheune, Schneemänner stehen auf dem Boden (nicht schwebend, nicht im Boden), passende Größe. Leuchtturm-Lampe und Eiskristalle leuchten dezent (nicht überstrahlt).
+- [ ] Pets laufen nicht durch Zaun/Felsen/Eisrand und nicht über die Inselkante.
+- [ ] **Handy** (Device-Emulator): Welt 2–4 ohne spürbares Ruckeln (viele Rand-Teile), Freischalt-Knopf am Tor antippbar.
+- [ ] Was nicht passt (Farben, Größen, Wahrzeichen): hier notieren.
