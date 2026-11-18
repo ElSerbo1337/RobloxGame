@@ -882,6 +882,7 @@ local GameConfig = {
 				landmark = "Cake",
 				bridge = "CandyCane",
 				trees = { "Lollipop" },
+				treeScale = 0.55,
 				accents = { { model = "Cupcake", width = 5 }, { model = "CandyCane", width = 2.5 } },
 				terraceProps = {
 					{ terrace = 2, model = "Cupcake", width = 9, at = { -3, 2 }, collide = true },

@@ -1246,10 +1246,10 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		local candy = theme.candy or { theme.rim }
 		table.insert(
 			parts,
-			disc(v(at[1], baseY + 0.5, at[3]), 23, 1, { name = "CakePlate", color = frosting, role = "Landmark" })
+			disc(v(at[1], baseY + 0.5, at[3]), 25, 1, { name = "CakePlate", color = frosting, role = "Landmark" })
 		)
 		local y = baseY + 1
-		local tiers = { { 19, 5, theme.cliff }, { 14, 4.5, theme.cliffLight }, { 9, 4, theme.cliff } }
+		local tiers = { { 21.5, 6.5, theme.cliff }, { 15.5, 6, theme.cliffLight }, { 10, 5.5, theme.cliff } }
 		for k, tier in tiers do
 			local d, h = tier[1], tier[2]
 			table.insert(
