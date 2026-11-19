@@ -1197,3 +1197,12 @@ Alle Inseln teilen jetzt einen ruhigen Tag-Look (`src/shared/WorldLooks.luau`), 
 - [ ] Neon (Lava, Weltraum-Leuchtteile, Portale) leuchtet auf allen Inseln gleich stark. Leuchtet Neon gar nicht mehr, `bloom.threshold` in `WorldLooks` schrittweise senken (aktuell 2,8), solange Sand und Schnee nicht anfangen zu strahlen.
 - [ ] Raus- und Reintabben ändert am Look nichts mehr.
 - [ ] Welt 7 (Weltraum) ist jetzt auch Tag: prüfen, ob es lesbar aussieht.
+
+## #46 Kein Flackern an Inselrändern
+
+Klippenblöcke einer Schicht haben jetzt gestaffelte Oberkanten und minimal versetzte Außenflächen, die oberste Klippe ragt 0,06 Studs über den Inselrand (deckt die Seitenfläche der Bodenplatte ab). Dünne Bodenschichten liegen mindestens 0,1 Studs auseinander (Feld 0,1 · Furchen/Lava-Risse 0,2 · Wegplatten 0,3 · Teich 0,4 · Bach 0,5 über dem Boden).
+
+- [ ] Auf jeder Insel am Rand entlanglaufen und die Kamera drehen: Klippenkante und Grasrand flackern nicht mehr (kein Farbwechsel zwischen Fels-Tönen, kein Gras/Fels-Zucken an der Bodenkante).
+- [ ] Aus der Ferne (z. B. von der Spawn-Insel oder einer Brücke) auf die Nachbarinseln schauen: Felsringe flackern nicht.
+- [ ] Feld (Welt 1–7, Furchen auf dem Bauernhof), Wegplatten, Teich mit Bach und Lava-Risse (Vulkan) flackern auch aus der Ferne nicht.
+- [ ] Optik sonst unverändert: Klippe wirkt nicht stufig, Wegplatten/Teich stehen nicht sichtbar hoch, Figuren laufen normal über Weg und Feld.

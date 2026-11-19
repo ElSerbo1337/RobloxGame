@@ -615,3 +615,142 @@ describe("world themes (worlds 2-7, #31, #32)", function()
 		end
 	end)
 end)
+
+describe("no flickering at island edges (#46)", function()
+	local MIN_GAP = 0.1
+
+	local function allIslands(): { IslandPlan.Island }
+		local islands = { plan.spawnIsland() }
+		for index in GameConfig.worlds do
+			table.insert(islands, plan.worldIsland(index))
+		end
+		return islands
+	end
+
+	local function top(spec: IslandPlan.PartSpec): number
+		local c, s = spec.cframe, spec.size
+		return c[2] + (math.abs(c[7]) * s[1] + math.abs(c[8]) * s[2] + math.abs(c[9]) * s[3]) / 2
+	end
+
+	local function sameColor(a: IslandPlan.PartSpec, b: IslandPlan.PartSpec): boolean
+		return a.color[1] == b.color[1] and a.color[2] == b.color[2] and a.color[3] == b.color[3]
+	end
+
+	-- Top faces of two level blocks overlap (separating axis test on their rectangles).
+	local function topsOverlap(a: IslandPlan.PartSpec, b: IslandPlan.PartSpec): boolean
+		local function corners(spec: IslandPlan.PartSpec): { { number } }
+			local c, s = spec.cframe, spec.size
+			local out = {}
+			for _, k in { { -1, -1 }, { -1, 1 }, { 1, 1 }, { 1, -1 } } do
+				local x, z = k[1] * s[1] / 2, k[2] * s[3] / 2
+				table.insert(out, { c[1] + c[4] * x + c[6] * z, c[3] + c[10] * x + c[12] * z })
+			end
+			return out
+		end
+		local ca, cb = corners(a), corners(b)
+		for _, spec in { a, b } do
+			for _, axis in { { spec.cframe[4], spec.cframe[10] }, { spec.cframe[6], spec.cframe[12] } } do
+				local minA, maxA, minB, maxB = math.huge, -math.huge, math.huge, -math.huge
+				for _, p in ca do
+					local d = p[1] * axis[1] + p[2] * axis[2]
+					minA, maxA = math.min(minA, d), math.max(maxA, d)
+				end
+				for _, p in cb do
+					local d = p[1] * axis[1] + p[2] * axis[2]
+					minB, maxB = math.min(minB, d), math.max(maxB, d)
+				end
+				if maxA <= minB + 1e-6 or maxB <= minA + 1e-6 then
+					return false
+				end
+			end
+		end
+		return true
+	end
+
+	it("never gives overlapping, differently coloured cliff blocks the same top", function()
+		for _, island in allIslands() do
+			local cliffs = {}
+			for _, spec in island.parts do
+				if spec.name == "Cliff" then
+					table.insert(cliffs, spec)
+				end
+			end
+			for i, a in cliffs do
+				for j = i + 1, #cliffs do
+					local b = cliffs[j]
+					local sameTop = math.abs(top(a) - top(b)) < 0.05
+					if sameTop and not sameColor(a, b) and topsOverlap(a, b) then
+						expect(sameTop).toBe(false)
+					end
+				end
+			end
+		end
+	end)
+
+	it("keeps the cliff's outer faces out of the plane of the ground's side faces", function()
+		for _, island in allIslands() do
+			local outline, count = island.outline, #island.outline
+			for i = 1, count do
+				local p, q = outline[i], outline[i % count + 1]
+				local ex, ez = q[1] - p[1], q[2] - p[2]
+				local len = math.sqrt(ex * ex + ez * ez)
+				if len > 0.01 then
+					local nx, nz = -ez / len, ex / len
+					local mx, mz = (p[1] + q[1]) / 2, (p[2] + q[2]) / 2
+					for _, spec in island.parts do
+						if spec.name == "Cliff" then
+							local c = spec.cframe
+							-- Faces at +-right (column 1) are the cliff's outer and inner sides.
+							local parallel = math.abs(c[4] * nx + c[10] * nz) > 0.9999
+							for _, sign in { -1, 1 } do
+								local fx = c[1] + sign * c[4] * spec.size[1] / 2
+								local fz = c[3] + sign * c[10] * spec.size[1] / 2
+								-- Only the block of this very edge (its face center sits on the edge).
+								local close = math.sqrt((fx - mx) ^ 2 + (fz - mz) ^ 2) < 1
+								if parallel and close then
+									local offset = math.abs((fx - p[1]) * nx + (fz - p[2]) * nz)
+									expect(offset >= 0.05).toBe(true)
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end)
+
+	it("keeps overlapping thin ground layers a minimum distance apart", function()
+		local thin =
+			{ ToppingArea = true, FieldRow = true, PathPlate = true, LavaCrack = true, Pond = true, Stream = true }
+		local function footprint(spec: IslandPlan.PartSpec): { number }
+			local c, s = spec.cframe, spec.size
+			local hx = (math.abs(c[4]) * s[1] + math.abs(c[5]) * s[2] + math.abs(c[6]) * s[3]) / 2
+			local hz = (math.abs(c[10]) * s[1] + math.abs(c[11]) * s[2] + math.abs(c[12]) * s[3]) / 2
+			return { c[1] - hx, c[1] + hx, c[3] - hz, c[3] + hz }
+		end
+		for _, island in allIslands() do
+			local groundY = island.center[2]
+			local layers = {}
+			for _, spec in island.parts do
+				if thin[spec.name] then
+					expect(top(spec) - groundY >= MIN_GAP - 1e-6).toBe(true)
+					table.insert(layers, { spec = spec, box = footprint(spec), top = top(spec) })
+				end
+			end
+			for i, a in layers do
+				for j = i + 1, #layers do
+					local b = layers[j]
+					if a.spec.name ~= b.spec.name then
+						local overlapping = a.box[1] < b.box[2]
+							and b.box[1] < a.box[2]
+							and a.box[3] < b.box[4]
+							and b.box[3] < a.box[4]
+						if overlapping then
+							expect(math.abs(a.top - b.top) >= MIN_GAP - 1e-6).toBe(true)
+						end
+					end
+				end
+			end
+		end
+	end)
+end)

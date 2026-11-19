@@ -121,6 +121,18 @@ local function upright(p: V): { number }
 	return matrix(p, { 0, 1, 0 }, { -1, 0, 0 }, { 0, 0, 1 })
 end
 
+-- Against z-fighting (#46): cliff rings stagger tops and outer faces in cycles, and thin ground layers keep their tops at least 0.1 studs apart.
+local CLIFF_FACE_STEP = 0.03
+local CLIFF_OUTSET = 0.06
+local THIN = { -- top above the ground surface
+	ToppingArea = 0.1,
+	FieldRow = 0.2,
+	LavaCrack = 0.2,
+	PathPlate = 0.3,
+	Pond = 0.4,
+	Stream = 0.5,
+}
+
 -- Deterministic pseudo-random number in [0, 1) for decoration jitter.
 local function noise(a: number, b: number): number
 	local x = math.sin(a * 12.9898 + b * 78.233) * 43758.5453
@@ -557,13 +569,15 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		end
 
 		-- Rock cliff: rings that step inwards towards the bottom, like an upside-down cone.
+		-- `cycle`: blocks per stagger cycle (deeper rings converge, so blocks further apart
+		-- overlap); `drop`: top step per block of the cycle.
 		local layers = {
-			{ k = 1.0, top = -0.9, h = 6, d = 5 },
-			{ k = 0.93, top = -6, h = 8, d = 10 },
-			{ k = 0.8, top = -13, h = 9, d = 16 },
-			{ k = 0.62, top = -21, h = 9, d = 18 },
-			{ k = 0.42, top = -29, h = 8, d = 16 },
-			{ k = 0.22, top = -36, h = 7, d = 12 },
+			{ k = 1.0, top = -0.9, h = 6, d = 5, cycle = 3, drop = 0.15 },
+			{ k = 0.93, top = -6, h = 8, d = 10, cycle = 4, drop = 0.12 },
+			{ k = 0.8, top = -13, h = 9, d = 16, cycle = 5, drop = 0.1 },
+			{ k = 0.62, top = -21, h = 9, d = 18, cycle = 7, drop = 0.08 },
+			{ k = 0.42, top = -29, h = 8, d = 16, cycle = 9, drop = 0.08 },
+			{ k = 0.22, top = -36, h = 7, d = 12, cycle = 16, drop = 0.06 },
 		}
 		local tones = { theme.cliff, theme.cliffDark, theme.cliffLight }
 		for li, layer in layers do
@@ -582,10 +596,20 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 					if dot(inward, sub(v(center[1], 0, center[3]), mid)) < 0 then
 						inward = scale(inward, -1)
 					end
+					-- Neighbours overlap, so the blocks of a ring step their tops down and their outer
+					-- faces out in cycles (no coplanar, differently coloured faces = no z-fighting).
+					-- The cycles split the ring evenly, so the last and the first blocks differ too.
+					local cycles = math.max(1, math.floor(count / layer.cycle))
+					local j = i - 1
+					local step = j - math.ceil(math.floor(j * cycles / count) * count / cycles)
+					-- The outermost ring sits slightly outside the outline, covering the ground's
+					-- side faces instead of sharing their plane.
+					local outward = (if li == 1 then CLIFF_OUTSET else 0) + step * CLIFF_FACE_STEP
 					local h = layer.h * vertical * (0.8 + 0.45 * noise(i, li))
 					local depth = layer.d * math.min(1, half / 100 + 0.3)
-					local y = groundY + layer.top * vertical - h / 2
-					local blockCenter = add(v(mid[1], y, mid[3]), scale(inward, depth / 2))
+					local drop = step * layer.drop
+					local y = groundY + layer.top * vertical - drop - h / 2
+					local blockCenter = add(v(mid[1], y, mid[3]), scale(inward, depth / 2 - outward))
 					table.insert(
 						parts,
 						spec("Block", v(depth, h, len + 1.2), along(blockCenter, dir), {
@@ -672,12 +696,17 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 				local yaw = math.atan2(-forward[1], -forward[3]) + (noise(row + seed, col) - 0.5) * 0.12
 				table.insert(
 					parts,
-					spec("Block", v(size - 0.5, 0.3, step - 0.5), yawed(v(p[1], groundY + 0.05, p[3]), yaw), {
-						name = "PathPlate",
-						color = if (row + col) % 2 == 0 then theme.path else theme.pathDark,
-						collide = false,
-						role = "Path",
-					})
+					spec(
+						"Block",
+						v(size - 0.5, 0.3, step - 0.5),
+						yawed(v(p[1], groundY + THIN.PathPlate - 0.15, p[3]), yaw),
+						{
+							name = "PathPlate",
+							color = if (row + col) % 2 == 0 then theme.path else theme.pathDark,
+							collide = false,
+							role = "Path",
+						}
+					)
 				)
 			end
 		end
@@ -688,7 +717,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		local parts = island.parts
 		table.insert(
 			parts,
-			disc(v(at[1], groundY + 0.08, at[3]), radius * 2, 0.3, {
+			disc(v(at[1], groundY + THIN.Pond - 0.15, at[3]), radius * 2, 0.3, {
 				name = "Pond",
 				color = theme.water,
 				material = "Glass",
@@ -720,14 +749,20 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		local startX = at[1] + sideX * (radius - 1)
 		table.insert(
 			parts,
-			beam(v(startX, groundY + 0.1, at[3]), v(rimX + sideX * 0.6, groundY + 0.1, at[3]), 4.5, 0.3, {
-				name = "Stream",
-				color = theme.water,
-				material = "Glass",
-				collide = false,
-				transparency = 0.15,
-				role = "Water",
-			})
+			beam(
+				v(startX, groundY + THIN.Stream - 0.15, at[3]),
+				v(rimX + sideX * 0.6, groundY + THIN.Stream - 0.15, at[3]),
+				4.5,
+				0.3,
+				{
+					name = "Stream",
+					color = theme.water,
+					material = "Glass",
+					collide = false,
+					transparency = 0.15,
+					role = "Water",
+				}
+			)
 		)
 		local fallHeight = 46
 		table.insert(
@@ -1753,7 +1788,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			spec(
 				"Block",
 				v(island.field.size[1] + 6, 0.1, island.field.size[2] + 6),
-				yawed(v(fieldCenter[1], groundY + 0.05, fieldCenter[3]), 0),
+				yawed(v(fieldCenter[1], groundY + THIN.ToppingArea - 0.05, fieldCenter[3]), 0),
 				{
 					name = "ToppingArea",
 					color = theme.field,
@@ -1773,7 +1808,7 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 					spec(
 						"Block",
 						v(island.field.size[1] + 2, 0.1, 1.6),
-						yawed(v(fieldCenter[1], groundY + 0.1, z), 0),
+						yawed(v(fieldCenter[1], groundY + THIN.FieldRow - 0.05, z), 0),
 						{
 							name = "FieldRow",
 							color = theme.fieldRows,
@@ -1852,7 +1887,10 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 				spec(
 					"Block",
 					v(1.2, 0.12, crack[3]),
-					yawed(v(center[1] + crack[1], groundY + 0.08, center[3] + crack[2]), math.rad(crack[4])),
+					yawed(
+						v(center[1] + crack[1], groundY + THIN.LavaCrack - 0.06, center[3] + crack[2]),
+						math.rad(crack[4])
+					),
 					{ name = "LavaCrack", color = theme.glow, material = "Neon", collide = false, role = "Glow" }
 				)
 			)
