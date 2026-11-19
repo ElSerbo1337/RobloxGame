@@ -1178,36 +1178,43 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		end
 	end
 
-	-- World 5 landmark: a stepped volcano in warm rock (not too dark, #24) with a glowing
-	-- crater and three lava streams running down the steps towards the path.
+	-- World 5 landmark (#47): a dark basalt cone tapering in thin layers, a glowing crater,
+	-- three neon lava streams down the flanks and smoke (VolcanoSmoke, emitter added by the
+	-- island builder) rising from the crater.
 	local function volcano(parts: { PartSpec }, at: V, baseY: number, theme: any)
-		local layers = { { 27, 5 }, { 22, 5 }, { 17.5, 5 }, { 13.5, 4.5 }, { 10.5, 4 } }
-		local tones = { theme.cliffLight, theme.cliff, theme.grassLight }
-		local y = baseY
-		for k, layer in layers do
+		local tones = theme.basalt
+		-- Concave volcano profile: wide skirt at the foot, steeper towards the crater.
+		local LAYERS, HEIGHT = 11, 22
+		local BASE_R, TOP_R = 14.5, 6
+		local layerH = HEIGHT / LAYERS
+		local function radius(k: number): number
+			return TOP_R + (BASE_R - TOP_R) * (1 - (k - 1) / (LAYERS - 1)) ^ 1.7
+		end
+		for k = 1, LAYERS do
 			table.insert(
 				parts,
-				disc(v(at[1], y + layer[2] / 2, at[3]), layer[1], layer[2], {
+				disc(v(at[1], baseY + (k - 0.5) * layerH, at[3]), 2 * radius(k), layerH, {
 					name = "VolcanoRock",
 					color = tones[(k - 1) % #tones + 1],
 					role = "Landmark",
 				})
 			)
-			y += layer[2]
 		end
-		-- Crater: a darker rim ring and the lava pool inside (the only light).
+		local y = baseY + HEIGHT
+		-- Crater: a dark rim ring and the lava pool inside (the only light).
+		local darkest = theme.basaltDark
 		table.insert(
 			parts,
 			disc(
 				v(at[1], y + 0.4, at[3]),
-				9,
+				2 * TOP_R,
 				0.8,
-				{ name = "VolcanoCrater", color = theme.cliffDark, role = "Landmark" }
+				{ name = "VolcanoCrater", color = darkest, role = "Landmark" }
 			)
 		)
 		table.insert(
 			parts,
-			disc(v(at[1], y + 0.85, at[3]), 6.6, 0.3, {
+			disc(v(at[1], y + 0.85, at[3]), 2 * TOP_R - 2.4, 0.3, {
 				name = "VolcanoLava",
 				color = theme.glow,
 				material = "Neon",
@@ -1215,50 +1222,51 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 				role = "Glow",
 			})
 		)
-		-- Lava streams: on every step a strip over the ledge and down its face.
+		-- Smoke source: an invisible part just above the lava pool.
+		table.insert(
+			parts,
+			spec("Block", v(2, 0.4, 2), yawed(v(at[1], y + 2, at[3]), 0), {
+				name = "VolcanoSmoke",
+				color = { 90, 86, 86 },
+				collide = false,
+				transparency = 1,
+				role = "Smoke",
+			})
+		)
+		-- Lava streams: over the crater rim, then from layer edge to layer edge (resting
+		-- on the outer top corners, shifted out by half their thickness) down to the ground.
+		local THICK = 0.3
+		local lavaProps =
+			{ name = "LavaStream", color = theme.glow, material = "Neon", collide = false, role = "Landmark" }
+		-- Corners in (r, height) from the crater rim down to the ground.
+		local corners = { { TOP_R - 0.3, y + 0.8 } }
+		for k = LAYERS, 1, -1 do
+			table.insert(corners, { radius(k), baseY + k * layerH })
+		end
+		table.insert(corners, { BASE_R + 0.8, baseY + 0.1 })
 		for _, angle in { 15, -60, 200 } do
 			local a = math.rad(angle)
 			local out = v(math.cos(a), 0, math.sin(a))
-			local top = baseY
-			for k, layer in layers do
-				local r = layer[1] / 2
-				local inner = if k < #layers then layers[k + 1][1] / 2 else 3.2
-				local faceTop = top + layer[2]
-				-- Face of this layer.
-				table.insert(
-					parts,
-					spec(
-						"Block",
-						v(0.3, layer[2], 1.4),
-						along(add(v(at[1], top + layer[2] / 2, at[3]), scale(out, r + 0.1)), v(-out[3], 0, out[1])),
-						{
-							name = "LavaStream",
-							color = theme.glow,
-							material = "Neon",
-							collide = false,
-							role = "Landmark",
-						}
-					)
-				)
-				-- Ledge on top of it, from the next layer (or over the crater rim) out to the edge.
-				local ledgeY = faceTop + (if k < #layers then 0.05 else 0.85)
+			local function at2(r: number, height: number): V
+				return add(v(at[1], height, at[3]), scale(out, r))
+			end
+			table.insert(parts, beam(at2(TOP_R - 1.4, y + 0.85), at2(TOP_R, y + 0.85), 1.4, 0.2, lavaProps))
+			for i = 1, #corners - 1 do
+				local p, q = corners[i], corners[i + 1]
+				local dr, dy = q[1] - p[1], q[2] - p[2]
+				local len = math.sqrt(dr * dr + dy * dy)
+				local nr, ny = -dy / len, dr / len -- outward normal (dy < 0)
+				local off = THICK / 2
 				table.insert(
 					parts,
 					beam(
-						add(v(at[1], ledgeY, at[3]), scale(out, inner - 0.2)),
-						add(v(at[1], ledgeY, at[3]), scale(out, r + 0.25)),
-						1.4,
-						0.2,
-						{
-							name = "LavaStream",
-							color = theme.glow,
-							material = "Neon",
-							collide = false,
-							role = "Landmark",
-						}
+						at2(p[1] + nr * off, p[2] + ny * off),
+						at2(q[1] + nr * off, q[2] + ny * off),
+						1.4 - 0.03 * i,
+						THICK,
+						lavaProps
 					)
 				)
-				top = faceTop
 			end
 		end
 		-- Boulders around the foot (behind and beside the volcano).
@@ -1266,9 +1274,9 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			local a = math.rad(-170 + k * 40)
 			table.insert(
 				parts,
-				ball(v(at[1] + math.cos(a) * 13.5, baseY + 0.8, at[3] + math.sin(a) * 13.5), 3 + noise(k, 5), {
+				ball(v(at[1] + math.cos(a) * 15.5, baseY + 0.8, at[3] + math.sin(a) * 15.5), 3 + noise(k, 5), {
 					name = "VolcanoBoulder",
-					color = theme.cliff,
+					color = tones[k % #tones + 1],
 					role = "Landmark",
 				})
 			)

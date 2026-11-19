@@ -1206,3 +1206,12 @@ Klippenblöcke einer Schicht haben jetzt gestaffelte Oberkanten und minimal vers
 - [ ] Aus der Ferne (z. B. von der Spawn-Insel oder einer Brücke) auf die Nachbarinseln schauen: Felsringe flackern nicht.
 - [ ] Feld (Welt 1–7, Furchen auf dem Bauernhof), Wegplatten, Teich mit Bach und Lava-Risse (Vulkan) flackern auch aus der Ferne nicht.
 - [ ] Optik sonst unverändert: Klippe wirkt nicht stufig, Wegplatten/Teich stehen nicht sichtbar hoch, Figuren laufen normal über Weg und Feld.
+
+## #47 Vulkan als dunkler Basaltkegel
+
+Das Vulkan-Wahrzeichen (Welt 5) ist jetzt ein zulaufender Kegel aus 11 dunklen Basaltscheiben (konkave Flanke, breiter Kraterrand), drei Neon-Lavaströme laufen über die Kanten bis zum Boden, die Kraterlava bleibt, aus dem Krater steigt Rauch (ParticleEmitter am unsichtbaren Teil `VolcanoSmoke`). Vorschau: `assets/previews/islands/World5_Landmark.jpg`.
+
+- [ ] Vulkan-Insel ansehen: Vulkan wirkt dunkel (Basalt), nicht mehr wie eine helle Sandpyramide; die drei Lavaströme liegen sichtbar auf den Flanken (keine Lücken oder Schweben) und reichen bis zum Boden.
+- [ ] Kraterlava leuchtet wie bisher, Rauch steigt langsam aus dem Krater und verweht; Rauch wirkt nicht zu dicht und kostet keine spürbaren FPS.
+- [ ] Lavaströme und Kegel flackern nicht (auch nicht aus der Ferne), Felsbrocken am Fuß stehen sauber auf dem Boden, Weg/Treppe am Vulkan sind frei.
+- [ ] Inselrand (#46) flackert weiterhin nicht.

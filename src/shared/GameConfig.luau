@@ -839,6 +839,9 @@ local GameConfig = {
 				woodDark = { 104, 80, 74 },
 				rope = { 200, 170, 150 },
 				glow = { 255, 128, 36 },
+				-- Volcano landmark (#47): dark basalt layers and crater rim.
+				basalt = { { 62, 54, 56 }, { 76, 66, 66 }, { 50, 45, 48 } },
+				basaltDark = { 38, 34, 38 },
 				flowers = { { 255, 140, 50 }, { 255, 200, 80 }, { 236, 92, 56 } },
 				flowerStems = false,
 				landmark = "Volcano",

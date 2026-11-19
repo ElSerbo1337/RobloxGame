@@ -76,6 +76,26 @@ function IslandBuilder.part(spec: IslandPlan.PartSpec, parent: Instance): BasePa
 		mist.Speed = NumberRange.new(4, 8)
 		mist.EmissionDirection = Enum.NormalId.Bottom
 		mist.Parent = p
+	elseif spec.role == "Smoke" then
+		-- Volcano crater (#47): slow dark smoke rising and spreading.
+		p.CastShadow = false
+		local smoke = Instance.new("ParticleEmitter")
+		smoke.Color = ColorSequence.new(Color3.fromRGB(70, 66, 66), Color3.fromRGB(140, 136, 136))
+		smoke.LightEmission = 0
+		smoke.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.5),
+			NumberSequenceKeypoint.new(0.6, 0.7),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+		smoke.Size = NumberSequence.new(2.5, 9)
+		smoke.Rate = 6
+		smoke.Lifetime = NumberRange.new(5, 7)
+		smoke.Speed = NumberRange.new(3, 5)
+		smoke.SpreadAngle = Vector2.new(12, 12)
+		smoke.Acceleration = Vector3.new(0.6, 0.4, 0)
+		smoke.RotSpeed = NumberRange.new(-15, 15)
+		smoke.EmissionDirection = Enum.NormalId.Top
+		smoke.Parent = p
 	elseif spec.name == "FountainSpout" then
 		local spray = Instance.new("ParticleEmitter")
 		spray.Color = ColorSequence.new(Color3.fromRGB(190, 235, 255))

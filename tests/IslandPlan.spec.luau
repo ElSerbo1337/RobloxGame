@@ -584,6 +584,63 @@ describe("world themes (worlds 2-7, #31, #32)", function()
 		expect(glows >= 5).toBe(true)
 	end)
 
+	it("builds the volcano as a dark tapering basalt cone with lava streams and smoke (#47)", function()
+		local function brightness(c: { number }): number
+			return 0.299 * c[1] + 0.587 * c[2] + 0.114 * c[3]
+		end
+		local rocks, streams, crater, lava, smoke = {}, {}, nil, nil, nil
+		for _, spec in plan.worldIsland(indexOf("Volcano")).parts do
+			if spec.name == "VolcanoRock" then
+				table.insert(rocks, spec)
+			elseif spec.name == "LavaStream" then
+				table.insert(streams, spec)
+			elseif spec.name == "VolcanoCrater" then
+				crater = spec
+			elseif spec.name == "VolcanoLava" then
+				lava = spec
+			elseif spec.name == "VolcanoSmoke" then
+				smoke = spec
+			end
+		end
+		-- Cone: many layers, each narrower than the one below, in dark basalt tones.
+		expect(#rocks >= 8).toBe(true)
+		table.sort(rocks, function(a, b)
+			return a.cframe[2] < b.cframe[2]
+		end)
+		for k, rock in rocks do
+			expect(brightness(rock.color) < 90).toBe(true)
+			if k > 1 then
+				expect(rock.size[2] < rocks[k - 1].size[2]).toBe(true)
+			end
+		end
+		local top = rocks[#rocks]
+		expect(top.size[2] < rocks[1].size[2] * 0.45).toBe(true)
+		-- Crater lava stays neon; 2-3 neon streams run down different flanks.
+		assert(crater and lava and smoke, "crater, lava and smoke expected")
+		expect(lava.material).toBe("Neon")
+		local directions: { number } = {}
+		for _, stream in streams do
+			expect(stream.material).toBe("Neon")
+			local dx, dz = stream.cframe[1] - top.cframe[1], stream.cframe[3] - top.cframe[3]
+			local angle = math.atan2(dz, dx)
+			local known = false
+			for _, other in directions do
+				local diff = math.abs(math.atan2(math.sin(angle - other), math.cos(angle - other)))
+				known = known or diff < math.rad(5)
+			end
+			if not known then
+				table.insert(directions, angle)
+			end
+		end
+		expect(#directions >= 2 and #directions <= 3).toBe(true)
+		-- Smoke: an invisible emitter above the crater.
+		expect(smoke.role).toBe("Smoke")
+		expect(smoke.transparency).toBe(1)
+		expect(smoke.collide).toBe(false)
+		expect(smoke.cframe[2] > lava.cframe[2]).toBe(true)
+		expect(math.abs(smoke.cframe[1] - top.cframe[1]) < 1).toBe(true)
+	end)
+
 	it("lets the planet float above the space terrace", function()
 		local island = plan.worldIsland(indexOf("Space"))
 		local found = false
