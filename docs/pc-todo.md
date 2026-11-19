@@ -1440,3 +1440,22 @@ Dein Spielstand war vorher gesichert (`backup_21nov_player_372358501`) und ist d
 ## Zählung (Aufräumen 19.11.2026)
 
 Von 353 offenen Punkten: **52 entfallen** (überholt durch spätere Änderungen, durchgestrichen), **61 abgehakt** (durch spätere Studio-Tests belegt), **240 weiterhin offen**. Dazu kommen 35 offene Punkte in der Release-Checkliste oben.
+
+## #61 Icon und Thumbnails für die Spielseite
+
+Bilder liegen in `docs/store/` (neu rendern: `python tools/blender/render_store.py`, Aufruf siehe Kopf des Skripts):
+
+| Datei | Größe | Wofür |
+| --- | --- | --- |
+| `Icon.png` | 512 × 512 | Spiel-Icon (Pizza-Drache mit Pizza vor dem Ofen, ohne Text) |
+| `Thumbnail1_Collect.png` | 1920 × 1080 | Thumbnail 1: Sammeln und Verkaufen in Welt 1 |
+| `Thumbnail2_Islands.png` | 1920 × 1080 | Thumbnail 2: Inselkette mit allen 7 Welten |
+| `Thumbnail3_Pets.png` | 1920 × 1080 | Thumbnail 3: Eier und Pets, Galaxie-Drache hervorgehoben |
+
+Hochladen (Spiel muss veröffentlicht sein):
+
+- [ ] Studio: **Home → Game Settings → Basic Info**. Bei **Game Icon** auf das Icon-Feld klicken → `docs/store/Icon.png` wählen.
+- [ ] Im selben Fenster bei **Thumbnails** die drei Thumbnails in der Reihenfolge 1 → 2 → 3 hinzufügen (Reihenfolge per Ziehen anpassen, Thumbnail 1 zuerst). **Save** drücken.
+- [ ] Alternativ im Creator Hub (create.roblox.com → Creations → Spiel → Basic Info / Places-Einstellungen), falls Studio den Upload verweigert.
+- [ ] Nach der Moderation (kann ein paar Minuten dauern) die Spielseite öffnen: Icon in der Spieleliste erkennbar, Thumbnails in der richtigen Reihenfolge, Titel nicht abgeschnitten.
+- [ ] Wird ein Bild abgelehnt: Grund notieren und als Issue melden (dann neu rendern).
