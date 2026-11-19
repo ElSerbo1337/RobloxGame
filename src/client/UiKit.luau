@@ -287,12 +287,10 @@ function UiKit.chanceText(percent: number): string
 	return (string.gsub(text, "%.", ",")) .. " %"
 end
 
--- A reward of gifts or the login calendar ({ kind = "Coins" | "Gems" | "Potion", amount,
--- potionId? }) as short German text: "1,2K Münzen", "10 Gems", "2× Glücks-Trank", "1 Trank".
+-- A reward of gifts or the login calendar ({ kind = "Gems" | "Potion", amount, potionId? })
+-- as short German text: "10 Gems", "2× Glücks-Trank", "1 Trank".
 function UiKit.rewardText(reward: { kind: string, amount: number, potionId: string? }): string
-	if reward.kind == "Coins" then
-		return `{UiKit.shortNumber(reward.amount)} Münzen`
-	elseif reward.kind == "Gems" then
+	if reward.kind == "Gems" then
 		return `{UiKit.shortNumber(reward.amount)} Gems`
 	end
 	local potion = reward.potionId and GameConfig.potions[reward.potionId]
@@ -429,30 +427,22 @@ function UiKit.gemIcon(parent: Instance?, size: number): Frame
 	bodyCorner.CornerRadius = UDim.new(0.1, 0)
 	bodyCorner.Parent = body
 	-- Hard colour steps = facets: light left half, dark right half (in screen space).
-	gradient(
-		body,
-		{
-			{ at = 0, color = GEM_LIGHT },
-			{ at = 0.49, color = UiKit.GEM },
-			{ at = 0.51, color = GEM_DARK },
-			{ at = 1, color = GEM_DEEP },
-		},
-		-45
-	)
+	gradient(body, {
+		{ at = 0, color = GEM_LIGHT },
+		{ at = 0.49, color = UiKit.GEM },
+		{ at = 0.51, color = GEM_DARK },
+		{ at = 1, color = GEM_DEEP },
+	}, -45)
 	UiKit.stroke(body, math.max(2, math.floor(size / 16)))
 
 	-- The table facet in the middle: top half bright, bottom half darker.
 	local table_ = iconPart(body, UDim2.fromScale(0.5, 0.5), UDim2.fromScale(0.5, 0.5), Color3.new(1, 1, 1))
-	gradient(
-		table_,
-		{
-			{ at = 0, color = GEM_LIGHT },
-			{ at = 0.49, color = GEM_LIGHT },
-			{ at = 0.51, color = UiKit.GEM },
-			{ at = 1, color = UiKit.GEM },
-		},
-		45
-	)
+	gradient(table_, {
+		{ at = 0, color = GEM_LIGHT },
+		{ at = 0.49, color = GEM_LIGHT },
+		{ at = 0.51, color = UiKit.GEM },
+		{ at = 1, color = UiKit.GEM },
+	}, 45)
 	local tableStroke = Instance.new("UIStroke")
 	tableStroke.Thickness = 1
 	tableStroke.Color = GEM_DARK

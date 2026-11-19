@@ -51,22 +51,20 @@ describe("coins earned in total", function()
 		expect(result.state.totalCoinsEarned).toBe(result.reward.amount)
 	end)
 
-	it("counts coins from the login calendar", function()
+	it("login calendar gems and potions do not count", function()
 		local result = rules.claimLoginReward(player(), NOW, NO_RANDOM)
 
 		expect(result.ok).toBe(true)
-		expect(result.state.totalCoinsEarned).toBe(result.state.coins)
-		expect(result.state.totalCoinsEarned > 0).toBe(true)
+		expect(result.state.totalCoinsEarned).toBe(0)
 	end)
 
-	it("counts coins from play time gifts, gems and potions do not count", function()
+	it("play time gift gems and potions do not count", function()
 		local state = rules.addPlayTime(player(), 20 * 60, NOW).state
-		local coinGift = rules.claimGift(state, 1, NOW, NO_RANDOM)
-		local gemGift = rules.claimGift(coinGift.state, 2, NOW, NO_RANDOM)
-		local potionGift = rules.claimGift(gemGift.state, 3, NOW, NO_RANDOM)
+		for index = 1, 3 do
+			state = rules.claimGift(state, index, NOW, NO_RANDOM).state
+		end
 
-		expect(coinGift.state.totalCoinsEarned).toBe(coinGift.rewards[1].amount)
-		expect(potionGift.state.totalCoinsEarned).toBe(coinGift.rewards[1].amount)
+		expect(state.totalCoinsEarned).toBe(0)
 	end)
 
 	it("spending coins does not lower it", function()

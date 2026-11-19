@@ -52,11 +52,11 @@ describe("GameConfig", function()
 		end
 	end)
 
-	it("puts world 2 (Bauernhof) behind a 170 coin barrier with its own four toppings", function()
+	it("puts world 2 (Bauernhof) behind a 120 coin barrier with its own four toppings", function()
 		local farm = GameConfig.worlds[2]
 
 		expect(farm.id).toBe("Farm")
-		expect(farm.unlockPrice).toBe(170)
+		expect(farm.unlockPrice).toBe(120)
 		local toppings = {}
 		for _, spawn in farm.toppingSpawns do
 			table.insert(toppings, GameConfig.toppings[spawn.topping].displayName)
@@ -899,7 +899,7 @@ describe("GameConfig play time gifts", function()
 	local function kinds(gift: any): string
 		local parts = {}
 		for _, reward in gift.rewards do
-			table.insert(parts, `{reward.kind} {reward.amount or reward.incomeMinutes}`)
+			table.insert(parts, `{reward.kind} {reward.amount}`)
 		end
 		return table.concat(parts, " + ")
 	end
@@ -919,29 +919,22 @@ describe("GameConfig play time gifts", function()
 		end
 	end)
 
-	it("gives small coins, 5 gems, 1 potion, big coins, 10 gems, 15 gems + 1 potion", function()
-		local gifts = GameConfig.gifts
-		expect(gifts[1].rewards[1].kind).toBe("Coins")
-		expect(kinds(gifts[2])).toBe("Gems 5")
-		expect(kinds(gifts[3])).toBe("Potion 1")
-		expect(gifts[4].rewards[1].kind).toBe("Coins")
-		expect(gifts[4].rewards[1].incomeMinutes > gifts[1].rewards[1].incomeMinutes).toBe(true)
-		expect(kinds(gifts[5])).toBe("Gems 10")
-		expect(kinds(gifts[6])).toBe("Gems 15 + Potion 1")
+	it("gives 3 gems, 5 gems, 1 potion, 1 potion, 8 gems, 10 gems + 1 potion", function()
+		local gifts = {}
+		for _, gift in GameConfig.gifts do
+			table.insert(gifts, kinds(gift))
+		end
+
+		expect(gifts).toEqual({ "Gems 3", "Gems 5", "Potion 1", "Potion 1", "Gems 8", "Gems 10 + Potion 1" })
 	end)
 
-	it("only uses known reward kinds", function()
+	it("only gives fixed amounts of gems and potions, never coins", function()
 		for _, gift in GameConfig.gifts do
 			for _, reward in gift.rewards do
-				expect(reward.kind == "Coins" or reward.kind == "Gems" or reward.kind == "Potion").toBe(true)
+				expect(reward.kind == "Gems" or reward.kind == "Potion").toBe(true)
+				expect(reward.amount > 0).toBe(true)
 			end
 		end
-	end)
-
-	it("pays a new player a few rounds' worth of coins with the first gift", function()
-		local coins = rules.giftStatus(rules.newPlayerState(), 1768431600).gifts[1].rewards[1].amount
-
-		expect(coins >= 10).toBe(true)
 	end)
 
 	it("estimates more income in every later world", function()
@@ -962,7 +955,7 @@ describe("GameConfig login calendar", function()
 	local function kinds(entry: any): string
 		local parts = {}
 		for _, reward in entry.rewards do
-			table.insert(parts, `{reward.kind} {reward.amount or reward.incomeMinutes}`)
+			table.insert(parts, `{reward.kind} {reward.amount}`)
 		end
 		return table.concat(parts, " + ")
 	end
@@ -971,21 +964,48 @@ describe("GameConfig login calendar", function()
 		expect(#GameConfig.loginCalendar).toBe(7)
 	end)
 
-	it("gives coins, 10 gems, 1 potion, coins, 20 gems, 2 potions, 50 gems + 3 potions", function()
+	it("gives 5 gems, 10 gems, 1 potion, 1 potion, 20 gems, 2 potions, 50 gems + 3 potions", function()
 		local days = {}
 		for _, entry in GameConfig.loginCalendar do
 			table.insert(days, kinds(entry))
 		end
 
 		expect(days).toEqual({
-			"Coins 5",
+			"Gems 5",
 			"Gems 10",
 			"Potion 1",
-			"Coins 5",
+			"Potion 1",
 			"Gems 20",
 			"Potion 2",
 			"Gems 50 + Potion 3",
 		})
+	end)
+end)
+
+describe("GameConfig gift and calendar gems", function()
+	local function gems(rewards: any): number
+		local total = 0
+		for _, reward in rewards do
+			assert(reward.kind ~= "Coins", "gifts and the calendar give no coins")
+			if reward.kind == "Gems" then
+				total += reward.amount
+			end
+		end
+		return total
+	end
+
+	it("keep a 60 minute day of gifts + an average calendar day at 20-40 gems", function()
+		local perDay = 0
+		for _, gift in GameConfig.gifts do
+			perDay += gems(gift.rewards)
+		end
+		local calendarWeek = 0
+		for _, entry in GameConfig.loginCalendar do
+			calendarWeek += gems(entry.rewards)
+		end
+		perDay += calendarWeek / #GameConfig.loginCalendar
+
+		expect(perDay >= 20 and perDay <= 40).toBe(true)
 	end)
 end)
 

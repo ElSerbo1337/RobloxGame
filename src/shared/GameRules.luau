@@ -190,11 +190,11 @@ export type RebirthOffer = {
 	potionWarning: boolean,
 }
 
--- A reward as configured for gifts (and the login calendar): `amount` of gems or
--- potions, or coins worth `incomeMinutes` of the income estimate.
-export type RewardSpec = { kind: string, amount: number?, incomeMinutes: number? }
+-- A reward as configured for gifts (and the login calendar): a fixed `amount` of gems or
+-- potions.
+export type RewardSpec = { kind: string, amount: number }
 
--- A reward as paid out / shown: "Coins" | "Gems" | "Potion", how many, and which potion
+-- A reward as paid out / shown: "Gems" | "Potion", how many, and which potion
 -- (set once a potion reward was drawn).
 export type Reward = { kind: string, amount: number, potionId: string? }
 
@@ -1088,8 +1088,7 @@ function GameRules.new(config: any)
 
 	-- Estimated coins per minute, deterministic (no potions, no luck): average topping
 	-- value of the highest unlocked world (by spawn weight) x pizza space x
-	-- income.roundsPerMinute x coin multiplier (pets, rebirths). Gift and login calendar
-	-- coins are worth minutes of this.
+	-- income.roundsPerMinute x coin multiplier (pets, rebirths).
 	function rules.incomePerMinute(state: PlayerState): number
 		local totalWeight, totalValue = 0, 0
 		for _, spawn in highestUnlockedWorld(state).toppingSpawns do
@@ -1106,20 +1105,11 @@ function GameRules.new(config: any)
 			* rules.coinMultiplier(state)
 	end
 
-	-- Coins worth `minutes` of the income estimate (rounded down).
-	function rules.incomeCoins(state: PlayerState, minutes: number): number
-		return math.floor(minutes * rules.incomePerMinute(state) + 1e-6)
-	end
-
-	-- Configured rewards as they would be paid out now (coins from the income estimate;
-	-- potions not drawn yet).
-	local function previewRewards(state: PlayerState, specs: { RewardSpec }): { Reward }
+	-- Configured rewards as they will be paid out (fixed amounts; potions not drawn yet).
+	local function previewRewards(specs: { RewardSpec }): { Reward }
 		local rewards = {}
 		for _, spec in specs do
-			local amount = if spec.kind == "Coins"
-				then rules.incomeCoins(state, spec.incomeMinutes or 0)
-				else spec.amount or 0
-			table.insert(rewards, { kind = spec.kind, amount = amount })
+			table.insert(rewards, { kind = spec.kind, amount = spec.amount })
 		end
 		return rewards
 	end
@@ -1133,12 +1123,9 @@ function GameRules.new(config: any)
 	): (PlayerState, { Reward })
 		local newState = table.clone(state)
 		newState.potions = table.clone(state.potions)
-		local paid = previewRewards(state, specs)
+		local paid = previewRewards(specs)
 		for _, reward in paid do
-			if reward.kind == "Coins" then
-				newState.coins += reward.amount
-				newState.totalCoinsEarned += reward.amount
-			elseif reward.kind == "Gems" then
+			if reward.kind == "Gems" then
 				newState.gems += reward.amount
 			elseif reward.kind == "Potion" then
 				local potionId = randomPotionId(random)
@@ -1176,7 +1163,7 @@ function GameRules.new(config: any)
 				minutes = gift.minutes,
 				status = status,
 				secondsLeft = secondsLeft,
-				rewards = previewRewards(state, gift.rewards),
+				rewards = previewRewards(gift.rewards),
 			})
 		end
 		return { gifts = gifts, readyCount = readyCount, nextSeconds = nextSeconds }
@@ -1228,7 +1215,7 @@ function GameRules.new(config: any)
 				then "Claimed"
 				elseif day == today then "Ready"
 				else "Waiting"
-			table.insert(days, { day = day, status = status, rewards = previewRewards(state, entry.rewards) })
+			table.insert(days, { day = day, status = status, rewards = previewRewards(entry.rewards) })
 		end
 		return { today = today, claimable = claimable, days = days }
 	end

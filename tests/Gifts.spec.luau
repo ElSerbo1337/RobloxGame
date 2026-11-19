@@ -13,7 +13,7 @@ local NOW = 1768431600 + 11 * 3600
 local NEXT_DAY = NOW + 24 * 3600
 local NO_RANDOM = sequenceRandom({ 0 })
 
--- TestConfig gifts: 5 min coins (2 min of income), 10 min 5 gems, 15 min 1 potion,
+-- TestConfig gifts: 5 min 3 gems, 10 min 5 gems, 15 min 1 potion,
 -- 20 min 15 gems + 2 potions.
 local function played(minutes: number, now: number?)
 	return rules.addPlayTime(rules.newPlayerState(), minutes * 60, now or NOW).state
@@ -95,11 +95,11 @@ describe("gift status", function()
 		expect(status.nextSeconds).toBe(3 * 60)
 	end)
 
-	it("shows the rewards, coins from the income estimate", function()
+	it("shows the fixed rewards", function()
 		local status = rules.giftStatus(played(0.5), NOW)
 
 		expect(status.gifts[1].minutes).toBe(5)
-		expect(status.gifts[1].rewards).toEqual({ { kind = "Coins", amount = 13 } })
+		expect(status.gifts[1].rewards).toEqual({ { kind = "Gems", amount = 3 } })
 		expect(status.gifts[4].rewards).toEqual({ { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 2 } })
 	end)
 
@@ -108,6 +108,23 @@ describe("gift status", function()
 
 		expect(status.readyCount).toBe(4)
 		expect(status.nextSeconds).toBeNil()
+	end)
+end)
+
+describe("gift rewards are fixed", function()
+	it("do not depend on worlds, pets or rebirths", function()
+		local advanced = played(0.5)
+		advanced.unlockedWorlds = { "Farm" }
+		advanced.rebirths = 3
+		advanced.pets = { { uid = 1, petId = "Dragon" } }
+		advanced.equipped = { 1 }
+		local before = rules.giftStatus(played(0.5), NOW)
+
+		local after = rules.giftStatus(advanced, NOW)
+
+		for index, gift in before.gifts do
+			expect(after.gifts[index].rewards).toEqual(gift.rewards)
+		end
 	end)
 end)
 
@@ -122,12 +139,13 @@ describe("claiming gifts", function()
 		expect(result.state).toBe(state)
 	end)
 
-	it("claims coins worth minutes of income", function()
+	it("claims the fixed gems of the first gift", function()
 		local result = rules.claimGift(played(5), 1, NOW, NO_RANDOM)
 
 		expect(result.ok).toBe(true)
-		expect(result.state.coins).toBe(13)
-		expect(result.rewards).toEqual({ { kind = "Coins", amount = 13 } })
+		expect(result.state.gems).toBe(3)
+		expect(result.state.coins).toBe(0)
+		expect(result.rewards).toEqual({ { kind = "Gems", amount = 3 } })
 		expect(rules.giftStatus(result.state, NOW).gifts[1].status).toBe("Claimed")
 	end)
 

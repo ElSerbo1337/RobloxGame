@@ -100,9 +100,9 @@ return {
 	-- Income estimate: rounds (collect + sell a full pizza) per minute.
 	income = { roundsPerMinute = 2 },
 	-- Play time gifts: reached after `minutes` of play time on a (German) day.
-	-- Coins = `incomeMinutes` x the income estimate; Potion = random potion.
+	-- Fixed gems and potions (a potion is a random one).
 	gifts = {
-		{ minutes = 5, rewards = { { kind = "Coins", incomeMinutes = 2 } } },
+		{ minutes = 5, rewards = { { kind = "Gems", amount = 3 } } },
 		{ minutes = 10, rewards = { { kind = "Gems", amount = 5 } } },
 		{ minutes = 15, rewards = { { kind = "Potion", amount = 1 } } },
 		{ minutes = 20, rewards = { { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 2 } } },
@@ -110,10 +110,10 @@ return {
 	-- Login calendar: one reward per day in a row (day 1-7, then day 1 again; a missed day
 	-- starts over at day 1). Same reward kinds as gifts.
 	loginCalendar = {
-		{ rewards = { { kind = "Coins", incomeMinutes = 5 } } },
+		{ rewards = { { kind = "Gems", amount = 5 } } },
 		{ rewards = { { kind = "Gems", amount = 10 } } },
 		{ rewards = { { kind = "Potion", amount = 1 } } },
-		{ rewards = { { kind = "Coins", incomeMinutes = 10 } } },
+		{ rewards = { { kind = "Potion", amount = 1 } } },
 		{ rewards = { { kind = "Gems", amount = 20 } } },
 		{ rewards = { { kind = "Potion", amount = 2 } } },
 		{ rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },

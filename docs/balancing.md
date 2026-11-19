@@ -12,18 +12,18 @@ Die Konfigurations-Tests (`tests/GameConfig.spec.luau`, Block „GameConfig bala
 
 | Welt | ab Rebirths | ohne Rebirth | nach 1. Rebirth |
 | ---- | ----------: | -----------: | --------------: |
-| 1 Pizzeria-Garten | 0 | 12.8 | 0.1 |
-| 2 Bauernhof | 0 | 12.3 | 0.2 |
-| 3 Strand | 0 | 23.5 | 0.2 |
-| 4 Eisberge | 0 | 20.5 | 0.4 |
-| 5 Vulkan | 0 | 22.8 | 2.6 |
-| 6 Süßigkeitenland | 0 | 34.7 | 8.8 |
-| 7 Weltraum (bis Rebirth) | 0 | 35.8 | 36.8 |
-| **Gesamt** | | **160.8** | **51.1** |
+| 1 Pizzeria-Garten | 0 | 15.1 | 0.1 |
+| 2 Bauernhof | 0 | 13.4 | 0.2 |
+| 3 Strand | 0 | 19.8 | 0.2 |
+| 4 Eisberge | 0 | 17.7 | 0.4 |
+| 5 Vulkan | 0 | 25.3 | 2.5 |
+| 6 Süßigkeitenland | 0 | 38.5 | 8.6 |
+| 7 Weltraum (bis Rebirth) | 0 | 33.7 | 31.1 |
+| **Gesamt** | | **169.9** | **42.1** |
 
-Pet-Multiplikator beim ersten Rebirth im Median: ×331.
+Pet-Multiplikator beim ersten Rebirth im Median: ×361.
 
-**Nach dem Rebirth** ist ein Durchlauf etwa **ein Drittel** so lang (51 statt 161 Minuten), nicht genau die Hälfte. Pets bleiben beim Rebirth erhalten. Mit Weltraum-Pets (×300 und mehr) dauern Welt 1–5 zusammen nur noch etwa 3 Minuten, egal welche Preise dort stehen. Die Länge des zweiten Durchlaufs hängt deshalb fast nur an Welt 6–7 und am Preisfaktor des zweiten Rebirths:
+**Nach dem Rebirth** ist ein Durchlauf etwa **ein Viertel** so lang (42 statt 170 Minuten), nicht genau die Hälfte. Pets bleiben beim Rebirth erhalten. Mit Weltraum-Pets (×300 und mehr) dauern Welt 1–5 zusammen nur noch etwa 3 Minuten, egal welche Preise dort stehen. Die Länge des zweiten Durchlaufs hängt deshalb fast nur an Welt 6–7 und am Preisfaktor des zweiten Rebirths:
 
 | Preisfaktor pro Rebirth | Durchlauf nach 1. Rebirth | Anteil vom ersten |
 | ---: | ---: | ---: |
@@ -39,13 +39,13 @@ Pet-Multiplikator beim ersten Rebirth im Median: ×331.
 
 | Was | vorher | jetzt |
 | --- | ---: | ---: |
-| Freischaltung Bauernhof | 1.500 | 170 |
+| Freischaltung Bauernhof | 1.500 | 120 (#50, vorher 170) |
 | Freischaltung Strand | 15.000 | 2.000 |
 | Freischaltung Eisberge | 150.000 | 42.000 |
 | Freischaltung Vulkan | 1.500.000 | 310.000 |
 | Freischaltung Süßigkeitenland | 15 Mio | 23 Mio |
 | Freischaltung Weltraum | 150 Mio | 460 Mio |
-| Erster Rebirth | 250 Mio | 4,9 Mrd |
+| Erster Rebirth | 250 Mio | 3,9 Mrd (#50, vorher 4,9 Mrd) |
 | Preisfaktor pro Rebirth | ×2 | ×3 |
 | Shop 1 Pizza-Platz Stufe 2 / 3 | 120 / 500 | 50 / 200 |
 | Shop 1 Reichweite Stufe 1–3 | 40 / 200 / 800 | 30 / 100 / 400 |
@@ -54,7 +54,7 @@ Pet-Multiplikator beim ersten Rebirth im Median: ×331.
 | Shop 3 Reichweite Stufe 7 / 8 | 250 / 700 Mio | 400 Mio / 1,2 Mrd |
 | Shop 3 Magnet Stufe 4 / 5 | 300 / 900 Mio | 500 Mio / 1,5 Mrd |
 
-Unverändert: erstes Pizza-Platz-Upgrade 12 (#23), alle Ei-Preise (Garten-Ei 25, sonst ×8 pro Welt, zweites Ei ×5), Shop 2, Gem-Preise, Tränke, Belagwerte, Pet-Boni, Geschenke und Kalender.
+Unverändert: erstes Pizza-Platz-Upgrade 12 (#23), alle Ei-Preise (Garten-Ei 25, sonst ×8 pro Welt, zweites Ei ×5), Shop 2, Gem-Preise, Tränke, Belagwerte, Pet-Boni.
 
 Warum so: Shop 1 war für das Einkommen in Welt 1 viel zu teuer. Allein der Pizza-Platz 4 → 6 für 500 dauerte etwa 35 Minuten. Die frühen Freischaltpreise sinken deshalb stark. Ab Welt 5 wächst das Einkommen schneller als die alten Preise (Belag ×4,8 und Pets ×2 pro Welt, dazu mehr Eier), deshalb steigen die späten Preise. Shop 3 liegt unter dem Rebirth-Preis und wird auf dem Weg dorthin gekauft.
 
@@ -78,14 +78,28 @@ Gleiche Preise, ein Parameter des Modellspielers geändert (Median aus 51 Läufe
 
 | Variante | Welt 1–7 je Welt (Min) | Gesamt ohne Rebirth | Gesamt nach 1. Rebirth |
 | -------- | ---------------- | ------------------: | ---------------------: |
-| Basis (2 Runden/Min) | 13 / 12 / 24 / 21 / 23 / 35 / 36 | 160.8 | 51.1 |
-| 1,5 Runden/Min | 17 / 18 / 32 / 22 / 33 / 50 / 49 | 215.3 | 60.8 |
-| 3 Runden/Min | 12 / 12 / 10 / 14 / 17 / 22 / 28 | 120.2 | 29.2 |
-| 30 Min pro Tag | 13 / 12 / 19 / 15 / 21 / 29 / 29 | 142.2 | 38.8 |
-| Ei-Amortisation 5 Min | 13 / 20 / 42 / 19 / 31 / 46 / 40 | 211.5 | 58.6 |
-| Ei-Amortisation 20 Min | 14 / 12 / 18 / 18 / 21 / 32 / 32 | 145.3 | 42.0 |
+| Basis (2 Runden/Min) | 15 / 13 / 20 / 18 / 25 / 39 / 34 | 169.9 | 42.1 |
+| 1,5 Runden/Min | 17 / 18 / 34 / 24 / 36 / 49 / 43 | 220.9 | 58.8 |
+| 3 Runden/Min | 14 / 10 / 10 / 12 / 16 / 23 / 26 | 115.7 | 29.7 |
+| 30 Min pro Tag | 15 / 13 / 19 / 14 / 19 / 31 / 32 | 150.2 | 38.3 |
+| Ei-Amortisation 5 Min | 15 / 19 / 41 / 20 / 32 / 47 / 38 | 211.5 | 50.8 |
+| Ei-Amortisation 20 Min | 18 / 15 / 15 / 20 / 21 / 32 / 29 | 155.6 | 39.3 |
 
 Am stärksten wirken das Rundentempo und wie viel der Spieler in Eier steckt. Bei kleiner Pizza (Welt 1) sind 2 Runden pro Minute eher vorsichtig gerechnet, echte Spieler sind dort vermutlich schneller. Spieler mit kurzen Tagen kommen pro Spielminute schneller voran, weil die ersten Geschenke des Tages früh kommen. Die Zeiten sollten deshalb in Studio mit der Stoppuhr nachgemessen werden (Checkliste #41 in `docs/pc-todo.md`).
+
+## Geschenke und Login-Kalender (#50)
+
+Spielzeit-Geschenke und Login-Kalender geben feste Mengen Gems und Tränke, keine Münzen mehr. Die Belohnung hängt nicht von Welt, Pets oder Rebirths ab. Lieferaufträge sind unverändert (ihre Münzen hängen an den gelieferten Belägen).
+
+| Quelle | Belohnungen | Gems |
+| --- | --- | ---: |
+| Geschenke (5 / 10 / 15 / 25 / 40 / 60 Min) | 3 Gems / 5 Gems / 1 Trank / 1 Trank / 8 Gems / 10 Gems + 1 Trank | 26 pro Tag |
+| Kalender (Tag 1–7) | 5 Gems / 10 Gems / 1 Trank / 1 Trank / 20 Gems / 2 Tränke / 50 Gems + 3 Tränke | 85 pro Woche, ca. 12 pro Tag |
+| **Zusammen** bei 60 Minuten pro Tag | | **ca. 38 pro Stunde** |
+
+Vorher waren es 30 + ca. 11 Gems pro Tag, das Ziel von 20–40 Gems pro Stunde bleibt also grob eingehalten (ein Konfigurations-Test prüft Geschenke + durchschnittlichen Kalendertag auf 20–40). Gem-Beläge und Lieferaufträge kommen dazu. Wer kürzer als 60 Minuten spielt, bekommt pro Spielminute mehr, weil die ersten Geschenke früh kommen.
+
+Die Münzen der beiden alten Münz-Geschenke und der zwei Münz-Kalendertage waren etwa 10 % des Einkommens eines 60-Minuten-Tages. Zum Ausgleich sinken der Preis für den Bauernhof (170 → 120) und der erste Rebirth (4,9 → 3,9 Mrd).
 
 ## Welten hinter Rebirths (#43)
 

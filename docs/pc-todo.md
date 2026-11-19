@@ -1234,3 +1234,13 @@ Münz- und Gem-Icon kommen jetzt aus einem gemeinsamen Baustein (`UiKit.coinIcon
 - [ ] HUD oben: Münze zeigt Goldrand, Pizza-Ecke mit Rand und drei Punkten; Gem ist ein Diamant mit hellen/dunklen Facetten und weißem Glanz. Beides scharf und nicht verrutscht auf PC und kleinem Handy (Device-Emulator); Zahlen stehen daneben wie vorher.
 - [ ] Verkaufen am Ofen: 4 3D-Münzen springen drehend aus dem Ofen und verschwinden, die fliegenden Münz-Icons zum Zähler sehen aus wie die HUD-Münze.
 - [ ] Nach dem Import: Verkaufs-Münzen zeigen das Blender-Modell (Pizza-Ecke auf beiden Seiten, Scheibe unsichtbar), Feld-Gems stehen aufrecht als Diamant über dem Boden, funkeln und leuchten weiter, lassen sich wie vorher einsammeln (auch per Magnet/Auto-Sammeln).
+
+## #50 Feste Belohnungen in Geschenken und Kalender
+
+Geschenke und Login-Kalender geben nur noch feste Gems und Tränke, keine Münzen (Geschenke: 3 Gems / 5 Gems / 1 Trank / 1 Trank / 8 Gems / 10 Gems + 1 Trank; Kalender: 5 Gems / 10 Gems / 1 Trank / 1 Trank / 20 Gems / 2 Tränke / 50 Gems + 3 Tränke). Zum Ausgleich kosten Bauernhof 120 (vorher 170) und der erste Rebirth 3,9 Mrd (vorher 4,9 Mrd). Details: `docs/balancing.md`.
+
+- [ ] Geschenke-Menü: alle sechs Zeilen zeigen „3 Gems“, „5 Gems“, „1 Trank“, „1 Trank“, „8 Gems“, „10 Gems + 1 Trank“; nirgends „Münzen“.
+- [ ] Geschenk abholen (5 Min): Meldung „Geschenk! +3 Gems“, Gem-Zähler +3, Münzen unverändert. Trank-Geschenk: Meldung nennt den gezogenen Trank (z. B. „1× Glücks-Trank“), er liegt im Trank-Inventar.
+- [ ] Login-Kalender: Kacheln Tag 1–7 zeigen die neuen Belohnungen (Tag 1 „5 Gems“, Tag 4 „1 Trank“); Abholen an Tag 1 gibt +5 Gems und keine Münzen.
+- [ ] Gleiche Anzeigen in Welt 1 und nach Freischalten späterer Welten bzw. mit starken Pets (Belohnung ändert sich nicht).
+- [ ] Bauernhof-Tor zeigt 120 Münzen, Rebirth-Menü 3,9 Mrd als ersten Rebirth-Preis.

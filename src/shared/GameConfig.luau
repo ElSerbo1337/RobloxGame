@@ -219,7 +219,6 @@ local GameConfig = {
 
 	-- Income estimate (GameRules.incomePerMinute): average topping value of the highest
 	-- unlocked world x pizza space x rounds per minute x coin multiplier (pets, rebirths).
-	-- Coins of gifts and the login calendar are worth minutes of this.
 	income = {
 		-- Assumed rounds per minute (collect a full pizza and sell it).
 		roundsPerMinute = 2,
@@ -227,26 +226,27 @@ local GameConfig = {
 
 	-- Play time gifts: reached after `minutes` of play time on a German day (the day's
 	-- play time starts over at midnight German time), each claimable once per day.
-	-- Reward kinds: Coins (`incomeMinutes` x the income estimate), Gems / Potion (`amount`;
-	-- a potion is a random one, like delivery orders).
+	-- Fixed rewards, independent of progress: Gems / Potion (`amount`; a potion is a random
+	-- one, like delivery orders). No coins. Gifts give 26 gems a day, the calendar about 12
+	-- a day on average: together about 38 for a 60 minute day (20-40 gems/hour target).
 	gifts = {
-		{ minutes = 5, rewards = { { kind = "Coins", incomeMinutes = 3 } } },
+		{ minutes = 5, rewards = { { kind = "Gems", amount = 3 } } },
 		{ minutes = 10, rewards = { { kind = "Gems", amount = 5 } } },
 		{ minutes = 15, rewards = { { kind = "Potion", amount = 1 } } },
-		{ minutes = 25, rewards = { { kind = "Coins", incomeMinutes = 8 } } },
-		{ minutes = 40, rewards = { { kind = "Gems", amount = 10 } } },
-		{ minutes = 60, rewards = { { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 1 } } },
+		{ minutes = 25, rewards = { { kind = "Potion", amount = 1 } } },
+		{ minutes = 40, rewards = { { kind = "Gems", amount = 8 } } },
+		{ minutes = 60, rewards = { { kind = "Gems", amount = 10 }, { kind = "Potion", amount = 1 } } },
 	},
 
 	-- Login calendar: one reward per German day (new day at midnight German time). Claimed
 	-- on the following day, the series goes on to the next calendar day; a missed day
-	-- starts over at day 1, and so does the day after day 7. Same reward kinds as gifts
-	-- (coins worth about 5 minutes of the income estimate of the highest unlocked world).
+	-- starts over at day 1, and so does the day after day 7. Fixed gems and potions like
+	-- gifts (85 gems a week).
 	loginCalendar = {
-		{ rewards = { { kind = "Coins", incomeMinutes = 5 } } },
+		{ rewards = { { kind = "Gems", amount = 5 } } },
 		{ rewards = { { kind = "Gems", amount = 10 } } },
 		{ rewards = { { kind = "Potion", amount = 1 } } },
-		{ rewards = { { kind = "Coins", incomeMinutes = 5 } } },
+		{ rewards = { { kind = "Potion", amount = 1 } } },
 		{ rewards = { { kind = "Gems", amount = 20 } } },
 		{ rewards = { { kind = "Potion", amount = 2 } } },
 		{ rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },
@@ -314,7 +314,7 @@ local GameConfig = {
 	-- permanently higher coin multiplier for selling and delivery coins (not gems).
 	rebirth = {
 		-- Price of the first rebirth: about 30-35 min of play in world 7 (#41, docs/balancing.md).
-		startPrice = 4900000000,
+		startPrice = 3900000000,
 		-- Each further rebirth costs this many times the one before.
 		priceFactor = 3,
 		-- Coin multiplier = 1 + multiplierPerRebirth x rebirths (1 rebirth = x1,5, 2 = x2, ...).
@@ -951,7 +951,7 @@ local GameConfig = {
 		{
 			id = "Farm",
 			displayName = "Bauernhof",
-			unlockPrice = 170,
+			unlockPrice = 120,
 			color = { 250, 210, 70 },
 			toppingSpawns = {
 				{ topping = "Onion", weight = 45 },

@@ -54,8 +54,4 @@ describe("income estimate", function()
 
 		near(rules.incomePerMinute(state), 1.7 * 2 * 2)
 	end)
-
-	it("coins for N minutes of income are rounded down", function()
-		expect(rules.incomeCoins(rules.newPlayerState(), 2)).toBe(13) -- 2 x 6.8
-	end)
 end)

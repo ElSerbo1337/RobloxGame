@@ -15,9 +15,8 @@ local function DAY(n: number): number
 end
 local NO_RANDOM = sequenceRandom({ 0 })
 
--- TestConfig calendar: 1 coins (5 min of income), 2 10 gems, 3 1 potion, 4 coins (10 min),
--- 5 20 gems, 6 2 potions, 7 50 gems + 3 potions. A new player earns 6.8 coins a minute
--- (Income.spec), with the farm unlocked 32.
+-- TestConfig calendar: 1 5 gems, 2 10 gems, 3 1 potion, 4 1 potion, 5 20 gems, 6 2 potions,
+-- 7 50 gems + 3 potions.
 
 -- Claims on each of the given days (day offsets from NOW), starting from `state`.
 local function claimOn(state: any, days: { number }): any
@@ -41,13 +40,13 @@ describe("login calendar status", function()
 		expect(calendar.days[7].status).toBe("Waiting")
 	end)
 
-	it("shows the rewards of all seven days, coins from the income estimate", function()
+	it("shows the fixed rewards of all seven days", function()
 		local days = rules.loginCalendar(rules.newPlayerState(), NOW).days
 
-		expect(days[1].rewards).toEqual({ { kind = "Coins", amount = 34 } })
+		expect(days[1].rewards).toEqual({ { kind = "Gems", amount = 5 } })
 		expect(days[2].rewards).toEqual({ { kind = "Gems", amount = 10 } })
 		expect(days[3].rewards).toEqual({ { kind = "Potion", amount = 1 } })
-		expect(days[4].rewards).toEqual({ { kind = "Coins", amount = 68 } })
+		expect(days[4].rewards).toEqual({ { kind = "Potion", amount = 1 } })
 		expect(days[7].rewards).toEqual({ { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } })
 	end)
 
@@ -71,14 +70,32 @@ describe("login calendar status", function()
 	end)
 end)
 
+describe("login rewards are fixed", function()
+	it("do not depend on worlds, pets or rebirths", function()
+		local advanced = rules.newPlayerState()
+		advanced.unlockedWorlds = { "Farm" }
+		advanced.rebirths = 3
+		advanced.pets = { { uid = 1, petId = "Dragon" } }
+		advanced.equipped = { 1 }
+		local before = rules.loginCalendar(rules.newPlayerState(), NOW)
+
+		local after = rules.loginCalendar(advanced, NOW)
+
+		for index, day in before.days do
+			expect(after.days[index].rewards).toEqual(day.rewards)
+		end
+	end)
+end)
+
 describe("claiming the login reward", function()
-	it("first day: pays the day 1 coins and remembers the claim", function()
+	it("first day: pays the day 1 gems and remembers the claim", function()
 		local result = rules.claimLoginReward(rules.newPlayerState(), NOW, NO_RANDOM)
 
 		expect(result.ok).toBe(true)
 		expect(result.day).toBe(1)
-		expect(result.rewards).toEqual({ { kind = "Coins", amount = 34 } })
-		expect(result.state.coins).toBe(34)
+		expect(result.rewards).toEqual({ { kind = "Gems", amount = 5 } })
+		expect(result.state.gems).toBe(5)
+		expect(result.state.coins).toBe(0)
 	end)
 
 	it("next day: the series goes up by one", function()
@@ -88,7 +105,7 @@ describe("claiming the login reward", function()
 
 		expect(result.ok).toBe(true)
 		expect(result.day).toBe(2)
-		expect(result.state.gems).toBe(10)
+		expect(result.state.gems - state.gems).toBe(10)
 	end)
 
 	it("a new day starts at midnight German time, not after 24 hours", function()
@@ -119,7 +136,7 @@ describe("claiming the login reward", function()
 
 		expect(seventh.day).toBe(7)
 		expect(eighth.day).toBe(1)
-		expect(eighth.rewards).toEqual({ { kind = "Coins", amount = 34 } })
+		expect(eighth.rewards).toEqual({ { kind = "Gems", amount = 5 } })
 	end)
 
 	it("pays gems and random potions like gifts (sorted ids: Coins, Luck, Speed)", function()
@@ -151,15 +168,6 @@ describe("claiming the login reward", function()
 
 		expect(rules.claimLoginReward(state, DAY(0), NO_RANDOM).reason).toBe("LoginClaimed")
 		expect(rules.loginCalendar(state, DAY(0)).claimable).toBe(false)
-	end)
-
-	it("coins scale with the highest unlocked world", function()
-		local state = rules.newPlayerState()
-		state.unlockedWorlds = { "Farm" }
-
-		local result = rules.claimLoginReward(state, NOW, NO_RANDOM)
-
-		expect(result.state.coins).toBe(160)
 	end)
 
 	it("does not change the old state", function()
