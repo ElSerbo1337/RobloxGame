@@ -23,7 +23,7 @@ Was vor dem Öffentlich-Stellen noch fehlt, in Kurzform und mit aktuellen Werten
 - [x] Verlassen speichert: Client-Fenster schließen, neu beitreten → Münzen, Upgrades, Pets und Gem-Upgrades sind da, keine Lock-Warnung. Details: #3, #34 _(mehrfach Stop/Play, keine Lock-Warnung)_
 - [x] Laden fehlgeschlagen überschreibt nichts: API-Zugriff aus → Warnung `[Save] Laden … fehlgeschlagen`, Münzen verdienen, Stop; API-Zugriff an → alter Stand ist wieder da. Details: #3 _(19.11.: Warnung erscheint, gespeicherter Stand unverändert)_
 - [x] Verwaister Session-Lock: nach > 2 Min Spielzeit Studio hart beenden, Play innerhalb von 5 Min → „noch von einem anderen Server belegt, warte …“, danach normales Laden mit dem Stand vor dem Absturz. Details: #34 _(19.11.: 5× „belegt, warte …“, Kick nach 60 s, nach Ablauf normales Laden)_
-- [ ] Tageswechsel (Mitternacht deutscher Zeit): Tages-Spielzeit und Geschenke starten neu, Login-Kalender rückt einen Tag weiter, ausgelassener Tag → wieder Tag 1. Details: #36, #37
+- [x] Tageswechsel (Mitternacht deutscher Zeit): Tages-Spielzeit und Geschenke starten neu, Login-Kalender rückt einen Tag weiter, ausgelassener Tag → wieder Tag 1. Details: #36, #37 _(19.11., simuliert über den Spielstand: Folgetag → Tag 3 öffnet von selbst, Geschenke neu; ausgelassener Tag → Tag 1)_
 - [x] Gesperrte Welt beim Beitreten (`lastWorldId` auf nicht freigeschaltete Welt) → Start in Welt 1 ohne Fehler. Details: #25 _(19.11.: Start auf der Spawn-Insel)_
 - [x] Lieferauftrag verfällt offline: angenommen, rausgehen, nach Ablauf (3:00) wieder rein → Auftrag weg, Beläge noch auf der Pizza. Details: #14 _(19.11.: Auftrag weg, Belag noch auf der Pizza)_
 - [x] Inventar voll (50/50): „1 öffnen“ → „Inventar voll!“, keine Münzen abgezogen; „3 öffnen“ mit 1–2 freien Plätzen ebenso. Details: #7, #12 _(19.11.: 75/75, „1“ und „3 öffnen“ → InventoryFull, Münzen gleich)_
@@ -64,6 +64,9 @@ Was vor dem Öffentlich-Stellen noch fehlt, in Kurzform und mit aktuellen Werten
 - [ ] Spieleranzahl pro Server festlegen (Places → Server Size, Vorschlag 10–12), danach mit 2 Spielern den Server-Wechsel prüfen. Details: #34
 - [ ] Letzter Durchlauf im veröffentlichten Spiel (nicht Studio): neuer Spieler mit Tutorial, Speichern, Bestenlisten mit echtem Namen. Details: #17, #38
 - [ ] Öffentlich stellen: Experience → Privacy → Public; danach Spielseite einmal als Gast öffnen.
+
+
+**Stand 19.11.2026 (lokale Studio-Sitzung):** In Studio geprüft und abgehakt sind Mehrspieler (außer Bestenlisten im veröffentlichten Spiel), Speichern & Sonderfälle und Server-Schutz. Bildrate am PC: 60 FPS in Welt 1, Vulkan, Süßigkeitenland und Weltraum. Das Handy steht noch aus. Dein Spielstand wurde vorher gesichert (`backup_22nov_player_372358501`) und danach wiederhergestellt. Test-Einträge in den Bestenlisten sind gelöscht. Offen bleiben nur Punkte, die du machen musst: echtes Handy, Sounds anhören, Spielseite/Veröffentlichen, Bestenlisten mit echtem Namen.
 
 ## #2 Kern-Schleife: Belag einsammeln und am Ofen verkaufen
 
@@ -1301,7 +1304,7 @@ Geschenke und Login-Kalender geben nur noch feste Gems und Tränke, keine Münze
 
 - [x] Geschenke-Menü: alle sechs Zeilen zeigen „3 Gems“, „5 Gems“, „1 Trank“, „1 Trank“, „8 Gems“, „10 Gems + 1 Trank“; nirgends „Münzen“.
 - [x] Geschenk abholen (5 Min): Meldung „Geschenk! +3 Gems“, Gem-Zähler +3, Münzen unverändert. Trank-Geschenk: Meldung nennt den gezogenen Trank (z. B. „1× Glücks-Trank“), er liegt im Trank-Inventar. _(belegt: 20.11.: „Geschenk! +1× Glücks-Trank“ (`70`))_
-- [ ] Login-Kalender: Kacheln Tag 1–7 zeigen die neuen Belohnungen (Tag 1 „5 Gems“, Tag 4 „1 Trank“); Abholen an Tag 1 gibt +5 Gems und keine Münzen.
+- [x] Login-Kalender: Kacheln Tag 1–7 zeigen die neuen Belohnungen (Tag 1 „5 Gems“, Tag 4 „1 Trank“); Abholen an Tag 1 gibt +5 Gems und keine Münzen. _(19.11.: Tag 1 → +5 Gems, keine Münzen)_
 - [ ] Gleiche Anzeigen in Welt 1 und nach Freischalten späterer Welten bzw. mit starken Pets (Belohnung ändert sich nicht).
 - [x] ~~Bauernhof-Tor zeigt 120 Münzen, Rebirth-Menü 3,9 Mrd als ersten Rebirth-Preis.~~ _(entfällt: seit #57 Bauernhof 26, Rebirth 74 Mio)_
 
