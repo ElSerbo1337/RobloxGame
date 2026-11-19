@@ -45,11 +45,13 @@ function GroundMarker.build(
 	local model = Instance.new("Model")
 	model.Name = "GroundMarker"
 
-	-- Turned by 180° so the SurfaceGui's top edge points away from the players.
+	-- A Top-face SurfaceGui runs its text along the part's Z axis, so the plate is turned
+	-- by 90° (footprint swapped to match): the text then runs across the zone and its
+	-- top edge points away from the players (Studio test: at 180° it read sideways).
 	local plate = decal({
 		Name = "MarkerPlate",
-		Size = Vector3.new(width, PLATE_THICKNESS, depth),
-		CFrame = groundCf * CFrame.new(0, PLATE_TOP - PLATE_THICKNESS / 2, 0) * CFrame.Angles(0, math.pi, 0),
+		Size = Vector3.new(depth, PLATE_THICKNESS, width),
+		CFrame = groundCf * CFrame.new(0, PLATE_TOP - PLATE_THICKNESS / 2, 0) * CFrame.Angles(0, math.pi / 2, 0),
 		Color = color,
 		Material = Enum.Material.SmoothPlastic,
 		Transparency = 0.35,

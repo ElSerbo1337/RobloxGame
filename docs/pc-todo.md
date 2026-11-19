@@ -1344,12 +1344,12 @@ Importiert: 5 Fancy-Eier und Alien-Pilz neu, `Coin` und `Gem` (Teilnamen wie vor
 
 ## #60 Verkaufs- und Shop-Zone als Bodenmarkierung
 
-- [ ] Ofen in **allen Welten**: kein orangener Kraftfeld-Kasten mehr, sondern flache, leicht durchsichtige orange Fläche mit hell leuchtendem Rand und Schrift „VERKAUFEN“.
-- [ ] Alle Shops (auch die größeren in späteren Welten): flache grüne Fläche mit leuchtendem Rand und „SHOP“, kein Kasten mehr.
-- [ ] Schrift ist lesbar, wenn man von vorne auf Ofen/Shop zuläuft (nicht auf dem Kopf). Falls doch: in `src/server/GroundMarker.luau` die Drehung `CFrame.Angles(0, math.pi, 0)` der `MarkerPlate` entfernen.
+- [x] Ofen in **allen Welten**: kein orangener Kraftfeld-Kasten mehr, sondern flache, leicht durchsichtige orange Fläche mit hell leuchtendem Rand und Schrift „VERKAUFEN“.
+- [x] Alle Shops (auch die größeren in späteren Welten): flache grüne Fläche mit leuchtendem Rand und „SHOP“, kein Kasten mehr.
+- [x] Schrift ist lesbar, wenn man von vorne auf Ofen/Shop zuläuft (nicht auf dem Kopf). Falls doch: in `src/server/GroundMarker.luau` die Drehung `CFrame.Angles(0, math.pi, 0)` der `MarkerPlate` entfernen.
 - [ ] Verkaufen klappt genau im markierten Bereich wie vorher (auch an den Rändern), Shop-Menü geht im selben Bereich auf und beim Verlassen zu.
 - [ ] Kein Flackern zwischen Markierung und Boden/Wegplatten (Kamera flach halten, auch in Bewegung).
-- [ ] Figur läuft normal über die Markierung (kein Stolpern/Hochsteigen), Klicks und Kamera gehen durch.
+- [x] Figur läuft normal über die Markierung (kein Stolpern/Hochsteigen), Klicks und Kamera gehen durch.
 
 ## #59 Telefon klingelt nur kurz und lässt sich ausschalten
 
@@ -1357,12 +1357,22 @@ Vorher: `lune run test` → `540 passed, 0 failed`.
 
 Studio: Rojo verbinden, **Play** (Tutorial fertig, sonst klingelt nichts):
 
-- [ ] Telefon klingelt nach der Ruhezeit: Klingelton nur **3-mal** (ca. 10 s), danach still. „RING!“-Blase und HUD-Karte „Das Telefon klingelt!“ bleiben, bis man annimmt/ablehnt.
-- [ ] Beim nächsten Anruf klingelt es wieder 3-mal.
-- [ ] Am Telefon: oben rechts grauer Knopf „📵 Keine Anrufe mehr“ (Titel nicht überdeckt, auch auf dem Handy-Emulator). Drücken → Meldung „Keine Anrufe mehr…“, Blase und HUD-Hinweis verschwinden, Menü zeigt „📵 Anrufe sind aus“ mit grünem „📞 Anrufe einschalten“.
-- [ ] Weggehen und wieder ans Telefon → „Anrufe sind aus“-Menü erscheint erneut; mehrere Minuten warten → kein Klingeln.
+- [x] Telefon klingelt nach der Ruhezeit: Klingelton nur **3-mal** (ca. 10 s), danach still. „RING!“-Blase und HUD-Karte „Das Telefon klingelt!“ bleiben, bis man annimmt/ablehnt.
+- [x] Beim nächsten Anruf klingelt es wieder 3-mal.
+- [x] Am Telefon: oben rechts grauer Knopf „📵 Keine Anrufe mehr“ (Titel nicht überdeckt, auch auf dem Handy-Emulator). Drücken → Meldung „Keine Anrufe mehr…“, Blase und HUD-Hinweis verschwinden, Menü zeigt „📵 Anrufe sind aus“ mit grünem „📞 Anrufe einschalten“.
+- [x] Weggehen und wieder ans Telefon → „Anrufe sind aus“-Menü erscheint erneut; mehrere Minuten warten → kein Klingeln.
 - [ ] Mit laufendem, angenommenem Auftrag ausschalten → Auftragskarte bleibt, Lieferung klappt.
-- [ ] „Anrufe einschalten“ → Menü schließt, Meldung „Anrufe sind wieder an.“, nach ca. 2 Min klingelt es wieder.
-- [ ] Ausgeschaltet → Rejoin (DataStore an) → Anrufe bleiben aus. Nach einem Rebirth bleiben sie ebenfalls aus.
-- [ ] Anderes Menü öffnen, während „Anrufe sind aus“ offen ist → Telefon-Menü schließt (#53).
-- [ ] Output ohne rote Fehler.
+- [x] „Anrufe einschalten“ → Menü schließt, Meldung „Anrufe sind wieder an.“, nach ca. 2 Min klingelt es wieder.
+- [x] Ausgeschaltet → Rejoin (DataStore an) → Anrufe bleiben aus. Nach einem Rebirth bleiben sie ebenfalls aus.
+- [x] Anderes Menü öffnen, während „Anrufe sind aus“ offen ist → Telefon-Menü schließt (#53).
+- [x] Output ohne rote Fehler.
+
+## Studio-Test 21.11.2026 (#59, #60)
+
+Dein Spielstand war vorher gesichert (`backup_21nov_player_372358501`) und ist danach wiederhergestellt (143.422 Münzen). Für den Test lag die Anruf-Pause vorübergehend bei 20 s statt 150 s (nicht committet). Output ohne Spiel-Fehler. Screenshots: `docs/playtest/78-…` bis `84-…`.
+
+**#60 behoben:** Die Schrift „VERKAUFEN“/„SHOP“ stand um 90° gedreht (lief vom Spieler weg, `81`). Die Platte in `GroundMarker` ist jetzt um 90° statt 180° gedreht (Breite und Tiefe getauscht, Fläche gleich). Die Schrift läuft quer und steht richtig herum, wenn man vom Weg kommt (`82`, `83`, auch Welt 4/7 `84`). Ränder leuchten, keine Kästen mehr. Verkaufen und Shop öffnen klappen wie vorher (Zonen unverändert). Nicht geprüft: Flackern in Bewegung, Verkaufen genau am Rand.
+
+**#59:** Beim Beitreten klingelt es und ist danach still, Blase und HUD-Karte bleiben. Der nächste Anruf kam 18 s nach dem Ablehnen (Testwert 20 s). Die 3 Klingeltöne konnte ich nicht hören; laut Code (`RINGS_PER_CALL = 3`, alle 3 s, Neustart pro Anruf) stimmt es, und nach dem ersten Klingeln kam kein weiterer Ton. „📵 Keine Anrufe mehr“ sitzt oben rechts, der Titel ist frei (`78`). Ausschalten → Meldung, Blase und Hinweis weg, Menü „Anrufe sind aus“ (`79`). Weg und zurück → Menü wieder da; 45 s kein Klingeln. Pets-Knopf schließt das Telefon-Menü. Rejoin → bleibt aus. Rebirth → bleibt aus. Einschalten → „Anrufe sind wieder an.“, Klingeln nach der Pause (`80`).
+
+**Offen / deine Entscheidung:** „Mit laufendem Auftrag ausschalten“ geht nicht: Das Telefon-Menü erscheint nur, wenn es klingelt, und während eines Auftrags klingelt es nicht. Die Regel selbst würde den Auftrag behalten. Soll man am Telefon auch ohne Anruf ausschalten können? Nicht geprüft: der Knopf im Handy-Emulator.
