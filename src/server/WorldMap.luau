@@ -10,6 +10,7 @@ local Workspace = game:GetService("Workspace")
 
 local EggService = require(script.Parent.EggService)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local GroundMarker = require(script.Parent.GroundMarker)
 local IslandBuilder = require(script.Parent.IslandBuilder)
 local IslandPlan = require(ReplicatedStorage.Shared.IslandPlan)
 local WorldDeco = require(script.Parent.WorldDeco)
@@ -144,13 +145,14 @@ local function buildOven(folder: Instance, cf: CFrame, world: any, color: Color3
 			then "Ofen – hier verkaufen"
 			else `Ofen ({world.displayName}) – hier verkaufen`
 	)
+	-- The zone box stays as the (invisible) detection volume; the floor marking shows it (#60).
+	local sellColor = Color3.fromRGB(255, 150, 40)
+	GroundMarker.build(folder, cf * CFrame.new(0, 0, -9.5), 14, 10, sellColor, "VERKAUFEN")
 	return part({
 		Name = "SellZone",
 		Size = Vector3.new(14, 6, 10),
 		CFrame = cf * CFrame.new(0, 3, -9.5),
-		Color = Color3.fromRGB(255, 150, 40),
-		Material = Enum.Material.ForceField,
-		Transparency = 0.3,
+		Transparency = 1,
 		CanCollide = false,
 		CanQuery = false,
 		CanTouch = false,

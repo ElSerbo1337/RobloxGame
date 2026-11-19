@@ -1341,3 +1341,12 @@ Importiert: 5 Fancy-Eier und Alien-Pilz neu, `Coin` und `Gem` (Teilnamen wie vor
 - Tablet (iPad 1180×820): Die Seitenknöpfe stehen in **einer Reihe** auf halber Höhe, nicht in einer Spalte wie in #52 beschrieben (ab Bildschirmmitte bis zum Joystick ist nur Platz für eine Reihe). Sieht ordentlich aus, ist aber nicht wie in der Checkliste.
 - Der Rebirth-Preis wird ab 100 Mio ohne Komma gekürzt („166 Mio“ statt 166,5 Mio). Das ist so gewollt (`UiKit.shortNumber`).
 - Nicht geprüft: Flackern an Inselrändern in Bewegung (auf Standbildern nichts zu sehen), Rauch-FPS, Raus-/Reintabben, Hochformat, Gerät drehen, Welt 3 mit Stoppuhr, Lieferauftrag-Belohnung = Auszahlung, „Beste ausrüsten“ mit späten Pets.
+
+## #60 Verkaufs- und Shop-Zone als Bodenmarkierung
+
+- [ ] Ofen in **allen Welten**: kein orangener Kraftfeld-Kasten mehr, sondern flache, leicht durchsichtige orange Fläche mit hell leuchtendem Rand und Schrift „VERKAUFEN“.
+- [ ] Alle Shops (auch die größeren in späteren Welten): flache grüne Fläche mit leuchtendem Rand und „SHOP“, kein Kasten mehr.
+- [ ] Schrift ist lesbar, wenn man von vorne auf Ofen/Shop zuläuft (nicht auf dem Kopf). Falls doch: in `src/server/GroundMarker.luau` die Drehung `CFrame.Angles(0, math.pi, 0)` der `MarkerPlate` entfernen.
+- [ ] Verkaufen klappt genau im markierten Bereich wie vorher (auch an den Rändern), Shop-Menü geht im selben Bereich auf und beim Verlassen zu.
+- [ ] Kein Flackern zwischen Markierung und Boden/Wegplatten (Kamera flach halten, auch in Bewegung).
+- [ ] Figur läuft normal über die Markierung (kein Stolpern/Hochsteigen), Klicks und Kamera gehen durch.

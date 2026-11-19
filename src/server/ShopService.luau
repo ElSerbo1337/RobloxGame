@@ -11,6 +11,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
+local GroundMarker = require(script.Parent.GroundMarker)
 local PlayerStates = require(script.Parent.PlayerStates)
 
 local CHECK_SECONDS = 0.2
@@ -109,19 +110,27 @@ function ShopService.buildStand(parent: Instance, shopId: string, groundPosition
 	label.Parent = billboard
 	billboard.Parent = model
 
+	-- Invisible detection volume; the floor marking shows it (#60).
 	local zone = part({
 		Name = "ShopZone",
 		Size = Vector3.new(14 * k, 6, 9 * k),
 		Position = groundPosition + Vector3.new(0, 3, -6.5 * k),
-		Color = Color3.fromRGB(90, 200, 120),
-		Material = Enum.Material.ForceField,
-		Transparency = 0.3,
+		Transparency = 1,
 		CanCollide = false,
 		CanQuery = false,
 		CanTouch = false,
 		CastShadow = false,
 		Parent = model,
 	})
+
+	GroundMarker.build(
+		model,
+		CFrame.new(groundPosition + Vector3.new(0, 0, -6.5 * k)),
+		14 * k,
+		9 * k,
+		Color3.fromRGB(90, 200, 120),
+		"SHOP"
+	)
 
 	ModelLibrary.dressPlaceholder(
 		model,
