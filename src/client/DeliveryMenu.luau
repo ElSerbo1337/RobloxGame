@@ -1,10 +1,12 @@
 --!strict
 -- Delivery service on the client:
 -- * Ringing: while PhoneRinging is set, every phone in the world rings for this player
---   (bouncing "RING!" bubble, ringing sound every few seconds), and the HUD says so.
+--   (bouncing "RING!" bubble, ringing sound a few times per call), and the HUD says so.
 -- * Phone panel: opens when the server says the player stands at the ringing phone
 --   (PhoneOpen): order, reward ("bis zu …"), time limit and big "Annehmen" / "Ablehnen"
---   buttons. The buttons only send the wish AnswerPhone; the server decides.
+--   buttons, plus a small "Keine Anrufe mehr" switch. With calls switched off the panel
+--   says so and offers "Anrufe einschalten". The buttons only send the wishes AnswerPhone /
+--   SetPhoneCalls; the server decides.
 -- * Order card (right side, below the potion timers): toppings with progress, timer and
 --   the reward if delivered now. Reads DeliveryOrder (JSON, see Net / DeliveryService).
 
@@ -26,6 +28,8 @@ type DeliveryReward = GameRules.DeliveryReward
 local PANEL_SIZE = Vector2.new(540, 430)
 local CARD_WIDTH = 260
 local RING_EVERY_SECONDS = 3
+-- The ringing sound plays this often per call; bubble and HUD hint stay until answered.
+local RINGS_PER_CALL = 3
 
 local DeliveryMenu = {}
 
@@ -113,7 +117,8 @@ local function startRinging(player: Player)
 		end
 	end
 
-	local lastRing = 0
+	local lastRing = -math.huge
+	local ringsLeft = 0
 	RunService.Heartbeat:Connect(function()
 		if #bubbles == 0 then
 			return
@@ -124,14 +129,22 @@ local function startRinging(player: Player)
 		for _, bubble in bubbles do
 			bubble.StudsOffsetWorldSpace = offset
 		end
-		if t - lastRing >= RING_EVERY_SECONDS then
+		if ringsLeft > 0 and t - lastRing >= RING_EVERY_SECONDS then
 			lastRing = t
+			ringsLeft -= 1
 			Sounds.play("PhoneRing")
 		end
 	end)
 
+	local wasRinging = false
 	local function update()
-		setRinging(player:GetAttribute("PhoneRinging") == true)
+		local ringing = player:GetAttribute("PhoneRinging") == true
+		if ringing and not wasRinging then
+			ringsLeft = RINGS_PER_CALL -- a new call
+			lastRing = -math.huge
+		end
+		wasRinging = ringing
+		setRinging(ringing)
 	end
 	player:GetAttributeChangedSignal("PhoneRinging"):Connect(update)
 	update()
@@ -140,6 +153,7 @@ end
 function DeliveryMenu.start()
 	local player = Players.LocalPlayer
 	local answerPhone = Net.event("AnswerPhone")
+	local setPhoneCalls = Net.event("SetPhoneCalls")
 
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "DeliveryMenu"
@@ -158,8 +172,15 @@ function DeliveryMenu.start()
 
 	local title = UiKit.label(panel, "📞 Neuer Auftrag!")
 	title.Position = UDim2.fromOffset(24, 14)
-	title.Size = UDim2.new(1, -48, 0, 52)
+	title.Size = UDim2.new(1, -268, 0, 52)
 	title.TextXAlignment = Enum.TextXAlignment.Left
+
+	-- Small switch in the corner: no more calls for this player.
+	local callsOffButton = UiKit.button(panel, "📵 Keine Anrufe mehr", UiKit.GREY)
+	callsOffButton.Name = "CallsOff"
+	callsOffButton.AnchorPoint = Vector2.new(1, 0)
+	callsOffButton.Position = UDim2.new(1, -20, 0, 14)
+	callsOffButton.Size = UDim2.fromOffset(220, UiKit.MIN_TOUCH)
 
 	local orderList = UiKit.label(panel, "")
 	orderList.Position = UDim2.fromOffset(24, 76)
@@ -193,6 +214,29 @@ function DeliveryMenu.start()
 	declineButton.Position = UDim2.new(1, -24, 1, -20)
 	declineButton.Size = UDim2.new(0.5, -36, 0, 84)
 
+	local callsOnButton = UiKit.button(panel, "📞 Anrufe einschalten", UiKit.GREEN)
+	callsOnButton.Name = "CallsOn"
+	callsOnButton.AnchorPoint = Vector2.new(0.5, 1)
+	callsOnButton.Position = UDim2.new(0.5, 0, 1, -20)
+	callsOnButton.Size = UDim2.new(1, -48, 0, 84)
+
+	-- Order view (calls on) or "Anrufe sind aus" view.
+	local function showView(callsOn: boolean)
+		title.Size = if callsOn then UDim2.new(1, -268, 0, 52) else UDim2.new(1, -48, 0, 52)
+		for _, part in { callsOffButton, rewardLine, timeLine, acceptButton, declineButton } do
+			part.Visible = callsOn
+		end
+		callsOnButton.Visible = not callsOn
+	end
+
+	callsOffButton.Activated:Connect(function()
+		UiKit.pop(callsOffButton)
+		setPhoneCalls:FireServer(false)
+	end)
+	callsOnButton.Activated:Connect(function()
+		UiKit.pop(callsOnButton)
+		setPhoneCalls:FireServer(true)
+	end)
 	acceptButton.Activated:Connect(function()
 		UiKit.pop(acceptButton)
 		answerPhone:FireServer(true)
@@ -202,16 +246,23 @@ function DeliveryMenu.start()
 		answerPhone:FireServer(false)
 	end)
 
-	Net.event("PhoneOpen").OnClientEvent:Connect(function(order: Order, maxReward: DeliveryReward?, seconds: number)
-		local lines = {}
-		for _, toppingId in sortedToppings(order.toppings) do
-			table.insert(lines, `{order.toppings[toppingId]}× {toppingName(toppingId)}`)
+	Net.event("PhoneOpen").OnClientEvent:Connect(function(order: Order?, maxReward: DeliveryReward?, seconds: number?)
+		showView(order ~= nil)
+		if order == nil then
+			title.Text = "📵 Anrufe sind aus"
+			orderList.Text = "Das Telefon klingelt nicht mehr. Hier kannst du Anrufe wieder einschalten."
+		else
+			title.Text = "📞 Neuer Auftrag!"
+			local lines = {}
+			for _, toppingId in sortedToppings(order.toppings) do
+				table.insert(lines, `{order.toppings[toppingId]}× {toppingName(toppingId)}`)
+			end
+			orderList.Text = table.concat(lines, "\n")
+			rewardLine.Text = if maxReward
+				then `Belohnung: bis zu {rewardText(maxReward.reward, maxReward.amount, maxReward.potionId)}`
+				else ""
+			timeLine.Text = `Zeit: {clockText(seconds or 0)} – je schneller, desto mehr!`
 		end
-		orderList.Text = table.concat(lines, "\n")
-		rewardLine.Text = if maxReward
-			then `Belohnung: bis zu {rewardText(maxReward.reward, maxReward.amount, maxReward.potionId)}`
-			else ""
-		timeLine.Text = `Zeit: {clockText(seconds)} – je schneller, desto mehr!`
 		if not panel.Visible then
 			panel.Visible = true
 			UiKit.menuOpened("phone")

@@ -1350,3 +1350,19 @@ Importiert: 5 Fancy-Eier und Alien-Pilz neu, `Coin` und `Gem` (Teilnamen wie vor
 - [ ] Verkaufen klappt genau im markierten Bereich wie vorher (auch an den Rändern), Shop-Menü geht im selben Bereich auf und beim Verlassen zu.
 - [ ] Kein Flackern zwischen Markierung und Boden/Wegplatten (Kamera flach halten, auch in Bewegung).
 - [ ] Figur läuft normal über die Markierung (kein Stolpern/Hochsteigen), Klicks und Kamera gehen durch.
+
+## #59 Telefon klingelt nur kurz und lässt sich ausschalten
+
+Vorher: `lune run test` → `540 passed, 0 failed`.
+
+Studio: Rojo verbinden, **Play** (Tutorial fertig, sonst klingelt nichts):
+
+- [ ] Telefon klingelt nach der Ruhezeit: Klingelton nur **3-mal** (ca. 10 s), danach still. „RING!“-Blase und HUD-Karte „Das Telefon klingelt!“ bleiben, bis man annimmt/ablehnt.
+- [ ] Beim nächsten Anruf klingelt es wieder 3-mal.
+- [ ] Am Telefon: oben rechts grauer Knopf „📵 Keine Anrufe mehr“ (Titel nicht überdeckt, auch auf dem Handy-Emulator). Drücken → Meldung „Keine Anrufe mehr…“, Blase und HUD-Hinweis verschwinden, Menü zeigt „📵 Anrufe sind aus“ mit grünem „📞 Anrufe einschalten“.
+- [ ] Weggehen und wieder ans Telefon → „Anrufe sind aus“-Menü erscheint erneut; mehrere Minuten warten → kein Klingeln.
+- [ ] Mit laufendem, angenommenem Auftrag ausschalten → Auftragskarte bleibt, Lieferung klappt.
+- [ ] „Anrufe einschalten“ → Menü schließt, Meldung „Anrufe sind wieder an.“, nach ca. 2 Min klingelt es wieder.
+- [ ] Ausgeschaltet → Rejoin (DataStore an) → Anrufe bleiben aus. Nach einem Rebirth bleiben sie ebenfalls aus.
+- [ ] Anderes Menü öffnen, während „Anrufe sind aus“ offen ist → Telefon-Menü schließt (#53).
+- [ ] Output ohne rote Fehler.

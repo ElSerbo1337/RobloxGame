@@ -228,6 +228,7 @@ end
 local function replicate(player: Player, state: PlayerState)
 	local rules = PlayerStates.rules
 	player:SetAttribute("PhoneRinging", rules.deliveryCall(state) ~= nil)
+	player:SetAttribute("PhoneCalls", state.phoneCalls)
 	local order = rules.activeOrder(state)
 	if order == nil then
 		player:SetAttribute("DeliveryOrder", "")
@@ -266,6 +267,12 @@ function DeliveryService.start(stations: { Station })
 	local phoneShown: { [Player]: boolean } = {}
 
 	local function showPhone(player: Player, state: PlayerState)
+		if not state.phoneCalls then
+			-- Calls are off: the panel offers to switch them back on.
+			phoneOpen:FireClient(player, nil, nil, nil)
+			phoneShown[player] = true
+			return
+		end
 		local call = rules.deliveryCall(state)
 		if call == nil then
 			return
@@ -309,6 +316,25 @@ function DeliveryService.start(stations: { Station })
 		if result.ok then
 			PlayerStates.set(player, result.state)
 			notify:FireClient(player, if accept then "OrderAccepted" else "OrderDeclined")
+		end
+	end)
+
+	Net.event("SetPhoneCalls").OnServerEvent:Connect(function(player: Player, enabled: unknown)
+		if type(enabled) ~= "boolean" or atPhone[player] == nil then
+			return -- only switched at a phone
+		end
+		local state = PlayerStates.get(player)
+		if state == nil then
+			return
+		end
+		local result = rules.setPhoneCalls(state, enabled, os.time())
+		if result.ok then
+			PlayerStates.set(player, result.state)
+			hidePhone(player)
+			notify:FireClient(player, if enabled then "PhoneCallsOn" else "PhoneCallsOff")
+			if not enabled then
+				showPhone(player, result.state)
+			end
 		end
 	end)
 

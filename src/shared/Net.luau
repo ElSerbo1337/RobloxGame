@@ -24,10 +24,12 @@
 -- Teleport        client -> server  (worldId: string)            "send me to this world" (only from inside a portal)
 -- EquipBest       client -> server  ()                           "equip my pets with the highest bonus"
 -- DeletePet       client -> server  (uid: number)               "delete this pet for good" (client asked to confirm)
--- PhoneOpen       server -> client  (order: GameRules.Order, maxReward: GameRules.DeliveryReward, seconds: number)
---                                    player stands at a ringing phone: show the order with accept/decline
+-- PhoneOpen       server -> client  (order: GameRules.Order?, maxReward: GameRules.DeliveryReward?, seconds: number?)
+--                                    player stands at a ringing phone: show the order with accept/decline;
+--                                    order nil = calls are switched off: show "Anrufe sind aus"
 -- PhoneClose      server -> client  ()                           player left the phone (or answered)
 -- AnswerPhone     client -> server  (accept: boolean)            "take / turn down this order" (only at a phone)
+-- SetPhoneCalls   client -> server  (enabled: boolean)          "switch phone calls on/off" (only at a phone)
 -- Rebirth         client -> server  ()                           "do a rebirth now" (client asked to confirm)
 -- Rebirthed       server -> client  (rebirths: number, multiplier: number)  rebirth done: play the celebration
 --                                    (a refused rebirth answers with Notify and the rule's reason)
@@ -48,10 +50,11 @@
 -- Rebirth (see RebirthService): Rebirths (number done), RebirthOffer (JSON GameRules.RebirthOffer).
 -- Potions (see PotionService): Potions (JSON { [potionId]: count owned }),
 -- ActivePotions (JSON { [potionId]: seconds left when the attribute was set; the client counts down from there }).
--- Delivery (see DeliveryService): PhoneRinging (boolean), DeliveryOrder (JSON, "" = no order:
+-- Delivery (see DeliveryService): PhoneRinging (boolean), PhoneCalls (boolean, false = switched off), DeliveryOrder (JSON, "" = no order:
 -- { toppings = { [id]: count }, have = { [id]: count on the pizza }, reward, potionId?, secondsLeft,
 --   rewardNow = amount if delivered now }; the client counts secondsLeft down until the next update).
 -- Notify kinds of the delivery: PhoneRinging, OrderAccepted, OrderDeclined, OrderExpired, WrongToppings,
+-- PhoneCallsOff, PhoneCallsOn,
 -- NoOrder, Delivered (amount, rewardKind "Coins" | "Gems" | "Potion", potionId?).
 -- Gifts (see GiftService): Gifts (JSON { ready = gifts ready to claim, nextSeconds = play time until the
 --   next gift (-1 = none left today), gifts = { { minutes, status "Claimed" | "Ready" | "Waiting",
@@ -91,6 +94,7 @@ local EVENTS = {
 	PhoneOpen = true,
 	PhoneClose = true,
 	AnswerPhone = true,
+	SetPhoneCalls = true,
 	Rebirth = true,
 	Rebirthed = true,
 	ClaimGift = true,

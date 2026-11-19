@@ -39,6 +39,8 @@ local MESSAGES: { [string]: string } = {
 	OrderExpired = "Zeit um – der Auftrag ist verfallen.",
 	WrongToppings = "Falsche Beläge! Überzählige am Ofen verkaufen.",
 	NoOrder = "Kein Auftrag – geh ans Telefon!",
+	PhoneCallsOff = "📵 Keine Anrufe mehr. Am Telefon wieder einschalten.",
+	PhoneCallsOn = "📞 Anrufe sind wieder an.",
 }
 
 local Hud = {}

@@ -98,6 +98,60 @@ describe("when the phone rings", function()
 	end)
 end)
 
+describe("switching phone calls off", function()
+	it("calls are on for new players and for old saves", function()
+		expect(rules.newPlayerState().phoneCalls).toBe(true)
+		local loaded = SaveData.load({ version = 3, coins = 5 }, rules.newPlayerState()).state
+		expect(loaded.phoneCalls).toBe(true)
+	end)
+
+	it("with calls off the phone does not ring", function()
+		local state = rules.setPhoneCalls(player(), false, 1000).state
+		local result = rules.ringPhone(state, 5000, sequenceRandom(SALAMI_MUSHROOM))
+
+		expect(result.ok).toBe(false)
+		expect(result.reason).toBe("PhoneCallsOff")
+		expect(result.state).toBe(state)
+	end)
+
+	it("switching off ends a waiting call but keeps an accepted order", function()
+		local hungUp = rules.setPhoneCalls(ringing(), false, 1000)
+		expect(hungUp.ok).toBe(true)
+		expect(hungUp.state.phoneCalls).toBe(false)
+		expect(rules.deliveryCall(hungUp.state)).toBeNil()
+
+		local delivering = rules.acceptOrder(ringing(), 1000).state
+		local kept = rules.setPhoneCalls(delivering, false, 1010).state
+		expect(rules.activeOrder(kept)).toEqual(rules.activeOrder(delivering))
+	end)
+
+	it("switched back on, the phone rings after the normal call interval", function()
+		local off = rules.setPhoneCalls(player(), false, 0).state
+		local on = rules.setPhoneCalls(off, true, 1000)
+
+		expect(on.ok).toBe(true)
+		expect(on.state.phoneCalls).toBe(true)
+		expect(rules.ringPhone(on.state, 1119, sequenceRandom(SALAMI_MUSHROOM)).reason).toBe("PhoneNotReady")
+		expect(rules.ringPhone(on.state, 1120, sequenceRandom(SALAMI_MUSHROOM)).ok).toBe(true)
+	end)
+
+	it("setting the same value again changes nothing", function()
+		local state = player()
+		local result = rules.setPhoneCalls(state, true, 1000)
+
+		expect(result.ok).toBe(false)
+		expect(result.reason).toBe("Unchanged")
+		expect(result.state).toBe(state)
+	end)
+
+	it("the setting survives saving, loading and a rebirth", function()
+		local off = rules.setPhoneCalls(player(), false, 0).state
+		expect(SaveData.load(off, rules.newPlayerState()).state.phoneCalls).toBe(false)
+		off.coins = 1e12
+		expect(rules.rebirth(off, 10).state.phoneCalls).toBe(false)
+	end)
+end)
+
 describe("answering the phone", function()
 	it("accepting turns the call into the active order with a 3 minute time limit", function()
 		local result = rules.acceptOrder(ringing(), 1000)

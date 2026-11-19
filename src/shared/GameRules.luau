@@ -58,6 +58,8 @@ export type PlayerState = {
 	-- `call` = order offered by the ringing phone, `order` = accepted order being delivered,
 	-- `nextCallAt` = earliest time (server clock, seconds) the phone rings again.
 	delivery: Delivery,
+	-- Settings switch: false = the phone never rings for this player (kept on rebirth).
+	phoneCalls: boolean,
 	-- World the player was last in (walked into or teleported to); "" = none yet.
 	-- Deaths and rejoins spawn there while it is unlocked (see spawnWorld).
 	lastWorldId: string,
@@ -91,7 +93,7 @@ export type Result = {
 	-- | "UnknownEgg" | "UnknownPet" | "AlreadyEquipped" | "PetSlotsFull" | "NotEquipped"
 	-- | "InventoryFull" | "NoPets" | "NotEnoughGems" | "InvalidTime" | "MultiOpenLocked" | "InvalidCount"
 	-- | "UnknownPotion" | "NoPotion" | "OrderToppingsOnly"
-	-- | "TutorialRunning" | "CallWaiting" | "OrderActive" | "PhoneNotReady" | "NoCall" | "NoOrder"
+	-- | "TutorialRunning" | "PhoneCallsOff" | "Unchanged" | "CallWaiting" | "OrderActive" | "PhoneNotReady" | "NoCall" | "NoOrder"
 	-- | "OrderExpired" | "WrongToppings" | "NotExpired"
 	-- | "UnknownGift" | "GiftNotReady" | "GiftClaimed" | "UnknownHint" | "HintSeen"
 	-- | "LoginClaimed" | "CalendarShown"
@@ -319,6 +321,7 @@ function GameRules.new(config: any)
 			potions = {},
 			activePotions = {},
 			delivery = {},
+			phoneCalls = true,
 			lastWorldId = "",
 		}
 	end
@@ -1280,6 +1283,9 @@ function GameRules.new(config: any)
 		if rules.tutorial(state) ~= nil then
 			return fail(state, "TutorialRunning")
 		end
+		if not state.phoneCalls then
+			return fail(state, "PhoneCallsOff")
+		end
 		if state.delivery.call then
 			return fail(state, "CallWaiting")
 		end
@@ -1290,6 +1296,19 @@ function GameRules.new(config: any)
 			return fail(state, "PhoneNotReady")
 		end
 		return { ok = true, state = withDelivery(state, newOrder(state, random), nil) }
+	end
+
+	-- Switches phone calls on or off. Off ends a waiting call (an accepted order keeps
+	-- running); back on, the phone rings again after a call interval from `now`.
+	function rules.setPhoneCalls(state: PlayerState, enabled: boolean, now: number): Result
+		if state.phoneCalls == enabled then
+			return fail(state, "Unchanged")
+		end
+		local newState = if enabled
+			then withDelivery(state, state.delivery.call, state.delivery.order, now)
+			else withDelivery(state, nil, state.delivery.order)
+		newState.phoneCalls = enabled
+		return { ok = true, state = newState }
 	end
 
 	-- Takes the offered order: it becomes the active order, to be delivered within the time limit.
