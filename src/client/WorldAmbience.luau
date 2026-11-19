@@ -1,7 +1,8 @@
 --!strict
--- Applies the look (lighting, atmosphere, post-processing, clouds) and music of the
--- world the local player is standing in. Data: ReplicatedStorage.Shared.WorldLooks.
--- Purely cosmetic and local: every client sees the look of its own world.
+-- Applies the shared look (lighting, atmosphere, post-processing, clouds) once and plays
+-- the music of the world the local player is standing in. Data: Shared.WorldLooks.
+-- All worlds share one light (#45): switching it per island made visible islands look
+-- wrong, so crossing a bridge only switches the music. Purely cosmetic and local.
 
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
@@ -37,7 +38,7 @@ local function effect<T>(parent: Instance, className: string, name: string): T
 	return created :: any
 end
 
-local function apply(look: WorldLooks.Look)
+local function applyLight(look: WorldLooks.Look)
 	Lighting.ClockTime = look.clockTime
 	Lighting.Brightness = look.brightness
 	Lighting.Ambient = rgb(look.ambient)
@@ -72,11 +73,9 @@ local function apply(look: WorldLooks.Look)
 	clouds.Cover = look.clouds.cover
 	clouds.Density = look.clouds.density
 	clouds.Color = rgb(look.clouds.color)
-
-	Sounds.playMusic(look.music)
 end
 
--- World look for a position: its island's world; the spawn island looks like world 1;
+-- World for a position: its island's world; the spawn island looks like world 1;
 -- on a bridge the look of the world being left stays (nil).
 local function worldAt(position: Vector3): string?
 	local index = plan.worldIndexAt(position.X, position.Z)
@@ -92,6 +91,7 @@ end
 function WorldAmbience.start()
 	local player = Players.LocalPlayer
 	local current: string? = nil
+	applyLight(WorldLooks[DEFAULT_WORLD])
 
 	local function update()
 		local character = player.Character
@@ -99,7 +99,7 @@ function WorldAmbience.start()
 		local worldId = (if root then worldAt(root.Position) else nil) or current or DEFAULT_WORLD
 		if worldId ~= current then
 			current = worldId
-			apply(WorldLooks[worldId] or WorldLooks[DEFAULT_WORLD])
+			Sounds.playMusic((WorldLooks[worldId] or WorldLooks[DEFAULT_WORLD]).music)
 		end
 	end
 

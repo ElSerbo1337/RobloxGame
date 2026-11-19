@@ -278,7 +278,7 @@ def build_scene(data, avatars):
                 avatar((0, gy, island["center"][2] + 96), 0)
 
 
-def setup(resolution, night=False):
+def setup(resolution):
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
@@ -302,18 +302,13 @@ def setup(resolution, night=False):
     ramp.color_ramp.elements[0].color = (lin(205), lin(232), lin(255), 1)
     ramp.color_ramp.elements[1].position = 0.75
     ramp.color_ramp.elements[1].color = (lin(110), lin(175), lin(245), 1)
-    if night:
-        # World 7 (WorldLooks: night with purple ambient light).
-        ramp.color_ramp.elements[0].color = (lin(70), lin(60), lin(120), 1)
-        ramp.color_ramp.elements[1].color = (lin(14), lin(12), lin(40), 1)
     links.new(ramp.outputs["Color"], bg.inputs["Color"])
     bg.inputs["Strength"].default_value = 1.0
     bpy.ops.object.light_add(type="SUN", rotation=(math.radians(42), math.radians(8), math.radians(-30)))
     sun = bpy.context.active_object
-    sun.data.energy = 1.4 if night else 3.6
+    # One shared day look for all worlds (WorldLooks, #45).
+    sun.data.energy = 3.6
     sun.data.angle = math.radians(6)
-    if night:
-        sun.data.color = (0.75, 0.75, 1.0)
 
 
 def camera(name, eye, target, lens):
@@ -362,9 +357,6 @@ VIEWS = {
 }
 
 
-# Views rendered under the night sky of world 7.
-NIGHT_VIEWS = {"World7_Overview", "World7_Landmark", "Bridge_Light"}
-
 # Player figures for scale in the player-perspective views.
 AVATARS = {"Spawn_Player": ("spawn",), "World1_Player": ("path",), "World1_Stations": ("oven",)}
 
@@ -372,7 +364,7 @@ AVATARS = {"Spawn_Player": ("spawn",), "World1_Player": ("path",), "World1_Stati
 def render(data, view):
     eye, target, lens, resolution = VIEWS[view]
     build_scene(data, AVATARS.get(view, ()))
-    setup(resolution, view in NIGHT_VIEWS)
+    setup(resolution)
     camera(view, eye, target, lens)
     os.makedirs(OUT_DIR, exist_ok=True)
     # JPEG keeps the big previews small in the repo.

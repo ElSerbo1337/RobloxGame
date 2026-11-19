@@ -1187,3 +1187,13 @@ Dein echter Spielstand wurde vorher gesichert (DataStore-Schlüssel `backup_18no
 3. **Kleines Handy:** Menüs werden sehr klein, die Schrift ist kaum lesbar (`57`). Das Shop-Menü zeigt nur eine halbe Karte mit abgeschnittenem Kauf-Knopf (`58`). Pets- und Trank-Menü können gleichzeitig offen sein und überlappen sich.
 
 **Kleinigkeiten:** Vulkan-Wahrzeichen wirkt sehr hell, fast wie eine Sandpyramide (`45`). Hinweis: Die Rebirths-Bestenliste kann kurz „1“ für dich zeigen (aus dem Test), bis dein Stand beim nächsten Spielen neu gespeichert wird.
+
+## #45 Ein Licht-Look für alle Inseln
+
+Alle Inseln teilen jetzt einen ruhigen Tag-Look (`src/shared/WorldLooks.luau`), beim Inselwechsel ändert sich nur die Musik.
+
+- [ ] Play, von Welt 1 über alle Brücken bis Welt 7 laufen: Himmel, Tageszeit, Helligkeit und Wolken bleiben gleich, kein Umschalten oder Aufblitzen an den Brücken. Die Musik wechselt weiterhin pro Insel.
+- [ ] Strand- und Eis-Insel (auch von Nachbarinseln aus gesehen): kein heller „Filter“, weißer Sand und Schnee strahlen nicht (kein Bloom-Schein).
+- [ ] Neon (Lava, Weltraum-Leuchtteile, Portale) leuchtet auf allen Inseln gleich stark. Leuchtet Neon gar nicht mehr, `bloom.threshold` in `WorldLooks` schrittweise senken (aktuell 2,8), solange Sand und Schnee nicht anfangen zu strahlen.
+- [ ] Raus- und Reintabben ändert am Look nichts mehr.
+- [ ] Welt 7 (Weltraum) ist jetzt auch Tag: prüfen, ob es lesbar aussieht.
