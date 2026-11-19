@@ -51,7 +51,7 @@ Wo etwas auf dem Bildschirm liegt, steht **an einer Stelle**: `src/shared/HudLay
 | `coins`, `gems` | oben Mitte: Münzen links, Gems rechts der Mitte (Höhe 12–72) | `UiKit.place` |
 | `toast` | Meldungen direkt darunter (84–124), 380 breit | `UiKit.place` |
 | `tutorialCard` | links oben unter dem Roblox-Menü, nie breiter als der Platz links der Münzen | `UiKit.place` |
-| `sideArea` | links: runde Knöpfe in festen Plätzen `pets`, `potions`, `gifts`, `rebirth` (je 96 px); Spalte für Spalte von oben, endet über dem Joystick | `UiKit.sideButton(slot, text, farbe)` |
+| `sideArea` | links: runde Knöpfe in festen Plätzen `pets`, `potions`, `gifts`, `rebirth` (je 96 px); ab halber Bildschirmhöhe (unter dem Roblox-Chat oben links) bis über den Joystick, mindestens eine Knopfreihe hoch; Spalte für Spalte von oben, bei Platzmangel weitere Spalten | `UiKit.sideButton(slot, text, farbe)` |
 | `pizzaBar`, `autoCollect` | unten Mitte: Pizza-Balken, Auto-Sammeln darüber | `UiKit.place` |
 | `unlockButton` | Freischalt-Knopf rechts neben dem Pizza-Balken, endet vor dem Sprung-Knopf | `UiKit.place` |
 | `rightColumn` | rechts ab Höhe der Meldungen: aktive Tränke (`LayoutOrder` 1), darunter der Auftrag (2); versteckte Teile nehmen keinen Platz, zu hohe Stapel schrumpfen bis über den Sprung-Knopf | `UiKit.rightColumn()` |

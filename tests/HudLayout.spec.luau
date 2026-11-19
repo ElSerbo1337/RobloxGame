@@ -136,6 +136,32 @@ describe("HUD layout", function()
 		end)
 	end)
 
+	it("puts the side buttons below the chat: from half height down to the joystick", function()
+		forEachScreen(function(layout, label)
+			local area, h = layout.sideArea, layout.screen.h
+			-- Half height, unless that leaves no room for one row of buttons.
+			local top = math.min(h * 0.5, layout.joystick.y - HudLayout.SIDE_BUTTON)
+			if area.y < top - 0.001 then
+				error(`side area starts above half height on {label}`)
+			end
+			expect(area.y + area.h <= layout.joystick.y + 0.001).toBe(true)
+			expect(area.y >= layout.tutorialCard.y + layout.tutorialCard.h).toBe(true)
+		end)
+	end)
+
+	it("keeps all four side buttons inside the side area, wrapping into more columns", function()
+		forEachScreen(function(layout, label)
+			for _, name in HudLayout.SIDE_SLOTS do
+				local slot = layout.sideSlots[name]
+				if not inside(slot, layout.sideArea) then
+					error(`side:{name} leaves the side area on {label}`)
+				end
+			end
+		end)
+		local small = HudLayout.resolve(950, 450).sideSlots
+		expect(small.potions.x > small.pets.x).toBe(true)
+	end)
+
 	it("starts menus below the currencies and messages and ends them above the pizza bar", function()
 		forEachScreen(function(layout, label)
 			for _, name in { "coins", "gems", "toast", "pizzaBar" } do

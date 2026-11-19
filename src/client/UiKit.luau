@@ -142,9 +142,10 @@ function UiKit.place(object: GuiObject, zoneName: string)
 	object.AnchorPoint = Vector2.new(zone.anchor[1], zone.anchor[2])
 	object.Position = UDim2.new(zone.position[1], zone.position[2], zone.position[3], zone.position[4])
 	object.Size = UDim2.new(zone.size[1], zone.size[2], zone.size[3], zone.size[4])
-	if zone.maxWidth then
+	if zone.maxWidth or zone.minHeight then
 		local constraint = Instance.new("UISizeConstraint")
-		constraint.MaxSize = Vector2.new(zone.maxWidth, math.huge)
+		constraint.MinSize = Vector2.new(0, zone.minHeight or 0)
+		constraint.MaxSize = Vector2.new(zone.maxWidth or math.huge, math.huge)
 		constraint.Parent = object
 	end
 end

@@ -1256,3 +1256,12 @@ Beim Verkauf und bei Lieferungen zählt ein Pet aus einer späteren Welt höchst
 - [ ] „Beste ausrüsten“ in Welt 1 nach einem Rebirth: rüstet die Pets aus, die dort am meisten zählen (eigene Welt-1-Pets können späte Pets verdrängen).
 - [ ] Alter Spielstand mit Rebirth lädt ohne Fehler, Pets und Rebirths sind vollständig da (keine Migration nötig).
 - [ ] Optional mit Stoppuhr: zweiter Durchlauf Welt 1–6 nach dem Rebirth etwa 45 Min (erster etwa 130 Min).
+
+## #52 Seitenknöpfe unter den Chat
+
+Die runden Seitenknöpfe (Pets, Tränke, Geschenke, Rebirth) beginnen jetzt bei halber Bildschirmhöhe und enden über dem Joystick (Zone `sideArea` in `HudLayout`). Auf niedrigen Bildschirmen ist die Zone mindestens eine Knopfreihe hoch, die Knöpfe stehen dann nebeneinander; auf hohen Bildschirmen untereinander, bei Platzmangel in weiteren Spalten.
+
+- [ ] PC: Chat öffnen (oben links), alle vier Seitenknöpfe liegen unter dem Chatfenster und reagieren auf Klicks (Pets-, Trank-, Geschenke-, Rebirth-Menü öffnen sich).
+- [ ] Tutorial-Karte steht weiter oben links und überdeckt keinen Seitenknopf.
+- [ ] Device-Emulator Handy (z. B. iPhone SE quer und ein großes Handy): alle vier Knöpfe sichtbar und antippbar, keiner im Joystick-Bereich, keiner über Pizza-Leiste, Auto-Sammeln oder Freischalt-Knopf; Chat geöffnet verdeckt keinen Knopf.
+- [ ] Tablet/4K-Fenster: Knöpfe stehen in einer Spalte ab Bildschirmmitte, Reihenfolge Pets, Tränke, Geschenke, Rebirth.

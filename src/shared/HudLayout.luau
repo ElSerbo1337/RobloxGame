@@ -12,6 +12,7 @@ export type Zone = {
 	position: { number }, -- { xScale, xOffset, yScale, yOffset }
 	size: { number }, -- { xScale, xOffset, yScale, yOffset }
 	maxWidth: number?,
+	minHeight: number?,
 }
 
 export type Rect = { x: number, y: number, w: number, h: number }
@@ -86,10 +87,13 @@ HudLayout.zones = {
 		size = { 0.5, -270, 0, 104 },
 		maxWidth = 360,
 	},
+	-- Left, from half height down to the joystick, so the Roblox chat (top left) never
+	-- covers the buttons. Grows upwards to at least one row on short screens.
 	sideArea = {
-		anchor = { 0, 0 },
-		position = { 0, 16, 0, HudLayout.BELOW_TOP_BAR },
-		size = { 0, 4 * 96 + 3 * 12, 1, -(HudLayout.BELOW_TOP_BAR + HudLayout.JOYSTICK_SIZE.h) },
+		anchor = { 0, 1 },
+		position = { 0, 16, 1, -HudLayout.JOYSTICK_SIZE.h },
+		size = { 0, 4 * 96 + 3 * 12, 0.5, -HudLayout.JOYSTICK_SIZE.h },
+		minHeight = HudLayout.SIDE_BUTTON,
 	},
 	pizzaBar = {
 		anchor = { 0.5, 1 },
@@ -139,6 +143,9 @@ function HudLayout.rect(zone: Zone, w: number, h: number): Rect
 		width = math.min(width, zone.maxWidth)
 	end
 	local height = zone.size[3] * h + zone.size[4]
+	if zone.minHeight then
+		height = math.max(height, zone.minHeight)
+	end
 	local x = zone.position[1] * w + zone.position[2] - zone.anchor[1] * width
 	local y = zone.position[3] * h + zone.position[4] - zone.anchor[2] * height
 	return { x = x, y = y, w = width, h = height }
