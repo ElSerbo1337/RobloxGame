@@ -99,20 +99,15 @@ function Hud.start(): GuiObject
 	stroke(coins)
 	coins.Parent = gui
 
-	local coinIcon = Instance.new("Frame")
-	coinIcon.Size = UDim2.fromOffset(44, 44)
+	local coinIcon = UiKit.coinIcon(coins, 44)
 	coinIcon.Position = UDim2.fromOffset(8, 8)
-	coinIcon.BackgroundColor3 = COIN
-	corner(coinIcon, 22)
-	stroke(coinIcon)
-	coinIcon.Parent = coins
 
 	local coinsText = label(coins, "0")
 	coinsText.Position = UDim2.fromOffset(62, 8)
 	coinsText.Size = UDim2.new(1, -78, 0, 44)
 	coinsText.TextXAlignment = Enum.TextXAlignment.Left
 
-	-- Gems (top center, right of the middle): a turquoise diamond icon.
+	-- Gems (top center, right of the middle): a faceted turquoise diamond icon.
 	local gems = Instance.new("Frame")
 	gems.Name = "Gems"
 	UiKit.place(gems, "gems")
@@ -121,14 +116,8 @@ function Hud.start(): GuiObject
 	stroke(gems)
 	gems.Parent = gui
 
-	local gemIcon = Instance.new("Frame")
-	gemIcon.Size = UDim2.fromOffset(32, 32)
-	gemIcon.Position = UDim2.fromOffset(14, 14)
-	gemIcon.Rotation = 45
-	gemIcon.BackgroundColor3 = GEM
-	corner(gemIcon, 6)
-	stroke(gemIcon)
-	gemIcon.Parent = gems
+	local gemIcon = UiKit.gemIcon(gems, 48)
+	gemIcon.Position = UDim2.fromOffset(6, 6)
 
 	local gemsText = label(gems, "0")
 	gemsText.Position = UDim2.fromOffset(58, 8)

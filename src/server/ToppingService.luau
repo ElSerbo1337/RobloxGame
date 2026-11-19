@@ -63,8 +63,18 @@ function ToppingService.start(worldId: string, layout: Layout)
 		local disc
 		if topping.gems then
 			disc = ToppingLook.createGem(topping.gems)
-			disc.CFrame = CFrame.new(worldPosition(topping.x, topping.z) + Vector3.new(0, disc.Size.Y * 0.6, 0))
-				* ToppingLook.GEM_TILT
+			local center = worldPosition(topping.x, topping.z) + Vector3.new(0, disc.Size.Y * 0.6, 0)
+			-- Imported Blender gem if available (#49): stands upright, the cube stays as
+			-- the invisible part the game works with. Otherwise the tilted neon cube.
+			disc.CFrame = CFrame.new(center)
+			local look =
+				ModelLibrary.place("Gem", disc.Size.X, CFrame.new(center - Vector3.new(0, disc.Size.Y / 2, 0)), disc)
+			if look then
+				look.Name = "Look"
+				disc.Transparency = 1
+			else
+				disc.CFrame *= ToppingLook.GEM_TILT
+			end
 		else
 			disc = ToppingLook.createDisc(topping.toppingId, DISC_DIAMETER, DISC_THICKNESS)
 			disc.CFrame = CFrame.new(worldPosition(topping.x, topping.z)) * ToppingLook.FLAT

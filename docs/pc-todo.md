@@ -1224,3 +1224,13 @@ Die Fancy-Zweit-Eier ohne `glow` haben kein Neon mehr (Muster matt, Goldband ble
 - [ ] Steinofen-Ei (Welt 1) wirkt warm und besonders, ohne grelles goldgelbes Leuchten; Goldband glänzt metallisch. Gleiches bei Scheunen-, Muschel-, Gletscher- und Bonbon-Ei.
 - [ ] Vulkan- und Weltraum-Eier leuchten weiterhin.
 - [ ] Alien-Pilz (Welt 7, Feld und Pizza): Hut matt grün, überstrahlt nicht; nur die kleinen violetten Punkte leuchten.
+
+## #49 Neue Münze und neuer Gem
+
+Münz- und Gem-Icon kommen jetzt aus einem gemeinsamen Baustein (`UiKit.coinIcon` / `UiKit.gemIcon`, nur GUI-Elemente mit UIGradient/UIStroke): Goldmünze mit Rand und eingeprägter Pizza-Ecke, facettierter türkiser Diamant mit Glanzlicht. In 3D: neue Modelle `Coin` (springen beim Verkauf aus dem Ofen) und `Gem` (Feld-Gems), gebaut mit `tools/blender/build_currency.py`. Vorschau: `assets/previews/Coin.png`, `Gem.png`, `Currency.png`.
+
+- [ ] Import: `assets/models/Coin.fbx` und `assets/models/Gem.fbx` nach `ReplicatedStorage.GameAssets.Models` importieren (Namen `Coin` und `Gem`, Teilnamen `CoinGold`/`CoinRim`/`CoinEmboss` bzw. `GemLight`/`GemMid`/`GemDark`/`GemShine` beibehalten).
+- [ ] Vor dem Import: beim Verkaufen springen goldene Scheiben aus dem Ofen, Feld-Gems sind die gekippten Neon-Würfel wie bisher (nichts fehlt, keine Fehler im Output).
+- [ ] HUD oben: Münze zeigt Goldrand, Pizza-Ecke mit Rand und drei Punkten; Gem ist ein Diamant mit hellen/dunklen Facetten und weißem Glanz. Beides scharf und nicht verrutscht auf PC und kleinem Handy (Device-Emulator); Zahlen stehen daneben wie vorher.
+- [ ] Verkaufen am Ofen: 4 3D-Münzen springen drehend aus dem Ofen und verschwinden, die fliegenden Münz-Icons zum Zähler sehen aus wie die HUD-Münze.
+- [ ] Nach dem Import: Verkaufs-Münzen zeigen das Blender-Modell (Pizza-Ecke auf beiden Seiten, Scheibe unsichtbar), Feld-Gems stehen aufrecht als Diamant über dem Boden, funkeln und leuchten weiter, lassen sich wie vorher einsammeln (auch per Magnet/Auto-Sammeln).

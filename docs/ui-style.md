@@ -33,6 +33,7 @@ Seltenheiten haben eigene Farben in `GameConfig.rarities` (`UiKit.rarityColor`).
 - Ecken: `UICorner` 18 px für Knöpfe, 14–24 px für Panels; Seiten-Knöpfe im HUD sind **Kreise** (`UiKit.roundButton`).
 - Rand: `UIStroke` 3 px in `DARK` um jeden Knopf und jedes Panel.
 - Keine Bilder-Assets nötig: Icons sind Emojis oder einfache Kreise in Akzentfarbe.
+- Münze und Gem überall über `UiKit.coinIcon(parent, größe)` / `UiKit.gemIcon(parent, größe)` (#49): Goldmünze mit Rand und eingeprägter Pizza-Ecke, facettierter türkiser Diamant mit Glanzlicht – nur GUI-Elemente, keine eigenen Kreise/Quadrate mehr.
 
 ## Größen und Touch
 
@@ -80,6 +81,7 @@ Kein Shop- und kein Teleport-Knopf im HUD – Shops und Portale betritt man in d
 - Pets entstehen mit `tools/blender/build_pets.py` (Chibi-Stil: großer Kopf, große glänzende Augen, rosa Wangen; Vorschau in `assets/previews/pets/`). Bei Pets steht die Farbe im Teilnamen (`Pet_F2D49B`, optional `_Neon`/`_Glass`/`_Metal`).
 - Pet-Bilder in der UI sind 3D-Ansichten der importierten Modelle (`src/client/PetIcon.luau`, ViewportFrame) – kein Bild-Upload nötig; ohne Import bleibt der Punkt in Seltenheitsfarbe.
 - Beläge der Welten 2–7 entstehen mit `tools/blender/build_toppings.py` (#18, Stil der Salami aus #24: flach, dunklerer Rand, Vorschau und Prüfbilder pro Welt in `assets/previews/toppings/`). Teilnamen wie bei Pets (`Top_F59AAA`, optional `_Neon`/`_Glass`); ohne Import bleiben farbige Scheiben.
+- Münze und Gem in 3D entstehen mit `tools/blender/build_currency.py` (#49, Vorschau `assets/previews/Currency.png`): `Coin` für die Verkaufs-Animation, `Gem` für Feld-Gems; ohne Import goldene Scheibe bzw. Neon-Würfel.
 - Eier und Ei-Stand entstehen mit `tools/blender/build_eggs.py` (Vorschau in `assets/previews/eggs/`). Farben und Muster jedes Eis stehen in `GameConfig.eggs[…].look` (das Skript liest sie dort); Teilnamen wie bei Pets (`Egg_FFF3DC`, optional `_Neon`/`_Metal`). `fancy = true` ergibt die auffälligere Variante für ein zweites Ei pro Welt. Der Stand-Ring (`StandTrim`) wird im Spiel in der Akzentfarbe des Eis eingefärbt.
 - **Fliegende Inseln (#27):** Jede Welt ist eine schwebende Insel in einer Kette entlang −Z (Spawn-Insel → Brücke → Welt 1 → Brücke → Welt 2 …, alle auf gleicher Höhe, 40 Studs Brücke). Geometrie als reine Daten in `src/shared/IslandPlan.luau` (getestet), Zahlen und Farben in `GameConfig.islands`, gebaut von `src/server/IslandBuilder.luau`.
   - Umriss: abgerundet und unregelmäßig (Superellipse mit leichtem Wackeln), an den Brücken gerade. Darunter eine Felskante aus nach unten schmaler werdenden Felsringen in drei Felstönen.

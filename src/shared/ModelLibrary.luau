@@ -121,6 +121,14 @@ local PALETTE: { [string]: { color: Color3, material: Enum.Material } } = {
 	StandTrim = { color = Color3.fromRGB(240, 130, 60), material = Enum.Material.SmoothPlastic },
 	StandGold = { color = Color3.fromRGB(255, 200, 40), material = Enum.Material.SmoothPlastic },
 	EggSign = { color = Color3.fromRGB(255, 248, 230), material = Enum.Material.SmoothPlastic },
+	-- Coin and gem (#49, tools/blender/build_currency.py), same colours as UiKit.coinIcon/gemIcon.
+	CoinGold = { color = Color3.fromRGB(255, 200, 40), material = Enum.Material.SmoothPlastic },
+	CoinRim = { color = Color3.fromRGB(222, 146, 18), material = Enum.Material.SmoothPlastic },
+	CoinEmboss = { color = Color3.fromRGB(255, 226, 110), material = Enum.Material.SmoothPlastic },
+	GemLight = { color = Color3.fromRGB(150, 245, 255), material = Enum.Material.SmoothPlastic },
+	GemMid = { color = Color3.fromRGB(60, 230, 255), material = Enum.Material.SmoothPlastic },
+	GemDark = { color = Color3.fromRGB(20, 150, 200), material = Enum.Material.SmoothPlastic },
+	GemShine = { color = Color3.fromRGB(230, 255, 255), material = Enum.Material.Neon },
 }
 
 -- Part name prefixes that carry the colour in the name (see lookFor).

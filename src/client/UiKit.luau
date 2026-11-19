@@ -311,4 +311,166 @@ function UiKit.rewardsText(rewards: { { kind: string, amount: number, potionId: 
 	return table.concat(parts, " + ")
 end
 
+-- Currency icons (#49): built from GUI elements (no uploaded images), one look for the
+-- HUD, the sell animation and every other place that shows a coin or a gem.
+
+type Stop = { at: number, color: Color3 }
+
+local function gradient(parent: Instance, stops: { Stop }, rotation: number)
+	local points = {}
+	for _, stop in stops do
+		table.insert(points, ColorSequenceKeypoint.new(stop.at, stop.color))
+	end
+	local uiGradient = Instance.new("UIGradient")
+	uiGradient.Color = ColorSequence.new(points)
+	uiGradient.Rotation = rotation
+	uiGradient.Parent = parent
+end
+
+local function iconPart(parent: Instance, size: UDim2, position: UDim2, color: Color3): Frame
+	local frame = Instance.new("Frame")
+	frame.AnchorPoint = Vector2.new(0.5, 0.5)
+	frame.Size = size
+	frame.Position = position
+	frame.BackgroundColor3 = color
+	frame.BorderSizePixel = 0
+	frame.Parent = parent
+	return frame
+end
+
+local function round(frame: Frame)
+	local uiCorner = Instance.new("UICorner")
+	uiCorner.CornerRadius = UDim.new(0.5, 0)
+	uiCorner.Parent = frame
+end
+
+local COIN_RIM = Color3.fromRGB(222, 146, 18)
+local COIN_LIGHT = Color3.fromRGB(255, 236, 140)
+local COIN_EMBOSS = Color3.fromRGB(214, 140, 16)
+local COIN_EMBOSS_LIGHT = Color3.fromRGB(255, 226, 110)
+
+-- A gold coin with a raised rim and an embossed pizza slice, `size` px square
+-- (transparent holder; position and parent it like any Frame).
+function UiKit.coinIcon(parent: Instance?, size: number): Frame
+	local holder = Instance.new("Frame")
+	holder.Name = "CoinIcon"
+	holder.Size = UDim2.fromOffset(size, size)
+	holder.BackgroundTransparency = 1
+
+	local rim = iconPart(holder, UDim2.fromScale(1, 1), UDim2.fromScale(0.5, 0.5), Color3.new(1, 1, 1))
+	round(rim)
+	gradient(
+		rim,
+		{ { at = 0, color = COIN_LIGHT }, { at = 0.45, color = UiKit.COIN }, { at = 1, color = COIN_RIM } },
+		60
+	)
+	UiKit.stroke(rim, math.max(2, math.floor(size / 16)))
+
+	local face = iconPart(rim, UDim2.fromScale(0.74, 0.74), UDim2.fromScale(0.5, 0.5), Color3.new(1, 1, 1))
+	round(face)
+	gradient(
+		face,
+		{ { at = 0, color = COIN_RIM }, { at = 0.5, color = UiKit.COIN }, { at = 1, color = COIN_LIGHT } },
+		60
+	)
+	local inner = Instance.new("UIStroke")
+	inner.Thickness = math.max(1, math.floor(size / 24))
+	inner.Color = COIN_RIM
+	inner.Parent = face
+
+	-- Pizza slice pointing down: stacked bars get narrower (a triangle without images),
+	-- a light copy one pixel up-left makes it look pressed into the gold.
+	local rows = 6
+	local function slice(color: Color3, shift: number, zIndex: number)
+		for row = 0, rows - 1 do
+			local width = 0.62 * (1 - row / rows)
+			local bar = iconPart(
+				face,
+				UDim2.fromScale(math.max(width, 0.08), 0.56 / rows + 0.01),
+				UDim2.new(0.5, shift, 0.24 + (row + 0.5) * 0.56 / rows, shift),
+				color
+			)
+			bar.ZIndex = zIndex
+			if row == 0 then
+				-- The crust: a rounded, slightly taller bar on top.
+				bar.Size = UDim2.fromScale(0.66, 0.13)
+				round(bar)
+			end
+		end
+	end
+	slice(COIN_EMBOSS_LIGHT, -1, 2)
+	slice(COIN_EMBOSS, 0, 3)
+	for _, spot in { Vector2.new(0.42, 0.42), Vector2.new(0.56, 0.5), Vector2.new(0.49, 0.62) } do
+		local dot = iconPart(face, UDim2.fromScale(0.11, 0.11), UDim2.fromScale(spot.X, spot.Y), COIN_RIM)
+		dot.ZIndex = 4
+		round(dot)
+	end
+
+	holder.Parent = parent
+	return holder
+end
+
+local GEM_LIGHT = Color3.fromRGB(190, 252, 255)
+local GEM_DARK = Color3.fromRGB(20, 150, 200)
+local GEM_DEEP = Color3.fromRGB(10, 110, 165)
+
+-- A faceted turquoise diamond with a shine, `size` px square (transparent holder).
+function UiKit.gemIcon(parent: Instance?, size: number): Frame
+	local holder = Instance.new("Frame")
+	holder.Name = "GemIcon"
+	holder.Size = UDim2.fromOffset(size, size)
+	holder.BackgroundTransparency = 1
+
+	-- A square turned by 45° is the diamond; its diagonal fills the holder.
+	local side = size * 0.66
+	local body = iconPart(holder, UDim2.fromOffset(side, side), UDim2.fromScale(0.5, 0.5), Color3.new(1, 1, 1))
+	body.Rotation = 45
+	local bodyCorner = Instance.new("UICorner")
+	bodyCorner.CornerRadius = UDim.new(0.1, 0)
+	bodyCorner.Parent = body
+	-- Hard colour steps = facets: light left half, dark right half (in screen space).
+	gradient(
+		body,
+		{
+			{ at = 0, color = GEM_LIGHT },
+			{ at = 0.49, color = UiKit.GEM },
+			{ at = 0.51, color = GEM_DARK },
+			{ at = 1, color = GEM_DEEP },
+		},
+		-45
+	)
+	UiKit.stroke(body, math.max(2, math.floor(size / 16)))
+
+	-- The table facet in the middle: top half bright, bottom half darker.
+	local table_ = iconPart(body, UDim2.fromScale(0.5, 0.5), UDim2.fromScale(0.5, 0.5), Color3.new(1, 1, 1))
+	gradient(
+		table_,
+		{
+			{ at = 0, color = GEM_LIGHT },
+			{ at = 0.49, color = GEM_LIGHT },
+			{ at = 0.51, color = UiKit.GEM },
+			{ at = 1, color = UiKit.GEM },
+		},
+		45
+	)
+	local tableStroke = Instance.new("UIStroke")
+	tableStroke.Thickness = 1
+	tableStroke.Color = GEM_DARK
+	tableStroke.Transparency = 0.3
+	tableStroke.Parent = table_
+
+	-- Shine: a small white streak top left, plus a spark.
+	local shine = iconPart(holder, UDim2.fromScale(0.24, 0.08), UDim2.fromScale(0.34, 0.3), Color3.new(1, 1, 1))
+	shine.Rotation = -45
+	shine.BackgroundTransparency = 0.15
+	shine.ZIndex = 3
+	round(shine)
+	local spark = iconPart(holder, UDim2.fromScale(0.09, 0.09), UDim2.fromScale(0.5, 0.22), Color3.new(1, 1, 1))
+	spark.ZIndex = 3
+	round(spark)
+
+	holder.Parent = parent
+	return holder
+end
+
 return UiKit
