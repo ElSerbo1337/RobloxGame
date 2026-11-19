@@ -217,7 +217,9 @@ local function buildPanel(playerGui: Instance): Panel
 		end
 		list.CanvasPosition = Vector2.zero
 		-- Tall enough for all rows; on short screens it gets shorter and the list scrolls.
-		resize(Vector2.new(WIDTH, HEADER + #preview.pets * ROW_HEIGHT + FOOTER), HEADER + ROW_HEIGHT + FOOTER)
+		-- Narrower on small screens, so it stays readable (HudLayout.eggPreviewSize).
+		local width = UiKit.Layout.eggPreviewSize(UiKit.isSmallScreen()).w
+		resize(Vector2.new(width, HEADER + #preview.pets * ROW_HEIGHT + FOOTER), HEADER + ROW_HEIGHT + FOOTER)
 		updateLuck()
 		updateTriple()
 	end

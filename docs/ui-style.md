@@ -57,6 +57,7 @@ Wo etwas auf dem Bildschirm liegt, steht **an einer Stelle**: `src/shared/HudLay
 | `rightColumn` | rechts ab Höhe der Meldungen: aktive Tränke (`LayoutOrder` 1), darunter der Auftrag (2); versteckte Teile nehmen keinen Platz, zu hohe Stapel schrumpfen bis über den Sprung-Knopf | `UiKit.rightColumn()` |
 | `eggPreview` | Ei-Vorschau-Panel rechts an der Stelle der rechten Spalte (die solange ausgeblendet ist, `UiKit.setRightColumnHidden`): unter der Top-Leiste, nie unter dem Gem-Zähler, bis über den Sprung-Knopf, höchstens 360 breit; Pet-Liste scrollt | `UiKit.placePanel(gui, panel, "eggPreview", größe, minHöhe, Ausrichtung)` |
 | `menuArea` | Menüs: unter Währungen und Meldungen (ab 132), mit Abstand über dem Pizza-Balken | `UiKit.placeMenu(gui, panel, größe, minHöhe?)` |
+| Kleiner Bildschirm | Kurze Seite des Viewports unter 500 px (`HudLayout.isSmallScreen`, #55): `menuArea` füllt fast den ganzen Bildschirm (8 px Rand, unter der Roblox-Top-Leiste); Menüs werden nie unter 0,85 skaliert (`MENU_MIN_SCALE`), was nicht passt, scrollt; der Shop zeigt mindestens einen Abschnittskopf plus eine ganze Karte; das Ei-Panel beginnt neben dem Gem-Zähler und ist 300 statt 360 breit | `UiKit.placeMenu`/`UiKit.placePanel` (automatisch) |
 | `joystick`, `jump` | Freihalte-Bereiche des Handys (unten links 260 × 220, unten rechts 180 × 220): dort keine Knöpfe | – |
 
 Koordinaten sind virtuelle Pixel nach `UiKit.autoScale`, unterhalb der Roblox-Leiste.

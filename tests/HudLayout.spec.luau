@@ -6,14 +6,15 @@ local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 type Rect = HudLayout.Rect
 
 -- Virtual GUI sizes (after UiKit.autoScale, below the Roblox top bar):
--- small phone, phone, laptop, tablet, full HD, 4K.
+-- small phone, phone, laptop, tablet, full HD, 4K. The third value: is the real viewport
+-- a small screen (short side below HudLayout.SMALL_SCREEN, see HudLayout.isSmallScreen)?
 local SCREENS = {
-	{ 950, 450 },
-	{ 1100, 520 },
-	{ 1157, 600 },
-	{ 1100, 763 },
-	{ 1371, 730 },
-	{ 2743, 1500 },
+	{ 950, 450, true },
+	{ 1100, 520, true },
+	{ 1157, 600, false },
+	{ 1100, 763, false },
+	{ 1371, 730, false },
+	{ 2743, 1500, false },
 }
 
 local function overlaps(a: Rect, b: Rect): boolean
@@ -27,9 +28,10 @@ local function inside(inner: Rect, outer: Rect): boolean
 		and inner.y + inner.h <= outer.y + outer.h + 0.001
 end
 
-local function forEachScreen(fn: (layout: HudLayout.Layout, label: string) -> ())
+local function forEachScreen(fn: (layout: HudLayout.Layout, label: string, small: boolean) -> ())
 	for _, screen in SCREENS do
-		fn(HudLayout.resolve(screen[1], screen[2]), `{screen[1]}x{screen[2]}`)
+		local small = screen[3] == true
+		fn(HudLayout.resolve(screen[1], screen[2], small), `{screen[1]}x{screen[2]}`, small)
 	end
 end
 
@@ -176,23 +178,33 @@ describe("HUD layout", function()
 			end
 			expect(zone.x >= layout.screen.w / 2).toBe(true)
 			expect(zone.x + zone.w).toBe(layout.rightColumn.x + layout.rightColumn.w)
-			expect(zone.y >= layout.gems.y + layout.gems.h).toBe(true)
+			-- Below the gems counter; on small screens beside it (taller panel).
+			local belowGems = zone.y >= layout.gems.y + layout.gems.h
+			local besideGems = zone.x >= layout.gems.x + layout.gems.w
+			expect(belowGems or besideGems).toBe(true)
 		end)
 	end)
 
 	it("fits the egg preview with at least one pet row into its zone", function()
-		forEachScreen(function(layout, label)
+		forEachScreen(function(layout, label, small)
 			local zone = layout.eggPreview
-			local design = HudLayout.EGG_PREVIEW_SIZE
+			local design = HudLayout.eggPreviewSize(small)
 			local fit = HudLayout.fitMenu(design.w, design.h, design.minH, zone.w, zone.h)
 			if design.w * fit.scale > zone.w + 0.001 or fit.height * fit.scale > zone.h + 0.001 then
 				error(`egg preview does not fit on {label}`)
+			end
+			-- On small screens the panel stays readable: never below the menu minimum scale.
+			if small and fit.scale < HudLayout.MENU_MIN_SCALE - 0.001 then
+				error(`egg preview is scaled to {fit.scale} on {label}`)
 			end
 		end)
 	end)
 
 	it("starts menus below the currencies and messages and ends them above the pizza bar", function()
-		forEachScreen(function(layout, label)
+		forEachScreen(function(layout, label, small)
+			if small then
+				return
+			end
 			for _, name in { "coins", "gems", "toast", "pizzaBar" } do
 				if overlaps(layout.menuArea, (layout :: any)[name]) then
 					error(`menu area overlaps {name} on {label}`)
@@ -200,6 +212,52 @@ describe("HUD layout", function()
 			end
 			expect(layout.menuArea.y >= layout.toast.y + layout.toast.h).toBe(true)
 			expect(layout.menuArea.y + layout.menuArea.h <= layout.pizzaBar.y).toBe(true)
+		end)
+	end)
+
+	it("lets menus fill nearly the whole screen on small screens", function()
+		forEachScreen(function(layout, label, small)
+			if not small then
+				return
+			end
+			local area, screen = layout.menuArea, layout.screen
+			if not inside(area, { x = 0, y = 0, w = screen.w, h = screen.h }) then
+				error(`menu area leaves the screen on {label}`)
+			end
+			expect(area.w >= screen.w - 2 * HudLayout.MARGIN).toBe(true)
+			expect(area.h >= screen.h - 2 * HudLayout.MARGIN).toBe(true)
+		end)
+	end)
+end)
+
+describe("small screen", function()
+	it("counts a viewport as small when its short side is below the limit", function()
+		expect(HudLayout.isSmallScreen(667, 375)).toBe(true)
+		expect(HudLayout.isSmallScreen(375, 667)).toBe(true)
+		expect(HudLayout.isSmallScreen(1366, 1024)).toBe(false)
+		expect(HudLayout.isSmallScreen(1920, 1080)).toBe(false)
+	end)
+
+	it("shows the shop with at least one whole card and its buy button", function()
+		forEachScreen(function(layout, label, small)
+			if not small then
+				return
+			end
+			local shop = HudLayout.SHOP
+			local area = layout.menuArea
+			local fit = HudLayout.fitMenu(
+				shop.width,
+				shop.height,
+				HudLayout.shopMinHeight(true),
+				area.w,
+				area.h,
+				HudLayout.MENU_MIN_SCALE
+			)
+			local listHeight = (fit.content or fit.height) - shop.listTop - shop.listBottom
+			if listHeight < shop.header + shop.gap + shop.card then
+				error(`shop shows no whole card on {label}`)
+			end
+			expect(fit.scale >= HudLayout.MENU_MIN_SCALE).toBe(true)
 		end)
 	end)
 end)
@@ -236,14 +294,36 @@ describe("menu fit", function()
 	end)
 
 	it("fits every menu into the menu area on every screen", function()
-		forEachScreen(function(layout, label)
+		forEachScreen(function(layout, label, small)
 			local area = layout.menuArea
+			local minScale = HudLayout.menuMinScale(small)
 			for _, menu in { { 680, 460, 250 }, { 640, 560, 366 }, { 520, 440, 184 }, { 560, 470 }, { 540, 430 } } do
-				local fit = HudLayout.fitMenu(menu[1], menu[2], menu[3], area.w, area.h)
+				local fit = HudLayout.fitMenu(menu[1], menu[2], menu[3], area.w, area.h, minScale)
 				if menu[1] * fit.scale > area.w + 0.001 or fit.height * fit.scale > area.h + 0.001 then
 					error(`menu {menu[1]}x{menu[2]} does not fit on {label}`)
 				end
+				if small and fit.scale < HudLayout.MENU_MIN_SCALE - 0.001 then
+					error(`menu {menu[1]}x{menu[2]} is scaled to {fit.scale} on {label}`)
+				end
 			end
 		end)
+	end)
+
+	it("scrolls a menu instead of shrinking it below the minimum scale", function()
+		local fit = HudLayout.fitMenu(600, 400, nil, 800, 150, 0.5)
+
+		expect(fit).toEqual({ scale = 0.5, height = 300, content = 400 })
+	end)
+
+	it("scrolls a flexible menu at its minimum height instead of shrinking it", function()
+		local fit = HudLayout.fitMenu(600, 400, 250, 800, 100, 0.5)
+
+		expect(fit).toEqual({ scale = 0.5, height = 200, content = 250 })
+	end)
+
+	it("still shrinks a too wide menu to the area width before it scrolls", function()
+		local fit = HudLayout.fitMenu(1000, 400, nil, 400, 100, 0.5)
+
+		expect(fit).toEqual({ scale = 0.4, height = 250, content = 400 })
 	end)
 end)

@@ -76,6 +76,25 @@ HudLayout.EGG_PREVIEW_SIZE = {
 -- The gems counter ends 6 + 190 px right of the middle; the panel keeps 8 px from it.
 local EGG_PREVIEW_CLEAR = 6 + 190 + 8 + 16
 
+-- Small screens (phones): the short side of the real viewport is below this many pixels.
+-- There menus fill nearly the whole screen, never shrink below MENU_MIN_SCALE and scroll
+-- instead; the egg preview gets narrower and starts beside the gems counter.
+HudLayout.SMALL_SCREEN = 500
+HudLayout.MENU_MIN_SCALE = 0.85
+HudLayout.SMALL_MARGIN = 8
+HudLayout.EGG_PREVIEW_SMALL_WIDTH = 300
+
+-- Shop menu (ShopMenu.luau): panel size, offer list inset, header and card rows.
+HudLayout.SHOP = {
+	width = 680,
+	height = 460,
+	listTop = 104,
+	listBottom = 16,
+	header = 44,
+	card = 104,
+	gap = 10,
+}
+
 HudLayout.zones = {
 	coins = {
 		anchor = { 1, 0 },
@@ -138,6 +157,19 @@ HudLayout.zones = {
 		size = { 0.5, -EGG_PREVIEW_CLEAR, 1, -(TOAST_TOP + HudLayout.JUMP_SIZE.h + 8) },
 		maxWidth = HudLayout.EGG_PREVIEW.width,
 	},
+	-- Small screens: the egg preview starts beside the gems counter (taller panel).
+	eggPreviewSmall = {
+		anchor = { 1, 0 },
+		position = { 1, -16, 0, TOP },
+		size = { 0.5, -EGG_PREVIEW_CLEAR, 1, -(TOP + HudLayout.JUMP_SIZE.h + 8) },
+		maxWidth = HudLayout.EGG_PREVIEW.width,
+	},
+	-- Small screens: menus fill nearly the whole screen (below the Roblox top bar).
+	menuAreaSmall = {
+		anchor = { 0.5, 0 },
+		position = { 0.5, 0, 0, HudLayout.SMALL_MARGIN },
+		size = { 1, -2 * HudLayout.SMALL_MARGIN, 1, -2 * HudLayout.SMALL_MARGIN },
+	},
 	-- Menus: below currencies and messages, with room above the pizza bar.
 	menuArea = {
 		anchor = { 0.5, 0 },
@@ -186,10 +218,48 @@ function HudLayout.sideSlotRect(area: Rect, slot: number): Rect
 	}
 end
 
-function HudLayout.resolve(w: number, h: number): Layout
+-- Is a real viewport of `w` x `h` pixels a small screen (phone)?
+function HudLayout.isSmallScreen(w: number, h: number): boolean
+	return math.min(w, h) < HudLayout.SMALL_SCREEN
+end
+
+-- The zone to use for `name` on a small or normal screen (small variants: `<name>Small`).
+function HudLayout.zone(name: string, small: boolean?): Zone
+	local zone = (small and HudLayout.zones[name .. "Small"]) or HudLayout.zones[name]
+	assert(zone, `Unknown HUD zone {name}`)
+	return zone
+end
+
+-- Lowest scale a menu may get before it scrolls instead (nil: it may shrink freely).
+function HudLayout.menuMinScale(small: boolean?): number?
+	return if small then HudLayout.MENU_MIN_SCALE else nil
+end
+
+-- Design size of the egg preview panel (narrower on small screens).
+function HudLayout.eggPreviewSize(small: boolean?): { w: number, h: number, minH: number }
+	local size = HudLayout.EGG_PREVIEW_SIZE
+	return {
+		w = if small then HudLayout.EGG_PREVIEW_SMALL_WIDTH else size.w,
+		h = size.h,
+		minH = size.minH,
+	}
+end
+
+-- Shortest shop panel: one card (on small screens a section header plus one whole card).
+function HudLayout.shopMinHeight(small: boolean?): number
+	local shop = HudLayout.SHOP
+	local rows = if small then shop.header + shop.gap + shop.card else shop.card
+	return shop.listTop + rows + shop.listBottom
+end
+
+-- Resolves every zone on a screen of `w` x `h` virtual pixels; `small` picks the
+-- small-screen variants (see HudLayout.isSmallScreen).
+function HudLayout.resolve(w: number, h: number, small: boolean?): Layout
 	local layout: any = { screen = { w = w, h = h }, sideSlots = {} }
 	for name, zone in HudLayout.zones do
-		layout[name] = HudLayout.rect(zone, w, h)
+		if not string.find(name, "Small$") then
+			layout[name] = HudLayout.rect(HudLayout.zone(name, small), w, h)
+		end
 	end
 	for slot, name in HudLayout.SIDE_SLOTS do
 		layout.sideSlots[name] = HudLayout.sideSlotRect(layout.sideArea, slot)
@@ -199,14 +269,18 @@ end
 
 -- How a menu of `width` x `height` fits into an area of `areaW` x `areaH`.
 -- A menu with a scrolling list may get shorter down to `minHeight` before it shrinks;
--- without `minHeight` it only shrinks. Returns the UIScale and the (unscaled) height.
+-- without `minHeight` it only shrinks. With `minScale` (small screens) it never shrinks
+-- below that for lack of height: it keeps `content` height and scrolls in a window of
+-- `height` instead. Returns the UIScale, the (unscaled) height and, when it scrolls, the
+-- (unscaled) content height.
 function HudLayout.fitMenu(
 	width: number,
 	height: number,
 	minHeight: number?,
 	areaW: number,
-	areaH: number
-): { scale: number, height: number }
+	areaH: number,
+	minScale: number?
+): { scale: number, height: number, content: number? }
 	local scale = math.min(1, areaW / width)
 	if height * scale <= areaH then
 		return { scale = scale, height = height }
@@ -215,7 +289,12 @@ function HudLayout.fitMenu(
 	if shortest * scale <= areaH then
 		return { scale = scale, height = areaH / scale }
 	end
-	return { scale = areaH / shortest, height = shortest }
+	local fitScale = areaH / shortest
+	if minScale and fitScale < minScale then
+		local floor = math.min(scale, minScale)
+		return { scale = floor, height = areaH / floor, content = shortest }
+	end
+	return { scale = fitScale, height = shortest }
 end
 
 return HudLayout

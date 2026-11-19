@@ -136,19 +136,39 @@ end
 
 UiKit.Layout = HudLayout
 
--- Puts `object` into a named zone of the HUD grid (see HudLayout.zones).
-function UiKit.place(object: GuiObject, zoneName: string)
-	local zone = HudLayout.zones[zoneName]
-	assert(zone, `Unknown HUD zone {zoneName}`)
+-- Is this device a small screen (phone)? Menus then fill nearly the whole screen and
+-- scroll instead of shrinking below HudLayout.MENU_MIN_SCALE.
+function UiKit.isSmallScreen(): boolean
+	local camera = Workspace.CurrentCamera
+	if camera == nil then
+		return false
+	end
+	return HudLayout.isSmallScreen(camera.ViewportSize.X, camera.ViewportSize.Y)
+end
+
+local function applyZone(object: GuiObject, zone: HudLayout.Zone)
 	object.AnchorPoint = Vector2.new(zone.anchor[1], zone.anchor[2])
 	object.Position = UDim2.new(zone.position[1], zone.position[2], zone.position[3], zone.position[4])
 	object.Size = UDim2.new(zone.size[1], zone.size[2], zone.size[3], zone.size[4])
+	local constraint = object:FindFirstChild("ZoneConstraint") :: UISizeConstraint?
 	if zone.maxWidth or zone.minHeight then
-		local constraint = Instance.new("UISizeConstraint")
-		constraint.MinSize = Vector2.new(0, zone.minHeight or 0)
-		constraint.MaxSize = Vector2.new(zone.maxWidth or math.huge, math.huge)
-		constraint.Parent = object
+		if constraint == nil then
+			local created = Instance.new("UISizeConstraint")
+			created.Name = "ZoneConstraint"
+			created.Parent = object
+			constraint = created
+		end
+		local c = constraint :: UISizeConstraint
+		c.MinSize = Vector2.new(0, zone.minHeight or 0)
+		c.MaxSize = Vector2.new(zone.maxWidth or math.huge, math.huge)
+	elseif constraint then
+		constraint:Destroy()
 	end
+end
+
+-- Puts `object` into a named zone of the HUD grid (see HudLayout.zones).
+function UiKit.place(object: GuiObject, zoneName: string)
+	applyZone(object, HudLayout.zone(zoneName))
 end
 
 local function zoneFrame(parent: Instance, zoneName: string): Frame
@@ -237,6 +257,8 @@ end
 
 -- Puts `panel` into a HUD zone, designed at `designSize`: it gets shorter down to
 -- `minHeight` (panels with a scrolling list) and shrinks only after that (HudLayout.fitMenu).
+-- On small screens the zone's small variant is used and the panel never shrinks below
+-- HudLayout.MENU_MIN_SCALE: what does not fit scrolls.
 -- `align` places it inside the zone (0..1 per axis, default centered). Afterwards the
 -- panel fills its holder. Returns a function to change the design size later.
 function UiKit.placePanel(
@@ -259,24 +281,68 @@ function UiKit.placePanel(
 	local fitScale = Instance.new("UIScale")
 	fitScale.Parent = holder
 
+	-- Only used when the panel is taller than the room (small screens): the whole panel scrolls.
+	local scroller = Instance.new("ScrollingFrame")
+	scroller.Name = "PanelScroller"
+	scroller.BackgroundTransparency = 1
+	scroller.BorderSizePixel = 0
+	scroller.Size = UDim2.fromScale(1, 1)
+	scroller.CanvasSize = UDim2.new()
+	scroller.ScrollingDirection = Enum.ScrollingDirection.Y
+	scroller.ScrollBarThickness = 10
+	scroller.ScrollBarImageColor3 = UiKit.DARK
+	scroller.Visible = false
+	scroller.Parent = holder
+
 	panel.AnchorPoint = Vector2.new(0.5, 0.5)
 	panel.Position = UDim2.fromScale(0.5, 0.5)
 	panel.Size = UDim2.fromScale(1, 1)
 	panel.Parent = holder
 
+	local function syncScroller()
+		local scrolling = panel.Parent == scroller
+		local visible = scrolling and panel.Visible
+		if visible and not scroller.Visible then
+			scroller.CanvasPosition = Vector2.zero
+		end
+		scroller.Visible = visible
+	end
+	panel:GetPropertyChangedSignal("Visible"):Connect(syncScroller)
+
 	local size, shortest = designSize, minHeight
 	local function update()
+		local small = UiKit.isSmallScreen()
+		applyZone(area, HudLayout.zone(zoneName, small))
 		local guiScale = gui:FindFirstChildOfClass("UIScale")
 		local scale = if guiScale then guiScale.Scale else 1
 		local areaSize = area.AbsoluteSize / scale
 		if areaSize.X <= 0 or areaSize.Y <= 0 then
 			return
 		end
-		local fit = HudLayout.fitMenu(size.X, size.Y, shortest, areaSize.X, areaSize.Y)
+		local fit = HudLayout.fitMenu(size.X, size.Y, shortest, areaSize.X, areaSize.Y, HudLayout.menuMinScale(small))
 		holder.Size = UDim2.fromOffset(size.X, fit.height)
 		fitScale.Scale = fit.scale
+		if fit.content then
+			-- Inset by 4 px so the panel's stroke is not clipped, room for the scroll bar.
+			panel.Parent = scroller
+			panel.AnchorPoint = Vector2.zero
+			panel.Position = UDim2.fromOffset(4, 4)
+			panel.Size = UDim2.new(1, -(8 + scroller.ScrollBarThickness), 0, fit.content - 8)
+			scroller.CanvasSize = UDim2.fromOffset(0, fit.content)
+		else
+			panel.Parent = holder
+			panel.AnchorPoint = Vector2.new(0.5, 0.5)
+			panel.Position = UDim2.fromScale(0.5, 0.5)
+			panel.Size = UDim2.fromScale(1, 1)
+		end
+		syncScroller()
 	end
 	area:GetPropertyChangedSignal("AbsoluteSize"):Connect(update)
+	local camera = Workspace.CurrentCamera
+	if camera then
+		camera:GetPropertyChangedSignal("ViewportSize"):Connect(update)
+	end
+	update()
 	task.defer(update)
 	return function(newSize: Vector2, newMinHeight: number?)
 		size, shortest = newSize, newMinHeight

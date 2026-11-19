@@ -1291,3 +1291,16 @@ Die Ei-Vorschau ist kein 3D-Schild über dem Ei mehr, sondern ein Panel rechts (
 - [ ] Pets-Menü öffnen, während das Panel offen ist: Panel schließt und bleibt zu, solange man am Ei steht; weggehen und wieder hin: Panel öffnet, Pets-Menü schließt.
 - [ ] Am Shop mit Ei in der Nähe: nie Shop und Panel gleichzeitig offen.
 - [ ] Output: keine Fehler.
+
+## #55 Handy-Modus für Menüs
+
+Auf kleinen Bildschirmen (kurze Seite des Viewports unter 500 px) füllen Menüs fast den ganzen Bildschirm, werden nie unter 85 % skaliert und scrollen stattdessen (ganzes Panel scrollt, wenn es nicht passt). Der Shop zeigt mindestens einen Abschnittskopf plus eine ganze Karte. Das Ei-Panel beginnt neben dem Gem-Zähler und ist schmaler.
+
+- [ ] Device-Emulator, kleines Handy quer (iPhone SE): Shop, Portal, Pets, Tränke, Geschenke, Rebirth, Login-Kalender und Telefon-Auftrag nacheinander öffnen. Jedes Menü füllt fast den Bildschirm, Text gut lesbar, nichts abgeschnitten; wo es nicht passt, lässt sich das Menü bzw. die Liste scrollen, „X“ bleibt erreichbar.
+- [ ] iPhone SE quer, Shop: mindestens eine ganze Karte mit vollem Kauf-Knopf sichtbar; kaufen klappt; Liste scrollt.
+- [ ] iPhone SE quer: Pets-Menü offen, Tränke-Knopf drücken → nur das Trank-Menü offen, keine Überlappung (und umgekehrt).
+- [ ] iPhone SE quer, ans Ei laufen: Ei-Panel rechts neben dem Gem-Zähler, lesbar, „1 öffnen“ ganz sichtbar, nicht über dem Sprung-Knopf; Figur und Ei in der Mitte sichtbar.
+- [ ] Hochformat (iPhone SE hochkant) kurz prüfen: Menüs passen in die Breite, nichts ragt aus dem Bild.
+- [ ] Tablet (z. B. iPad quer): normales Layout wie bisher (Menüs unter Währungen, über dem Pizza-Balken), nichts scrollt unnötig.
+- [ ] Gerät drehen bzw. im Emulator zwischen Handy und PC wechseln: Menüs passen sich an, keine Reste eines Scrollbalkens bei geschlossenem Menü.
+- [ ] Output: keine Fehler.

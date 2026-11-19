@@ -30,11 +30,10 @@ local GREEN = Color3.fromRGB(90, 200, 100)
 local GREY = Color3.fromRGB(190, 180, 165)
 local RED = Color3.fromRGB(230, 70, 50)
 
-local PANEL_SIZE = Vector2.new(680, 460)
-local CARD_HEIGHT = 104
-local HEADER_HEIGHT = 44
--- The offer list scrolls: the panel may get as short as header + one card.
-local MIN_PANEL_HEIGHT = 104 + CARD_HEIGHT + 16
+local SHOP = UiKit.Layout.SHOP
+local PANEL_SIZE = Vector2.new(SHOP.width, SHOP.height)
+local CARD_HEIGHT = SHOP.card
+local HEADER_HEIGHT = SHOP.header
 
 local MESSAGES: { [string]: string } = {
 	NotEnoughCoins = "Nicht genug Münzen!",
@@ -139,7 +138,9 @@ function ShopMenu.start()
 	panel.BackgroundColor3 = CREAM
 	corner(panel, 24)
 	stroke(panel, 4)
-	UiKit.placeMenu(gui, panel, PANEL_SIZE, MIN_PANEL_HEIGHT)
+	-- The offer list scrolls: the panel may get as short as one card; on small screens
+	-- as a section header plus one whole card with its full buy button.
+	UiKit.placeMenu(gui, panel, PANEL_SIZE, UiKit.Layout.shopMinHeight(UiKit.isSmallScreen()))
 
 	local title = label(panel, "Shop", {
 		Position = UDim2.fromOffset(24, 14),
@@ -162,8 +163,8 @@ function ShopMenu.start()
 
 	local list = Instance.new("ScrollingFrame")
 	list.Name = "Offers"
-	list.Position = UDim2.fromOffset(16, 104)
-	list.Size = UDim2.new(1, -32, 1, -120)
+	list.Position = UDim2.fromOffset(16, SHOP.listTop)
+	list.Size = UDim2.new(1, -32, 1, -(SHOP.listTop + SHOP.listBottom))
 	list.BackgroundTransparency = 1
 	list.BorderSizePixel = 0
 	list.ScrollBarThickness = 10
@@ -171,7 +172,7 @@ function ShopMenu.start()
 	list.CanvasSize = UDim2.new()
 	list.Parent = panel
 	local layout = Instance.new("UIListLayout")
-	layout.Padding = UDim.new(0, 10)
+	layout.Padding = UDim.new(0, SHOP.gap)
 	layout.SortOrder = Enum.SortOrder.LayoutOrder
 	layout.Parent = list
 
