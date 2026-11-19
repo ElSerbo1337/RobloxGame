@@ -1276,3 +1276,18 @@ Alle Menüs (Shop, Portal, Pets, Tränke, Geschenke, Rebirth, Login-Kalender, Te
 - [ ] Im Portal stehen, „X“ drücken, Münzen sammeln lassen: Portal-Menü bleibt zu. Dasselbe nach Öffnen des Pets-Menüs. Portal verlassen und wieder betreten: Portal-Menü öffnet sich.
 - [ ] Pets-Menü offen, dann in den Shop bzw. ans klingelnde Telefon laufen: Pets-Menü schließt sich, Shop bzw. Telefon-Auftrag ist offen.
 - [ ] Output: keine Fehler beim Öffnen/Schließen.
+
+## #54 Ei-Vorschau als Panel rechts im HUD
+
+Die Ei-Vorschau ist kein 3D-Schild über dem Ei mehr, sondern ein Panel rechts (Zone `eggPreview`). Es öffnet sich am nächsten Ei, schließt beim Weggehen und zählt als Menü.
+
+- [ ] Ans Ei laufen: Panel rechts unter der Top-Leiste, Ei und Figur bleiben in der Mitte sichtbar, kein Schild mehr über dem Ei. Weggehen: Panel schließt.
+- [ ] Zwischen den zwei Eiern einer Welt hin und her: Panel zeigt jeweils das nähere Ei (Titel, Pets, Preis wechseln).
+- [ ] PC mit niedrigem Fenster (z. B. 1280 × 600): Panel ragt nicht aus dem Bild, „1 öffnen“/„3 öffnen“ ganz sichtbar, die Pet-Liste scrollt statt abzuschneiden.
+- [ ] Device-Emulator (kleines Handy quer, z. B. iPhone SE): Panel liegt nicht über den Roblox-Knöpfen oben und nicht über dem Sprung-Knopf, Knöpfe sind bedienbar.
+- [ ] Glückstrank aktiv: Titel „🍀 Glück!“, Chancen grün. Nach dem Gem-Upgrade „3 öffnen“ sichtbar. Während der Animation reagiert der Knopf nicht; mit zu wenig Münzen erscheint „Zu wenig Münzen!“ rot am Knopf.
+- [ ] Pet-Bilder in den Zeilen, Pet-Namensschilder am Ei ausgeblendet.
+- [ ] Trank aktiv und Auftrag läuft: am Ei sind Trank-Pillen und Auftragskarte weg, nach dem Weggehen wieder da.
+- [ ] Pets-Menü öffnen, während das Panel offen ist: Panel schließt und bleibt zu, solange man am Ei steht; weggehen und wieder hin: Panel öffnet, Pets-Menü schließt.
+- [ ] Am Shop mit Ei in der Nähe: nie Shop und Panel gleichzeitig offen.
+- [ ] Output: keine Fehler.

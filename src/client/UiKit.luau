@@ -235,17 +235,25 @@ function UiKit.rightColumn(): Frame
 	return hudGrid().right
 end
 
--- Puts a menu panel into the menu area (below currencies and messages, above the
--- pizza bar). The panel is designed at `designSize`; it gets shorter down to
--- `minHeight` (menus with a scrolling list) and shrinks only after that.
--- Afterwards the panel fills its holder: keep using panel.Visible and UiKit.pop(panel).
-function UiKit.placeMenu(gui: ScreenGui, panel: GuiObject, designSize: Vector2, minHeight: number?)
-	local area = zoneFrame(gui, "menuArea")
+-- Puts `panel` into a HUD zone, designed at `designSize`: it gets shorter down to
+-- `minHeight` (panels with a scrolling list) and shrinks only after that (HudLayout.fitMenu).
+-- `align` places it inside the zone (0..1 per axis, default centered). Afterwards the
+-- panel fills its holder. Returns a function to change the design size later.
+function UiKit.placePanel(
+	gui: ScreenGui,
+	panel: GuiObject,
+	zoneName: string,
+	designSize: Vector2,
+	minHeight: number?,
+	align: Vector2?
+): (Vector2, number?) -> ()
+	local at = align or Vector2.new(0.5, 0.5)
+	local area = zoneFrame(gui, zoneName)
 	local holder = Instance.new("Frame")
-	holder.Name = "MenuHolder"
+	holder.Name = "PanelHolder"
 	holder.BackgroundTransparency = 1
-	holder.AnchorPoint = Vector2.new(0.5, 0.5)
-	holder.Position = UDim2.fromScale(0.5, 0.5)
+	holder.AnchorPoint = at
+	holder.Position = UDim2.fromScale(at.X, at.Y)
 	holder.Size = UDim2.fromOffset(designSize.X, designSize.Y)
 	holder.Parent = area
 	local fitScale = Instance.new("UIScale")
@@ -256,6 +264,7 @@ function UiKit.placeMenu(gui: ScreenGui, panel: GuiObject, designSize: Vector2, 
 	panel.Size = UDim2.fromScale(1, 1)
 	panel.Parent = holder
 
+	local size, shortest = designSize, minHeight
 	local function update()
 		local guiScale = gui:FindFirstChildOfClass("UIScale")
 		local scale = if guiScale then guiScale.Scale else 1
@@ -263,12 +272,30 @@ function UiKit.placeMenu(gui: ScreenGui, panel: GuiObject, designSize: Vector2, 
 		if areaSize.X <= 0 or areaSize.Y <= 0 then
 			return
 		end
-		local fit = HudLayout.fitMenu(designSize.X, designSize.Y, minHeight, areaSize.X, areaSize.Y)
-		holder.Size = UDim2.fromOffset(designSize.X, fit.height)
+		local fit = HudLayout.fitMenu(size.X, size.Y, shortest, areaSize.X, areaSize.Y)
+		holder.Size = UDim2.fromOffset(size.X, fit.height)
 		fitScale.Scale = fit.scale
 	end
 	area:GetPropertyChangedSignal("AbsoluteSize"):Connect(update)
 	task.defer(update)
+	return function(newSize: Vector2, newMinHeight: number?)
+		size, shortest = newSize, newMinHeight
+		update()
+	end
+end
+
+-- Puts a menu panel into the menu area (below currencies and messages, above the
+-- pizza bar). The panel is designed at `designSize`; it gets shorter down to
+-- `minHeight` (menus with a scrolling list) and shrinks only after that.
+-- Afterwards the panel fills its holder: keep using panel.Visible and UiKit.pop(panel).
+function UiKit.placeMenu(gui: ScreenGui, panel: GuiObject, designSize: Vector2, minHeight: number?)
+	UiKit.placePanel(gui, panel, "menuArea", designSize, minHeight)
+end
+
+-- Hides the right column (potion pills, order card) while a panel uses its place
+-- (the egg preview); its children keep their own visibility.
+function UiKit.setRightColumnHidden(hidden: boolean)
+	hudGrid().right.Visible = not hidden
 end
 
 -- Only one menu at a time (#53, MenuSwitch): every menu registers its id and its normal

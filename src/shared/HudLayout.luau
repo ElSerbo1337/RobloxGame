@@ -29,6 +29,7 @@ export type Layout = {
 	autoCollect: Rect,
 	unlockButton: Rect,
 	rightColumn: Rect,
+	eggPreview: Rect,
 	menuArea: Rect,
 	joystick: Rect,
 	jump: Rect,
@@ -63,6 +64,17 @@ HudLayout.SIDE_GAP = 12
 HudLayout.SIDE_SLOTS = { "pets", "potions", "gifts", "rebirth" }
 
 HudLayout.RIGHT_COLUMN_WIDTH = 260
+
+-- Egg preview panel (right, in place of the hidden right column): header, one row per
+-- pet (the list scrolls), the open buttons. minH = header + one row + buttons.
+HudLayout.EGG_PREVIEW = { width = 360, header = 60, row = 44, footer = 96 }
+HudLayout.EGG_PREVIEW_SIZE = {
+	w = HudLayout.EGG_PREVIEW.width,
+	h = HudLayout.EGG_PREVIEW.header + 6 * HudLayout.EGG_PREVIEW.row + HudLayout.EGG_PREVIEW.footer,
+	minH = HudLayout.EGG_PREVIEW.header + HudLayout.EGG_PREVIEW.row + HudLayout.EGG_PREVIEW.footer,
+}
+-- The gems counter ends 6 + 190 px right of the middle; the panel keeps 8 px from it.
+local EGG_PREVIEW_CLEAR = 6 + 190 + 8 + 16
 
 HudLayout.zones = {
 	coins = {
@@ -117,6 +129,14 @@ HudLayout.zones = {
 		anchor = { 1, 0 },
 		position = { 1, -16, 0, TOAST_TOP },
 		size = { 0, HudLayout.RIGHT_COLUMN_WIDTH, 1, -(TOAST_TOP + HudLayout.JUMP_SIZE.h + 8) },
+	},
+	-- Egg preview: same right edge and top as the right column (which hides meanwhile),
+	-- never under the gems counter, ends above the jump button.
+	eggPreview = {
+		anchor = { 1, 0 },
+		position = { 1, -16, 0, TOAST_TOP },
+		size = { 0.5, -EGG_PREVIEW_CLEAR, 1, -(TOAST_TOP + HudLayout.JUMP_SIZE.h + 8) },
+		maxWidth = HudLayout.EGG_PREVIEW.width,
 	},
 	-- Menus: below currencies and messages, with room above the pizza bar.
 	menuArea = {

@@ -162,6 +162,35 @@ describe("HUD layout", function()
 		expect(small.potions.x > small.pets.x).toBe(true)
 	end)
 
+	it("puts the egg preview panel on the right, clear of the top bar and the jump button", function()
+		forEachScreen(function(layout, label)
+			local zone = layout.eggPreview
+			local screen = { x = 0, y = 0, w = layout.screen.w, h = layout.screen.h }
+			if not inside(zone, screen) then
+				error(`egg preview leaves the screen on {label}`)
+			end
+			for _, name in { "coins", "gems", "toast", "jump", "pizzaBar", "unlockButton" } do
+				if overlaps(zone, (layout :: any)[name]) then
+					error(`egg preview overlaps {name} on {label}`)
+				end
+			end
+			expect(zone.x >= layout.screen.w / 2).toBe(true)
+			expect(zone.x + zone.w).toBe(layout.rightColumn.x + layout.rightColumn.w)
+			expect(zone.y >= layout.gems.y + layout.gems.h).toBe(true)
+		end)
+	end)
+
+	it("fits the egg preview with at least one pet row into its zone", function()
+		forEachScreen(function(layout, label)
+			local zone = layout.eggPreview
+			local design = HudLayout.EGG_PREVIEW_SIZE
+			local fit = HudLayout.fitMenu(design.w, design.h, design.minH, zone.w, zone.h)
+			if design.w * fit.scale > zone.w + 0.001 or fit.height * fit.scale > zone.h + 0.001 then
+				error(`egg preview does not fit on {label}`)
+			end
+		end)
+	end)
+
 	it("starts menus below the currencies and messages and ends them above the pizza bar", function()
 		forEachScreen(function(layout, label)
 			for _, name in { "coins", "gems", "toast", "pizzaBar" } do

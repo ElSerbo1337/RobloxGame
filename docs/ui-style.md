@@ -55,6 +55,7 @@ Wo etwas auf dem Bildschirm liegt, steht **an einer Stelle**: `src/shared/HudLay
 | `pizzaBar`, `autoCollect` | unten Mitte: Pizza-Balken, Auto-Sammeln darüber | `UiKit.place` |
 | `unlockButton` | Freischalt-Knopf rechts neben dem Pizza-Balken, endet vor dem Sprung-Knopf | `UiKit.place` |
 | `rightColumn` | rechts ab Höhe der Meldungen: aktive Tränke (`LayoutOrder` 1), darunter der Auftrag (2); versteckte Teile nehmen keinen Platz, zu hohe Stapel schrumpfen bis über den Sprung-Knopf | `UiKit.rightColumn()` |
+| `eggPreview` | Ei-Vorschau-Panel rechts an der Stelle der rechten Spalte (die solange ausgeblendet ist, `UiKit.setRightColumnHidden`): unter der Top-Leiste, nie unter dem Gem-Zähler, bis über den Sprung-Knopf, höchstens 360 breit; Pet-Liste scrollt | `UiKit.placePanel(gui, panel, "eggPreview", größe, minHöhe, Ausrichtung)` |
 | `menuArea` | Menüs: unter Währungen und Meldungen (ab 132), mit Abstand über dem Pizza-Balken | `UiKit.placeMenu(gui, panel, größe, minHöhe?)` |
 | `joystick`, `jump` | Freihalte-Bereiche des Handys (unten links 260 × 220, unten rechts 180 × 220): dort keine Knöpfe | – |
 
@@ -62,7 +63,7 @@ Koordinaten sind virtuelle Pixel nach `UiKit.autoScale`, unterhalb der Roblox-Le
 
 **Menüs** werden für ihre Wunschgröße gebaut. `UiKit.placeMenu` setzt sie mittig in die Menü-Zone; ist dort zu wenig Platz, wird ein Menü mit Scroll-Liste zuerst niedriger (bis `minHöhe`, z. B. Kopf + eine Zeile) und erst danach verkleinert, alle anderen nur verkleinert (`HudLayout.fitMenu`). Danach füllt das Panel seinen Halter: weiter `panel.Visible` und `UiKit.pop(panel)` benutzen.
 
-**Nur ein Menü gleichzeitig (#53):** Jedes Menü meldet sich mit `UiKit.registerMenu(id, schließen)` an (`schließen` = derselbe Weg wie sein „X“, auch auf einem schon geschlossenen Menü harmlos) und ruft beim Öffnen `UiKit.menuOpened(id)` auf. Dann schließen sich alle anderen offenen Menüs, als hätte man sie selbst geschlossen (Logik: `src/shared/MenuSwitch.luau`, getestet). Angemeldet: `shop`, `portal`, `pets`, `potions`, `gifts`, `rebirth`, `calendar`, `phone`. Zonen-Menüs (Shop, Portal) gehen danach erst wieder auf, wenn man die Zone verlässt und neu betritt. Neue Menüs (z. B. die Ei-Vorschau) melden sich genauso an.
+**Nur ein Menü gleichzeitig (#53):** Jedes Menü meldet sich mit `UiKit.registerMenu(id, schließen)` an (`schließen` = derselbe Weg wie sein „X“, auch auf einem schon geschlossenen Menü harmlos) und ruft beim Öffnen `UiKit.menuOpened(id)` auf. Dann schließen sich alle anderen offenen Menüs, als hätte man sie selbst geschlossen (Logik: `src/shared/MenuSwitch.luau`, getestet). Angemeldet: `shop`, `portal`, `pets`, `potions`, `gifts`, `rebirth`, `calendar`, `phone`, `eggPreview`. Zonen-Menüs (Shop, Portal, Ei-Vorschau) gehen danach erst wieder auf, wenn man die Zone verlässt und neu betritt. Neue Menüs melden sich genauso an.
 
 **Neue HUD-Teile:** zuerst eine Zone (oder einen Platz in `SIDE_SLOTS`) in `HudLayout` ergänzen, den Test um das Teil erweitern, dann über UiKit platzieren.
 
