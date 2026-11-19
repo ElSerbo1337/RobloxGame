@@ -105,8 +105,7 @@ function GiftMenu.start()
 	-- Short note next to the button while it is new.
 	local note = UiKit.label(openButton, "Neu! Geschenke fürs Spielen")
 	note.Name = "Note"
-	note.AnchorPoint = Vector2.new(0, 0.5)
-	note.Position = UDim2.new(1, 22, 0.5, 0)
+	UiKit.placeSideNote(note, openButton, 22)
 	note.Size = UDim2.fromOffset(200, 52)
 	note.BackgroundTransparency = 0
 	note.BackgroundColor3 = UiKit.CREAM

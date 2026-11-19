@@ -38,7 +38,21 @@ local function effect<T>(parent: Instance, className: string, name: string): T
 	return created :: any
 end
 
+-- Effects this module owns. Anything else of these kinds in Lighting (e.g. the Bloom,
+-- Atmosphere, SunRays and DepthOfField of the Studio baseplate template) would stack on
+-- top of the shared look: a second bloom with a low threshold made sand and snow glow.
+local OWN_EFFECTS = { WorldAtmosphere = true, WorldBloom = true, WorldColor = true, WorldSunRays = true }
+
+local function removeForeignEffects()
+	for _, child in Lighting:GetChildren() do
+		if (child:IsA("PostEffect") or child:IsA("Atmosphere")) and not OWN_EFFECTS[child.Name] then
+			child:Destroy()
+		end
+	end
+end
+
 local function applyLight(look: WorldLooks.Look)
+	removeForeignEffects()
 	Lighting.ClockTime = look.clockTime
 	Lighting.Brightness = look.brightness
 	Lighting.Ambient = rgb(look.ambient)

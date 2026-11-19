@@ -24,6 +24,8 @@ local UiKit = require(script.Parent.UiKit)
 
 -- Studs between player and egg at which the preview appears.
 local SHOW_DISTANCE = 20
+-- Studs within which a closed panel opens (smaller than SHOW_DISTANCE, see Heartbeat).
+local OPEN_DISTANCE = 14
 -- Pet name tags this far beyond SHOW_DISTANCE from the nearest egg are hidden
 -- (pets follow a few studs behind their owner).
 local PET_TAG_MARGIN = 10
@@ -337,7 +339,10 @@ function EggPreview.start()
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 		-- Only the nearest egg in range is shown: two eggs stand side by side in every world (#39).
 		local nearest: Egg? = nil
-		local nearestDistance = SHOW_DISTANCE
+		-- Hysteresis: a closed panel only opens within OPEN_DISTANCE, an open one stays
+		-- until SHOW_DISTANCE. The shop zone is ~17 studs from the egg next to it, so
+		-- opening at 20 let the shop close the panel at once and keep it closed (#54).
+		local nearestDistance = if shownFor ~= nil then SHOW_DISTANCE else OPEN_DISTANCE
 		if root ~= nil then
 			for _, egg in eggs do
 				local distance = (root.Position - egg.part.Position).Magnitude

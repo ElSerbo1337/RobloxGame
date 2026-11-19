@@ -249,6 +249,38 @@ function UiKit.sideButton(slot: string, text: string, color: Color3): TextButton
 	return button
 end
 
+-- Places a "Neu! …" note (child of a side button) where it covers no other side button:
+-- right of the button while the buttons stand in a column, above it while they stand
+-- in a row (low screens, #52), where the right side holds the next button.
+function UiKit.placeSideNote(note: GuiObject, button: GuiObject, gap: number)
+	local function update()
+		local inRow = false
+		local parent = button.Parent
+		if parent then
+			for _, sibling in parent:GetChildren() do
+				if
+					sibling ~= button
+					and sibling:IsA("GuiObject")
+					and sibling.Visible
+					and math.abs(sibling.AbsolutePosition.Y - button.AbsolutePosition.Y) < 4
+					and sibling.AbsolutePosition.X > button.AbsolutePosition.X
+				then
+					inRow = true
+				end
+			end
+		end
+		if inRow then
+			note.AnchorPoint = Vector2.new(0, 1)
+			note.Position = UDim2.fromOffset(0, -gap)
+		else
+			note.AnchorPoint = Vector2.new(0, 0.5)
+			note.Position = UDim2.new(1, gap, 0.5, 0)
+		end
+	end
+	button:GetPropertyChangedSignal("AbsolutePosition"):Connect(update)
+	task.defer(update)
+end
+
 -- The right-hand stack: parent potion pills (LayoutOrder 1) and the order card (2) here.
 -- Width is HudLayout.RIGHT_COLUMN_WIDTH; hidden children take no room.
 function UiKit.rightColumn(): Frame

@@ -1192,11 +1192,11 @@ Dein echter Spielstand wurde vorher gesichert (DataStore-Schlüssel `backup_18no
 
 Alle Inseln teilen jetzt einen ruhigen Tag-Look (`src/shared/WorldLooks.luau`), beim Inselwechsel ändert sich nur die Musik.
 
-- [ ] Play, von Welt 1 über alle Brücken bis Welt 7 laufen: Himmel, Tageszeit, Helligkeit und Wolken bleiben gleich, kein Umschalten oder Aufblitzen an den Brücken. Die Musik wechselt weiterhin pro Insel.
-- [ ] Strand- und Eis-Insel (auch von Nachbarinseln aus gesehen): kein heller „Filter“, weißer Sand und Schnee strahlen nicht (kein Bloom-Schein).
-- [ ] Neon (Lava, Weltraum-Leuchtteile, Portale) leuchtet auf allen Inseln gleich stark. Leuchtet Neon gar nicht mehr, `bloom.threshold` in `WorldLooks` schrittweise senken (aktuell 2,8), solange Sand und Schnee nicht anfangen zu strahlen.
+- [x] Play, von Welt 1 über alle Brücken bis Welt 7 laufen: Himmel, Tageszeit, Helligkeit und Wolken bleiben gleich, kein Umschalten oder Aufblitzen an den Brücken. Die Musik wechselt weiterhin pro Insel.
+- [x] Strand- und Eis-Insel (auch von Nachbarinseln aus gesehen): kein heller „Filter“, weißer Sand und Schnee strahlen nicht (kein Bloom-Schein).
+- [x] Neon (Lava, Weltraum-Leuchtteile, Portale) leuchtet auf allen Inseln gleich stark. Leuchtet Neon gar nicht mehr, `bloom.threshold` in `WorldLooks` schrittweise senken (aktuell 2,8), solange Sand und Schnee nicht anfangen zu strahlen.
 - [ ] Raus- und Reintabben ändert am Look nichts mehr.
-- [ ] Welt 7 (Weltraum) ist jetzt auch Tag: prüfen, ob es lesbar aussieht.
+- [x] Welt 7 (Weltraum) ist jetzt auch Tag: prüfen, ob es lesbar aussieht.
 
 ## #46 Kein Flackern an Inselrändern
 
@@ -1211,8 +1211,8 @@ Klippenblöcke einer Schicht haben jetzt gestaffelte Oberkanten und minimal vers
 
 Das Vulkan-Wahrzeichen (Welt 5) ist jetzt ein zulaufender Kegel aus 11 dunklen Basaltscheiben (konkave Flanke, breiter Kraterrand), drei Neon-Lavaströme laufen über die Kanten bis zum Boden, die Kraterlava bleibt, aus dem Krater steigt Rauch (ParticleEmitter am unsichtbaren Teil `VolcanoSmoke`). Vorschau: `assets/previews/islands/World5_Landmark.jpg`.
 
-- [ ] Vulkan-Insel ansehen: Vulkan wirkt dunkel (Basalt), nicht mehr wie eine helle Sandpyramide; die drei Lavaströme liegen sichtbar auf den Flanken (keine Lücken oder Schweben) und reichen bis zum Boden.
-- [ ] Kraterlava leuchtet wie bisher, Rauch steigt langsam aus dem Krater und verweht; Rauch wirkt nicht zu dicht und kostet keine spürbaren FPS.
+- [x] Vulkan-Insel ansehen: Vulkan wirkt dunkel (Basalt), nicht mehr wie eine helle Sandpyramide; die drei Lavaströme liegen sichtbar auf den Flanken (keine Lücken oder Schweben) und reichen bis zum Boden.
+- [x] Kraterlava leuchtet wie bisher, Rauch steigt langsam aus dem Krater und verweht; Rauch wirkt nicht zu dicht und kostet keine spürbaren FPS.
 - [ ] Lavaströme und Kegel flackern nicht (auch nicht aus der Ferne), Felsbrocken am Fuß stehen sauber auf dem Boden, Weg/Treppe am Vulkan sind frei.
 - [ ] Inselrand (#46) flackert weiterhin nicht.
 
@@ -1220,26 +1220,26 @@ Das Vulkan-Wahrzeichen (Welt 5) ist jetzt ein zulaufender Kegel aus 11 dunklen B
 
 Die Fancy-Zweit-Eier ohne `glow` haben kein Neon mehr (Muster matt, Goldband bleibt Metal); Vulkan- (`MagmaEgg`) und Weltraum-Ei (`NebulaEgg`) behalten ihr Neon. Alien-Pilz: Hut matt grün (`Top_3CC864`), nur die violetten Punkte sind Neon (`Top_B45AFF_Neon`). Vorschau: `assets/previews/eggs/FancyDemo.png`, `assets/previews/toppings/AlienMushroom.png`.
 
-- [ ] Import: `assets/models/eggs/BarnEgg.fbx`, `BonbonEgg.fbx`, `GlacierEgg.fbx`, `ShellEgg.fbx`, `StoneOvenEgg.fbx` und `assets/models/toppings/AlienMushroom.fbx` neu importieren (alte Modelle in `ReplicatedStorage.GameAssets.Models` ersetzen, gleiche Namen, Teilnamen mit Farbe/Material beibehalten).
-- [ ] Steinofen-Ei (Welt 1) wirkt warm und besonders, ohne grelles goldgelbes Leuchten; Goldband glänzt metallisch. Gleiches bei Scheunen-, Muschel-, Gletscher- und Bonbon-Ei.
-- [ ] Vulkan- und Weltraum-Eier leuchten weiterhin.
-- [ ] Alien-Pilz (Welt 7, Feld und Pizza): Hut matt grün, überstrahlt nicht; nur die kleinen violetten Punkte leuchten.
+- [x] Import: `assets/models/eggs/BarnEgg.fbx`, `BonbonEgg.fbx`, `GlacierEgg.fbx`, `ShellEgg.fbx`, `StoneOvenEgg.fbx` und `assets/models/toppings/AlienMushroom.fbx` neu importieren (alte Modelle in `ReplicatedStorage.GameAssets.Models` ersetzen, gleiche Namen, Teilnamen mit Farbe/Material beibehalten).
+- [x] Steinofen-Ei (Welt 1) wirkt warm und besonders, ohne grelles goldgelbes Leuchten; Goldband glänzt metallisch. Gleiches bei Scheunen-, Muschel-, Gletscher- und Bonbon-Ei.
+- [x] Vulkan- und Weltraum-Eier leuchten weiterhin.
+- [x] Alien-Pilz (Welt 7, Feld und Pizza): Hut matt grün, überstrahlt nicht; nur die kleinen violetten Punkte leuchten.
 
 ## #49 Neue Münze und neuer Gem
 
 Münz- und Gem-Icon kommen jetzt aus einem gemeinsamen Baustein (`UiKit.coinIcon` / `UiKit.gemIcon`, nur GUI-Elemente mit UIGradient/UIStroke): Goldmünze mit Rand und eingeprägter Pizza-Ecke, facettierter türkiser Diamant mit Glanzlicht. In 3D: neue Modelle `Coin` (springen beim Verkauf aus dem Ofen) und `Gem` (Feld-Gems), gebaut mit `tools/blender/build_currency.py`. Vorschau: `assets/previews/Coin.png`, `Gem.png`, `Currency.png`.
 
-- [ ] Import: `assets/models/Coin.fbx` und `assets/models/Gem.fbx` nach `ReplicatedStorage.GameAssets.Models` importieren (Namen `Coin` und `Gem`, Teilnamen `CoinGold`/`CoinRim`/`CoinEmboss` bzw. `GemLight`/`GemMid`/`GemDark`/`GemShine` beibehalten).
+- [x] Import: `assets/models/Coin.fbx` und `assets/models/Gem.fbx` nach `ReplicatedStorage.GameAssets.Models` importieren (Namen `Coin` und `Gem`, Teilnamen `CoinGold`/`CoinRim`/`CoinEmboss` bzw. `GemLight`/`GemMid`/`GemDark`/`GemShine` beibehalten).
 - [ ] Vor dem Import: beim Verkaufen springen goldene Scheiben aus dem Ofen, Feld-Gems sind die gekippten Neon-Würfel wie bisher (nichts fehlt, keine Fehler im Output).
 - [ ] HUD oben: Münze zeigt Goldrand, Pizza-Ecke mit Rand und drei Punkten; Gem ist ein Diamant mit hellen/dunklen Facetten und weißem Glanz. Beides scharf und nicht verrutscht auf PC und kleinem Handy (Device-Emulator); Zahlen stehen daneben wie vorher.
-- [ ] Verkaufen am Ofen: 4 3D-Münzen springen drehend aus dem Ofen und verschwinden, die fliegenden Münz-Icons zum Zähler sehen aus wie die HUD-Münze.
-- [ ] Nach dem Import: Verkaufs-Münzen zeigen das Blender-Modell (Pizza-Ecke auf beiden Seiten, Scheibe unsichtbar), Feld-Gems stehen aufrecht als Diamant über dem Boden, funkeln und leuchten weiter, lassen sich wie vorher einsammeln (auch per Magnet/Auto-Sammeln).
+- [x] Verkaufen am Ofen: 4 3D-Münzen springen drehend aus dem Ofen und verschwinden, die fliegenden Münz-Icons zum Zähler sehen aus wie die HUD-Münze.
+- [x] Nach dem Import: Verkaufs-Münzen zeigen das Blender-Modell (Pizza-Ecke auf beiden Seiten, Scheibe unsichtbar), Feld-Gems stehen aufrecht als Diamant über dem Boden, funkeln und leuchten weiter, lassen sich wie vorher einsammeln (auch per Magnet/Auto-Sammeln).
 
 ## #50 Feste Belohnungen in Geschenken und Kalender
 
 Geschenke und Login-Kalender geben nur noch feste Gems und Tränke, keine Münzen (Geschenke: 3 Gems / 5 Gems / 1 Trank / 1 Trank / 8 Gems / 10 Gems + 1 Trank; Kalender: 5 Gems / 10 Gems / 1 Trank / 1 Trank / 20 Gems / 2 Tränke / 50 Gems + 3 Tränke). Zum Ausgleich kosten Bauernhof 120 (vorher 170) und der erste Rebirth 3,9 Mrd (vorher 4,9 Mrd). Details: `docs/balancing.md`.
 
-- [ ] Geschenke-Menü: alle sechs Zeilen zeigen „3 Gems“, „5 Gems“, „1 Trank“, „1 Trank“, „8 Gems“, „10 Gems + 1 Trank“; nirgends „Münzen“.
+- [x] Geschenke-Menü: alle sechs Zeilen zeigen „3 Gems“, „5 Gems“, „1 Trank“, „1 Trank“, „8 Gems“, „10 Gems + 1 Trank“; nirgends „Münzen“.
 - [ ] Geschenk abholen (5 Min): Meldung „Geschenk! +3 Gems“, Gem-Zähler +3, Münzen unverändert. Trank-Geschenk: Meldung nennt den gezogenen Trank (z. B. „1× Glücks-Trank“), er liegt im Trank-Inventar.
 - [ ] Login-Kalender: Kacheln Tag 1–7 zeigen die neuen Belohnungen (Tag 1 „5 Gems“, Tag 4 „1 Trank“); Abholen an Tag 1 gibt +5 Gems und keine Münzen.
 - [ ] Gleiche Anzeigen in Welt 1 und nach Freischalten späterer Welten bzw. mit starken Pets (Belohnung ändert sich nicht).
@@ -1253,7 +1253,7 @@ Entfällt: Der Pet-Deckel wurde in #57 wieder entfernt (siehe Abschnitt #57).
 
 Die runden Seitenknöpfe (Pets, Tränke, Geschenke, Rebirth) beginnen jetzt bei halber Bildschirmhöhe und enden über dem Joystick (Zone `sideArea` in `HudLayout`). Auf niedrigen Bildschirmen ist die Zone mindestens eine Knopfreihe hoch, die Knöpfe stehen dann nebeneinander; auf hohen Bildschirmen untereinander, bei Platzmangel in weiteren Spalten.
 
-- [ ] PC: Chat öffnen (oben links), alle vier Seitenknöpfe liegen unter dem Chatfenster und reagieren auf Klicks (Pets-, Trank-, Geschenke-, Rebirth-Menü öffnen sich).
+- [x] PC: Chat öffnen (oben links), alle vier Seitenknöpfe liegen unter dem Chatfenster und reagieren auf Klicks (Pets-, Trank-, Geschenke-, Rebirth-Menü öffnen sich).
 - [ ] Tutorial-Karte steht weiter oben links und überdeckt keinen Seitenknopf.
 - [ ] Device-Emulator Handy (z. B. iPhone SE quer und ein großes Handy): alle vier Knöpfe sichtbar und antippbar, keiner im Joystick-Bereich, keiner über Pizza-Leiste, Auto-Sammeln oder Freischalt-Knopf; Chat geöffnet verdeckt keinen Knopf.
 - [ ] Tablet/4K-Fenster: Knöpfe stehen in einer Spalte ab Bildschirmmitte, Reihenfolge Pets, Tränke, Geschenke, Rebirth.
@@ -1262,58 +1262,82 @@ Die runden Seitenknöpfe (Pets, Tränke, Geschenke, Rebirth) beginnen jetzt bei 
 
 Alle Menüs (Shop, Portal, Pets, Tränke, Geschenke, Rebirth, Login-Kalender, Telefon) melden sich bei der Menü-Verwaltung in `UiKit` an. Öffnet sich eins, schließen sich die anderen wie mit „X“.
 
-- [ ] Pets-Menü offen, dann Tränke-Knopf: Pets-Menü schließt sich, nur das Trank-Menü ist offen. Genauso Geschenke und Rebirth untereinander.
-- [ ] Geschenke → „📅 Kalender“: nur der Kalender ist offen.
-- [ ] Im Shop stehen (Shop offen), Pets-Knopf drücken: Shop schließt sich und geht nicht wieder auf, solange man im Shop steht (auch nicht beim Kaufen/Sammeln). Shop verlassen und wieder betreten: Shop öffnet sich, Pets-Menü schließt sich.
+- [x] Pets-Menü offen, dann Tränke-Knopf: Pets-Menü schließt sich, nur das Trank-Menü ist offen. Genauso Geschenke und Rebirth untereinander.
+- [x] Geschenke → „📅 Kalender“: nur der Kalender ist offen.
+- [x] Im Shop stehen (Shop offen), Pets-Knopf drücken: Shop schließt sich und geht nicht wieder auf, solange man im Shop steht (auch nicht beim Kaufen/Sammeln). Shop verlassen und wieder betreten: Shop öffnet sich, Pets-Menü schließt sich.
 - [ ] Im Portal stehen, „X“ drücken, Münzen sammeln lassen: Portal-Menü bleibt zu. Dasselbe nach Öffnen des Pets-Menüs. Portal verlassen und wieder betreten: Portal-Menü öffnet sich.
 - [ ] Pets-Menü offen, dann in den Shop bzw. ans klingelnde Telefon laufen: Pets-Menü schließt sich, Shop bzw. Telefon-Auftrag ist offen.
-- [ ] Output: keine Fehler beim Öffnen/Schließen.
+- [x] Output: keine Fehler beim Öffnen/Schließen.
 
 ## #54 Ei-Vorschau als Panel rechts im HUD
 
 Die Ei-Vorschau ist kein 3D-Schild über dem Ei mehr, sondern ein Panel rechts (Zone `eggPreview`). Es öffnet sich am nächsten Ei, schließt beim Weggehen und zählt als Menü.
 
-- [ ] Ans Ei laufen: Panel rechts unter der Top-Leiste, Ei und Figur bleiben in der Mitte sichtbar, kein Schild mehr über dem Ei. Weggehen: Panel schließt.
-- [ ] Zwischen den zwei Eiern einer Welt hin und her: Panel zeigt jeweils das nähere Ei (Titel, Pets, Preis wechseln).
+- [x] Ans Ei laufen: Panel rechts unter der Top-Leiste, Ei und Figur bleiben in der Mitte sichtbar, kein Schild mehr über dem Ei. Weggehen: Panel schließt.
+- [x] Zwischen den zwei Eiern einer Welt hin und her: Panel zeigt jeweils das nähere Ei (Titel, Pets, Preis wechseln).
 - [ ] PC mit niedrigem Fenster (z. B. 1280 × 600): Panel ragt nicht aus dem Bild, „1 öffnen“/„3 öffnen“ ganz sichtbar, die Pet-Liste scrollt statt abzuschneiden.
 - [ ] Device-Emulator (kleines Handy quer, z. B. iPhone SE): Panel liegt nicht über den Roblox-Knöpfen oben und nicht über dem Sprung-Knopf, Knöpfe sind bedienbar.
 - [ ] Glückstrank aktiv: Titel „🍀 Glück!“, Chancen grün. Nach dem Gem-Upgrade „3 öffnen“ sichtbar. Während der Animation reagiert der Knopf nicht; mit zu wenig Münzen erscheint „Zu wenig Münzen!“ rot am Knopf.
-- [ ] Pet-Bilder in den Zeilen, Pet-Namensschilder am Ei ausgeblendet.
+- [x] Pet-Bilder in den Zeilen, Pet-Namensschilder am Ei ausgeblendet.
 - [ ] Trank aktiv und Auftrag läuft: am Ei sind Trank-Pillen und Auftragskarte weg, nach dem Weggehen wieder da.
-- [ ] Pets-Menü öffnen, während das Panel offen ist: Panel schließt und bleibt zu, solange man am Ei steht; weggehen und wieder hin: Panel öffnet, Pets-Menü schließt.
-- [ ] Am Shop mit Ei in der Nähe: nie Shop und Panel gleichzeitig offen.
-- [ ] Output: keine Fehler.
+- [x] Pets-Menü öffnen, während das Panel offen ist: Panel schließt und bleibt zu, solange man am Ei steht; weggehen und wieder hin: Panel öffnet, Pets-Menü schließt.
+- [x] Am Shop mit Ei in der Nähe: nie Shop und Panel gleichzeitig offen.
+- [x] Output: keine Fehler.
 
 ## #55 Handy-Modus für Menüs
 
 Auf kleinen Bildschirmen (kurze Seite des Viewports unter 500 px) füllen Menüs fast den ganzen Bildschirm, werden nie unter 85 % skaliert und scrollen stattdessen (ganzes Panel scrollt, wenn es nicht passt). Der Shop zeigt mindestens einen Abschnittskopf plus eine ganze Karte. Das Ei-Panel beginnt neben dem Gem-Zähler und ist schmaler.
 
 - [ ] Device-Emulator, kleines Handy quer (iPhone SE): Shop, Portal, Pets, Tränke, Geschenke, Rebirth, Login-Kalender und Telefon-Auftrag nacheinander öffnen. Jedes Menü füllt fast den Bildschirm, Text gut lesbar, nichts abgeschnitten; wo es nicht passt, lässt sich das Menü bzw. die Liste scrollen, „X“ bleibt erreichbar.
-- [ ] iPhone SE quer, Shop: mindestens eine ganze Karte mit vollem Kauf-Knopf sichtbar; kaufen klappt; Liste scrollt.
+- [x] iPhone SE quer, Shop: mindestens eine ganze Karte mit vollem Kauf-Knopf sichtbar; kaufen klappt; Liste scrollt.
 - [ ] iPhone SE quer: Pets-Menü offen, Tränke-Knopf drücken → nur das Trank-Menü offen, keine Überlappung (und umgekehrt).
-- [ ] iPhone SE quer, ans Ei laufen: Ei-Panel rechts neben dem Gem-Zähler, lesbar, „1 öffnen“ ganz sichtbar, nicht über dem Sprung-Knopf; Figur und Ei in der Mitte sichtbar.
+- [x] iPhone SE quer, ans Ei laufen: Ei-Panel rechts neben dem Gem-Zähler, lesbar, „1 öffnen“ ganz sichtbar, nicht über dem Sprung-Knopf; Figur und Ei in der Mitte sichtbar.
 - [ ] Hochformat (iPhone SE hochkant) kurz prüfen: Menüs passen in die Breite, nichts ragt aus dem Bild.
 - [ ] Tablet (z. B. iPad quer): normales Layout wie bisher (Menüs unter Währungen, über dem Pizza-Balken), nichts scrollt unnötig.
 - [ ] Gerät drehen bzw. im Emulator zwischen Handy und PC wechseln: Menüs passen sich an, keine Reste eines Scrollbalkens bei geschlossenem Menü.
-- [ ] Output: keine Fehler.
+- [x] Output: keine Fehler.
 
 ## #57 Flache Pet-Kurve, neue Preise, kein Pet-Deckel
 
 Pets steigen pro Welt gleichmäßig (bestes Pet Welt 1: +75 %, … Welt 7: +500 %), jedes Pet zählt überall voll. Alle Münzpreise sind neu (Bauernhof 26, Strand 690, Eisberge 12.000, Vulkan 35.000, Süßigkeitenland 900.000, Weltraum 12 Mio, erster Rebirth 74 Mio, jeder weitere ×14, seit #58 ×1,5). Ziel laut Simulator: erster Rebirth nach etwa 120 Minuten. Details: `docs/balancing.md`.
 
-- [ ] Neuer Spielstand (oder Daten zurücksetzen), Welt 1 mit Stoppuhr: Tutorial → Shop-Käufe → Bauernhof-Schranke (26) in etwa 6 Minuten. Fühlt sich das Tempo richtig an? Schranken-Preis-Schild zeigt den neuen Preis.
+- [x] Neuer Spielstand (oder Daten zurücksetzen), Welt 1 mit Stoppuhr: Tutorial → Shop-Käufe → Bauernhof-Schranke (26) in etwa 6 Minuten. Fühlt sich das Tempo richtig an? Schranken-Preis-Schild zeigt den neuen Preis.
 - [ ] Weiter bis Welt 3–4 spielen: Welt 2 etwa 9, Welt 3 etwa 12 Minuten; Shop-Preise und Ei-Preise am Schild/Panel passen zur Config (z. B. Hof-Ei 48, Scheunen-Ei 240).
-- [ ] Pet-Menü: Karten zeigen nur den normalen Bonus (z. B. „+75 %“), kein „hier“ und kein Gold-Text mehr; Kopfzeile „Bonus +X %“ ändert sich beim Gang in eine andere Welt nicht.
+- [x] Pet-Menü: Karten zeigen nur den normalen Bonus (z. B. „+75 %“), kein „hier“ und kein Gold-Text mehr; Kopfzeile „Bonus +X %“ ändert sich beim Gang in eine andere Welt nicht.
 - [ ] „Beste ausrüsten“ in Welt 1 mit Pets aus späteren Welten: rüstet die Pets mit dem höchsten Bonus aus (späte Pets vorn).
 - [ ] Verkauf am Ofen in Welt 1 und Welt 2 mit gleichen Pets und gleicher Pizza: gleicher Multiplikator (nur der Belagwert unterscheidet sich). Lieferauftrag: HUD-Belohnung = gezahlte Münzen.
-- [ ] Alter Test-Spielstand mit Rebirth: lädt ohne Fehler, alle Pets da, Boni zeigen die neuen kleineren Werte (z. B. Galaxie-Pizza-Leviathan +500 %). Rebirth-Menü zeigt den neuen Preis (74 Mio, Faktor seit #58 ×1,5 je Rebirth).
-- [ ] Optional nach einem Rebirth: Welt 1 geht sehr schnell (Simulator: unter 1 Minute, Ziel 3 wurde nicht erreicht, siehe `docs/balancing.md`). Eindruck notieren: zu schnell?
-- [ ] Output: keine Fehler.
+- [x] Alter Test-Spielstand mit Rebirth: lädt ohne Fehler, alle Pets da, Boni zeigen die neuen kleineren Werte (z. B. Galaxie-Pizza-Leviathan +500 %). Rebirth-Menü zeigt den neuen Preis (74 Mio, Faktor seit #58 ×1,5 je Rebirth).
+- [x] Optional nach einem Rebirth: Welt 1 geht sehr schnell (Simulator: unter 1 Minute, Ziel 3 wurde nicht erreicht, siehe `docs/balancing.md`). Eindruck notieren: zu schnell?
+- [x] Output: keine Fehler.
 
 ## #58 Flacherer Rebirth-Preis
 
 Jeder weitere Rebirth kostet nur noch ×1,5 so viel wie der vorige (vorher ×14): 74 Mio · 111 Mio · 166,5 Mio · 249,75 Mio. Simulator: zweiter Durchlauf bis zum zweiten Rebirth ≈ 45 Minuten (Welt 1–6 ≈ 21, Welt 7 ≈ 24). Details: `docs/balancing.md`.
 
-- [ ] Test-Spielstand mit 1 Rebirth: Rebirth-Menü zeigt 111 Mio als Preis (mit 0 Rebirths: 74 Mio, mit 2: 166,5 Mio).
+- [x] Test-Spielstand mit 1 Rebirth: Rebirth-Menü zeigt 111 Mio als Preis (mit 0 Rebirths: 74 Mio, mit 2: 166,5 Mio).
 - [ ] Optional nach einem Rebirth mit Stoppuhr: Welt 1–6 in etwa 20 Minuten, danach Welt 7 bis zum zweiten Rebirth in etwa 25 Minuten. Eindruck notieren.
-- [ ] Output: keine Fehler.
+- [x] Output: keine Fehler.
+
+## Studio-Test 20.11.2026 (Version 1: #45–#58)
+
+Importiert: 5 Fancy-Eier und Alien-Pilz neu, `Coin` und `Gem` (Teilnamen wie vorgesehen). Place gespeichert und veröffentlicht. Dein Spielstand war vorher gesichert (`backup_20nov_player_372358501`) und ist am Ende 1:1 wiederhergestellt (104.346 Münzen, 0 Rebirths, Welten bis Eisberge). Output ohne Spiel-Fehler. Screenshots: `docs/playtest/60-…` bis `77-…`.
+
+**Behoben:**
+
+1. **#45 heller Schleier:** In `Lighting` lagen noch Bloom (Schwelle 2), Atmosphere, SunRays und DepthOfField der Studio-Vorlage, *zusätzlich* zu unseren `World…`-Effekten. Der zweite Bloom ließ Sand und Schnee strahlen. `WorldAmbience` entfernt jetzt fremde Effekte beim Start (lokal). Danach liegen nur noch `WorldAtmosphere/WorldBloom/WorldColor/WorldSunRays` und `Sky` da (`60`, `61`).
+2. **#54 Ei-Panel ging am Shop nicht auf:** Der Shop-Bereich liegt ~17 Studs vom Nachbar-Ei. Das Panel öffnete schon bei 20 Studs, wurde vom Shop sofort geschlossen und blieb zu, bis man >20 Studs weg war. Jetzt öffnet das Panel erst ab 14 Studs und schließt bei 20 (`OPEN_DISTANCE` in `EggPreview`). Vom Shop zum Ei → Panel öffnet (`75`).
+3. **Hinweis-Blase über dem Rebirth-Knopf:** Wenn die Seitenknöpfe in einer Reihe stehen (#52), lag „Neu! Geschenke fürs Spielen“ (und „Neu! Mehr Münzen“) auf dem Nachbar-Knopf. Neue Hilfe `UiKit.placeSideNote`: In einer Reihe sitzt die Blase über dem Knopf, in einer Spalte wie bisher rechts (`76`).
+
+**Funktioniert:** Ein Licht-Look auf allen Inseln, Welt 7 bei Tag gut lesbar (`63`). Vulkan als dunkler Basaltkegel mit Lava und Rauch (`62`). Steinofen-/Bonbon-Ei matt, Vulkan-Ei leuchtet (`65`, `66`). Alien-Pilz matt grün (`64`). Neue Münz-/Gem-Icons, 3D-Münzen beim Verkauf, Feld-Gem als Diamant (`67`). Geschenke/Kalender nur Gems und Tränke, „Geschenk! +1× Glücks-Trank“ (`70`). Chat offen → Seitenknöpfe darunter und klickbar (`68`). Immer nur ein Menü offen, Shop bleibt nach Pets zu (`69`, `72`). Ei-Panel rechts, wechselt zwischen den Eiern, Pets schließt es (`71`). Handy (iPhone 7, 667×375): Pets füllt den Bildschirm und ist lesbar, Shop zeigt zwei ganze Karten mit vollem Kauf-Knopf (`73`, `74`). Rebirth-Menü: 111 Mio bei 1 Rebirth; nach Rebirth 2: „×2 → ×2,5“, Preis 166,5 Mio (`77`).
+
+**Balancing (Bot mit Teleport-Runden, 2 Runden ≈ 1 Minute laut Simulator):**
+
+- Neuer Spieler, Welt 1: 12 Münzen nach 4 Runden, Ei nach 9, **Bauernhof (26) nach 13 Runden ≈ 6,5 Min** (Simulator ≈ 6) ✓.
+- Welt 2 bis Strand (690): **26 Runden ≈ 13 Min** (Simulator ≈ 9). Der Bot hat dort keine Eier geöffnet und nur Shop-1-Upgrades gekauft, echte Spieler sind eher schneller.
+- Nach Rebirth 2 (Bonus nur +54 %): **Bauernhof nach 3 Runden ≈ 1,5 Min.** → **Deine Entscheidung:** Ist der Neustart nach einem Rebirth zu schnell? (Simulator-Ziel waren 3 Min.)
+
+**Hinweise / offen:**
+
+- Tablet (iPad 1180×820): Die Seitenknöpfe stehen in **einer Reihe** auf halber Höhe, nicht in einer Spalte wie in #52 beschrieben (ab Bildschirmmitte bis zum Joystick ist nur Platz für eine Reihe). Sieht ordentlich aus, ist aber nicht wie in der Checkliste.
+- Der Rebirth-Preis wird ab 100 Mio ohne Komma gekürzt („166 Mio“ statt 166,5 Mio). Das ist so gewollt (`UiKit.shortNumber`).
+- Nicht geprüft: Flackern an Inselrändern in Bewegung (auf Standbildern nichts zu sehen), Rauch-FPS, Raus-/Reintabben, Hochformat, Gerät drehen, Welt 3 mit Stoppuhr, Lieferauftrag-Belohnung = Auszahlung, „Beste ausrüsten“ mit späten Pets.

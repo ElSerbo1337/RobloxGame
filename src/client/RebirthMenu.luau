@@ -83,8 +83,7 @@ function RebirthMenu.start()
 	-- Short hint next to the button while it pulses.
 	local hintBubble = UiKit.label(openButton, "Neu! Mehr Münzen")
 	hintBubble.Name = "Hint"
-	hintBubble.AnchorPoint = Vector2.new(0, 0.5)
-	hintBubble.Position = UDim2.new(1, 12, 0.5, 0)
+	UiKit.placeSideNote(hintBubble, openButton, 12)
 	hintBubble.Size = UDim2.fromOffset(190, 44)
 	hintBubble.BackgroundTransparency = 0
 	hintBubble.BackgroundColor3 = UiKit.CREAM
