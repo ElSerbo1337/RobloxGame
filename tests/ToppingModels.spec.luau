@@ -49,4 +49,19 @@ describe("Topping models", function()
 		end
 		expect(table.concat(missing, ", ")).toBe("")
 	end)
+
+	-- The alien mushroom's cap is matte, only its small violet spots glow (#48).
+	it("lets only the violet spots of the alien mushroom glow", function()
+		local model = fs.readFile(`{MODELS}/AlienMushroom.fbx`)
+		local neon = {}
+		for color in string.gmatch(model, "Top_(%x%x%x%x%x%x)_Neon") do
+			neon[color] = true
+		end
+		local colors = {}
+		for color in neon do
+			table.insert(colors, color)
+		end
+		table.sort(colors)
+		expect(table.concat(colors, ", ")).toBe("B45AFF")
+	end)
 end)

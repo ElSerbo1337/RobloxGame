@@ -613,19 +613,19 @@ def build_star_olives():
 
 def alien_mushroom(c, size, seed):
     cap = sphere(0.62 * size, (c[0], c[1], 0.62 * size), (1, 1, 0.72), segments=14, rings=8)
-    part(jitter(cut_below(cap, 0.66 * size), 0.012 * size, seed), "5AFF8C", "Neon")
+    part(jitter(cut_below(cap, 0.66 * size), 0.012 * size, seed), "3CC864")  # matte cap (#48)
     part(cylinder(0.24 * size, 0.7 * size, (c[0], c[1], 0.35 * size), 10, scale=(1, 1, 1)), "E6DCFF")
     rnd = random.Random(seed)
     for k in range(5):
         a = 2 * math.pi * k / 5 + rnd.uniform(-0.3, 0.3)
         d = 0.36 * size
         z = 0.66 * size + 0.4 * size * math.sqrt(max(0.0, 1 - (d / (0.62 * size)) ** 2)) * 0.72
-        part(sphere(0.09 * size, (c[0] + math.cos(a) * d, c[1] + math.sin(a) * d, z), (1, 1, 0.5), 8, 5), "B45AFF")
-    part(sphere(0.1 * size, (c[0], c[1], 0.66 * size + 0.44 * size), (1, 1, 0.5), 8, 5), "B45AFF")
+        part(sphere(0.09 * size, (c[0] + math.cos(a) * d, c[1] + math.sin(a) * d, z), (1, 1, 0.5), 8, 5), "B45AFF", "Neon")
+    part(sphere(0.1 * size, (c[0], c[1], 0.66 * size + 0.44 * size), (1, 1, 0.5), 8, 5), "B45AFF", "Neon")
 
 
 def build_alien_mushroom():
-    # A big and a small alien mushroom: glowing green caps with violet spots.
+    # A big and a small alien mushroom: matte green caps with small glowing violet spots.
     alien_mushroom((-0.3, 0.05), 1.0, 1)
     alien_mushroom((0.62, -0.3), 0.62, 2)
 

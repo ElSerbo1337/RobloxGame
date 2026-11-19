@@ -1215,3 +1215,12 @@ Das Vulkan-Wahrzeichen (Welt 5) ist jetzt ein zulaufender Kegel aus 11 dunklen B
 - [ ] Kraterlava leuchtet wie bisher, Rauch steigt langsam aus dem Krater und verweht; Rauch wirkt nicht zu dicht und kostet keine spürbaren FPS.
 - [ ] Lavaströme und Kegel flackern nicht (auch nicht aus der Ferne), Felsbrocken am Fuß stehen sauber auf dem Boden, Weg/Treppe am Vulkan sind frei.
 - [ ] Inselrand (#46) flackert weiterhin nicht.
+
+## #48 Weniger Leuchten bei Fancy-Eiern und Alien-Pilz
+
+Die Fancy-Zweit-Eier ohne `glow` haben kein Neon mehr (Muster matt, Goldband bleibt Metal); Vulkan- (`MagmaEgg`) und Weltraum-Ei (`NebulaEgg`) behalten ihr Neon. Alien-Pilz: Hut matt grün (`Top_3CC864`), nur die violetten Punkte sind Neon (`Top_B45AFF_Neon`). Vorschau: `assets/previews/eggs/FancyDemo.png`, `assets/previews/toppings/AlienMushroom.png`.
+
+- [ ] Import: `assets/models/eggs/BarnEgg.fbx`, `BonbonEgg.fbx`, `GlacierEgg.fbx`, `ShellEgg.fbx`, `StoneOvenEgg.fbx` und `assets/models/toppings/AlienMushroom.fbx` neu importieren (alte Modelle in `ReplicatedStorage.GameAssets.Models` ersetzen, gleiche Namen, Teilnamen mit Farbe/Material beibehalten).
+- [ ] Steinofen-Ei (Welt 1) wirkt warm und besonders, ohne grelles goldgelbes Leuchten; Goldband glänzt metallisch. Gleiches bei Scheunen-, Muschel-, Gletscher- und Bonbon-Ei.
+- [ ] Vulkan- und Weltraum-Eier leuchten weiterhin.
+- [ ] Alien-Pilz (Welt 7, Feld und Pizza): Hut matt grün, überstrahlt nicht; nur die kleinen violetten Punkte leuchten.

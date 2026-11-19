@@ -48,4 +48,19 @@ describe("Pet models", function()
 		table.sort(missing)
 		expect(table.concat(missing, ", ")).toBe("")
 	end)
+
+	-- Only eggs with an explicit `glow` keep Neon parts; fancy eggs without it glow no
+	-- more (#48). Part names carry the material ("Egg_FF7A1A_Neon").
+	it("gives Neon parts only to eggs whose look has glow", function()
+		local wrong = {}
+		for eggId, egg in GameConfig.eggs do
+			local model = fs.readFile(`assets/models/eggs/{eggId}.fbx`)
+			local hasNeon = string.find(model, "_Neon", 1, true) ~= nil
+			if hasNeon ~= (egg.look.glow == true) then
+				table.insert(wrong, eggId)
+			end
+		end
+		table.sort(wrong)
+		expect(table.concat(wrong, ", ")).toBe("")
+	end)
 end)

@@ -19,7 +19,7 @@ StandTrim is tinted in the egg's accent colour by the game.
 
 Everything faces Blender +Y (the sign of the stand), like the oven and the pets.
 Patterns are built by pattern functions on the egg surface, so a new egg is only a new
-config entry; `fancy` adds a gold band, gold beads and glowing accents on top of any pattern.
+config entry; `fancy` adds a gold band, gold beads and (only with `glow`) glowing accents on top of any pattern.
 """
 
 import math
@@ -376,7 +376,7 @@ def build_egg(look, fancy=None):
     fancy = look.get("fancy", False) if fancy is None else fancy
     shell = egg_mesh("Shell")
     finish(shell, egg_part_name(look["color"]), egg_mat(look["color"]))
-    kind = "Neon" if look.get("glow") or fancy else None
+    kind = "Neon" if look.get("glow") else None
     accent = [o for o in PATTERNS[look["pattern"]](look) if o is not None]
     if accent:
         finish(join(accent), egg_part_name(look["accent"], kind), egg_mat(look["accent"], kind))
