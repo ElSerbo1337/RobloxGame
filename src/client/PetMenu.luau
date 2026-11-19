@@ -4,6 +4,8 @@
 -- "Beste ausrüsten" asks the server to equip the strongest pets. "Löschen" switches the
 -- menu into delete mode: tapping a card then asks for confirmation before deleting it.
 -- Reads the player attributes Pets (JSON), PetSlots, InventorySlots and CoinMultiplier (see PetService).
+-- Bonuses are shown as they count in the player's current world (pet cap, #51): a capped
+-- pet's card reads "+X % hier" plus its full bonus.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -14,7 +16,8 @@ local Net = require(ReplicatedStorage.Shared.Net)
 local PetIcon = require(script.Parent.PetIcon)
 local UiKit = require(script.Parent.UiKit)
 
-type PetEntry = { uid: number, petId: string, equipped: boolean }
+-- bonusHere: what the pet counts in the current world (missing = full bonus).
+type PetEntry = { uid: number, petId: string, equipped: boolean, bonusHere: number? }
 
 -- The pet grid scrolls, so the panel may get as short as header + one row of pets.
 local PANEL_SIZE = Vector2.new(640, 560)
@@ -31,11 +34,19 @@ local function readPets(player: Player): { PetEntry }
 	return if ok and type(list) == "table" then list else {}
 end
 
--- Equipped first, then best bonus, then newest.
+local function bonusHere(entry: PetEntry): number
+	return entry.bonusHere or GameConfig.pets[entry.petId].bonus
+end
+
+-- Equipped first, then best bonus in this world, then best full bonus, then newest.
 local function sortPets(pets: { PetEntry })
 	table.sort(pets, function(a, b)
 		if a.equipped ~= b.equipped then
 			return a.equipped
+		end
+		local hereA, hereB = bonusHere(a), bonusHere(b)
+		if hereA ~= hereB then
+			return hereA > hereB
 		end
 		local bonusA, bonusB = GameConfig.pets[a.petId].bonus, GameConfig.pets[b.petId].bonus
 		if bonusA ~= bonusB then
@@ -225,10 +236,16 @@ function PetMenu.start()
 		name.TextStrokeColor3 = UiKit.DARK
 		name.TextStrokeTransparency = 0
 
-		local bonus = UiKit.label(button, UiKit.bonusText(pet.bonus))
+		-- In this world (#51): capped pets show what they count here and their full bonus.
+		local here = bonusHere(entry)
+		local capped = here < pet.bonus - 1e-9
+		local bonus = UiKit.label(
+			button,
+			if capped then `{UiKit.bonusText(here)} hier ({UiKit.bonusText(pet.bonus)})` else UiKit.bonusText(pet.bonus)
+		)
 		bonus.Position = UDim2.fromOffset(6, 106)
 		bonus.Size = UDim2.new(1, -12, 0, 24)
-		bonus.TextColor3 = UiKit.CREAM
+		bonus.TextColor3 = if capped then UiKit.COIN else UiKit.CREAM
 		bonus.TextStrokeColor3 = UiKit.DARK
 		bonus.TextStrokeTransparency = 0
 
@@ -271,7 +288,7 @@ function PetMenu.start()
 		local multiplier = (player:GetAttribute("CoinMultiplier") :: number?) or 1
 		local bonusText = UiKit.bonusText(multiplier - 1)
 		summary.Text =
-			`Ausgerüstet {equippedCount}/{slots}  ·  Inventar {#pets}/{inventorySlots}  ·  Bonus {bonusText}`
+			`Ausgerüstet {equippedCount}/{slots}  ·  Inventar {#pets}/{inventorySlots}  ·  Bonus in dieser Welt {bonusText}`
 		summary.TextColor3 = if #pets >= inventorySlots and inventorySlots > 0 then UiKit.RED else UiKit.DARK
 	end
 

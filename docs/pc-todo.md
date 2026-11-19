@@ -1244,3 +1244,15 @@ Geschenke und Login-Kalender geben nur noch feste Gems und Tränke, keine Münze
 - [ ] Login-Kalender: Kacheln Tag 1–7 zeigen die neuen Belohnungen (Tag 1 „5 Gems“, Tag 4 „1 Trank“); Abholen an Tag 1 gibt +5 Gems und keine Münzen.
 - [ ] Gleiche Anzeigen in Welt 1 und nach Freischalten späterer Welten bzw. mit starken Pets (Belohnung ändert sich nicht).
 - [ ] Bauernhof-Tor zeigt 120 Münzen, Rebirth-Menü 3,9 Mrd als ersten Rebirth-Preis.
+
+## #51 Pet-Deckel pro Welt und Rebirth-Tempo
+
+Beim Verkauf und bei Lieferungen zählt ein Pet aus einer späteren Welt höchstens den Deckel der Welt, in der verkauft/geliefert wird (bester Pet-Bonus aus den Eiern dieser Welt × 0,3; Welt 1: +67,5 %, Welt 2: +135 %, … Welt 7: +5400 %). In seiner eigenen und allen späteren Welten zählt es voll. Details: `docs/balancing.md`.
+
+- [ ] Pet-Menü in Welt 1 mit einem Pet aus Welt 2+ (z. B. per Rebirth-Spielstand): Karte zeigt den gedeckelten Wert „+… % hier (+X %)“ in Gold (Deckel Welt 1: +67,5 %), Pets aus Welt 1 zeigen ihren normalen Bonus in Weiß; Text passt auf die Karte (PC und kleines Handy).
+- [ ] Kopfzeile im Pet-Menü: „Bonus in dieser Welt +X %“; wechselt beim Gang über die Brücke in die nächste Welt (Wert steigt bzw. Karten zeigen keinen Deckel mehr).
+- [ ] Verkauf am Ofen in Welt 1 vs. Welt 2 mit gleichen Pets/gleicher Pizza: Welt 1 zahlt weniger (gedeckelter Bonus), Rebirth-Multiplikator wirkt weiter obendrauf.
+- [ ] Lieferauftrag: HUD-Belohnung und tatsächlich gezahlte Münzen am Lieferwagen passen zur aktuellen Welt (gedeckelt wie beim Verkauf).
+- [ ] „Beste ausrüsten“ in Welt 1 nach einem Rebirth: rüstet die Pets aus, die dort am meisten zählen (eigene Welt-1-Pets können späte Pets verdrängen).
+- [ ] Alter Spielstand mit Rebirth lädt ohne Fehler, Pets und Rebirths sind vollständig da (keine Migration nötig).
+- [ ] Optional mit Stoppuhr: zweiter Durchlauf Welt 1–6 nach dem Rebirth etwa 45 Min (erster etwa 130 Min).

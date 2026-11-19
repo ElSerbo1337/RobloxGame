@@ -10,6 +10,8 @@
 --   every tick. Gem toppings: config.gems chances on the same number of toppings.
 -- * The player plays `sessionMinutes` per German day: login calendar at the start of each
 --   session, play time gifts as soon as they are ready.
+-- * Pet cap per world (#51): selling and delivering happen in the highest unlocked world,
+--   so pets count with the cap of that world (rules.petBonusIn).
 -- * Delivery: every call is accepted and delivered after `deliverySeconds`; the ordered
 --   toppings are not sold (their sell value is taken back from the income).
 -- * Potions are drunk as soon as they are owned. Gems buy pet slots first, then coin potions.
@@ -118,11 +120,16 @@ function BalanceSim.run(config: any, options: Options?): Result
 	end
 
 	-- Expected gain of the coin multiplier sum when one pet of this egg joins the team.
+	-- The player always plays in the highest unlocked world (sells and delivers there).
+	local function playWorldId(): string
+		return config.worlds[unlockedCount()].id
+	end
+
 	local function expectedPetGain(eggId: string): number
 		local equipped = {}
 		for _, pet in state.pets do
 			if table.find(state.equipped, pet.uid) then
-				table.insert(equipped, config.pets[pet.petId].bonus)
+				table.insert(equipped, rules.petBonusIn(pet.petId, playWorldId()))
 			end
 		end
 		local weakest = 0
@@ -164,7 +171,7 @@ function BalanceSim.run(config: any, options: Options?): Result
 				if apply(rules.buyUpgrade(state, shopId, "PetSlots")) then
 					note(`PetSlots {rules.petSlots(state)}`)
 					bought = true
-					apply(rules.equipBest(state))
+					apply(rules.equipBest(state, playWorldId()))
 				end
 			end
 		end
@@ -211,7 +218,7 @@ function BalanceSim.run(config: any, options: Options?): Result
 				end
 			end
 			-- Eggs of the highest unlocked world: the best expected gain per coin, if it pays back.
-			local baseIncome = income / rules.petMultiplier(state)
+			local baseIncome = income / rules.petMultiplier(state, playWorldId())
 			local bestEgg, bestRatio = nil, 0
 			for _, eggId in config.worlds[unlockedCount()].eggs do
 				local price = config.eggs[eggId].price
@@ -226,7 +233,7 @@ function BalanceSim.run(config: any, options: Options?): Result
 			if bestEgg then
 				makeRoom()
 				if apply(rules.openEgg(state, bestEgg, random)) then
-					apply(rules.equipBest(state))
+					apply(rules.equipBest(state, playWorldId()))
 					note(`{bestEgg} -> pets x{rules.petMultiplier(state)}`)
 					changed = true
 					income = rules.incomePerMinute(state)
@@ -279,8 +286,8 @@ function BalanceSim.run(config: any, options: Options?): Result
 					value += config.toppings[toppingId].value * count
 				end
 				state.pizza = pizza
-				local multiplier = rules.coinMultiplier(state) * rules.potionCoinMultiplier(state)
-				if apply(rules.deliverOrder(state, t)) then
+				local multiplier = rules.coinMultiplier(state, playWorldId()) * rules.potionCoinMultiplier(state)
+				if apply(rules.deliverOrder(state, t, playWorldId())) then
 					-- The ordered toppings were collected in the income stream but not sold.
 					state.coins = math.max(0, state.coins - value * multiplier)
 				else

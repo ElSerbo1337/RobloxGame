@@ -225,6 +225,12 @@ local function counts(pizza: { string }): { [string]: number }
 	return result
 end
 
+-- World the player is in: the HUD and phone show the reward with this world's pet cap
+-- (#51); delivering pays with the cap of the van's world.
+local function currentWorld(state: PlayerState): string
+	return PlayerStates.rules.spawnWorld(state) or GameConfig.worlds[1].id
+end
+
 local function replicate(player: Player, state: PlayerState)
 	local rules = PlayerStates.rules
 	player:SetAttribute("PhoneRinging", rules.deliveryCall(state) ~= nil)
@@ -234,7 +240,7 @@ local function replicate(player: Player, state: PlayerState)
 		return
 	end
 	local now = os.time()
-	local reward = rules.orderReward(state, now)
+	local reward = rules.orderReward(state, now, currentWorld(state))
 	player:SetAttribute(
 		"DeliveryOrder",
 		HttpService:JSONEncode({
@@ -272,7 +278,12 @@ function DeliveryService.start(stations: { Station })
 		end
 		-- Show the best case: the reward if delivered right after accepting.
 		local preview = rules.acceptOrder(state, os.time()).state
-		phoneOpen:FireClient(player, call, rules.orderReward(preview, os.time()), GameConfig.delivery.timeLimitSeconds)
+		phoneOpen:FireClient(
+			player,
+			call,
+			rules.orderReward(preview, os.time(), currentWorld(state)),
+			GameConfig.delivery.timeLimitSeconds
+		)
 		phoneShown[player] = true
 	end
 
@@ -312,12 +323,12 @@ function DeliveryService.start(stations: { Station })
 		end
 	end)
 
-	local function deliver(player: Player, state: PlayerState)
+	local function deliver(player: Player, state: PlayerState, worldId: string)
 		if rules.activeOrder(state) == nil then
 			notify:FireClient(player, "NoOrder")
 			return
 		end
-		local result = rules.deliverOrder(state, os.time())
+		local result = rules.deliverOrder(state, os.time(), worldId)
 		if result.ok and result.reward then
 			PlayerStates.set(player, result.state)
 			notify:FireClient(player, "Delivered", result.reward.amount, result.reward.reward, result.reward.potionId)
@@ -370,14 +381,14 @@ function DeliveryService.start(stations: { Station })
 			for _, player in Players:GetPlayers() do
 				local character = player.Character
 				local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-				local phone: string?, van = nil, false
+				local phone: string?, van: string? = nil, nil
 				if root then
 					for _, station in stations do
 						if isInside(station.phoneZone, root.Position) then
 							phone = station.worldId
 						end
 						if isInside(station.vanZone, root.Position) then
-							van = true
+							van = station.worldId
 						end
 					end
 				end
@@ -392,10 +403,10 @@ function DeliveryService.start(stations: { Station })
 					end
 				end
 
-				if van ~= (atVan[player] == true) then
-					atVan[player] = van or nil
+				if (van ~= nil) ~= (atVan[player] == true) then
+					atVan[player] = if van then true else nil
 					if van and state then
-						deliver(player, state)
+						deliver(player, state, van)
 					end
 				end
 			end

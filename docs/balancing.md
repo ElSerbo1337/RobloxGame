@@ -12,18 +12,32 @@ Die Konfigurations-Tests (`tests/GameConfig.spec.luau`, Block „GameConfig bala
 
 | Welt | ab Rebirths | ohne Rebirth | nach 1. Rebirth |
 | ---- | ----------: | -----------: | --------------: |
-| 1 Pizzeria-Garten | 0 | 15.1 | 0.1 |
-| 2 Bauernhof | 0 | 13.4 | 0.2 |
-| 3 Strand | 0 | 19.8 | 0.2 |
-| 4 Eisberge | 0 | 17.7 | 0.4 |
-| 5 Vulkan | 0 | 25.3 | 2.5 |
-| 6 Süßigkeitenland | 0 | 38.5 | 8.6 |
-| 7 Weltraum (bis Rebirth) | 0 | 33.7 | 31.1 |
-| **Gesamt** | | **169.9** | **42.1** |
+| 1 Pizzeria-Garten | 0 | 15.1 | 3.8 |
+| 2 Bauernhof | 0 | 13.4 | 3.0 |
+| 3 Strand | 0 | 19.8 | 4.2 |
+| 4 Eisberge | 0 | 17.7 | 4.3 |
+| 5 Vulkan | 0 | 25.3 | 10.2 |
+| 6 Süßigkeitenland | 0 | 38.5 | 18.7 |
+| 7 Weltraum (bis Rebirth) | 0 | 33.7 | 28.8 |
+| **Gesamt** | | **169.9** | **70.3** |
 
 Pet-Multiplikator beim ersten Rebirth im Median: ×361.
 
-**Nach dem Rebirth** ist ein Durchlauf etwa **ein Viertel** so lang (42 statt 170 Minuten), nicht genau die Hälfte. Pets bleiben beim Rebirth erhalten. Mit Weltraum-Pets (×300 und mehr) dauern Welt 1–5 zusammen nur noch etwa 3 Minuten, egal welche Preise dort stehen. Die Länge des zweiten Durchlaufs hängt deshalb fast nur an Welt 6–7 und am Preisfaktor des zweiten Rebirths:
+**Nach dem Rebirth** dauern Welt 1–6 zusammen **44 statt 130 Minuten (0,34, Ziel ⅓)**, der ganze Durchlauf bis zum zweiten Rebirth 70 statt 170 Minuten. Das kommt vom Pet-Deckel pro Welt (#51, unten). Ohne Deckel machten die behaltenen Weltraum-Pets (×300 und mehr) alle frühen Preise zu Kleingeld: Welt 1–5 dauerten zusammen nur etwa 3 Minuten (Durchlauf 42 Minuten).
+
+## Pet-Deckel pro Welt (#51)
+
+Beim Verkauf am Ofen und bei Lieferungen zählt jedes ausgerüstete Pet in der Welt des Ofens bzw. Lieferwagens höchstens den **Deckel dieser Welt**: bester Bonus eines Pets aus den Eiern der Welt × `rebirth.petCapFactor`. In seiner eigenen Welt (der ersten, in deren Eiern es steckt) und allen späteren zählt ein Pet immer voll. Der Rebirth-Multiplikator wirkt obendrauf. Der Deckel wird aus der Config berechnet (`rules.petCap`, `rules.petBonusIn`), nicht gespeichert. Weltpreise, Rebirth-Preis und Rebirth-Multiplikator sind unverändert. „Beste ausrüsten“ wählt die Pets, die in der aktuellen Welt am meisten zählen.
+
+`petCapFactor = 0,3` (mit `lune run balance` eingestellt). Deckel je Welt:
+
+| Welt | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| ---- | -: | -: | -: | -: | -: | -: | -: |
+| Deckel | +67,5 % | +135 % | +270 % | +540 % | +1215 % | +2700 % | +5400 % |
+
+Gemessen (Faktor, 9 Läufe, Welt 1–6 nach / vor Rebirth): 1 → 0,13, 0,5 → 0,22, 0,4 → 0,24, 0,3 → 0,34, 0,25 → 0,31. Unter 0,25 kommt der zweite Durchlauf kaum noch voran, weil die frühen Eier zu wenig bringen. `tests/BalanceSim.spec.luau` prüft das Verhältnis (0,25–0,42).
+
+Die frühere Messung des Rebirth-Preisfaktors (vor #51, ohne Deckel, 31 Läufe):
 
 | Preisfaktor pro Rebirth | Durchlauf nach 1. Rebirth | Anteil vom ersten |
 | ---: | ---: | ---: |
@@ -33,7 +47,7 @@ Pet-Multiplikator beim ersten Rebirth im Median: ×361.
 | ×5 | 65 Min | 42 % |
 | ×6 | ca. 73 Min | ca. 50 % |
 
-(31 Läufe, gleiche übrige Preise.) Genau „halb so lang“ ginge nur mit Faktor ×6. Dann kostete aber jeder weitere Rebirth das Sechsfache, während der Multiplikator nur um +0,5 steigt. Ab dem dritten Rebirth würde ein Durchlauf schnell mehrere Stunden dauern. ×3 ist der Kompromiss: deutlich kürzerer zweiter Durchlauf und moderat steigende spätere Rebirths. Wer näher an „halb so lang“ will, erhöht `rebirth.priceFactor`. Alles andere bleibt gleich.
+×3 bleibt: Mit dem Deckel ist der zweite Durchlauf ohnehin etwa 40 % des ersten.
 
 ## Geänderte Preise
 
@@ -60,7 +74,7 @@ Warum so: Shop 1 war für das Einkommen in Welt 1 viel zu teuer. Allein der Pizz
 
 ## Annahmen des Modellspielers
 
-- **Einkommen:** genau die Einkommens-Schätzung `rules.incomePerMinute`, also durchschnittlicher Belagwert der höchsten Welt × Pizza-Platz × 2 Runden pro Minute × Münz-Multiplikator (Pets, Rebirth). Dazu kommt der Münz-Trank (×2), solange er läuft. Kein Laufweg zum Tor, keine Pausen.
+- **Einkommen:** genau die Einkommens-Schätzung `rules.incomePerMinute`, also durchschnittlicher Belagwert der höchsten Welt × Pizza-Platz × 2 Runden pro Minute × Münz-Multiplikator (Pets mit dem Deckel der höchsten Welt, Rebirth). Verkauft und geliefert wird immer in der höchsten freigeschalteten Welt. Dazu kommt der Münz-Trank (×2), solange er läuft. Kein Laufweg zum Tor, keine Pausen.
 - **Spielweise:** 60 Minuten Spielzeit pro Tag. Zu Beginn jedes Tages wird der Login-Kalender abgeholt, die Spielzeit-Geschenke sobald sie bereit sind. Das Tutorial gilt als erledigt.
 - **Lieferaufträge:** Jeder Anruf wird angenommen und nach 60 Sekunden geliefert (2/3 der Zeit übrig, also +33 % Tempo-Bonus). Belohnung über die echten Regeln (Münzen, Gems oder Tränke). Die bestellten Beläge werden nicht verkauft, ihr Verkaufswert wird vom Einkommen abgezogen.
 - **Gems:** aus Gem-Belägen (1 von 150 Belägen, 1–3 Gems) auf dieselbe Belagzahl wie das Einkommen, dazu Aufträge, Geschenke und Kalender. Gems gehen zuerst in Pet-Plätze. Wenn der erreichbare Shop keinen weiteren Platz verkauft, werden Münz-Tränke gekauft.
@@ -68,7 +82,7 @@ Warum so: Shop 1 war für das Einkommen in Welt 1 viel zu teuer. Allein der Pizz
 - **Münzen,** in dieser Reihenfolge:
   1. Nächste Welt, sobald bezahlbar.
   2. Pizza-Platz, sobald bezahlbar (alle Shops, auch Shop 3).
-  3. Eier nur aus der höchsten Welt, wenn sich das Ei rechnerisch in höchstens 10 Minuten bezahlt macht. Gerechnet wird mit dem erwarteten Bonus-Gewinn gegenüber dem schwächsten ausgerüsteten Pet. Danach „Beste ausrüsten“, bei vollem Inventar wird das schwächste nicht ausgerüstete Pet gelöscht.
+  3. Eier nur aus der höchsten Welt, wenn sich das Ei rechnerisch in höchstens 10 Minuten bezahlt macht. Gerechnet wird mit dem erwarteten Bonus-Gewinn gegenüber dem schwächsten ausgerüsteten Pet. Danach „Beste ausrüsten“ für die aktuelle Welt, bei vollem Inventar wird das schwächste nicht ausgerüstete Pet gelöscht.
   4. Reichweite und Magnet, wenn sie höchstens 5 Minuten Einkommen kosten (im Modell ohne Einkommenswirkung).
 - **Rebirth:** sofort, wenn bezahlbar und alle Welten gekauft sind, die die bisherigen Rebirths erlauben. Der zweite Durchlauf endet, sobald der zweite Rebirth bezahlbar ist.
 
@@ -78,12 +92,12 @@ Gleiche Preise, ein Parameter des Modellspielers geändert (Median aus 51 Läufe
 
 | Variante | Welt 1–7 je Welt (Min) | Gesamt ohne Rebirth | Gesamt nach 1. Rebirth |
 | -------- | ---------------- | ------------------: | ---------------------: |
-| Basis (2 Runden/Min) | 15 / 13 / 20 / 18 / 25 / 39 / 34 | 169.9 | 42.1 |
-| 1,5 Runden/Min | 17 / 18 / 34 / 24 / 36 / 49 / 43 | 220.9 | 58.8 |
-| 3 Runden/Min | 14 / 10 / 10 / 12 / 16 / 23 / 26 | 115.7 | 29.7 |
-| 30 Min pro Tag | 15 / 13 / 19 / 14 / 19 / 31 / 32 | 150.2 | 38.3 |
-| Ei-Amortisation 5 Min | 15 / 19 / 41 / 20 / 32 / 47 / 38 | 211.5 | 50.8 |
-| Ei-Amortisation 20 Min | 18 / 15 / 15 / 20 / 21 / 32 / 29 | 155.6 | 39.3 |
+| Basis (2 Runden/Min) | 15 / 13 / 20 / 18 / 25 / 39 / 34 | 169.9 | 70.3 |
+| 1,5 Runden/Min | 17 / 18 / 34 / 24 / 36 / 49 / 43 | 220.9 | 85.2 |
+| 3 Runden/Min | 14 / 10 / 10 / 12 / 16 / 23 / 26 | 115.7 | 50.6 |
+| 30 Min pro Tag | 15 / 13 / 19 / 14 / 19 / 31 / 32 | 150.2 | 60.4 |
+| Ei-Amortisation 5 Min | 15 / 19 / 41 / 20 / 32 / 47 / 38 | 211.5 | 73.6 |
+| Ei-Amortisation 20 Min | 18 / 15 / 15 / 20 / 21 / 32 / 29 | 155.6 | 64.7 |
 
 Am stärksten wirken das Rundentempo und wie viel der Spieler in Eier steckt. Bei kleiner Pizza (Welt 1) sind 2 Runden pro Minute eher vorsichtig gerechnet, echte Spieler sind dort vermutlich schneller. Spieler mit kurzen Tagen kommen pro Spielminute schneller voran, weil die ersten Geschenke des Tages früh kommen. Die Zeiten sollten deshalb in Studio mit der Stoppuhr nachgemessen werden (Checkliste #41 in `docs/pc-todo.md`).
 

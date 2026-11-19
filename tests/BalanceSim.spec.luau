@@ -29,3 +29,23 @@ describe("balancing simulation with rebirth-gated worlds", function()
 		expect(result.afterRebirth.worlds[8] > 0).toBe(true)
 	end)
 end)
+
+describe("balancing simulation with the pet cap per world (#51)", function()
+	-- Real configuration, medians over a few runs with different luck.
+	local result = BalanceSim.median(GameConfig, 9)
+	local function worlds1to6(run: BalanceSim.Run): number
+		local minutes = 0
+		for index = 1, 6 do
+			minutes += run.worlds[index]
+		end
+		return minutes
+	end
+
+	it("plays worlds 1-6 after the first rebirth in about 1/3 of the first run's time", function()
+		local first, second = worlds1to6(result.first), worlds1to6(result.afterRebirth)
+		local ratio = second / first
+		if ratio < 0.25 or ratio > 0.42 then
+			error(`worlds 1-6: {string.format("%.1f", first)} min, then {string.format("%.1f", second)} min`)
+		end
+	end)
+end)

@@ -319,6 +319,11 @@ local GameConfig = {
 		priceFactor = 3,
 		-- Coin multiplier = 1 + multiplierPerRebirth x rebirths (1 rebirth = x1,5, 2 = x2, ...).
 		multiplierPerRebirth = 0.5,
+		-- Pet cap per world (#51): when selling or delivering in a world, a pet from a later
+		-- world counts at most (best pet bonus from this world's eggs) x petCapFactor. Tuned
+		-- with `lune run balance` so that worlds 1-6 after a rebirth take about 1/3 of the
+		-- first run (docs/balancing.md).
+		petCapFactor = 0.3,
 	},
 
 	-- New-player tutorial: collect toppings -> sell -> buy an upgrade -> open an egg.

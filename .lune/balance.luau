@@ -47,6 +47,16 @@ for index, world in GameConfig.worlds do
 end
 print(`| **Gesamt** | | **{minutes(result.first.total)}** | **{minutes(result.afterRebirth.total)}** |`)
 print(`\nPet multiplier at the first rebirth: x{string.format("%.1f", result.rebirthPetMultiplier)}`)
+-- Pet cap per world (#51): target for worlds 1-6 after a rebirth is about 1/3 of the first run.
+local firstEarly, secondEarly = 0, 0
+for index = 1, 6 do
+	firstEarly += result.first.worlds[index]
+	secondEarly += result.afterRebirth.worlds[index]
+end
+print(
+	`Worlds 1-6: {minutes(firstEarly)} min without rebirth, {minutes(secondEarly)} min after the first rebirth`
+		.. ` (ratio {string.format("%.2f", secondEarly / firstEarly)})`
+)
 
 -- Sensitivity: the same prices with slower/faster players and shorter sessions.
 print("\n| Variante | Welt 1–7 je Welt | Gesamt ohne Rebirth | Gesamt nach 1. Rebirth |")

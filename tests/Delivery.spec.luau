@@ -209,6 +209,18 @@ describe("delivering at the van", function()
 		expect(rules.deliverOrder(state, 1000).reward.amount).toBe(32)
 	end)
 
+	it("coin rewards use the same capped pet bonus as selling in the van's world (#51)", function()
+		local state = player()
+		state.pets = { { uid = 1, petId = "Cow" } } -- +3, capped to +1.5 in world 1
+		state.equipped = { 1 }
+		state = collect(delivering(nil, state), "Salami", "Mushroom")
+
+		-- 3 x 2.5 x 3 x 1.5 = 33.75 -> 33 in world 1; 3 x 4 x 3 x 1.5 = 54 in the Farm.
+		expect(rules.deliverOrder(state, 1000, "PizzeriaGarden").reward.amount).toBe(33)
+		expect(rules.orderReward(state, 1000, "PizzeriaGarden")).toEqual({ reward = "Coins", amount = 33 })
+		expect(rules.deliverOrder(state, 1000, "Farm").reward.amount).toBe(54)
+	end)
+
 	it("gem rewards are 3 to 10: base x speed bonus, at most 10", function()
 		-- Gem base 7 (roll 0.99) and 3 (roll 0).
 		local seven = collect(delivering({ 0, 0.1, 0.7, 0.7, 0.99 }), "Salami", "Mushroom")

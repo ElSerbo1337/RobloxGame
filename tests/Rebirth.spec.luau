@@ -245,3 +245,19 @@ describe("rebirth button hint", function()
 		expect(rules.hasSeenHint(result.state, "Rebirth")).toBe(true)
 	end)
 end)
+
+describe("rebirth multiplier with the pet cap per world (#51)", function()
+	it("multiplies on top of the capped pet bonus", function()
+		local state = rules.newPlayerState()
+		state.rebirths = 2
+		state.pets = { { uid = 1, petId = "Cow" } }
+		state.equipped = { 1 }
+		state.pizza = { "Mozzarella", "Mushroom" } -- 5 + 2 = 7
+
+		-- World 1: (1 + 1.5 capped) x 2 = 5 -> 35; Farm: (1 + 3) x 2 = 8 -> 56.
+		expect(rules.coinMultiplier(state, "PizzeriaGarden")).toBe(5)
+		expect(rules.coinMultiplier(state, "Farm")).toBe(8)
+		expect(rules.sellPizza(state, "PizzeriaGarden").coinsEarned).toBe(35)
+		expect(rules.sellPizza(state, "Farm").coinsEarned).toBe(56)
+	end)
+end)
