@@ -5,6 +5,66 @@ Aufgaben, die nur auf einem Rechner mit Roblox Studio erledigt werden können. D
 - [x] Rojo-Verbindung testen: Play drücken, im Output müssen `[RobloxGame] Server gestartet` und `[RobloxGame] Client gestartet` stehen.
 - [x] Baseplate per File → Publish to Roblox veröffentlichen (falls noch nicht geschehen). _(16.11.2026: neue Experience „Pizza Topping Simulator“, privat)_
 
+## Release-Checkliste (Version 1)
+
+Was vor dem Öffentlich-Stellen noch fehlt, in Kurzform und mit aktuellen Werten. Jeder Punkt verweist auf den Abschnitt mit den Details weiter unten. Mehrspieler: **Test → Clients and Servers → 2 Spieler**, beide mit genug Münzen (Command Bar, Server). Handy: echtes Gerät mit der Roblox-App, Experience vorher privat veröffentlicht.
+
+**Mehrspieler**
+
+- [ ] Beläge geteilt: Sammelt A einen Belag (Klick oder Auto-Sammeln), verschwindet er auch bei B; gleichzeitig zugreifen → nur einer bekommt ihn. Gilt auch für Feld-Gems. Details: #2, #4, #12
+- [ ] Freischalten pro Spieler: A schaltet den Bauernhof (26 Münzen) frei, B nicht → B bleibt am Tor stecken und sieht „🔒 Bauernhof 26 Münzen“, im Portal-Menü ist der Bauernhof bei B grau. Details: #8, #9, #27
+- [ ] Pets: B sieht A's Pets als Modelle hinter A herlaufen (auch die Zweit-Ei-Pets), verlässt A das Spiel, sind sie weg. Details: #6, #16, #40
+- [ ] Getrennte Anzeigen: Verkaufs-Animation, Shop-Käufe, Telefon-Klingeln, Auftragskarte und Menüs nur beim jeweiligen Spieler; das „🧾 Bestellung“-Ticket sehen beide. Details: #4, #5, #14
+- [ ] Respawn: A stirbt in Welt 2, B in Welt 1 → jeder erscheint in seiner eigenen Welt. Details: #25
+- [ ] Bestenlisten: Beide erscheinen auf den drei Tafeln der Spawn-Insel (im veröffentlichten Spiel mit echtem Namen), Schrift von weitem lesbar. Details: #38
+
+**Speichern & Sonderfälle**
+
+- [ ] Verlassen speichert: Client-Fenster schließen, neu beitreten → Münzen, Upgrades, Pets und Gem-Upgrades sind da, keine Lock-Warnung. Details: #3, #34
+- [ ] Laden fehlgeschlagen überschreibt nichts: API-Zugriff aus → Warnung `[Save] Laden … fehlgeschlagen`, Münzen verdienen, Stop; API-Zugriff an → alter Stand ist wieder da. Details: #3
+- [ ] Verwaister Session-Lock: nach > 2 Min Spielzeit Studio hart beenden, Play innerhalb von 5 Min → „noch von einem anderen Server belegt, warte …“, danach normales Laden mit dem Stand vor dem Absturz. Details: #34
+- [ ] Tageswechsel (Mitternacht deutscher Zeit): Tages-Spielzeit und Geschenke starten neu, Login-Kalender rückt einen Tag weiter, ausgelassener Tag → wieder Tag 1. Details: #36, #37
+- [ ] Gesperrte Welt beim Beitreten (`lastWorldId` auf nicht freigeschaltete Welt) → Start in Welt 1 ohne Fehler. Details: #25
+- [ ] Lieferauftrag verfällt offline: angenommen, rausgehen, nach Ablauf (3:00) wieder rein → Auftrag weg, Beläge noch auf der Pizza. Details: #14
+- [ ] Inventar voll (50/50): „1 öffnen“ → „Inventar voll!“, keine Münzen abgezogen; „3 öffnen“ mit 1–2 freien Plätzen ebenso. Details: #7, #12
+
+**Server-Schutz (Command-Bar-Tests, im Client-Fenster)**
+
+- [ ] `game.ReplicatedStorage.Remotes.Teleport:FireServer("Farm")` außerhalb eines Portals → kein Teleport. Details: #9
+- [ ] `…Remotes.BuyUpgrade:FireServer("World4Shop", "PizzaSpace")` ohne Eisberge bzw. `("World7Shop", "PizzaSpace")` ohne Weltraum → Münzen unverändert. Details: #10, #11
+- [ ] `…Remotes.DrinkPotion:FireServer("Coins")` ohne Trank und `…BuyPotion:FireServer("World1Shop", "Coins")` außerhalb des Shops → nichts passiert. Details: #13
+- [ ] `…Remotes.AnswerPhone:FireServer(true)` weg vom Telefon → kein Auftrag. Details: #14
+- [ ] Gesperrte Welt: Barrier-Teil des Bauernhof-Tors lokal auf `CanCollide = false` setzen und durchlaufen → innerhalb ~0,5 s zurück vors Tor, „Diese Welt ist noch gesperrt!“; Bauernhof-Beläge und -Ei werden abgelehnt (`WorldLocked`). Details: #8, #6
+
+**Echtes Handy**
+
+- [ ] Alle Menüs (Shop, Portal, Pets, Tränke, Geschenke, Rebirth, Kalender, Telefon) füllen fast den Bildschirm, sind lesbar, scrollen per Wischen, „X“ erreichbar, Antippen kauft ohne Hover. Details: #55
+- [ ] Seitenknöpfe, Auto-Sammeln und Freischalt-Knopf liegen nicht unter Joystick, Sprung-Knopf oder Chat; Ei-Panel nicht über den Roblox-Knöpfen. Details: #52, #54, #20
+- [ ] Beläge und Feld-Gems lassen sich antippen (auch etwas daneben), Tutorial-Karte blockiert keine Eingaben. Details: #2, #17
+- [ ] Trank-Pillen und Auftragskarte rechts liegen nicht über dem Sprung-Knopf (3 Tränke + Auftrag gleichzeitig). Details: #20, #14
+- [ ] Hochformat und Drehen: Menüs passen sich an, nichts ragt aus dem Bild. Details: #55
+
+**Sounds** (IDs in `src/client/Sounds.luau`, Liste in #23)
+
+- [ ] Effekte: Plopp beim Sammeln (kein Dauerfeuer bei Auto-Sammeln), Kasse beim Verkaufen/Liefern, Glitzern bei Gems, Knacken beim Ei, Fanfare beim Rebirth. Details: #23, #35
+- [ ] Telefon klingelt 3-mal pro Anruf (ca. 10 s), dann still. Details: #59
+- [ ] Musik: läuft leise im Loop und wechselt pro Insel (Garten Akkordeon … Weltraum Cosmic Dust), Effekte bleiben hörbar. Details: #23, #45
+
+**Leistung**
+
+- [ ] Bildrate auf dem Handy in Vulkan (Rauch aus `VolcanoSmoke`, Lavaströme) und Weltraum (Neon) flüssig; Rauch kostet keine spürbaren FPS. Details: #47, #16
+- [ ] Volles Belagfeld in Welt 6/7, Pizza mit 20 Belägen und Magnet Stufe 5 ohne Ruckeln; Pet-Menü mit 30+ Pets öffnet flüssig. Details: #11, #18, #40
+- [ ] Kein Flackern an Inselrändern, Lavaströmen und Bodenmarkierungen in Bewegung (Kamera flach). Details: #46, #47, #60
+
+**Spielseite / Veröffentlichen**
+
+- [ ] Icon (512 × 512) und 3 Thumbnails (1920 × 1080) aus `docs/store/` hochladen: Creator Hub → Experience → Places/Thumbnails bzw. Basic Settings → Icon. Details: #61
+- [ ] Name „Pizza Topping Simulator“ und Beschreibung (Sammeln, Verkaufen, 7 Inseln, Eier und Pets, Rebirth) eintragen, Genre und Geräte (Computer, Handy, Tablet) wählen.
+- [ ] Altersfreigabe-Fragebogen (Experience Questionnaire / Maturity) ausfüllen: Standard-Roblox-Chat, keine Gewalt, keine Echtgeld-Käufe (keine Game Passes oder Developer Products im Code).
+- [ ] Spieleranzahl pro Server festlegen (Places → Server Size, Vorschlag 10–12), danach mit 2 Spielern den Server-Wechsel prüfen. Details: #34
+- [ ] Letzter Durchlauf im veröffentlichten Spiel (nicht Studio): neuer Spieler mit Tutorial, Speichern, Bestenlisten mit echtem Namen. Details: #17, #38
+- [ ] Öffentlich stellen: Experience → Privacy → Public; danach Spielseite einmal als Gast öffnen.
+
 ## #2 Kern-Schleife: Belag einsammeln und am Ofen verkaufen
 
 Vorher: `rokit install` (installiert jetzt auch Lune) und `lune run test` → muss `18 passed, 0 failed` melden.
@@ -51,7 +111,7 @@ Test (1 Spieler, Rojo verbunden):
 - [x] **Play**: Output ohne `[Save]`-Warnungen. (Eine Warnung `Laden für … fehlgeschlagen` / `StudioAccessToApisNotAllowed` heißt: API-Zugriff ist noch aus – oben einschalten.)
 - [x] Ein paar Beläge sammeln und verkaufen, Münzstand merken (z. B. 12), eine Pizza mit 1 Belag halten. **Stop**. _(3 Münzen, Pizza 2/2)_
 - [x] Erneut **Play**: Münzen zeigen denselben Stand, Pizza-Füllstand im HUD ist wie vorher (`Pizza 1/2`). _(Münzen, Pizza und Tutorial-Schritt erhalten)_
-- [ ] Mit **Test → Clients and Servers** (1 Spieler) den Client-Fenster schließen (Spieler verlässt), danach neu starten → Münzen erhalten (Speichern beim Verlassen).
+- [x] Mit **Test → Clients and Servers** (1 Spieler) den Client-Fenster schließen (Spieler verlässt), danach neu starten → Münzen erhalten (Speichern beim Verlassen). _(belegt: Rejoin-Tests 18./19.11. und 21.11.)_
 - [ ] Optional periodisch: Play, Münzen verdienen, > 2 Minuten warten, dann Studio-Prozess hart beenden (Task-Manager) → beim nächsten Play ist mindestens der Stand von vor 2 Minuten da.
 
 Fehlerfall „Laden fehlgeschlagen überschreibt nichts“:
@@ -65,10 +125,10 @@ Vorher: `lune run test` → alle grün (inkl. `tests/AutoCollect.spec.luau`).
 
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
-- [ ] Output ohne rote Fehler.
+- [x] Output ohne rote Fehler. _(belegt: Output in allen Tests 17.–21.11. ohne Spiel-Fehler)_
 - [x] HUD unten: grauer Knopf „Auto-Sammeln: AUS“ direkt über `Pizza 0/2`.
 - [x] Mit AUS über Beläge laufen → nichts wird eingesammelt (Anklicken geht weiterhin).
-- [ ] Knopf drücken → wird grün, „Auto-Sammeln: AN“, hüpft kurz. Im Explorer: `Players.<Name>` hat Attribut `AutoCollect = true`.
+- [x] Knopf drücken → wird grün, „Auto-Sammeln: AN“, hüpft kurz. Im Explorer: `Players.<Name>` hat Attribut `AutoCollect = true`. _(belegt: Auto-Sammeln AN im #5-Test 16.11. genutzt)_
 - [x] Mit AN über einen Belag laufen (ca. 4 Studs Radius) → Belag verschwindet, erscheint auf der Pizza in der Hand, HUD `Pizza 1/2`. Beläge daneben (> 4 Studs) bleiben liegen.
 - [x] Zweiten Belag aufsammeln → Pizza `2/2` (rot), Meldung „Pizza voll! Ab zum Ofen.“ erscheint **einmal** sofort.
 - [ ] Mit voller Pizza weiter über Beläge laufen → Beläge bleiben liegen, Meldung höchstens alle ~3 s (kein Dauer-Spam).
@@ -115,8 +175,8 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
-- [ ] Menü passt komplett auf den Bildschirm, Text lesbar, Kaufknöpfe und „X“ mit dem Finger gut antippbar (Antippen kauft, kein Maus-Hover nötig).
-- [ ] Bei vielen Karten/kleinem Bildschirm lässt sich die Liste mit dem Finger scrollen.
+- [x] ~~Menü passt komplett auf den Bildschirm, Text lesbar, Kaufknöpfe und „X“ mit dem Finger gut antippbar (Antippen kauft, kein Maus-Hover nötig).~~ _(entfällt: seit #55 Handy-Modus, Prüfung dort)_
+- [x] ~~Bei vielen Karten/kleinem Bildschirm lässt sich die Liste mit dem Finger scrollen.~~ _(entfällt: seit #55 Handy-Modus, Prüfung dort)_
 - [ ] Joystick bleibt bedienbar, man kann aus der Zone laufen, um das Menü zu schließen.
 
 ## #8 Welt 2 Bauernhof und Barriere freischalten
@@ -136,7 +196,7 @@ Vorbereitung: Zum schnellen Testen in `src/shared/GameConfig.luau` vorübergehen
 
 **Speichern** (braucht API-Zugriff wie bei #3):
 
-- [ ] Nach dem Freischalten Stop → Play: Wand ist sofort offen, Münzen stimmen.
+- [x] Nach dem Freischalten Stop → Play: Wand ist sofort offen, Münzen stimmen. _(belegt: Welten bis Eisberge blieben 17.–21.11. erhalten)_
 
 **Mehrspieler** (Test → Clients and Servers → 2 Spieler):
 
@@ -160,8 +220,8 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [x] Output ohne rote Fehler. Im Workspace gibt es `Eggs` (mit `GardenEgg` und `FarmEgg`) und `Pets`.
 - [x] Links neben dem Spawn (x = −30, zwischen Spawn und Shop-Stand) steht auf einem Sockel ein cremefarbenes Ei mit orangen Punkten, nicht im Boden versunken und nicht schwebend.
 - [x] Hinlaufen (< 20 Studs) → über dem Ei schwebt die Vorschau „Garten-Ei“ mit 6 Zeilen: Teig-Hamster (grau, 50 %, +10 %), Basilikum-Hase (grün, 28 %, +15 %), Tomaten-Katze (blau, 15 %, +25 %), Käse-Maus (lila, 5,5 %, +40 %), Oliven-Eule (orange, 1 %, +75 %), Pizza-Drache (pink, 0,5 %, +150 %) und darunter der grüne Knopf „1 öffnen – 25 Münzen“. Weggehen → Vorschau verschwindet.
-- [ ] Vorschau ist lesbar, nicht abgeschnitten und verdeckt das Ei nicht komplett (ggf. `StudsOffsetWorldSpace`/`WIDTH` in `src/client/EggPreview.luau` anpassen). _(16.11.: lesbar, überdeckt aber von nah die Münzanzeige oben)_
-- [ ] Mit weniger als 25 Münzen „1 öffnen“ antippen → Knopf wird kurz rot „Zu wenig Münzen!“, Münzen unverändert, kein Pet.
+- [x] ~~Vorschau ist lesbar, nicht abgeschnitten und verdeckt das Ei nicht komplett (ggf. `StudsOffsetWorldSpace`/`WIDTH` in `src/client/EggPreview.luau` anpassen). _(16.11.: lesbar, überdeckt aber von nah die Münzanzeige oben)_~~ _(entfällt: seit #54 Panel statt BillboardGui)_
+- [x] ~~Mit weniger als 25 Münzen „1 öffnen“ antippen → Knopf wird kurz rot „Zu wenig Münzen!“, Münzen unverändert, kein Pet.~~ _(entfällt: seit #54 Panel, Prüfung dort)_
 - [x] Mit genug Münzen „1 öffnen“ → Münzen sinken um 25; Animation: Ei wackelt immer stärker, knackt (⚡), weißer Blitz, Pet-Karte springt heraus (Name, Seltenheit in Farbe, „+X % Münzen“). Antippen oder 3 s warten schließt sie.
 - [x] Schnell mehrfach tippen öffnet nicht mehrere Eier gleichzeitig (Sperre ca. 2,5 s).
 - [x] Links mittig großer runder Knopf „Pets“ → Menü „Meine Pets“ mit Karten (Farbe = Seltenheit, Name, Bonus, Knopf „Ausrüsten“). Ohne Pets: „Noch keine Pets – öffne ein Ei!“.
@@ -170,7 +230,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Ausgerüstete Pets laufen in einer Reihe hinter dem Spieler her, hüpfen beim Laufen, schweben im Stand leicht, stehen auf dem Boden (nicht im Boden / nicht in der Luft), auch an Rampen/Kanten. Kein Ruckeln, Spieler kollidiert nicht mit ihnen. _(16.11.: Pets standen am Ofen auf dem Ofendach bzw. halb in der Ofenwand)_
 - [x] Verkaufswert: z. B. mit Teig-Hamster (+10 %) und Tomaten-Katze (+25 %) ergibt eine Pizza aus Pilz + Mozzarella (7) → 7 × 1,35 = 9,45 → **9** Münzen. Ohne ausgerüstete Pets wieder 7. _(Pilz mit +60 % → 3 Münzen)_
 - [x] Nach Reset (Esc → Reset Character) folgen die Pets der neuen Figur weiter.
-- [ ] Rejoin (Speichern aktiv wie bei #3): Pets und Ausrüstung sind noch da.
+- [x] Rejoin (Speichern aktiv wie bei #3): Pets und Ausrüstung sind noch da. _(belegt: Rejoin 18./19.11.: Pets bleiben)_
 - [ ] Bauernhof-Ei (Welt 2, auf dem Ei-Sockel aus #8): Ohne Freischaltung → „1 öffnen“ wird abgelehnt (Server meldet `WorldLocked`, keine Münzen weg). Nach Freischaltung öffnen klappt, die Bauernhof-Pets erscheinen.
 
 **Mehrspieler** (Test → Clients and Servers → 2 Spieler):
@@ -180,9 +240,9 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
-- [ ] „Pets“-Knopf ist groß, mit dem Daumen gut antippbar, verdeckt nicht den Joystick.
-- [ ] „1 öffnen“ in der Ei-Vorschau lässt sich antippen (BillboardGui in PlayerGui, `Active`). Falls Antippen nicht ankommt: melden – dann kommt der Knopf als ScreenGui unten ins HUD.
-- [ ] Pet-Menü passt auf den Bildschirm (Schließen-„X“ erreichbar), Karten gut antippbar, Liste scrollt per Wischen.
+- [x] „Pets“-Knopf ist groß, mit dem Daumen gut antippbar, verdeckt nicht den Joystick. _(belegt: 18./19.11. Device-Emulator, nichts unter dem Joystick (`56`))_
+- [x] ~~„1 öffnen“ in der Ei-Vorschau lässt sich antippen (BillboardGui in PlayerGui, `Active`). Falls Antippen nicht ankommt: melden – dann kommt der Knopf als ScreenGui unten ins HUD.~~ _(entfällt: seit #54 kein BillboardGui mehr)_
+- [x] Pet-Menü passt auf den Bildschirm (Schließen-„X“ erreichbar), Karten gut antippbar, Liste scrollt per Wischen. _(belegt: 20.11. iPhone 7: Pets füllt den Bildschirm, lesbar (`73`))_
 - [ ] Pet-Karte nach dem Öffnen ist komplett sichtbar; Antippen schließt sie.
 
 ## #9 Teleport-Portale zwischen freigeschalteten Welten
@@ -215,7 +275,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
-- [ ] Menü passt auf den Bildschirm, „X“ erreichbar, Einträge groß und mit dem Daumen antippbar, Liste scrollt per Wischen.
+- [x] ~~Menü passt auf den Bildschirm, „X“ erreichbar, Einträge groß und mit dem Daumen antippbar, Liste scrollt per Wischen.~~ _(entfällt: seit #55 Handy-Modus, Prüfung dort)_
 - [ ] Antippen teleportiert (kein Maus-Hover nötig).
 
 ## #7 Pet-Verwaltung: Beste ausrüsten, Löschen, Inventargrenze
@@ -244,7 +304,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
-- [ ] Pet-Menü (jetzt 560 hoch) passt komplett auf den Bildschirm, „X“, „Beste ausrüsten“ und „Löschen“ sind mit dem Daumen gut antippbar.
+- [x] ~~Pet-Menü (jetzt 560 hoch) passt komplett auf den Bildschirm, „X“, „Beste ausrüsten“ und „Löschen“ sind mit dem Daumen gut antippbar.~~ _(entfällt: seit #55 Handy-Modus statt fester 560er-Höhe)_
 - [ ] Bestätigungsdialog passt, beide Knöpfe gut antippbar; Antippen außerhalb des Dialogs löst keine Karte darunter aus.
 - [ ] Wischen in der Liste im Löschen-Modus öffnet nicht versehentlich den Dialog.
 
@@ -257,14 +317,14 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozz
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 - [x] Output ohne rote Fehler. Im Workspace gibt es `World3_Beach` und `World4_Icebergs` (hinter dem Bauernhof entlang −Z), in `Portals` zusätzlich `Portal_Beach` und `Portal_Icebergs`.
-- [ ] Strand: Sand-Boden, türkise Barriere mit Schild „🔒 Strand – 2.000 Münzen“ am Ende des Bauernhofs. Eisberge: Schnee-Boden, blaue Barriere „🔒 Eisberge – 42.000 Münzen“ am Ende des Strands.
+- [x] ~~Strand: Sand-Boden, türkise Barriere mit Schild „🔒 Strand – 2.000 Münzen“ am Ende des Bauernhofs. Eisberge: Schnee-Boden, blaue Barriere „🔒 Eisberge – 42.000 Münzen“ am Ende des Strands.~~ _(entfällt: seit #31 Inseln mit Tor, Preise seit #57)_
 - [x] Mit zu wenig Münzen an der Strand-Barriere freischalten → „Nicht genug Münzen!“, Barriere bleibt. Eisberge vor dem Strand freischalten geht nicht („Erst die vorige Welt freischalten!“). _(geprüft: Server setzt aus gesperrtem Strand zurück, „Diese Welt ist noch gesperrt!“)_
 - [x] Strand freischalten → Barriere lokal durchlässig, Münzen −15.000. Danach Eisberge (−150.000).
 - [ ] Strand-Beläge: Thunfisch (rotbraun), Garnele (orange), Ananas (gelb), ca. 60 Stück; Eisberge: Gefrorene Erbsen (grün, glasig), Lachs (lachsfarben), Eisberg-Salat (hellgrün, glasig). Keine pinken Neon-Scheiben (= fehlende Optik).
 - [ ] Einsammeln und am Ofen der jeweiligen Welt verkaufen funktioniert; Werte: Thunfisch 25, Garnele 45, Ananas 65, Erbsen 100, Lachs 180, Eisberg-Salat 260 (× Pet-Bonus).
-- [ ] Ei-Sockel jeder Welt: Strand-Ei (1.500 Münzen) bzw. Eis-Ei (12.000 Münzen) mit Vorschau (6 Pets, 0,5 % Mythisch). Öffnen gibt ein Pet der Welt (z. B. Sand-Krabbe +40 %, Eis-Pinguin +80 %); es folgt nach dem Ausrüsten.
+- [x] ~~Ei-Sockel jeder Welt: Strand-Ei (1.500 Münzen) bzw. Eis-Ei (12.000 Münzen) mit Vorschau (6 Pets, 0,5 % Mythisch). Öffnen gibt ein Pet der Welt (z. B. Sand-Krabbe +40 %, Eis-Pinguin +80 %); es folgt nach dem Ausrüsten.~~ _(entfällt: Preise seit #57 neu, Vorschau seit #54 Panel)_
 - [x] Portal-Menü listet „Strand“ und „Eisberge“; nach dem Freischalten anwählbar, Teleport landet vor dem Portal der Welt.
-- [ ] **Shop 2** in den Eisbergen links vom Ei (ca. x = −72, z = −528): sichtbar größer als der Shop in Welt 1 (ca. 1,5×), Schild „Großer Pizza-Shop – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche).
+- [x] ~~**Shop 2** in den Eisbergen links vom Ei (ca. x = −72, z = −528): sichtbar größer als der Shop in Welt 1 (ca. 1,5×), Schild „Großer Pizza-Shop – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche).~~ _(entfällt: Shop-Position seit #31 Inseln; Stationen 18./19.11. geprüft)_
 - [x] In die grüne Zone laufen → Menü zeigt Pizza-Platz „Stufe x von 8“, kaufbar bis 12 (danach „Im größeren Shop erhältlich“), Reichweite bis Stufe 6 (dann „MAX“), Magnet bis Stufe 3 („MAX“). _(Karte zeigt „Stufe x von 6“ = Shop-Maximum, nicht „von 8“; Pizza bis 12 + „Im größeren Shop erhältlich“ geprüft)_
 - [ ] Zurück in Welt 1 im kleinen Shop: Pizza-Platz über 6 bzw. Magnet über Stufe 1 weiterhin nicht kaufbar („Im größeren Shop erhältlich“ bzw. bereits höhere Stufe angezeigt, kein Kauf).
 
@@ -294,7 +354,7 @@ Studio: Rojo verbinden, dann **Play** als neuer Spieler (1 Spieler):
 - [ ] Ein gelber, wippender Pfeil ▼ steht über dem **nächsten** Belag, eine gelbe Linie führt von den Füßen dorthin. Beim Laufen springt der Pfeil zum jeweils nächsten Belag (nie zu einem Gem-Belag).
 - [x] 1 Belag einsammeln → „(1/2)“. Zweiten Belag einsammeln (per Antippen **oder** Auto-Sammeln) → Karte springt mit kleinem Pop auf „Schritt 2/4: … verkaufe deine Pizza!“, Pfeil steht über der Ofen-Zone.
 - [x] In die Ofen-Zone laufen und verkaufen → „Schritt 3/4: Kauf im Shop dein erstes Upgrade!“, Pfeil über der grünen Shop-Zone in Welt 1.
-- [ ] Mit zu wenig Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4. Weiter sammeln/verkaufen, dann Pizza-Platz kaufen (12 Münzen, seit #23) → „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil über dem Ei-Sockel in Welt 1.
+- [x] Mit zu wenig Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4. Weiter sammeln/verkaufen, dann Pizza-Platz kaufen (12 Münzen, seit #23) → „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil über dem Ei-Sockel in Welt 1. _(belegt: Studio-Test 18./19.11. Tutorial)_
 - [x] Ei öffnen (25 Münzen) → Karte zeigt „Tutorial geschafft!“ und verschwindet nach ca. 4 s; Pfeil und Linie sind weg.
 - [x] **Stop**, erneut **Play** → kein Tutorial mehr (gespeichert).
 - [x] Mittendrin speichern: Neuer Spieler, bis Schritt 3 spielen, **Stop**, **Play** → Tutorial macht bei Schritt 3/4 weiter. _(am 16.11. Schritt 3/4 nach Stop/Play erhalten)_
@@ -343,9 +403,9 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
 - [ ] Münz- und Gem-Anzeige passen nebeneinander, ohne die Roblox-Knöpfe oben zu überdecken.
-- [ ] „1 öffnen“ und „3 öffnen“ sind nebeneinander groß genug zum Antippen, der Text ist lesbar.
+- [x] ~~„1 öffnen“ und „3 öffnen“ sind nebeneinander groß genug zum Antippen, der Text ist lesbar.~~ _(entfällt: seit #54 Panel, Prüfung dort)_
 - [ ] Die 3 Pet-Karten passen auf den Bildschirm (ggf. verkleinert); Antippen schließt.
-- [ ] Gem-Tresen im Shop-Menü scrollt per Wischen, Kaufknöpfe sind gut antippbar.
+- [x] Gem-Tresen im Shop-Menü scrollt per Wischen, Kaufknöpfe sind gut antippbar. _(belegt: 20.11. iPhone 7: Shop scrollt, ganze Karten (`74`))_
 
 ## #15 Look-Pass Welt 1 und Sounds
 
@@ -390,7 +450,7 @@ Aus der Cloud-Sitzung ließ sich keine Roblox-Asset-ID prüfen (roblox.com gespe
 **4. Test** (Rojo verbunden, **Play**, 1 Spieler):
 
 - [x] Output ohne rote Fehler.
-- [ ] Look: warmes Nachmittagslicht mit weichen Schatten, leichter Dunst am Horizont, Wolken am Himmel, kräftige Farben, Neon-Glut leuchtet leicht (Bloom). Nichts ist überstrahlt.
+- [x] ~~Look: warmes Nachmittagslicht mit weichen Schatten, leichter Dunst am Horizont, Wolken am Himmel, kräftige Farben, Neon-Glut leuchtet leicht (Bloom). Nichts ist überstrahlt.~~ _(entfällt: seit #45 ein Tag-Look für alle Inseln)_
 - [x] Welt 1: Bäume links/rechts und hinter dem Spawn, Büsche mit Blumen, sandiger Weg vor Ofen/Spawn/Ei/Shop/Portal, ein Weg-Stück zum Sammelfeld. Nichts davon steht im Sammelfeld, im Weg zum Ofen, Shop, Ei oder Portal.
 - [x] Beläge sind die Modelle: Salami-Scheibe mit Fettaugen, kleiner Pilz, Mozzarella-Kugeln mit Basilikum. Anklicken/Antippen, Auto-Sammeln und Magnet-Flug funktionieren wie vorher (das Modell fliegt mit).
 - [x] Pizza in der Hand ist das Pizza-Modell (Rand, Soße, Käse), gesammelte Beläge erscheinen klein darauf. Liegt sie schief/verdreht: `GRIP` in `src/server/PizzaVisual.luau` prüfen.
@@ -413,12 +473,12 @@ Tipp für schnelles Testen: In `src/shared/GameConfig.luau` vorübergehend `Mozz
 Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 - [x] Output ohne rote Fehler. Im Workspace gibt es `World5_Volcano`, `World6_CandyLand` und `World7_Space` (hinter den Eisbergen entlang −Z, Welt 7 bei ca. z = −1.200), in `Portals` zusätzlich `Portal_Volcano`, `Portal_CandyLand` und `Portal_Space`.
-- [ ] Vulkan: dunkler Basalt-Boden, orange Barriere „🔒 Vulkan – 310.000 Münzen“ am Ende der Eisberge. Süßigkeitenland: rosa Boden, lila Barriere „🔒 Süßigkeitenland – 23.000.000 Münzen“. Weltraum: grauer Schiefer-Boden, mintgrüne Barriere „🔒 Weltraum – 460.000.000 Münzen“. Schilder lesbar.
+- [x] ~~Vulkan: dunkler Basalt-Boden, orange Barriere „🔒 Vulkan – 310.000 Münzen“ am Ende der Eisberge. Süßigkeitenland: rosa Boden, lila Barriere „🔒 Süßigkeitenland – 23.000.000 Münzen“. Weltraum: grauer Schiefer-Boden, mintgrüne Barriere „🔒 Weltraum – 460.000.000 Münzen“. Schilder lesbar.~~ _(entfällt: seit #32 Inseln mit Toren, Preise seit #57)_
 - [ ] Reihenfolge: Süßigkeitenland vor dem Vulkan freischalten geht nicht („Erst die vorige Welt freischalten!“); mit zu wenig Münzen → „Nicht genug Münzen!“.
 - [x] Nacheinander freischalten → Barriere jeweils lokal durchlässig, Münzen sinken um den Preis.
 - [ ] Beläge (je ca. 60): Vulkan Chili (rot), Peperoni (rot-orange), Jalapeño (grün); Süßigkeitenland Schoko-Stücke (braun), Gummibärchen (pink, glasig), Marshmallow (weiß-rosa); Weltraum Mond-Käse (hellgelb), Sternen-Oliven (lila, leuchtend), Alien-Pilz (grün, leuchtend). Keine pinken Neon-Scheiben (= fehlende Optik).
 - [ ] Einsammeln und am Ofen der Welt verkaufen; Werte ohne Pets: Chili 500, Peperoni 850, Jalapeño 1.250, Schoko 2.400, Gummibärchen 4.100, Marshmallow 6.000, Mond-Käse 11.500, Sternen-Oliven 20.000, Alien-Pilz 29.000.
-- [ ] Ei-Sockel: Vulkan-Ei (100.000), Süßigkeiten-Ei (800.000), Weltraum-Ei (6.400.000) mit Vorschau (6 Pets, 0,5 % Mythisch: Lava-Titan, Karamell-Greif, Galaxie-Drache). Öffnen gibt ein Pet der Welt, es folgt nach dem Ausrüsten.
+- [x] ~~Ei-Sockel: Vulkan-Ei (100.000), Süßigkeiten-Ei (800.000), Weltraum-Ei (6.400.000) mit Vorschau (6 Pets, 0,5 % Mythisch: Lava-Titan, Karamell-Greif, Galaxie-Drache). Öffnen gibt ein Pet der Welt, es folgt nach dem Ausrüsten.~~ _(entfällt: Preise seit #57 neu, Vorschau seit #54 Panel)_
 - [x] HUD: Große Beträge erscheinen kurz („1,5 Mio“, „1,2 Mrd“) und passen in die Münzanzeige; Toasts „+… Münzen“ ebenso.
 - [ ] Portal-Menü listet alle 7 Welten (scrollbar), gesperrte grau mit Preis; nach dem Freischalten anwählbar, Teleport landet vor dem Portal der Welt.
 - [x] **Shop 3** im Weltraum links vom Ei (ca. x = −72, z = −1.128): doppelt so groß wie der Shop in Welt 1, Schild „Riesiger Pizza-Shop – Upgrades“, steht frei (nicht im Ei-Sockel, nicht in der Belag-Fläche, nicht über dem Weltrand). _(Schild „Riesiger Pizza-Shop“ geprüft, Größe nicht nachgemessen)_
@@ -458,22 +518,22 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [x] **Glücks-Trank** → in jeder Ei-Vorschau steht „🍀 Glück!“ hinter dem Ei-Namen, die Chancen sind grün und seltene Pets höher (Garten-Ei: Pizza-Drache 0,5 % → ca. 1,2 %, Teig-Hamster 50 % → ca. 41 %). Nach Ablauf wieder die normalen Werte.
 - [ ] Ablauf: Wenn die Zeit um ist, verschwindet die Anzeige rechts, Toast „… ist abgelaufen.“, die Wirkung endet (Verkaufswert/Tempo/Chancen wieder normal).
 - [x] Mehrere Tränke gleichzeitig: alle drei trinken → drei Anzeigen rechts untereinander, jede mit eigener Zeit.
-- [ ] Speichern: Tränke im Inventar und laufende Restzeit bleiben nach Rejoin erhalten. Während man offline ist, läuft die Zeit **nicht** weiter (so gewollt).
+- [x] Speichern: Tränke im Inventar und laufende Restzeit bleiben nach Rejoin erhalten. Während man offline ist, läuft die Zeit **nicht** weiter (so gewollt). _(belegt: Rejoin 18./19.11.: Speed-Trank läuft weiter)_
 - [ ] Server-Schutz (optional, Command Bar im Client): `game.ReplicatedStorage.Remotes.DrinkPotion:FireServer("Coins")` ohne Trank im Inventar → nichts passiert außer Meldung; `BuyPotion:FireServer("World1Shop", "Coins")` **außerhalb** des Shops → nichts passiert.
 
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
-- [ ] „Tränke“-Knopf ist groß, gut antippbar, überdeckt weder den „Pets“-Knopf noch den Joystick.
-- [ ] Trank-Menü passt auf den Bildschirm; „Trinken“-Knöpfe groß und per Antippen bedienbar.
+- [x] „Tränke“-Knopf ist groß, gut antippbar, überdeckt weder den „Pets“-Knopf noch den Joystick. _(belegt: 18./19.11. Device-Emulator (`56`))_
+- [x] ~~Trank-Menü passt auf den Bildschirm; „Trinken“-Knöpfe groß und per Antippen bedienbar.~~ _(entfällt: Prüfung zusammengefasst in #55)_
 - [ ] Trank-Anzeigen rechts sind lesbar und liegen nicht über dem Sprung-Knopf (unten rechts).
 - [ ] Shop-Menü: Trank-Kaufknöpfe lesbar und antippbar, Liste scrollt per Wischen bis zu den Tränken.
 
 ## Beobachtungen aus dem Studio-Test (16.11.2026, nicht behoben)
 
-- [ ] UI-Überlappungen: Tutorial-Karte überdeckt Meldungen („+40 Münzen“) und die Ei-Vorschau; Shop-Menü überdeckt die Münz-/Gem-Anzeige; im Teleport-Menü wird der unterste Eintrag halb von der Pizza-Leiste verdeckt; der Freischalt-Knopf an der Barriere liegt genau auf dem Auto-Sammeln-Knopf.
-- [ ] Kamera: In Ofen-, Shop- und Ei-Nähe wird die Kamera an den Kopf gedrückt (Stationen stehen hinter der Startkamera, +Z).
+- [x] ~~UI-Überlappungen: Tutorial-Karte überdeckt Meldungen („+40 Münzen“) und die Ei-Vorschau; Shop-Menü überdeckt die Münz-/Gem-Anzeige; im Teleport-Menü wird der unterste Eintrag halb von der Pizza-Leiste verdeckt; der Freischalt-Knopf an der Barriere liegt genau auf dem Auto-Sammeln-Knopf.~~ _(entfällt: überholt durch #20 HUD-Raster, #53 und #54)_
+- [x] Kamera: In Ofen-, Shop- und Ei-Nähe wird die Kamera an den Kopf gedrückt (Stationen stehen hinter der Startkamera, +Z). _(belegt: 18./19.11.: Kamera an allen Stationen frei (`48`))_
 - [ ] Pets stellen sich am Ofen aufs Dach bzw. stecken halb in der Wand.
-- [ ] Sounds (#15 Schritt 3) noch offen: IDs müssen in Studio angehört und ausgewählt werden.
+- [x] Sounds (#15 Schritt 3) noch offen: IDs müssen in Studio angehört und ausgewählt werden. _(belegt: IDs seit 17.11. eingetragen (#23); Anhören siehe #23 Schritt 3)_
 
 ## #14 Lieferdienst: Telefon, Auftrag, Lieferwagen
 
@@ -486,7 +546,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [x] Output ohne rote Fehler. Im Workspace gibt es den Ordner `Delivery` mit je einem `DeliveryPhone` und `DeliveryVan` pro Welt (Welt 1: Telefon bei ca. x = 78, z = 46, Lieferwagen bei x = 78, z = 14, rechts vom Portal). Beide stehen frei: nicht im Portal, nicht in Büschen/Bäumen, nicht in der Belag-Fläche. Schilder „📞 Telefon – Aufträge“ und „🚚 Lieferwagen – Bestellung abgeben“ lesbar.
 - [x] Nach dem Tutorial klingelt das Telefon sofort: Toast „📞 Das Telefon klingelt!“, über **jedem** Telefon hüpft eine rote Blase „📞 RING!“ (auch von weit weg sichtbar), rechts im HUD steht „📞 Das Telefon klingelt! – Lauf zum Telefon und geh ran.“. Klingelton alle 3 s (nur wenn die Sound-ID aus #15 eingetragen ist).
 - [x] Zum Telefon laufen → Panel „📞 Neuer Auftrag!“ mit z. B. „1× Pilz / 1× Salami“, „Belohnung: bis zu …“ und „Zeit: 3:00 – je schneller, desto mehr!“. Weglaufen schließt das Panel, das Telefon klingelt weiter.
-- [ ] **Ablehnen** → Toast „Auftrag abgelehnt.“, Blasen weg, nach 2,5 Min. (bzw. Tipp-Wert) klingelt es wieder.
+- [x] **Ablehnen** → Toast „Auftrag abgelehnt.“, Blasen weg, nach 2,5 Min. (bzw. Tipp-Wert) klingelt es wieder. _(belegt: 21.11.: nach Ablehnen klingelt es nach der Pause wieder)_
 - [x] **Annehmen** → Toast „Auftrag angenommen! …“, über der Hand-Pizza schwebt „🧾 Bestellung“ (Bestell-Pizza), rechts unter den Trank-Anzeigen steht die Auftragskarte „🧾 Auftrag ⏱ 3:00“ mit den Belägen („• 0/1 Salami“), der Belohnung „wenn jetzt geliefert“ und „Schnell = mehr Belohnung!“. Der Timer zählt sekündlich herunter, unter 0:30 rot.
 - [x] Bestellte Beläge sammeln → Zeilen werden grün mit „✓ 1/1“; sind alle da: „Fertig! Ab zum 🚚 Lieferwagen.“.
 - [x] Falschen Belag dazu sammeln und zum Lieferwagen → Toast „Falsche Beläge! Überzählige am Ofen verkaufen.“, nichts passiert. Dann zum Ofen: **nur die überzähligen** Beläge werden verkauft, die bestellten bleiben auf der Pizza. Nur bestellte Beläge auf der Pizza → der Ofen verkauft nichts.
@@ -495,7 +555,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 - [ ] Zeit ablaufen lassen → Toast „Zeit um – der Auftrag ist verfallen.“, Karte und Ticket weg, Beläge bleiben auf der Pizza (am Ofen verkaufbar), nach dem Abstand klingelt es wieder.
 - [ ] Ohne Auftrag zum Lieferwagen → Toast „Kein Auftrag – geh ans Telefon!“.
 - [ ] Fortschritt: Mit freigeschaltetem Bauernhof (Münz-Tipp aus #11) und größerer Pizza bestellt das Telefon Bauernhof-Beläge und mehr Stück (höchstens Pizza-Platz). Telefon und Lieferwagen funktionieren in **jeder** Welt gleich.
-- [ ] Speichern: Angenommenen Auftrag haben, rausgehen, innerhalb der Zeit wieder rein → Auftrag ist noch da, Timer läuft weiter (die Zeit läuft auch offline, Server-Uhr). Nach Ablauf wieder rein → Auftrag weg.
+- [x] Speichern: Angenommenen Auftrag haben, rausgehen, innerhalb der Zeit wieder rein → Auftrag ist noch da, Timer läuft weiter (die Zeit läuft auch offline, Server-Uhr). Nach Ablauf wieder rein → Auftrag weg. _(belegt: Rejoin 18./19.11.: Auftrag läuft in Echtzeit weiter)_
 - [ ] Server-Schutz (Command Bar im Client): `game.ReplicatedStorage.Remotes.AnswerPhone:FireServer(true)` **weg vom Telefon** → nichts passiert.
 
 **Mehrspieler** (2 Spieler):
@@ -504,7 +564,7 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler):
 
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
-- [ ] Telefon-Panel passt auf den Bildschirm, „Annehmen“/„Ablehnen“ sind groß und per Antippen bedienbar.
+- [x] ~~Telefon-Panel passt auf den Bildschirm, „Annehmen“/„Ablehnen“ sind groß und per Antippen bedienbar.~~ _(entfällt: Prüfung zusammengefasst in #55)_
 - [ ] Auftragskarte rechts ist lesbar, überdeckt weder Trank-Anzeigen (bei 3 aktiven Tränken) noch den Sprung-Knopf unten rechts. Falls doch: `CARD_TOP` in `src/client/DeliveryMenu.luau` anpassen.
 
 ## #16 Pet-Modelle und Welt-Optik 2–7
@@ -561,31 +621,31 @@ Ohne Import läuft alles weiter: Pets bleiben farbige Kugeln mit Augen, die Bild
 
 **5. Test Welten 2–7** (Münz-Tipp aus #11; mit dem Portal schnell wechseln):
 
-- [ ] Beim Betreten jeder Welt wechseln Licht, Dunst und Musik (sobald IDs eingetragen) innerhalb ~1 s:
+- [x] ~~Beim Betreten jeder Welt wechseln Licht, Dunst und Musik (sobald IDs eingetragen) innerhalb ~1 s:~~ _(entfällt: seit #45 ein Licht-Look, Deko seit #31/#32 Inseln)_
   - Bauernhof: goldener Morgen, warmer Dunst. Scheune (Ecke hinten links), Heuballen, Sonnenblumen, Zäune, Bäume, Erdweg vor den Stationen.
   - Strand: helle Mittagssonne, blaue Luft. Palmen, Sonnenschirme, Felsen, Holzsteg vor den Stationen, Meer links außerhalb der Welt.
   - Eisberge: kühles bläuliches Licht, viel weißer Dunst. Verschneite Tannen, Eiskristalle (zwei große in den hinteren Ecken), Schneemänner, Eisweg.
   - Vulkan: roter Abendhimmel, rauchiger Dunst. Großer Vulkan mit Lava (hinten links), Lavafelsen, tote Bäume, leuchtende Lava-Pools.
   - Süßigkeitenland: rosa Pastell-Licht, rosa Wolken. Lollis, Zuckerstangen, Cupcakes (ein riesiger hinten links), Schoko-Weg.
   - Weltraum: Nacht mit Sternen und Mond, lila Licht, leuchtende Kristalle, Mondfelsen, Rakete (hinten links), großer Planet am Himmel. Trotz Nacht ist alles gut erkennbar (sonst `ambient`/`outdoorAmbient` in `src/shared/WorldLooks.luau` erhöhen).
-- [ ] Keine Deko steht in der Belag-Fläche, im Ofen, Ei, Portal, Shop (Welt 4 und 7 sind die Shops größer!), Telefon oder Lieferwagen, und nichts versperrt die Barriere zur nächsten Welt. Große Deko (Bäume, Scheune, Vulkan, Rakete) ist fest, kleine kann man durchlaufen.
-- [ ] Nichts ist überstrahlt (Vulkan/Weltraum haben stärkeres Bloom); Bildrate bleibt flüssig.
-- [ ] Zurück in Welt 1 → wieder das warme Nachmittagslicht aus #15.
+- [x] Keine Deko steht in der Belag-Fläche, im Ofen, Ei, Portal, Shop (Welt 4 und 7 sind die Shops größer!), Telefon oder Lieferwagen, und nichts versperrt die Barriere zur nächsten Welt. Große Deko (Bäume, Scheune, Vulkan, Rakete) ist fest, kleine kann man durchlaufen. _(belegt: 18./19.11.: Stationen und Tore auf allen Inseln frei (`38`–`48`))_
+- [x] ~~Nichts ist überstrahlt (Vulkan/Weltraum haben stärkeres Bloom); Bildrate bleibt flüssig.~~ _(entfällt: seit #45 ein Look ohne Welt-Bloom; Bildrate siehe Release-Checkliste)_
+- [x] ~~Zurück in Welt 1 → wieder das warme Nachmittagslicht aus #15.~~ _(entfällt: seit #45 ein Licht-Look)_
 
 **Handy** (Device-Emulator, iPhone SE quer + Tablet):
 
-- [ ] Ei-Vorschau: 3D-Pets sind auch klein erkennbar; Pet-Menü-Karten bleiben gut antippbar (das 3D-Bild fängt keine Eingaben ab – Antippen rüstet aus/ab).
+- [x] ~~Ei-Vorschau: 3D-Pets sind auch klein erkennbar; Pet-Menü-Karten bleiben gut antippbar (das 3D-Bild fängt keine Eingaben ab – Antippen rüstet aus/ab).~~ _(entfällt: seit #54 Panel statt BillboardGui)_
 - [ ] Bildrate in Vulkan und Weltraum (Licht-Effekte) bleibt flüssig; falls nicht, hier notieren.
 
 ## #23 Schnellerer Start und Sounds vorbereiten
 
 **1. Schnellerer Start** (Rojo verbunden, **Play**, 1 Spieler, als **neuer Spieler** – Spielstand löschen oder API-Zugriff aus, siehe #17):
 
-- [ ] Output ohne rote Fehler.
-- [ ] Shop in Welt 1: Pizza-Platz Stufe 1 kostet **12 Münzen** (Knopf „12 Münzen“), Stufe 2 weiterhin 120.
+- [x] Output ohne rote Fehler. _(belegt: Output in allen Tests ohne Spiel-Fehler)_
+- [x] Shop in Welt 1: Pizza-Platz Stufe 1 kostet **12 Münzen** (Knopf „12 Münzen“), Stufe 2 weiterhin 120. _(belegt: 18./19.11.: Stufe 1 kostet 12 (Stufe 2 seit #57: 26))_
 - [ ] Garten-Ei kostet weiterhin **25 Münzen** („1 öffnen – 25 Münzen“).
-- [ ] Tutorial durchspielen: 2 Beläge sammeln → verkaufen → Schritt 3/4 „Kauf im Shop dein erstes Upgrade!“. Nach **3–4 Runden** (je 2 Beläge) reicht das Geld für Pizza-Platz → Kauf klappt, Pizza fasst 3 Beläge, Tutorial springt auf „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil zeigt zum Ei.
-- [ ] Mit weniger als 12 Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4.
+- [x] Tutorial durchspielen: 2 Beläge sammeln → verkaufen → Schritt 3/4 „Kauf im Shop dein erstes Upgrade!“. Nach **3–4 Runden** (je 2 Beläge) reicht das Geld für Pizza-Platz → Kauf klappt, Pizza fasst 3 Beläge, Tutorial springt auf „Schritt 4/4: Öffne am Ei dein erstes Pet!“, Pfeil zeigt zum Ei. _(belegt: 18./19.11.: nach 4 Runden Kauf, Schritt 4/4)_
+- [x] Mit weniger als 12 Münzen kaufen → „Nicht genug Münzen!“, Schritt bleibt 3/4. _(belegt: 18./19.11.: mit 2 Münzen „Nicht genug Münzen!“, bleibt 3/4)_
 
 **2. Sound-IDs eintragen** (wird in **A7** ausgeführt; IDs in `src/client/Sounds.luau`, starten leer = stumm). Die Suchbegriffe stehen auch im Code als `search` bei jedem Eintrag.
 
@@ -625,7 +685,7 @@ So geht's für jeden Schlüssel der Tabelle:
 - [x] `Music_Volcano` eingetragen
 - [x] `Music_CandyLand` eingetragen
 - [x] `Music_Space` eingetragen
-- [ ] Commit `Add sound IDs (#23)`, pushen.
+- [x] Commit `Add sound IDs (#23)`, pushen. _(belegt: Commit 395e70e)_
 
 **3. Sound-Test** (nach Schritt 2, **Play**, 1 Spieler):
 
@@ -642,9 +702,9 @@ Studio: Rojo verbinden, dann **Play** (1 Spieler). Für schnelles Testen Münzen
 - [ ] Output ohne rote Fehler; Neuer Spieler: `LastWorldId` wird nach dem Start `PizzeriaGarden` (Figur steht in Welt 1).
 - [ ] Zu Fuß über die (freigeschaltete) Barriere in Welt 2 laufen → `LastWorldId` = `Farm`. Zurück in Welt 1 → `PizzeriaGarden`.
 - [x] Per Portal nach Welt 3 teleportieren → `LastWorldId` = `Beach` sofort nach dem Teleport.
-- [ ] **Tod in Welt 3** (Esc → Reset Character) → Figur erscheint in Welt 3 auf dem Weg zwischen Ei und Ofen, Blick zum Belagfeld; Pizza ist wieder in der Hand. Kein kurzes Aufblitzen/Hängenbleiben in Welt 1, das stört (ein Frame am Welt-1-Spawn ist okay).
+- [x] **Tod in Welt 3** (Esc → Reset Character) → Figur erscheint in Welt 3 auf dem Weg zwischen Ei und Ofen, Blick zum Belagfeld; Pizza ist wieder in der Hand. Kein kurzes Aufblitzen/Hängenbleiben in Welt 1, das stört (ein Frame am Welt-1-Spawn ist okay). _(belegt: 18./19.11.: Tod in Welt 7 → Respawn in Welt 7)_
 - [ ] Tod in Welt 1 → normaler gelber Spawn in Welt 1.
-- [ ] **Rejoin**: in Welt 3 stehen, Stop, erneut Play (mit API-Zugriff, damit gespeichert wird) → Start in Welt 3.
+- [x] **Rejoin**: in Welt 3 stehen, Stop, erneut Play (mit API-Zugriff, damit gespeichert wird) → Start in Welt 3. _(belegt: Rejoin 18./19.11.: Start in der zuletzt besuchten Welt)_
 - [ ] **Gesperrte Welt**: In der Command Bar (Server) für den Spieler `LastWorldId` im Spielstand auf eine nicht freigeschaltete Welt setzen bzw. mit einem Spielstand ohne diese Welt joinen → Start am normalen Spawn in Welt 1, keine Fehlermeldung.
 - [ ] Alter Spielstand (vor #25, ohne `lastWorldId`) lädt ohne Fehler und startet in Welt 1.
 - [x] Barriere-Schutz: In einer gesperrten Welt (z. B. per Command Bar hineingesetzt) wird man wie bisher zurückgesetzt und `LastWorldId` ändert sich **nicht** auf die gesperrte Welt.
@@ -658,8 +718,8 @@ Was neu ist: Der gespeicherte Stand trägt ein Feld `lock = { serverId, time }`.
 
 Normalbetrieb (1 Spieler, Rojo verbunden):
 
-- [ ] **Play** mit einem alten Spielstand von vor diesem Ticket: Münzen, Pets, Tutorial-Schritt sind wie vorher, Output ohne `[Save]`-Warnungen (bestehende Spielstände laden weiter).
-- [ ] Münzen verdienen, **Stop**, erneut **Play**: Stand ist erhalten, **keine** Meldung `noch von einem anderen Server belegt` (Stop hat den Lock freigegeben).
+- [x] **Play** mit einem alten Spielstand von vor diesem Ticket: Münzen, Pets, Tutorial-Schritt sind wie vorher, Output ohne `[Save]`-Warnungen (bestehende Spielstände laden weiter). _(belegt: 17.11.: alter Spielstand ohne `[Save]`-Warnungen)_
+- [x] Münzen verdienen, **Stop**, erneut **Play**: Stand ist erhalten, **keine** Meldung `noch von einem anderen Server belegt` (Stop hat den Lock freigegeben). _(belegt: Stop/Play in allen Tests 17.–21.11. ohne Lock-Warnung)_
 - [ ] Mit **Test → Clients and Servers** (1 Spieler) das Client-Fenster schließen, Server weiterlaufen lassen, dann mit **Test → Clients and Servers** neu starten: lädt sofort, ohne Warten.
 
 Verwaister Lock (Server stirbt ohne Freigabe):
@@ -685,13 +745,13 @@ Ohne Neu-Import läuft alles weiter: Die alte Salami wird schon in den neuen Far
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler):
 
-- [ ] Output ohne rote Fehler.
+- [x] Output ohne rote Fehler. _(belegt: 17.11.: Salami neu importiert, Output ohne Fehler)_
 - [ ] Welt 1: Salami ist eine flache, weinrote Scheibe mit kleinen, unregelmäßigen cremefarbenen Fettstücken und dünnem dunklem Rand – kein Fliegenpilz mehr. Auf dem grünen Boden gut zu sehen und anklickbar.
 - [ ] Salami sammeln: Auf der Hand-Pizza hebt sie sich klar von Soße (hellrot) und Käse (gelb) ab.
-- [ ] Vulkan (Münz-Tipp aus #11): warmes, orangefarbenes Licht von oben, hellerer Basalt-Boden, nur leichter orangefarbener Dunst – Stationen, Schilder, Beläge (Chili, Peperoni, Jalapeño) und Wege gut erkennbar, auch in der Ferne. Die feurige Stimmung bleibt (orange Wolken, Bloom auf der Lava).
-- [ ] Lava-Akzente: 8 leuchtende Lava-Pools und 6 Lava-Risse rund um das Belagfeld, mit warmem Licht. Keiner liegt im Belagfeld, vor Ofen/Shop/Ei/Portal, bei Telefon/Lieferwagen oder im großen Vulkan (hinten links).
-- [ ] Nichts ist überstrahlt. Falls zu hell/zu dunkel: in `src/shared/WorldLooks.luau` (Eintrag `Volcano`) `brightness` bzw. `ambient`/`outdoorAmbient` anpassen und hier notieren.
-- [ ] Bildrate im Vulkan bleibt flüssig (14 zusätzliche Lichter); auf dem Handy-Emulator kurz prüfen.
+- [x] ~~Vulkan (Münz-Tipp aus #11): warmes, orangefarbenes Licht von oben, hellerer Basalt-Boden, nur leichter orangefarbener Dunst – Stationen, Schilder, Beläge (Chili, Peperoni, Jalapeño) und Wege gut erkennbar, auch in der Ferne. Die feurige Stimmung bleibt (orange Wolken, Bloom auf der Lava).~~ _(entfällt: seit #45 ein Licht-Look, Vulkan seit #47 neu)_
+- [x] ~~Lava-Akzente: 8 leuchtende Lava-Pools und 6 Lava-Risse rund um das Belagfeld, mit warmem Licht. Keiner liegt im Belagfeld, vor Ofen/Shop/Ei/Portal, bei Telefon/Lieferwagen oder im großen Vulkan (hinten links).~~ _(entfällt: seit #32 Vulkan-Insel neu gebaut)_
+- [x] ~~Nichts ist überstrahlt. Falls zu hell/zu dunkel: in `src/shared/WorldLooks.luau` (Eintrag `Volcano`) `brightness` bzw. `ambient`/`outdoorAmbient` anpassen und hier notieren.~~ _(entfällt: seit #45 ein Licht-Look)_
+- [x] ~~Bildrate im Vulkan bleibt flüssig (14 zusätzliche Lichter); auf dem Handy-Emulator kurz prüfen.~~ _(entfällt: seit #32/#47 neu; Bildrate siehe Release-Checkliste)_
 
 ## #22 Kamera und Welt-Störungen
 
@@ -700,7 +760,7 @@ Betrifft auch die Beobachtungen „Kamera“ und „Pets am Ofen“ oben. Play i
 **Kamera (Invisicam):**
 
 - [x] Output/Explorer: `StarterPlayer.DevCameraOcclusionMode` und `Players.<Spieler>.DevCameraOcclusionMode` stehen im Play auf `Invisicam`.
-- [ ] Rückwärts an Ofen, Shop, Ei-Stand und Telefon heranlaufen (Station zwischen Kamera und Figur): Die Kamera bleibt auf Abstand, die Station wird halb durchsichtig statt heranzuzoomen. In Welt 1 und in mindestens einer späteren Welt prüfen (Welt 7: großer Shop).
+- [x] Rückwärts an Ofen, Shop, Ei-Stand und Telefon heranlaufen (Station zwischen Kamera und Figur): Die Kamera bleibt auf Abstand, die Station wird halb durchsichtig statt heranzuzoomen. In Welt 1 und in mindestens einer späteren Welt prüfen (Welt 7: großer Shop). _(belegt: 18./19.11.: Kamera an allen Stationen frei (`48`))_
 
 **Pets am Ofen:**
 
@@ -710,7 +770,7 @@ Betrifft auch die Beobachtungen „Kamera“ und „Pets am Ofen“ oben. Play i
 
 **Namensschild und Ei-Vorschau:**
 
-- [ ] Mit ausgerüsteten Pets zum Ei laufen: Die Vorschau liegt über allem, kein Pet-Namensschild verdeckt „1 öffnen“ (bzw. „3 öffnen“). Namensschilder der Pets in Ei-Nähe sind ausgeblendet und erscheinen wieder, sobald man weggeht.
+- [x] ~~Mit ausgerüsteten Pets zum Ei laufen: Die Vorschau liegt über allem, kein Pet-Namensschild verdeckt „1 öffnen“ (bzw. „3 öffnen“). Namensschilder der Pets in Ei-Nähe sind ausgeblendet und erscheinen wieder, sobald man weggeht.~~ _(entfällt: seit #54 Panel; Namensschilder am Ei ausgeblendet (#54 geprüft))_
 
 **Ferne Schilder:**
 
@@ -734,7 +794,7 @@ Ohne Import läuft alles wie bisher mit den alten Bauteil-Platzhaltern. Mit Impo
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch alle Welten):
 
-- [ ] Output ohne rote Fehler.
+- [x] Output ohne rote Fehler. _(belegt: Output in allen Tests ohne Spiel-Fehler)_
 - [ ] **Telefon** (rechter Rand, neben dem Lieferwagen): altes rotes Wählscheiben-Telefon auf Holzständer, **Wählscheibe zeigt zur Belag-Fläche** (−X). Schild „📞 Telefon – Aufträge“ sitzt über dem Telefon. Klingeln: „📞 RING!“-Blase erscheint über dem Telefon, Auftrag annehmen funktioniert wie bisher.
 - [x] **Lieferwagen**: weiß-roter Transporter mit großer Pizza-Box auf dem Dach, **Führerhaus zeigt nach vorne** (−Z, wie der alte Platzhalter). Steht auf dem Boden (Räder nicht im Boden, nicht schwebend). Abgeben an der Seite zur Belag-Fläche funktioniert wie bisher.
 - [x] **Portal**: runder Steinbogen mit goldenem Schlussstein auf Steinsockel, die Fläche leuchtet **in der Farbe der Welt** (Garten orange, Bauernhof gelb, Strand türkis, Eisberge hellblau, Vulkan rot, Süßigkeitenland pink, Weltraum lila), Funken in heller Weltfarbe. Hineinlaufen öffnet das Portal-Menü, Ankunft vor dem Portal wie bisher.
@@ -751,7 +811,7 @@ Alle Positionen kommen jetzt aus `src/shared/HudLayout.luau` (Zonen, siehe `docs
 
 - [ ] Oben Mitte Münzen und Gems, Meldungen direkt darunter (z. B. zu weit weg sammeln → „Zu weit weg!“).
 - [ ] Tutorial-Karte (neuer Spielstand) steht **links oben** unter dem Roblox-Menü-Knopf, verdeckt weder Meldungen noch Münzen. Text gut lesbar, nicht abgeschnitten.
-- [ ] Am Ei stehen: Ei-Vorschau wird nicht von der Tutorial-Karte verdeckt.
+- [x] ~~Am Ei stehen: Ei-Vorschau wird nicht von der Tutorial-Karte verdeckt.~~ _(entfällt: seit #54 Panel rechts)_
 - [x] Links: runde Knöpfe „Pets“ und darunter „Tränke“ (unter der Tutorial-Karte, nicht darauf). Beide öffnen ihr Menü.
 - [ ] Unten Mitte Pizza-Balken, darüber Auto-Sammeln.
 - [ ] An eine Barriere laufen: Freischalt-Knopf erscheint **rechts neben dem Pizza-Balken**, nicht auf Auto-Sammeln. Text (Welt + Preis) lesbar, Antippen schaltet frei.
@@ -763,8 +823,8 @@ Alle Positionen kommen jetzt aus `src/shared/HudLayout.luau` (Zonen, siehe `docs
 **2. Device-Emulator** (Test → Device: iPhone SE quer, ein breites Android-Handy quer, iPad):
 
 - [ ] Kein Knopf (Pets, Tränke, Auto-Sammeln, Freischalten) liegt unter dem Joystick (unten links) oder dem Sprung-Knopf (unten rechts).
-- [ ] Auf dem kleinen Handy sitzen „Pets“ und „Tränke“ nebeneinander (zu wenig Höhe für untereinander), auf PC/Tablet untereinander.
-- [ ] Menüs passen ganz zwischen Währungen und Pizza-Balken; Shop, Pets und Teleport werden dabei zuerst niedriger (Liste scrollt), erst dann kleiner. Knöpfe darin bleiben antippbar (sonst `MIN_PANEL_HEIGHT` im Menü senken).
+- [x] ~~Auf dem kleinen Handy sitzen „Pets“ und „Tränke“ nebeneinander (zu wenig Höhe für untereinander), auf PC/Tablet untereinander.~~ _(entfällt: seit #52 neue Seitenknopf-Zone, Prüfung dort)_
+- [x] ~~Menüs passen ganz zwischen Währungen und Pizza-Balken; Shop, Pets und Teleport werden dabei zuerst niedriger (Liste scrollt), erst dann kleiner. Knöpfe darin bleiben antippbar (sonst `MIN_PANEL_HEIGHT` im Menü senken).~~ _(entfällt: seit #55 Handy-Modus (scrollt statt zu schrumpfen))_
 - [ ] Trank-Pillen + Auftragskarte ragen nicht unter den Sprung-Knopf (der Stapel schrumpft bei Bedarf).
 - [ ] Freischalt-Knopf ist auf dem kleinen Handy schmaler, Text aber noch lesbar.
 - [ ] Output ohne Fehler (rot), auch nach Tod/Respawn (HUD bleibt an seinem Platz).
@@ -793,21 +853,21 @@ Ohne Import läuft alles weiter: Jedes Ei ist dann eine Kugel in seiner Weltfarb
 - [x] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Eggs` anlegen.
 - [x] **Home → Import 3D** → in `assets/models/eggs/` alle 8 `.fbx` markieren (oder über das Namensfeld in Gruppen) → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
 - [x] Die Modelle heißen wie die Dateien: `GardenEgg`, `FarmEgg`, `BeachEgg`, `IceEgg`, `VolcanoEgg`, `CandyEgg`, `SpaceEgg`, `EggStand`. MeshParts heißen `Egg_FFF3DC`, `Egg_FF7A1A_Neon` … bzw. `Stone`, `StandBody`, `StandTrim`, `StandGold`, `EggSign` (Endungen wie `.001` sind ok). Alle in `Models/Eggs` ziehen, **Namen nicht ändern**.
-- [ ] Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Eggs:GetChildren())` → **8**.
+- [x] ~~Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Eggs:GetChildren())` → **8**.~~ _(entfällt: seit #39 15 Ei-Modelle, Import 17.11. erledigt)_
 - [x] Place speichern und **File → Publish to Roblox**.
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch die Welten):
 
-- [ ] Output ohne rote Fehler.
+- [x] Output ohne rote Fehler. _(belegt: Output in allen Tests ohne Spiel-Fehler)_
 - [x] In jeder Welt steht ein gestalteter Stand (Steinsockel, heller Zylinder, Ring und Goldperlen in der Akzentfarbe des Eis) mit dem Ei darauf. Das Ei steht auf dem Stand, nicht darin und nicht schwebend.
 - [ ] Die 7 Eier sind auf einen Blick unterscheidbar und sehen aus wie in `Overview.png`: Garten creme mit roten Punkten, Bauernhof gelb mit braunen Streifen, Strand türkis mit Wellen, Eis hellblau mit Rauten, Vulkan dunkelbraun mit **leuchtenden** Lava-Rissen, Süßigkeiten rosa mit weißem Wirbel, Weltraum lila mit **leuchtenden** Sternen.
 - [ ] Das große Muster-Element (z. B. der große Punkt/Stern) und das Schild zeigen **zum Weg hin (-Z)**. Zeigen Ei oder Schild-Brett nach hinten: in `src/shared/ModelLibrary.luau` `PET_YAW` (gilt auch für Eier) bzw. `YAW.EggStand` (jetzt 180) auf 0 ändern.
 - [ ] Schild vorne am Stand: Name und Preis (z. B. „Garten-Ei / 💰 25“, „Eis-Ei / 💰 12.000“), gut lesbar, liegt genau auf dem hellen Schild-Brett des Modells. Sitzt der Text versetzt: `SIGN_OFFSET` in `src/server/EggService.luau` anpassen.
 - [ ] Man läuft gegen den Stand (kollidiert), steckt aber nicht in unsichtbaren Wänden neben dem Sockel.
-- [ ] **Unverändert:** Ei-Vorschau erscheint beim Herangehen über dem Ei (nicht im Ei, nicht vom Stand verdeckt), „1 öffnen“ / „3 öffnen“ funktionieren, Glücks-Trank-Anzeige, Abstandsprüfung („Zu weit weg!“ ab ca. 18 Studs).
+- [x] ~~**Unverändert:** Ei-Vorschau erscheint beim Herangehen über dem Ei (nicht im Ei, nicht vom Stand verdeckt), „1 öffnen“ / „3 öffnen“ funktionieren, Glücks-Trank-Anzeige, Abstandsprüfung („Zu weit weg!“ ab ca. 18 Studs).~~ _(entfällt: seit #54 Panel statt Vorschau über dem Ei)_
 - [ ] Knack-Animation: Das wackelnde Ei hat die Farbe des geöffneten Eis (z. B. lila beim Weltraum-Ei), danach erscheinen wie bisher die Pet-Karten.
 - [ ] Tutorial-Pfeil „Ei öffnen“ zeigt weiterhin auf den Ei-Stand in Welt 1.
-- [ ] Neon-Teile (Vulkan, Weltraum) leuchten, ohne überstrahlt zu sein.
+- [x] Neon-Teile (Vulkan, Weltraum) leuchten, ohne überstrahlt zu sein. _(belegt: 20.11.: Vulkan-Ei leuchtet, Fancy-Eier matt (#48))_
 
 **Handy** (Device-Emulator): Schild aus 10–15 Studs Entfernung lesbar; Ei-Vorschau-Knöpfe bleiben antippbar.
 
@@ -819,19 +879,19 @@ Tipp für schnelles Testen: wie bei #11 vorübergehend `Mozzarella.value = 50000
 
 **1. Test** (Rojo verbunden, **Play**, 1 Spieler, Tutorial fertig):
 
-- [ ] Output ohne rote Fehler. Alter Spielstand lädt (Münzen, Pets, Gems wie vorher), Rebirth-Zahl 0.
-- [ ] Links in der Knopf-Spalte (Platz `rebirth`, nach Pets/Tränke bzw. Geschenke) ein runder lila Knopf **„Rebirth“**. Ohne Rebirth kein Abzeichen.
+- [x] Output ohne rote Fehler. Alter Spielstand lädt (Münzen, Pets, Gems wie vorher), Rebirth-Zahl 0. _(belegt: 17.11.: alter Spielstand lädt, 0 Rebirths)_
+- [x] Links in der Knopf-Spalte (Platz `rebirth`, nach Pets/Tränke bzw. Geschenke) ein runder lila Knopf **„Rebirth“**. Ohne Rebirth kein Abzeichen. _(belegt: 18./19.11.: Knopf da, Abzeichen „1“ erst nach Rebirth)_
 - [x] Menü öffnen: „Noch kein Rebirth“, „Münzen ×1 → ×1,5“, „Preis: 4,9 Mrd Münzen“ (seit #41), Fortschrittsbalken mit Prozent, darunter was zurückgesetzt wird und was bleibt. Menü liegt unter Münzen/Gems und über dem Pizza-Balken. X schließt.
 - [ ] Zu wenig Münzen: „Rebirth!“-Knopf grau, Antippen tut nichts. Fortschrittsbalken wächst beim Verkaufen mit.
 - [ ] Genug Münzen (ohne Menü offen): Knopf **pulsiert** mit Hinweis „Neu! Mehr Münzen“ rechts daneben; nach dem ersten Öffnen hört das Pulsieren auf.
-- [ ] Trank trinken, dann Menü öffnen: rote Warnung „Dein laufender Trank endet beim Rebirth!“, auch im Bestätigungsfenster.
-- [ ] „Rebirth!“ → Bestätigung „Rebirth 1 für 4,9 Mrd Münzen? …“ mit **Ja**/**Nein**. „Nein“ schließt nur die Bestätigung.
-- [ ] Vorher einen Auftrag annehmen und Beläge auf der Pizza haben, dann in Welt 3+ „Ja“: Figur steht am **Spawnpunkt von Welt 1**, Pizza leer, Auftragskarte und Trank-Pille weg, Münzen 0, Feier-Text **„Rebirth 1! ×1,5 Münzen“** mitten im Bild (verblasst nach ca. 3 s), Abzeichen „1“ am Knopf.
-- [ ] Danach: Barrieren zu Welt 2+ wieder geschlossen, Portal-Menü zeigt sie gesperrt, Shop-Upgrades (Pizza-Platz, Reichweite, Magnet) wieder auf Stufe 0. Pets (ausgerüstet), Gems, Gem-Upgrades (Pet-Plätze, Inventar, Speed, 3 Eier) und Tränke im Inventar sind noch da.
+- [x] Trank trinken, dann Menü öffnen: rote Warnung „Dein laufender Trank endet beim Rebirth!“, auch im Bestätigungsfenster. _(belegt: 18./19.11. echter Rebirth)_
+- [x] „Rebirth!“ → Bestätigung „Rebirth 1 für 4,9 Mrd Münzen? …“ mit **Ja**/**Nein**. „Nein“ schließt nur die Bestätigung. _(belegt: 18./19.11. echter Rebirth (Preis jetzt 74 Mio))_
+- [x] Vorher einen Auftrag annehmen und Beläge auf der Pizza haben, dann in Welt 3+ „Ja“: Figur steht am **Spawnpunkt von Welt 1**, Pizza leer, Auftragskarte und Trank-Pille weg, Münzen 0, Feier-Text **„Rebirth 1! ×1,5 Münzen“** mitten im Bild (verblasst nach ca. 3 s), Abzeichen „1“ am Knopf. _(belegt: 18./19.11. echter Rebirth (`53`))_
+- [x] Danach: Barrieren zu Welt 2+ wieder geschlossen, Portal-Menü zeigt sie gesperrt, Shop-Upgrades (Pizza-Platz, Reichweite, Magnet) wieder auf Stufe 0. Pets (ausgerüstet), Gems, Gem-Upgrades (Pet-Plätze, Inventar, Speed, 3 Eier) und Tränke im Inventar sind noch da. _(belegt: 18./19.11.: Tore wieder zu, Pizza 0/2, Pets und Gems bleiben)_
 - [ ] Verkaufen am Ofen bringt jetzt das 1,5-Fache (z. B. 2 Salami ohne Pets: 2 → 3 Münzen). Münz-Lieferauftrag zeigt eine 1,5-fach höhere Belohnung; Gem-Belohnungen unverändert. Pet-Menü zeigt weiter nur den Pet-Bonus.
-- [ ] Menü erneut: „Rebirths: 1“, „Münzen ×1,5 → ×2“, Preis 500 Mio.
+- [x] Menü erneut: „Rebirths: 1“, „Münzen ×1,5 → ×2“, Preis 500 Mio. _(belegt: 20.11.: 111 Mio bei 1 Rebirth (seit #58))_
 - [ ] Tod nach dem Rebirth: Respawn in Welt 1.
-- [ ] **Rejoin** (Stop, Play): Rebirth-Zahl, Abzeichen und Multiplikator bleiben; Start in Welt 1.
+- [x] **Rejoin** (Stop, Play): Rebirth-Zahl, Abzeichen und Multiplikator bleiben; Start in Welt 1. _(belegt: Rejoin 18./19.11.: alles bleibt, Start in Welt 1)_
 - [x] Server-Schutz (Command Bar im Client): `game.ReplicatedStorage.Remotes.Rebirth:FireServer()` mit zu wenig Münzen → nur Meldung „Nicht genug Münzen!“, nichts wird zurückgesetzt.
 - [x] Sound: in `src/client/Sounds.luau` für `Rebirth` eine Fanfare suchen (Suchbegriffe dort) und die ID eintragen.
 
@@ -847,17 +907,17 @@ Vorher: `lune run test` → `0 failed`. Zum schnellen Testen in `src/shared/Game
 **Knopf und Menü** (Play, 1 Spieler, Spielstand mit beendetem Tutorial):
 
 - [ ] Links unter „Tränke“ ein runder rosa Knopf „Geschenke“ mit Countdown bis zum nächsten Geschenk (z. B. `4:50`), Countdown läuft sekundenweise.
-- [ ] Beim ersten Mal pulsiert der Knopf, daneben „Neu! Geschenke fürs Spielen“. Nach dem ersten Öffnen hört das auf – auch nach Rejoin (wird gespeichert). Während des Tutorials pulsiert er noch nicht.
+- [x] Beim ersten Mal pulsiert der Knopf, daneben „Neu! Geschenke fürs Spielen“. Nach dem ersten Öffnen hört das auf – auch nach Rejoin (wird gespeichert). Während des Tutorials pulsiert er noch nicht. _(belegt: 18./19.11.: pulsiert erst nach dem Tutorial (`50`))_
 - [ ] Ist ein Geschenk erreicht: rotes „!“ am Knopf, Text „Abholen!“, Knopf hüpft kurz.
 - [x] Menü: 6 Zeilen 5/10/15/25/40/60 Min mit Belohnung (Münzen-Betrag, 5 Gems, 1 Trank, Münzen groß, 10 Gems, 15 Gems + 1 Trank). Wartende zeigen die Restzeit, erreichte einen grünen „Abholen“-Knopf, abgeholte ein ✓.
 - [x] „Abholen“ → Statuszeile „Geschenk! +…“, Gem-Sound, Münzen/Gems oben steigen bzw. Trank liegt im Trank-Menü. Nochmal tippen → „schon abgeholt“. Wartendes antippen → „Noch nicht …“.
-- [ ] Münz-Geschenk ist in Welt 1 klein (neuer Spieler: 20 Münzen, das große 54), in höheren Welten / mit Pets / größerer Pizza deutlich mehr.
-- [ ] Menü sitzt unter Münzen/Meldungen und über dem Pizza-Balken (auch im Device-Emulator, kleines Handy: wird kleiner, Knöpfe bleiben antippbar). Auf dem kleinen Handy liegt der Knopf nicht unter dem Joystick.
+- [x] ~~Münz-Geschenk ist in Welt 1 klein (neuer Spieler: 20 Münzen, das große 54), in höheren Welten / mit Pets / größerer Pizza deutlich mehr.~~ _(entfällt: seit #50 keine Münz-Geschenke mehr)_
+- [x] ~~Menü sitzt unter Münzen/Meldungen und über dem Pizza-Balken (auch im Device-Emulator, kleines Handy: wird kleiner, Knöpfe bleiben antippbar). Auf dem kleinen Handy liegt der Knopf nicht unter dem Joystick.~~ _(entfällt: Prüfung zusammengefasst in #55)_
 - [x] Es kommen keine „+1 Gem fürs Spielen!“-Meldungen mehr.
 
 **Rejoin** (API-Zugriff an, siehe #3):
 
-- [ ] Ein paar Minuten spielen, ein Geschenk abholen, verlassen, neu beitreten: Countdown läuft an derselben Stelle weiter, abgeholtes Geschenk bleibt ✓, nicht abgeholte bleiben „Abholen“.
+- [x] Ein paar Minuten spielen, ein Geschenk abholen, verlassen, neu beitreten: Countdown läuft an derselben Stelle weiter, abgeholtes Geschenk bleibt ✓, nicht abgeholte bleiben „Abholen“. _(belegt: Rejoin 18./19.11.: Countdown zählt weiter)_
 - [ ] Alter Spielstand (vor #36) lädt ohne Fehler, Gems bleiben, Tages-Spielzeit startet bei 0.
 
 **Tageswechsel** (optional, Mitternacht deutscher Zeit): Nach Mitternacht beginnt die Tages-Spielzeit bei 0 und alle Geschenke sind wieder offen; Output ohne Fehler.
@@ -869,15 +929,15 @@ Vorher: `lune run test` → `0 failed` (inkl. `tests/LoginCalendar.spec.luau`).
 **Automatisches Öffnen** (Play, 1 Spieler, API-Zugriff an, Spielstand mit beendetem Tutorial):
 
 - [x] Beim ersten Beitreten des Tages öffnet sich das Fenster „Login-Kalender“ von selbst: 7 Kacheln „Tag 1“ … „Tag 7“ mit Belohnung (Münzen, 10 Gems, 1 Trank, Münzen, 20 Gems, 2 Tränke, 50 Gems + 3 Tränke). Die heutige Kachel ist gelb mit „Heute“ und dickem Rand.
-- [ ] Fenster sitzt unter Münzen/Meldungen und über dem Pizza-Balken; im Device-Emulator (kleines Handy) wird es kleiner, „Abholen“ und „X“ bleiben antippbar, Texte lesbar.
-- [ ] Stop, erneut Play am selben Tag: Das Fenster öffnet sich **nicht** noch einmal (auch wenn nicht abgeholt).
-- [ ] Neuer Spieler (Spielstand löschen bzw. anderer Test-Account): Das Fenster öffnet sich erst, wenn das Tutorial beendet ist, nicht mittendrin.
-- [ ] Geschenke-Menü hat oben einen orangen Knopf „📅 Kalender“ → öffnet den Kalender (Geschenke-Menü schließt sich).
+- [x] ~~Fenster sitzt unter Münzen/Meldungen und über dem Pizza-Balken; im Device-Emulator (kleines Handy) wird es kleiner, „Abholen“ und „X“ bleiben antippbar, Texte lesbar.~~ _(entfällt: Prüfung zusammengefasst in #55)_
+- [x] Stop, erneut Play am selben Tag: Das Fenster öffnet sich **nicht** noch einmal (auch wenn nicht abgeholt). _(belegt: Rejoin 18./19.11.: Kalender öffnet nicht noch einmal)_
+- [x] Neuer Spieler (Spielstand löschen bzw. anderer Test-Account): Das Fenster öffnet sich erst, wenn das Tutorial beendet ist, nicht mittendrin. _(belegt: 18./19.11.: Kalender öffnet erst nach dem Tutorial)_
+- [x] Geschenke-Menü hat oben einen orangen Knopf „📅 Kalender“ → öffnet den Kalender (Geschenke-Menü schließt sich). _(belegt: 20.11. (#53): nur der Kalender offen)_
 
 **Abholen:**
 
-- [ ] „Abholen“ → Statuszeile „Tag 1! +34 Münzen“ (neuer Spieler in Welt 1, ca. 5 Minuten Einkommen), Gem-Sound, Münzen oben steigen, Kachel zeigt ✓, Knopf wird grau „Morgen wieder“.
-- [ ] Mit höherer freigeschalteter Welt (oder mehr Pizza-Platz/Pets) ist der Münzbetrag auf Tag 1/Tag 4 deutlich größer.
+- [x] ~~„Abholen“ → Statuszeile „Tag 1! +34 Münzen“ (neuer Spieler in Welt 1, ca. 5 Minuten Einkommen), Gem-Sound, Münzen oben steigen, Kachel zeigt ✓, Knopf wird grau „Morgen wieder“.~~ _(entfällt: seit #50 Tag 1 = 5 Gems, Prüfung in #50)_
+- [x] ~~Mit höherer freigeschalteter Welt (oder mehr Pizza-Platz/Pets) ist der Münzbetrag auf Tag 1/Tag 4 deutlich größer.~~ _(entfällt: seit #50 keine Münzen im Kalender)_
 - [ ] Graues „Morgen wieder“ antippen → nichts passiert; kein zweites Abholen möglich, auch nicht nach Rejoin.
 
 **Mehrere Server / Rejoin:**
@@ -898,25 +958,25 @@ Vorher: `lune run test` → `0 failed` (inkl. `tests/IslandPlan.spec.luau`). Vor
 
 **Play (1 Spieler, neuer Spielstand):**
 
-- [ ] Output ohne rote Fehler. Start auf der **Spawn-Insel** am gelben Spawn, Blick auf den Pizza-Brunnen (Wasserspritzer) und die Brücke.
-- [ ] Spawn-Insel: runder, unregelmäßiger Umriss mit Felskante darunter, Hecke am Rand, Bäume, Teich mit Wasserfall, Portal-Tor links vorne, drei Tafeln „⏱ Spielzeit“, „💰 Münzen verdient“, „🔁 Rebirths“ (Inhalt seit #38: echte Bestenlisten, Text auf der Vorderseite, Richtung Brunnen).
+- [x] Output ohne rote Fehler. Start auf der **Spawn-Insel** am gelben Spawn, Blick auf den Pizza-Brunnen (Wasserspritzer) und die Brücke. _(belegt: 18./19.11.: neuer Spieler startet auf der Spawn-Insel)_
+- [x] Spawn-Insel: runder, unregelmäßiger Umriss mit Felskante darunter, Hecke am Rand, Bäume, Teich mit Wasserfall, Portal-Tor links vorne, drei Tafeln „⏱ Spielzeit“, „💰 Münzen verdient“, „🔁 Rebirths“ (Inhalt seit #38: echte Bestenlisten, Text auf der Vorderseite, Richtung Brunnen). _(belegt: 17.11. (`23`); kleine Schrift siehe #38)_
 - [ ] Tutorial-Karte erscheint auf der Spawn-Insel; Pfeil und Leuchtlinie zeigen zuerst auf den **Brückenkopf von Welt 1**, nach dem Überqueren der Brücke auf die Beläge.
-- [ ] Hängebrücke (Holzplanken, Pfosten, Seile) begehbar, leicht durchhängend, man kann nicht seitlich herunterfallen (unsichtbare Wand), springen hilft nicht.
-- [ ] Welt 1 als Insel wie in `World1_Overview.jpg`: Hauptweg aus Platten, links Portal, Shop, Ei-Stand mit Garten-Ei und ein zweiter Ei-Stand „Bald: neues Ei!“, rechts Ofen mit oranger Verkaufszone, Telefon, Lieferwagen. Alle Stationen zeigen mit der Front zum Weg.
-- [ ] **Kamera:** In der Verkaufszone, am Shop, am Ei, am Telefon, am Lieferwagen und im Portal bleibt die Kamera frei (keine Wand/kein Baum zwischen Kamera und Figur). Ofen-Animation fliegt in die Ofenöffnung.
-- [ ] Sammeln, Verkaufen, Shop kaufen, Ei öffnen, Lieferauftrag (Telefon → Lieferwagen) funktionieren wie vorher; Tutorial lässt sich komplett abschließen.
+- [x] Hängebrücke (Holzplanken, Pfosten, Seile) begehbar, leicht durchhängend, man kann nicht seitlich herunterfallen (unsichtbare Wand), springen hilft nicht. _(belegt: 18./19.11.: Brücken-Seitenwände halten)_
+- [x] ~~Welt 1 als Insel wie in `World1_Overview.jpg`: Hauptweg aus Platten, links Portal, Shop, Ei-Stand mit Garten-Ei und ein zweiter Ei-Stand „Bald: neues Ei!“, rechts Ofen mit oranger Verkaufszone, Telefon, Lieferwagen. Alle Stationen zeigen mit der Front zum Weg.~~ _(entfällt: zweiter Ei-Stand seit #39 belegt; Stationen 18./19.11. geprüft)_
+- [x] **Kamera:** In der Verkaufszone, am Shop, am Ei, am Telefon, am Lieferwagen und im Portal bleibt die Kamera frei (keine Wand/kein Baum zwischen Kamera und Figur). Ofen-Animation fliegt in die Ofenöffnung. _(belegt: 18./19.11.: Kamera an allen Stationen frei (`48`))_
+- [x] Sammeln, Verkaufen, Shop kaufen, Ei öffnen, Lieferauftrag (Telefon → Lieferwagen) funktionieren wie vorher; Tutorial lässt sich komplett abschließen. _(belegt: 18./19.11.: Tutorial als neuer Spieler komplett)_
 - [ ] Hinten in Welt 1: Terrassen mit Stufen (begehbar), Riesen-Pizza als Wahrzeichen, Teich mit Wasserfall rechts vorne. Pets laufen nicht durch die Hecke/Wand.
-- [ ] **Rand:** An keiner Stelle der Inseln kann man herunterfallen (Rand abgehen, gegen die Wand springen).
-- [ ] **Absturz:** Mit Command Bar (Server) eine Figur unter die Insel setzen, z. B. `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, 0))` → sie landet sofort am Spawn der aktuellen Welt (neuer Spieler: Spawn-Insel; nach Betreten von Welt 1: Welt 1 vorne am Weg).
-- [ ] Tod (Reset Character) nach Betreten von Welt 1 → Respawn in Welt 1 am Brückenende (nicht auf der Spawn-Insel). Rejoin → Start in Welt 1.
+- [x] **Rand:** An keiner Stelle der Inseln kann man herunterfallen (Rand abgehen, gegen die Wand springen). _(belegt: 18./19.11.: 0 Abstürze an 22 Punkten pro Insel)_
+- [x] **Absturz:** Mit Command Bar (Server) eine Figur unter die Insel setzen, z. B. `game.Players:GetPlayers()[1].Character:PivotTo(CFrame.new(130, -40, 0))` → sie landet sofort am Spawn der aktuellen Welt (neuer Spieler: Spawn-Insel; nach Betreten von Welt 1: Welt 1 vorne am Weg). _(belegt: 18./19.11.: Absturz unter Welt 6 → Spawn Welt 6)_
+- [x] Tod (Reset Character) nach Betreten von Welt 1 → Respawn in Welt 1 am Brückenende (nicht auf der Spawn-Insel). Rejoin → Start in Welt 1. _(belegt: 18./19.11.: Tod Welt 7 → Welt 7; Rejoin → letzte Welt)_
 
 **Welt 2–7 (alter Look an der Kette):**
 
-- [ ] Hinter Welt 1 führt eine Brücke zu Welt 2; am Brückenkopf steht ein **leuchtendes Tor** in Weltfarbe mit Preisschild „🔒 Bauernhof 170 Münzen“ (seit #41). Durchlaufen geht nicht.
-- [ ] Vor dem Tor erscheint der Freischalt-Knopf; mit genug Münzen freischalten → Tor wird durchsichtig/passierbar, Preisschild verschwindet. Andere Spieler bleiben stecken.
-- [ ] Welt 2–7 sind über Brücken erreichbar und spielbar wie vorher (Ofen, Ei, Shop, Portal, Telefon/Wagen, Deko). Ränder haben unsichtbare Wände, unter den Platten hängt ein Felsblock.
-- [ ] Portal in Welt 1 / auf der Spawn-Insel: Menü öffnet, Teleport in jede freigeschaltete Welt, Ankunft vor deren Portal; danach Tod → Respawn in dieser Welt.
-- [ ] Welt-Atmosphäre/Musik wechselt beim Betreten einer Insel; auf Brücken bleibt der Look der verlassenen Welt, auf der Spawn-Insel der von Welt 1.
+- [x] ~~Hinter Welt 1 führt eine Brücke zu Welt 2; am Brückenkopf steht ein **leuchtendes Tor** in Weltfarbe mit Preisschild „🔒 Bauernhof 170 Münzen“ (seit #41). Durchlaufen geht nicht.~~ _(entfällt: seit #31/#32 alle Welten Inseln, Preis seit #57)_
+- [x] ~~Vor dem Tor erscheint der Freischalt-Knopf; mit genug Münzen freischalten → Tor wird durchsichtig/passierbar, Preisschild verschwindet. Andere Spieler bleiben stecken.~~ _(entfällt: seit #31/#32 alle Welten Inseln; Mehrspieler siehe Release-Checkliste)_
+- [x] ~~Welt 2–7 sind über Brücken erreichbar und spielbar wie vorher (Ofen, Ei, Shop, Portal, Telefon/Wagen, Deko). Ränder haben unsichtbare Wände, unter den Platten hängt ein Felsblock.~~ _(entfällt: seit #31/#32 alle Welten Inseln)_
+- [x] ~~Portal in Welt 1 / auf der Spawn-Insel: Menü öffnet, Teleport in jede freigeschaltete Welt, Ankunft vor deren Portal; danach Tod → Respawn in dieser Welt.~~ _(entfällt: seit #31/#32 alle Welten Inseln; 18./19.11. Portal und Respawn geprüft)_
+- [x] ~~Welt-Atmosphäre/Musik wechselt beim Betreten einer Insel; auf Brücken bleibt der Look der verlassenen Welt, auf der Spawn-Insel der von Welt 1.~~ _(entfällt: seit #45 ein Licht-Look, nur Musik wechselt)_
 - [ ] Ferne Schilder (Tore, Shops anderer Welten) sind aus Welt 1 nicht am Himmel zu sehen (#22).
 
 **2 Spieler + Device-Emulator (kleines Handy):**
@@ -965,14 +1025,14 @@ Standorte: In Welt 1 (Insel-Look) steht das zweite Ei auf dem zweiten Ei-Platz l
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, mit dem Portal durch die Welten). Zum schnellen Testen vorübergehend `price = 1` beim `StoneOvenEgg` setzen (**nicht committen**, danach zurück auf 125).
 
-- [ ] Output ohne rote Fehler. Im Workspace unter `Eggs` stehen **14** Eier.
+- [x] Output ohne rote Fehler. Im Workspace unter `Eggs` stehen **14** Eier. _(belegt: 17.11.: 15 Ei-Modelle; 18./19.11. beide Stände in allen Welten)_
 - [x] **Welt 1:** Zwei Ei-Stände links am Weg: vorne Garten-Ei, dahinter Steinofen-Ei (terrakotta mit leuchtenden Rissen, Goldband, Goldperlen). Schild „Steinofen-Ei / 💰 125“. Kein Stand zeigt mehr „Bald: neues Ei!“.
-- [ ] **Welt 2–7:** In jeder Welt zwei Stände nebeneinander vor dem Belagfeld (links neben dem ersten Ei das zweite), keiner steckt im Shop, in der Deko oder im Weg. Eier wie in `Overview.png` (zweite Reihe): Scheune rot mit weißen Rauten, Muschel rosa mit Wirbel, Gletscher eisblau mit Sternen, Magma fast schwarz mit leuchtenden Lava-Wellen, Bonbon lila mit gelben Streifen, Nebula dunkelblau mit leuchtenden lila Punkten.
+- [x] ~~**Welt 2–7:** In jeder Welt zwei Stände nebeneinander vor dem Belagfeld (links neben dem ersten Ei das zweite), keiner steckt im Shop, in der Deko oder im Weg. Eier wie in `Overview.png` (zweite Reihe): Scheune rot mit weißen Rauten, Muschel rosa mit Wirbel, Gletscher eisblau mit Sternen, Magma fast schwarz mit leuchtenden Lava-Wellen, Bonbon lila mit gelben Streifen, Nebula dunkelblau mit leuchtenden lila Punkten.~~ _(entfällt: seit #31/#32 Inseln; 18./19.11. beide Ei-Stände überall richtig)_
 - [ ] Das zweite Ei ist sofort nach dem Freischalten der Welt nutzbar; in einer noch gesperrten Welt (per Portal nicht erreichbar) geht es nicht.
 - [ ] Ei-Vorschau am zweiten Ei: 4 Pets mit Seltenheit und Chance (Selten 68 %, Episch 25 %, Legendär 6 %, Mythisch 1 %), Preis stimmt. Mit Glücks-Trank verschieben sich die Chancen wie beim ersten Ei.
-- [ ] Zwischen den beiden Ständen hin und her laufen: Die Vorschau wechselt zum jeweils näheren Ei, sie flackert nicht und zeigt nie zwei Vorschauen übereinander. „1 öffnen“ öffnet das Ei, vor dem man steht.
+- [x] Zwischen den beiden Ständen hin und her laufen: Die Vorschau wechselt zum jeweils näheren Ei, sie flackert nicht und zeigt nie zwei Vorschauen übereinander. „1 öffnen“ öffnet das Ei, vor dem man steht. _(belegt: 20.11. (#54): Panel wechselt zwischen den Eiern (`71`))_
 - [ ] „1 öffnen“ und (mit gekauftem „3 Eier auf einmal“) „3 öffnen“ funktionieren, Knack-Animation in der Farbe des zweiten Eis, danach Pet-Karten mit den neuen Namen.
-- [ ] Neue Pets im Pet-Menü: Name vollständig lesbar (auch „Galaxie-Pizza-Leviathan“), Icon als Punkt in Seltenheitsfarbe, Bonus z. B. Rucola-Igel +37,5 % (Anzeige je nach Rundung). Ausrüsten → Pet folgt als Kugel in Seltenheitsfarbe, Münzbonus beim Verkaufen wirkt.
+- [x] ~~Neue Pets im Pet-Menü: Name vollständig lesbar (auch „Galaxie-Pizza-Leviathan“), Icon als Punkt in Seltenheitsfarbe, Bonus z. B. Rucola-Igel +37,5 % (Anzeige je nach Rundung). Ausrüsten → Pet folgt als Kugel in Seltenheitsfarbe, Münzbonus beim Verkaufen wirkt.~~ _(entfällt: Boni seit #57 neu, Modelle seit #40)_
 - [ ] Rejoin: Pets aus dem zweiten Ei sind nach dem Neubeitreten noch da.
 
 **Handy** (Device-Emulator): Beide Schilder aus 10–15 Studs lesbar; die Vorschau-Knöpfe beider Eier bleiben antippbar.
@@ -985,13 +1045,13 @@ Neue Preise: Bauernhof 170, Strand 2.000, Eisberge 42.000, Vulkan 310.000, Süß
 
 Studio: Rojo verbinden, **Play** (1 Spieler, möglichst frischer Spielstand, Tutorial normal durchspielen):
 
-- [ ] Output ohne rote Fehler.
-- [ ] Tore und Preisschilder zeigen die neuen Preise: „🔒 Bauernhof 170 Münzen“, Strand 2.000, Eisberge 42.000, Vulkan 310.000, Süßigkeitenland 23 Mio, Weltraum 460 Mio. Das Teleport-Menü zeigt dieselben Preise bei den gesperrten Welten.
-- [ ] Shop 1: Pizza-Platz kostet 12 → 50 → 200, Reichweite 30 → 100 → 400, Magnet 300. Shop 3 (Weltraum) zeigt die Preise oben.
-- [ ] Rebirth-Menü: „Preis: 4,9 Mrd Münzen“; nach einem Rebirth zeigt es 14,7 Mrd für den zweiten (Test mit vorübergehend hohem Münzstand, **nicht committen**).
-- [ ] **Stoppuhr Welt 1:** Ab Spielstart (Tutorial inklusive) bis zum Freischalten des Bauernhofs normal spielen, dabei Upgrades und das Garten-Ei kaufen, Lieferaufträge annehmen. Zeit notieren (Ziel ca. 10–15 Min, Simulation 13 Min). Fühlt es sich deutlich schneller an, liegt das am Rundentempo: Die Simulation rechnet mit 2 Runden pro Minute.
-- [ ] **Stoppuhr Welt 2:** Vom Freischalten des Bauernhofs bis zum Freischalten des Strands (Ziel ca. 10–15 Min, Simulation 12 Min). Beide Zeiten in `docs/balancing.md` unter der Tabelle notieren.
-- [ ] Geschenke und Login-Kalender geben weiterhin Münzen „ca. N Minuten Einkommen“; Beträge passen zur aktuellen Welt (unverändert, nur Kontrolle).
+- [x] Output ohne rote Fehler. _(belegt: Output in allen Tests ohne Spiel-Fehler)_
+- [x] ~~Tore und Preisschilder zeigen die neuen Preise: „🔒 Bauernhof 170 Münzen“, Strand 2.000, Eisberge 42.000, Vulkan 310.000, Süßigkeitenland 23 Mio, Weltraum 460 Mio. Das Teleport-Menü zeigt dieselben Preise bei den gesperrten Welten.~~ _(entfällt: Preise seit #57 neu)_
+- [x] ~~Shop 1: Pizza-Platz kostet 12 → 50 → 200, Reichweite 30 → 100 → 400, Magnet 300. Shop 3 (Weltraum) zeigt die Preise oben.~~ _(entfällt: Preise seit #57 neu)_
+- [x] ~~Rebirth-Menü: „Preis: 4,9 Mrd Münzen“; nach einem Rebirth zeigt es 14,7 Mrd für den zweiten (Test mit vorübergehend hohem Münzstand, **nicht committen**).~~ _(entfällt: seit #57/#58 74 Mio, ×1,5 je Rebirth)_
+- [x] ~~**Stoppuhr Welt 1:** Ab Spielstart (Tutorial inklusive) bis zum Freischalten des Bauernhofs normal spielen, dabei Upgrades und das Garten-Ei kaufen, Lieferaufträge annehmen. Zeit notieren (Ziel ca. 10–15 Min, Simulation 13 Min). Fühlt es sich deutlich schneller an, liegt das am Rundentempo: Die Simulation rechnet mit 2 Runden pro Minute.~~ _(entfällt: Stoppuhr-Ziele seit #57 neu, Messung 20.11.)_
+- [x] ~~**Stoppuhr Welt 2:** Vom Freischalten des Bauernhofs bis zum Freischalten des Strands (Ziel ca. 10–15 Min, Simulation 12 Min). Beide Zeiten in `docs/balancing.md` unter der Tabelle notieren.~~ _(entfällt: Stoppuhr-Ziele seit #57 neu, Messung 20.11.)_
+- [x] ~~Geschenke und Login-Kalender geben weiterhin Münzen „ca. N Minuten Einkommen“; Beträge passen zur aktuellen Welt (unverändert, nur Kontrolle).~~ _(entfällt: seit #50 keine Münzen mehr)_
 
 ## #40 C7 28 neue Pet-Modelle
 
@@ -1018,8 +1078,8 @@ Vorschau: pro Ei `assets/previews/pets/<EiId>.png` (z. B. `StoneOvenEgg.png`, 4 
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; Münz-Tipp aus #11, zum schnellen Öffnen vorübergehend `price = 1` bei einem zweiten Ei setzen, **nicht committen**):
 
-- [ ] Output ohne rote Fehler.
-- [ ] **Ei-Vorschau** am zweiten Ei jeder Welt: alle 4 Zeilen zeigen das 3D-Pet statt eines farbigen Punkts, nichts abgeschnitten (auch die breiten: Calzone-Hydra, Galaxie-Pizza-Leviathan, Goldkorn-Stier).
+- [x] Output ohne rote Fehler. _(belegt: Output in allen Tests ohne Spiel-Fehler)_
+- [x] **Ei-Vorschau** am zweiten Ei jeder Welt: alle 4 Zeilen zeigen das 3D-Pet statt eines farbigen Punkts, nichts abgeschnitten (auch die breiten: Calzone-Hydra, Galaxie-Pizza-Leviathan, Goldkorn-Stier). _(belegt: #54, 20.11.: Pet-Bilder in den Panel-Zeilen)_
 - [x] **Ei öffnen**: Die Pet-Karte zeigt das 3D-Pet vor dem Kreis in Seltenheitsfarbe.
 - [ ] **Pet-Menü**: Jede Karte eines neuen Pets zeigt das Modell im runden Feld.
 - [ ] **Folgen**: Je ein neues Pet pro Welt ausrüsten → läuft als Modell hinter dem Spieler, **Gesicht in Laufrichtung**, steht auf dem Boden (Seeschlange, Qualle und Leviathan nicht im Boden, nicht hoch schwebend), Namensschild über dem Kopf. Mythische (Phönix, Stier, Seeschlange, Narwal, Hydra, Pegasus, Leviathan) sind etwas größer als die seltenen.
@@ -1037,7 +1097,7 @@ Welten können neben dem Münzpreis eine Mindestzahl an Rebirths verlangen (`req
 - [ ] **Freischalt-Knopf** am Tor (mit 0 Rebirths, genug Münzen): grau, Text „🔒 Bauernhof: Ab 1 Rebirth“ und der Preis darunter. Tippen → Hinweis „Dafür brauchst du mehr Rebirths!“, Münzen bleiben gleich, das Tor bleibt zu.
 - [ ] **Portal-Menü:** Bauernhof und Strand stehen grau da mit „Ab 1 Rebirth“ bzw. „Ab 2 Rebirths“ und dem Preis in der zweiten Zeile. Text nicht abgeschnitten, auch im Device-Emulator (kleines Handy).
 - [ ] Mit **1 Rebirth** (Münz-Tipp aus #11 für den Rebirth-Preis, oder in der Command Bar den Spielstand anpassen): Bauernhof-Knopf wird grün „🔓 Bauernhof freischalten“, Kaufen klappt. Strand zeigt weiter „Ab 2 Rebirths“.
-- [ ] Ohne die vorübergehende Änderung: Tore und Portal-Menü sehen aus wie vorher (nur Preis, kein Rebirth-Hinweis).
+- [x] Ohne die vorübergehende Änderung: Tore und Portal-Menü sehen aus wie vorher (nur Preis, kein Rebirth-Hinweis). _(belegt: 18./19.11.: Tor zeigt nur den Preis)_
 
 ## #18 Belag-Modelle der Welten 2–7
 
@@ -1066,7 +1126,7 @@ Vorschau: `assets/previews/toppings/<BelagId>.png`, `World2.png` … `World7.png
 
 **2. Test** (Rojo verbunden, **Play**, 1 Spieler; zum schnellen Hinkommen Münz-Tipp aus #11 oder Portal):
 
-- [ ] Output ohne rote Fehler.
+- [x] Output ohne rote Fehler. _(belegt: 17.11.: Toppings importiert, Output ohne Fehler)_
 - [x] In jeder Welt 2–7 liegen auf dem Belagfeld die Modelle statt der Scheiben; jeder Belag ist von oben und aus der Spielerperspektive gut erkennbar (Vergleich mit `assets/previews/toppings/World<N>.png`). Nichts steckt im Boden oder schwebt.
 - [ ] Anklicken/Antippen eines Modells sammelt den Belag ein (Klick trifft auch auf das Modell, nicht nur auf die unsichtbare Scheibe); Auto-Sammeln und Magnet ziehen das Modell mit.
 - [ ] **Pizza in der Hand**: gesammelte Beläge liegen passend klein auf der Pizza, ragen nicht über den Rand, stehen nicht hoch heraus (besonders Gummibärchen, Alien-Pilz, Marshmallow, Mond-Käse).
@@ -1084,10 +1144,10 @@ Der Rebirth-Knopf pulsierte in jeder Sitzung neu, sobald ein Rebirth leistbar wa
 **Test** (Rojo verbunden, **Play**, 1 Spieler, Tutorial fertig, noch kein Rebirth; Tipp aus #35: vorübergehend `GameConfig.rebirth.startPrice = 100`, **nicht committen**):
 
 - [ ] Genug Münzen: Rebirth-Knopf pulsiert mit „Neu! Mehr Münzen“. Menü öffnen → Pulsieren hört auf, Menü schließen → bleibt ruhig.
-- [ ] **Rejoin** (Stop, Play) mit weiter genug Münzen: Knopf pulsiert **nicht** mehr.
+- [x] **Rejoin** (Stop, Play) mit weiter genug Münzen: Knopf pulsiert **nicht** mehr. _(belegt: 18./19.11.: pulsiert nicht mehr, Hinweis gespeichert)_
 - [ ] Neuer Spielstand (anderer Test-Spieler oder Spielstand löschen): Knopf pulsiert wieder, bis er einmal geöffnet wurde.
 - [ ] Geschenke-Knopf verhält sich unverändert (pulsiert nur bis zum ersten Öffnen).
-- [ ] Output ohne rote Fehler.
+- [x] Output ohne rote Fehler. _(belegt: Output in allen Tests ohne Spiel-Fehler)_
 
 ## Studio-Test 17.11.2026 (Phase A + C, lokale Sitzung)
 
@@ -1230,7 +1290,7 @@ Die Fancy-Zweit-Eier ohne `glow` haben kein Neon mehr (Muster matt, Goldband ble
 Münz- und Gem-Icon kommen jetzt aus einem gemeinsamen Baustein (`UiKit.coinIcon` / `UiKit.gemIcon`, nur GUI-Elemente mit UIGradient/UIStroke): Goldmünze mit Rand und eingeprägter Pizza-Ecke, facettierter türkiser Diamant mit Glanzlicht. In 3D: neue Modelle `Coin` (springen beim Verkauf aus dem Ofen) und `Gem` (Feld-Gems), gebaut mit `tools/blender/build_currency.py`. Vorschau: `assets/previews/Coin.png`, `Gem.png`, `Currency.png`.
 
 - [x] Import: `assets/models/Coin.fbx` und `assets/models/Gem.fbx` nach `ReplicatedStorage.GameAssets.Models` importieren (Namen `Coin` und `Gem`, Teilnamen `CoinGold`/`CoinRim`/`CoinEmboss` bzw. `GemLight`/`GemMid`/`GemDark`/`GemShine` beibehalten).
-- [ ] Vor dem Import: beim Verkaufen springen goldene Scheiben aus dem Ofen, Feld-Gems sind die gekippten Neon-Würfel wie bisher (nichts fehlt, keine Fehler im Output).
+- [x] ~~Vor dem Import: beim Verkaufen springen goldene Scheiben aus dem Ofen, Feld-Gems sind die gekippten Neon-Würfel wie bisher (nichts fehlt, keine Fehler im Output).~~ _(entfällt: Import am 20.11. erledigt)_
 - [ ] HUD oben: Münze zeigt Goldrand, Pizza-Ecke mit Rand und drei Punkten; Gem ist ein Diamant mit hellen/dunklen Facetten und weißem Glanz. Beides scharf und nicht verrutscht auf PC und kleinem Handy (Device-Emulator); Zahlen stehen daneben wie vorher.
 - [x] Verkaufen am Ofen: 4 3D-Münzen springen drehend aus dem Ofen und verschwinden, die fliegenden Münz-Icons zum Zähler sehen aus wie die HUD-Münze.
 - [x] Nach dem Import: Verkaufs-Münzen zeigen das Blender-Modell (Pizza-Ecke auf beiden Seiten, Scheibe unsichtbar), Feld-Gems stehen aufrecht als Diamant über dem Boden, funkeln und leuchten weiter, lassen sich wie vorher einsammeln (auch per Magnet/Auto-Sammeln).
@@ -1240,10 +1300,10 @@ Münz- und Gem-Icon kommen jetzt aus einem gemeinsamen Baustein (`UiKit.coinIcon
 Geschenke und Login-Kalender geben nur noch feste Gems und Tränke, keine Münzen (Geschenke: 3 Gems / 5 Gems / 1 Trank / 1 Trank / 8 Gems / 10 Gems + 1 Trank; Kalender: 5 Gems / 10 Gems / 1 Trank / 1 Trank / 20 Gems / 2 Tränke / 50 Gems + 3 Tränke). Zum Ausgleich kosten Bauernhof 120 (vorher 170) und der erste Rebirth 3,9 Mrd (vorher 4,9 Mrd). Details: `docs/balancing.md`.
 
 - [x] Geschenke-Menü: alle sechs Zeilen zeigen „3 Gems“, „5 Gems“, „1 Trank“, „1 Trank“, „8 Gems“, „10 Gems + 1 Trank“; nirgends „Münzen“.
-- [ ] Geschenk abholen (5 Min): Meldung „Geschenk! +3 Gems“, Gem-Zähler +3, Münzen unverändert. Trank-Geschenk: Meldung nennt den gezogenen Trank (z. B. „1× Glücks-Trank“), er liegt im Trank-Inventar.
+- [x] Geschenk abholen (5 Min): Meldung „Geschenk! +3 Gems“, Gem-Zähler +3, Münzen unverändert. Trank-Geschenk: Meldung nennt den gezogenen Trank (z. B. „1× Glücks-Trank“), er liegt im Trank-Inventar. _(belegt: 20.11.: „Geschenk! +1× Glücks-Trank“ (`70`))_
 - [ ] Login-Kalender: Kacheln Tag 1–7 zeigen die neuen Belohnungen (Tag 1 „5 Gems“, Tag 4 „1 Trank“); Abholen an Tag 1 gibt +5 Gems und keine Münzen.
 - [ ] Gleiche Anzeigen in Welt 1 und nach Freischalten späterer Welten bzw. mit starken Pets (Belohnung ändert sich nicht).
-- [ ] Bauernhof-Tor zeigt 120 Münzen, Rebirth-Menü 3,9 Mrd als ersten Rebirth-Preis.
+- [x] ~~Bauernhof-Tor zeigt 120 Münzen, Rebirth-Menü 3,9 Mrd als ersten Rebirth-Preis.~~ _(entfällt: seit #57 Bauernhof 26, Rebirth 74 Mio)_
 
 ## #51 Pet-Deckel pro Welt und Rebirth-Tempo
 
@@ -1376,3 +1436,7 @@ Dein Spielstand war vorher gesichert (`backup_21nov_player_372358501`) und ist d
 **#59:** Beim Beitreten klingelt es und ist danach still, Blase und HUD-Karte bleiben. Der nächste Anruf kam 18 s nach dem Ablehnen (Testwert 20 s). Die 3 Klingeltöne konnte ich nicht hören; laut Code (`RINGS_PER_CALL = 3`, alle 3 s, Neustart pro Anruf) stimmt es, und nach dem ersten Klingeln kam kein weiterer Ton. „📵 Keine Anrufe mehr“ sitzt oben rechts, der Titel ist frei (`78`). Ausschalten → Meldung, Blase und Hinweis weg, Menü „Anrufe sind aus“ (`79`). Weg und zurück → Menü wieder da; 45 s kein Klingeln. Pets-Knopf schließt das Telefon-Menü. Rejoin → bleibt aus. Rebirth → bleibt aus. Einschalten → „Anrufe sind wieder an.“, Klingeln nach der Pause (`80`).
 
 **Nachtrag (deine Entscheidung: jederzeit ausschaltbar):** Am Telefon erscheint jetzt auch ohne Anruf ein Menü „📞 Telefon – Gerade kein Anruf …“ mit „📵 Keine Anrufe mehr“ (nicht während des Tutorials). Getestet: Auftrag annehmen, weg und zurück → Menü da (`85`); ausschalten → „Anrufe sind aus“, Auftragskarte läuft weiter (`86`). Nicht geprüft: der Knopf im Handy-Emulator.
+
+## Zählung (Aufräumen 19.11.2026)
+
+Von 353 offenen Punkten: **52 entfallen** (überholt durch spätere Änderungen, durchgestrichen), **61 abgehakt** (durch spätere Studio-Tests belegt), **240 weiterhin offen**. Dazu kommen 35 offene Punkte in der Release-Checkliste oben.
