@@ -316,9 +316,9 @@ local GameConfig = {
 		-- Price of the first rebirth: about 32 min of play in world 7 (#57, docs/balancing.md).
 		startPrice = 74000000,
 		-- Each further rebirth costs this many times the one before: the kept pets make
-		-- worlds 1-6 fast, so the second run up to the next rebirth takes about as long
-		-- as the first (#57).
-		priceFactor = 14,
+		-- worlds 1-6 fast (about 20 min), so the second run up to the next rebirth takes
+		-- about 40-50 min (#58, docs/balancing.md).
+		priceFactor = 1.5,
 		-- Coin multiplier = 1 + multiplierPerRebirth x rebirths (1 rebirth = x1,5, 2 = x2, ...).
 		multiplierPerRebirth = 0.5,
 	},

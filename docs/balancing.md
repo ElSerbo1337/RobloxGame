@@ -1,12 +1,12 @@
 # Balancing: Spielzeit pro Welt (#41, neu eingestellt in #57)
 
-Ziel aus Spec #56: Welt 1 ≈ 6, 2 ≈ 9, 3 ≈ 12, 4 ≈ 16, 5 ≈ 20, 6 ≈ 25 Minuten, Welt 7 bis zum ersten Rebirth ≈ 32 Minuten, zusammen ≈ 120 Minuten. Nach einem Rebirth soll Welt 1 etwa 3 Minuten dauern und der zweite Durchlauf bis zum nächsten Rebirth etwa so lang sein wie der erste. Gesteuert wird über Freischalt-, Münz-Shop-, Ei- und Rebirth-Preise. Gem-Preise, Gem-Einkommen, Pet-Plätze und Belagwerte sind unverändert.
+Ziel aus Spec #56: Welt 1 ≈ 6, 2 ≈ 9, 3 ≈ 12, 4 ≈ 16, 5 ≈ 20, 6 ≈ 25 Minuten, Welt 7 bis zum ersten Rebirth ≈ 32 Minuten, zusammen ≈ 120 Minuten. Nach einem Rebirth soll Welt 1 etwa 3 Minuten dauern und der zweite Durchlauf bis zum nächsten Rebirth etwa 40–50 Minuten dauern (#58, vorher: etwa so lang wie der erste). Gesteuert wird über Freischalt-, Münz-Shop-, Ei- und Rebirth-Preise. Gem-Preise, Gem-Einkommen, Pet-Plätze und Belagwerte sind unverändert.
 
 ## Wie gerechnet wird
 
 `lune run balance [Läufe]` (Skript `.lune/balance.luau`, Modell `tools/BalanceSim.luau`) schickt einen Modellspieler mit den **echten Spielregeln** (`GameRules`) und der echten `GameConfig` durch Welt 1–7, macht den Rebirth und spielt danach bis zum nächsten bezahlbaren Rebirth weiter. Gemessen wird die Spielzeit von der Freischaltung einer Welt bis zur Freischaltung der nächsten. In der letzten erreichbaren Welt zählt die Zeit bis der (nächste) Rebirth bezahlbar ist. Welten, die mehr Rebirths verlangen als der Spieler hat (#43), betritt der Modellspieler in diesem Durchlauf nicht (in der Tabelle „–“). Weil Ei-Ziehungen Glück sind, wird mit 51 verschiedenen Zufallsfolgen gerechnet. Angegeben ist jeweils der Median.
 
-`tests/BalanceSim.spec.luau` (Block „flat pet curve (#57)“) rechnet dasselbe Modell mit 9 Läufen und prüft: jede Welt im ersten Durchlauf zwischen 50 % und 150 % ihres Ziels, gesamt 100–140 Minuten, zweiter Durchlauf 75–125 % des ersten.
+`tests/BalanceSim.spec.luau` (Block „flat pet curve (#57)“) rechnet dasselbe Modell mit 9 Läufen und prüft: jede Welt im ersten Durchlauf zwischen 50 % und 150 % ihres Ziels, gesamt 100–140 Minuten, zweiter Durchlauf 38–52 Minuten (#58).
 
 ## Pet-Kurve (#57)
 
@@ -30,12 +30,16 @@ Spielstände speichern nur Pet-IDs, die Boni kommen aus der Config: keine Migrat
 | 4 Eisberge | 16 | 17.1 | 2.9 |
 | 5 Vulkan | 20 | 19.5 | 4.0 |
 | 6 Süßigkeitenland | 25 | 22.2 | 9.9 |
-| 7 Weltraum (bis Rebirth) | 32 | 31.3 | 91.9 |
-| **Gesamt** | **120** | **118.2** | **113.4** |
+| 7 Weltraum (bis Rebirth) | 32 | 31.3 | 24.2 |
+| **Gesamt** | **120** | **118.2** | **45.2** |
 
 Pet-Multiplikator beim ersten Rebirth im Median: ×7,0 (vorher ×361).
 
-**Nach dem Rebirth** startet der Spieler mit ×7 Pets und ×1,5 Rebirth-Bonus, also etwa ×10 Münzen gegenüber dem ersten Start. Welt 1–6 dauern zusammen nur noch etwa 20 Minuten. Damit der zweite Durchlauf trotzdem etwa so lang ist wie der erste, steigt der **Rebirth-Preisfaktor von ×3 auf ×14** (zweiter Rebirth 1,04 Mrd). Gemessen mit 15 Läufen: Faktor 8 → Durchlauf 2 ≈ 73–91 Min, 14 → ≈ 103–120 Min, 15 → ≈ 101–121 Min.
+**Nach dem Rebirth** startet der Spieler mit ×7 Pets und ×1,5 Rebirth-Bonus, also etwa ×10 Münzen gegenüber dem ersten Start. Welt 1–6 dauern zusammen nur noch etwa 20 Minuten. In #57 stieg der Rebirth-Preisfaktor auf ×14, damit der zweite Durchlauf so lang ist wie der erste, aber dann farmte man etwa 92 Minuten in Welt 7. Seit #58 ist der **Rebirth-Preisfaktor ×1,5**: Der zweite Durchlauf dauert 45,2 Minuten (Welt 1–6 ≈ 21, Welt 7 bis zum zweiten Rebirth ≈ 24).
+
+Rebirth-Preise: 1. 74 Mio · 2. 111 Mio · 3. 166,5 Mio · 4. 249,75 Mio. Jeder Rebirth kostet mehr als der vorige (Faktor > 1, Konfigurations-Test).
+
+Gemessen (#58, zweiter Durchlauf in Minuten): mit 21 Läufen Faktor 1,01 → 42,2 · 1,5 → 45,7 · 2 → 48,5 · 3 → 55,6; mit 51 Läufen 1,5 → 45,2 · 2 → 48,5. Die in #58 vermutete Größenordnung ×3–×5 ergibt 56–69 Minuten und ist damit zu lang. Den dritten Durchlauf misst die Simulation nicht.
 
 **Welt 1 nach dem Rebirth: Ziel ≈ 3 Minuten wird nicht erreicht (0,5 Min).** Welt 1 hängt nur an Münzpreisen, und die behaltenen Pets plus Rebirth-Bonus machen das Einkommen dort etwa 10-mal so hoch. Mit den erlaubten Stellschrauben geht das nicht: Auch ohne Rebirth-Bonus (`multiplierPerRebirth = 0`) bliebe ×7 von den Pets. Ein 3-Minuten-Welt-1 bräuchte eine Regel, die frühe Welten nach dem Rebirth bremst (z. B. Pets, die erst ab ihrer Welt voll zählen), und genau das sollte wegfallen. Der Test prüft deshalb nur, dass Welt 1 nach dem Rebirth schneller ist.
 
@@ -50,7 +54,7 @@ Pet-Multiplikator beim ersten Rebirth im Median: ×7,0 (vorher ×361).
 | Freischaltung Süßigkeitenland | 23 Mio | 900.000 |
 | Freischaltung Weltraum | 460 Mio | 12 Mio |
 | Erster Rebirth | 3,9 Mrd | 74 Mio |
-| Preisfaktor pro Rebirth | ×3 | ×14 |
+| Preisfaktor pro Rebirth | ×3 | ×1,5 (#58, in #57 ×14) |
 | Eier Welt 1–7 (erstes / zweites Ei) | 25/125, 200/1.000, 1.500/7.500, 12.000/60.000, 100.000/500.000, 800.000/4 Mio, 6,4 Mio/32 Mio | 25/130, 48/240, 500/2.500, 3.700/19.000, 20.000/100.000, 82.000/410.000, 390.000/2 Mio |
 | Pizza-Platz Stufe 2–8 | 50, 200 · 5.000, 15.000, 40.000 · 600 Mio, 1,8 Mrd | 26, 48 · 1.600, 4.500, 11.000 · 16 Mio, 40 Mio |
 | Reichweite Stufe 1–8 | 30, 100, 400 · 8.000, 25.000, 60.000 · 400 Mio, 1,2 Mrd | 25, 26, 110 · 2.500, 7.300, 15.000 · 12 Mio, 28 Mio |
@@ -80,12 +84,12 @@ Gleiche Preise, ein Parameter des Modellspielers geändert (Median aus 51 Läufe
 
 | Variante | Welt 1–7 je Welt (Min) | Gesamt ohne Rebirth | Gesamt nach 1. Rebirth |
 | -------- | ---------------- | ------------------: | ---------------------: |
-| Basis (2 Runden/Min) | 5 / 10 / 13 / 17 / 20 / 22 / 31 | 118.2 | 113.4 |
-| 1,5 Runden/Min | 7 / 11 / 17 / 22 / 27 / 40 / 46 | 168.2 | 156.2 |
-| 3 Runden/Min | 4 / 8 / 10 / 9 / 11 / 19 / 28 | 91.4 | 73.3 |
-| 30 Min pro Tag | 5 / 10 / 13 / 17 / 17 / 22 / 29 | 115.2 | 97.8 |
-| Ei-Amortisation 5 Min | 5 / 10 / 15 / 19 / 24 / 46 / 40 | 162.9 | 151.1 |
-| Ei-Amortisation 20 Min | 5 / 12 / 10 / 16 / 17 / 26 / 32 | 113.8 | 84.2 |
+| Basis (2 Runden/Min) | 5 / 10 / 13 / 17 / 20 / 22 / 31 | 118.2 | 45.2 |
+| 1,5 Runden/Min | 7 / 11 / 17 / 22 / 26 / 38 / 40 | 159.0 | 65.1 |
+| 3 Runden/Min | 4 / 8 / 10 / 9 / 9 / 16 / 26 | 84.5 | 31.8 |
+| 30 Min pro Tag | 5 / 10 / 13 / 16 / 15 / 20 / 28 | 106.3 | 41.1 |
+| Ei-Amortisation 5 Min | 5 / 10 / 15 / 18 / 22 / 39 / 40 | 156.2 | 51.9 |
+| Ei-Amortisation 20 Min | 5 / 12 / 10 / 16 / 14 / 21 / 32 | 109.5 | 33.9 |
 
 Am stärksten wirken das Rundentempo und wie viel der Spieler in Eier steckt. Bei kleiner Pizza (Welt 1) sind 2 Runden pro Minute eher vorsichtig gerechnet, echte Spieler sind dort vermutlich schneller. Spieler mit kurzen Tagen kommen pro Spielminute schneller voran, weil die ersten Geschenke des Tages früh kommen. Die Zeiten sollten deshalb in Studio mit der Stoppuhr nachgemessen werden (Checkliste #41 in `docs/pc-todo.md`).
 
@@ -116,7 +120,7 @@ Geplanter Ausbau (noch nicht gebaut):
 | 2 | Welt 12 |
 | 3 | Welt 14 |
 
-Danach weiter so, 2–3 neue Welten pro Rebirth. Der Rebirth-Preisfaktor ist heute ×14 (#57) und muss mit den neuen Welten neu gemessen werden.
+Danach weiter so, 2–3 neue Welten pro Rebirth. Der Rebirth-Preisfaktor ist heute ×1,5 (#58) und muss mit den neuen Welten neu gemessen werden.
 
 **Neue Welten anhängen:**
 

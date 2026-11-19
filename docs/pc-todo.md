@@ -1299,13 +1299,21 @@ Auf kleinen Bildschirmen (kurze Seite des Viewports unter 500 px) füllen Menüs
 
 ## #57 Flache Pet-Kurve, neue Preise, kein Pet-Deckel
 
-Pets steigen pro Welt gleichmäßig (bestes Pet Welt 1: +75 %, … Welt 7: +500 %), jedes Pet zählt überall voll. Alle Münzpreise sind neu (Bauernhof 26, Strand 690, Eisberge 12.000, Vulkan 35.000, Süßigkeitenland 900.000, Weltraum 12 Mio, erster Rebirth 74 Mio, jeder weitere ×14). Ziel laut Simulator: erster Rebirth nach etwa 120 Minuten. Details: `docs/balancing.md`.
+Pets steigen pro Welt gleichmäßig (bestes Pet Welt 1: +75 %, … Welt 7: +500 %), jedes Pet zählt überall voll. Alle Münzpreise sind neu (Bauernhof 26, Strand 690, Eisberge 12.000, Vulkan 35.000, Süßigkeitenland 900.000, Weltraum 12 Mio, erster Rebirth 74 Mio, jeder weitere ×14, seit #58 ×1,5). Ziel laut Simulator: erster Rebirth nach etwa 120 Minuten. Details: `docs/balancing.md`.
 
 - [ ] Neuer Spielstand (oder Daten zurücksetzen), Welt 1 mit Stoppuhr: Tutorial → Shop-Käufe → Bauernhof-Schranke (26) in etwa 6 Minuten. Fühlt sich das Tempo richtig an? Schranken-Preis-Schild zeigt den neuen Preis.
 - [ ] Weiter bis Welt 3–4 spielen: Welt 2 etwa 9, Welt 3 etwa 12 Minuten; Shop-Preise und Ei-Preise am Schild/Panel passen zur Config (z. B. Hof-Ei 48, Scheunen-Ei 240).
 - [ ] Pet-Menü: Karten zeigen nur den normalen Bonus (z. B. „+75 %“), kein „hier“ und kein Gold-Text mehr; Kopfzeile „Bonus +X %“ ändert sich beim Gang in eine andere Welt nicht.
 - [ ] „Beste ausrüsten“ in Welt 1 mit Pets aus späteren Welten: rüstet die Pets mit dem höchsten Bonus aus (späte Pets vorn).
 - [ ] Verkauf am Ofen in Welt 1 und Welt 2 mit gleichen Pets und gleicher Pizza: gleicher Multiplikator (nur der Belagwert unterscheidet sich). Lieferauftrag: HUD-Belohnung = gezahlte Münzen.
-- [ ] Alter Test-Spielstand mit Rebirth: lädt ohne Fehler, alle Pets da, Boni zeigen die neuen kleineren Werte (z. B. Galaxie-Pizza-Leviathan +500 %). Rebirth-Menü zeigt den neuen Preis (74 Mio × 14 je Rebirth).
+- [ ] Alter Test-Spielstand mit Rebirth: lädt ohne Fehler, alle Pets da, Boni zeigen die neuen kleineren Werte (z. B. Galaxie-Pizza-Leviathan +500 %). Rebirth-Menü zeigt den neuen Preis (74 Mio, Faktor seit #58 ×1,5 je Rebirth).
 - [ ] Optional nach einem Rebirth: Welt 1 geht sehr schnell (Simulator: unter 1 Minute, Ziel 3 wurde nicht erreicht, siehe `docs/balancing.md`). Eindruck notieren: zu schnell?
+- [ ] Output: keine Fehler.
+
+## #58 Flacherer Rebirth-Preis
+
+Jeder weitere Rebirth kostet nur noch ×1,5 so viel wie der vorige (vorher ×14): 74 Mio · 111 Mio · 166,5 Mio · 249,75 Mio. Simulator: zweiter Durchlauf bis zum zweiten Rebirth ≈ 45 Minuten (Welt 1–6 ≈ 21, Welt 7 ≈ 24). Details: `docs/balancing.md`.
+
+- [ ] Test-Spielstand mit 1 Rebirth: Rebirth-Menü zeigt 111 Mio als Preis (mit 0 Rebirths: 74 Mio, mit 2: 166,5 Mio).
+- [ ] Optional nach einem Rebirth mit Stoppuhr: Welt 1–6 in etwa 20 Minuten, danach Welt 7 bis zum zweiten Rebirth in etwa 25 Minuten. Eindruck notieren.
 - [ ] Output: keine Fehler.

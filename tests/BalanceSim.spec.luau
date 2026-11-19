@@ -57,9 +57,9 @@ describe("balancing simulation with the flat pet curve (#57)", function()
 		expect(result.afterRebirth.worlds[1] < result.first.worlds[1]).toBe(true)
 	end)
 
-	it("makes the second run up to the next rebirth about as long as the first", function()
-		local ratio = result.afterRebirth.total / result.first.total
-		if ratio < 0.75 or ratio > 1.25 then
+	it("plays the second run up to the next rebirth in about 40-50 min (#58)", function()
+		local total = result.afterRebirth.total
+		if total < 38 or total > 52 then
 			error(`second run: {string.format("%.1f", result.afterRebirth.total)} min`)
 		end
 	end)
