@@ -53,7 +53,12 @@ local function openStores()
 end
 
 -- Yields. Writes the player's scores into every board (0 is skipped: nothing to show).
+-- Studio test players (Clients and Servers) have user ids <= 0; they would land on
+-- the real boards of the published game, so they are skipped.
 function LeaderboardService.submit(userId: number, state: any)
+	if userId <= 0 then
+		return
+	end
 	local scores = PlayerStates.rules.leaderboardScores(state)
 	local key = tostring(userId)
 	for _, board in CONFIG.boards do

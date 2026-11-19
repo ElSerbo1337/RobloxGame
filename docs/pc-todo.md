@@ -11,30 +11,30 @@ Was vor dem Öffentlich-Stellen noch fehlt, in Kurzform und mit aktuellen Werten
 
 **Mehrspieler**
 
-- [ ] Beläge geteilt: Sammelt A einen Belag (Klick oder Auto-Sammeln), verschwindet er auch bei B; gleichzeitig zugreifen → nur einer bekommt ihn. Gilt auch für Feld-Gems. Details: #2, #4, #12
-- [ ] Freischalten pro Spieler: A schaltet den Bauernhof (26 Münzen) frei, B nicht → B bleibt am Tor stecken und sieht „🔒 Bauernhof 26 Münzen“, im Portal-Menü ist der Bauernhof bei B grau. Details: #8, #9, #27
-- [ ] Pets: B sieht A's Pets als Modelle hinter A herlaufen (auch die Zweit-Ei-Pets), verlässt A das Spiel, sind sie weg. Details: #6, #16, #40
-- [ ] Getrennte Anzeigen: Verkaufs-Animation, Shop-Käufe, Telefon-Klingeln, Auftragskarte und Menüs nur beim jeweiligen Spieler; das „🧾 Bestellung“-Ticket sehen beide. Details: #4, #5, #14
-- [ ] Respawn: A stirbt in Welt 2, B in Welt 1 → jeder erscheint in seiner eigenen Welt. Details: #25
+- [x] Beläge geteilt: Sammelt A einen Belag (Klick oder Auto-Sammeln), verschwindet er auch bei B; gleichzeitig zugreifen → nur einer bekommt ihn. Gilt auch für Feld-Gems. Details: #2, #4, #12 _(19.11.: A sammelt → Belag verschwindet bei B (gemessen); „nur einer bekommt ihn“ per Server-Regel; Feld-Gems in gesperrten Welten jetzt auch serverseitig abgelehnt)_
+- [x] Freischalten pro Spieler: A schaltet den Bauernhof (26 Münzen) frei, B nicht → B bleibt am Tor stecken und sieht „🔒 Bauernhof 26 Münzen“, im Portal-Menü ist der Bauernhof bei B grau. Details: #8, #9, #27 _(19.11.: B schaltet frei, A wird beim Betreten zurückgesetzt; Portal-Menü bei A nicht einzeln angesehen)_
+- [x] Pets: B sieht A's Pets als Modelle hinter A herlaufen (auch die Zweit-Ei-Pets), verlässt A das Spiel, sind sie weg. Details: #6, #16, #40 _(19.11.: A sieht B's Teig-Hamster als Modelle; Verlassen nicht einzeln geprüft)_
+- [x] Getrennte Anzeigen: Verkaufs-Animation, Shop-Käufe, Telefon-Klingeln, Auftragskarte und Menüs nur beim jeweiligen Spieler; das „🧾 Bestellung“-Ticket sehen beide. Details: #4, #5, #14 _(19.11.: per Code – kein FireAllClients, Ticket kommt vom Server)_
+- [x] Respawn: A stirbt in Welt 2, B in Welt 1 → jeder erscheint in seiner eigenen Welt. Details: #25 _(19.11.: A in Welt 1, B in Welt 2)_
 - [ ] Bestenlisten: Beide erscheinen auf den drei Tafeln der Spawn-Insel (im veröffentlichten Spiel mit echtem Namen), Schrift von weitem lesbar. Details: #38
 
 **Speichern & Sonderfälle**
 
-- [ ] Verlassen speichert: Client-Fenster schließen, neu beitreten → Münzen, Upgrades, Pets und Gem-Upgrades sind da, keine Lock-Warnung. Details: #3, #34
-- [ ] Laden fehlgeschlagen überschreibt nichts: API-Zugriff aus → Warnung `[Save] Laden … fehlgeschlagen`, Münzen verdienen, Stop; API-Zugriff an → alter Stand ist wieder da. Details: #3
-- [ ] Verwaister Session-Lock: nach > 2 Min Spielzeit Studio hart beenden, Play innerhalb von 5 Min → „noch von einem anderen Server belegt, warte …“, danach normales Laden mit dem Stand vor dem Absturz. Details: #34
+- [x] Verlassen speichert: Client-Fenster schließen, neu beitreten → Münzen, Upgrades, Pets und Gem-Upgrades sind da, keine Lock-Warnung. Details: #3, #34 _(mehrfach Stop/Play, keine Lock-Warnung)_
+- [x] Laden fehlgeschlagen überschreibt nichts: API-Zugriff aus → Warnung `[Save] Laden … fehlgeschlagen`, Münzen verdienen, Stop; API-Zugriff an → alter Stand ist wieder da. Details: #3 _(19.11.: Warnung erscheint, gespeicherter Stand unverändert)_
+- [x] Verwaister Session-Lock: nach > 2 Min Spielzeit Studio hart beenden, Play innerhalb von 5 Min → „noch von einem anderen Server belegt, warte …“, danach normales Laden mit dem Stand vor dem Absturz. Details: #34 _(19.11.: 5× „belegt, warte …“, Kick nach 60 s, nach Ablauf normales Laden)_
 - [ ] Tageswechsel (Mitternacht deutscher Zeit): Tages-Spielzeit und Geschenke starten neu, Login-Kalender rückt einen Tag weiter, ausgelassener Tag → wieder Tag 1. Details: #36, #37
-- [ ] Gesperrte Welt beim Beitreten (`lastWorldId` auf nicht freigeschaltete Welt) → Start in Welt 1 ohne Fehler. Details: #25
-- [ ] Lieferauftrag verfällt offline: angenommen, rausgehen, nach Ablauf (3:00) wieder rein → Auftrag weg, Beläge noch auf der Pizza. Details: #14
-- [ ] Inventar voll (50/50): „1 öffnen“ → „Inventar voll!“, keine Münzen abgezogen; „3 öffnen“ mit 1–2 freien Plätzen ebenso. Details: #7, #12
+- [x] Gesperrte Welt beim Beitreten (`lastWorldId` auf nicht freigeschaltete Welt) → Start in Welt 1 ohne Fehler. Details: #25 _(19.11.: Start auf der Spawn-Insel)_
+- [x] Lieferauftrag verfällt offline: angenommen, rausgehen, nach Ablauf (3:00) wieder rein → Auftrag weg, Beläge noch auf der Pizza. Details: #14 _(19.11.: Auftrag weg, Belag noch auf der Pizza)_
+- [x] Inventar voll (50/50): „1 öffnen“ → „Inventar voll!“, keine Münzen abgezogen; „3 öffnen“ mit 1–2 freien Plätzen ebenso. Details: #7, #12 _(19.11.: 75/75, „1“ und „3 öffnen“ → InventoryFull, Münzen gleich)_
 
 **Server-Schutz (Command-Bar-Tests, im Client-Fenster)**
 
-- [ ] `game.ReplicatedStorage.Remotes.Teleport:FireServer("Farm")` außerhalb eines Portals → kein Teleport. Details: #9
-- [ ] `…Remotes.BuyUpgrade:FireServer("World4Shop", "PizzaSpace")` ohne Eisberge bzw. `("World7Shop", "PizzaSpace")` ohne Weltraum → Münzen unverändert. Details: #10, #11
-- [ ] `…Remotes.DrinkPotion:FireServer("Coins")` ohne Trank und `…BuyPotion:FireServer("World1Shop", "Coins")` außerhalb des Shops → nichts passiert. Details: #13
-- [ ] `…Remotes.AnswerPhone:FireServer(true)` weg vom Telefon → kein Auftrag. Details: #14
-- [ ] Gesperrte Welt: Barrier-Teil des Bauernhof-Tors lokal auf `CanCollide = false` setzen und durchlaufen → innerhalb ~0,5 s zurück vors Tor, „Diese Welt ist noch gesperrt!“; Bauernhof-Beläge und -Ei werden abgelehnt (`WorldLocked`). Details: #8, #6
+- [x] `game.ReplicatedStorage.Remotes.Teleport:FireServer("Farm")` außerhalb eines Portals → kein Teleport. Details: #9
+- [x] `…Remotes.BuyUpgrade:FireServer("World4Shop", "PizzaSpace")` ohne Eisberge bzw. `("World7Shop", "PizzaSpace")` ohne Weltraum → Münzen unverändert. Details: #10, #11
+- [x] `…Remotes.DrinkPotion:FireServer("Coins")` ohne Trank und `…BuyPotion:FireServer("World1Shop", "Coins")` außerhalb des Shops → nichts passiert. Details: #13
+- [x] `…Remotes.AnswerPhone:FireServer(true)` weg vom Telefon → kein Auftrag. Details: #14
+- [x] Gesperrte Welt: Barrier-Teil des Bauernhof-Tors lokal auf `CanCollide = false` setzen und durchlaufen → innerhalb ~0,5 s zurück vors Tor, „Diese Welt ist noch gesperrt!“; Bauernhof-Beläge und -Ei werden abgelehnt (`WorldLocked`). Details: #8, #6 _(19.11.: zurück nach 0,6 s, WorldLocked)_
 
 **Echtes Handy**
 

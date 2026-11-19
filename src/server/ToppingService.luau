@@ -118,6 +118,11 @@ function ToppingService.start(worldId: string, layout: Layout)
 		if topping == nil or state == nil or root == nil then
 			return nil -- already taken by someone else, or player not ready
 		end
+		-- Field gems carry no world of their own, so the rules cannot check the lock for
+		-- them: nothing of a locked world's field may be taken (cheater past the gate).
+		if not PlayerStates.rules.isWorldUnlocked(state, worldId) then
+			return { ok = false, reason = "WorldLocked", state = state, gemsEarned = 0 }
+		end
 
 		local result = rule(state, topping.toppingId, distanceTo(root, parts[slotId]), topping.gems)
 		if result.ok then
