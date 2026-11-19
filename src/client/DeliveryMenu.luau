@@ -2,9 +2,10 @@
 -- Delivery service on the client:
 -- * Ringing: while PhoneRinging is set, every phone in the world rings for this player
 --   (bouncing "RING!" bubble, ringing sound a few times per call), and the HUD says so.
--- * Phone panel: opens when the server says the player stands at the ringing phone
---   (PhoneOpen): order, reward ("bis zu …"), time limit and big "Annehmen" / "Ablehnen"
---   buttons, plus a small "Keine Anrufe mehr" switch. With calls switched off the panel
+-- * Phone panel: opens when the server says the player stands at a phone (PhoneOpen).
+--   While it rings: order, reward ("bis zu …"), time limit and big "Annehmen" / "Ablehnen"
+--   buttons, plus a small "Keine Anrufe mehr" switch; without a call only that switch
+--   (calls can be turned off at any time). With calls switched off the panel
 --   says so and offers "Anrufe einschalten". The buttons only send the wishes AnswerPhone /
 --   SetPhoneCalls; the server decides.
 -- * Order card (right side, below the potion timers): toppings with progress, timer and
@@ -220,11 +221,13 @@ function DeliveryMenu.start()
 	callsOnButton.Position = UDim2.new(0.5, 0, 1, -20)
 	callsOnButton.Size = UDim2.new(1, -48, 0, 84)
 
-	-- Order view (calls on) or "Anrufe sind aus" view.
-	local function showView(callsOn: boolean)
+	-- Order view (a call), idle view (calls on, no call: only the off switch) or
+	-- "Anrufe sind aus" view.
+	local function showView(callsOn: boolean, hasCall: boolean)
 		title.Size = if callsOn then UDim2.new(1, -268, 0, 52) else UDim2.new(1, -48, 0, 52)
-		for _, part in { callsOffButton, rewardLine, timeLine, acceptButton, declineButton } do
-			part.Visible = callsOn
+		callsOffButton.Visible = callsOn
+		for _, part in { rewardLine, timeLine, acceptButton, declineButton } do
+			part.Visible = hasCall
 		end
 		callsOnButton.Visible = not callsOn
 	end
@@ -246,9 +249,13 @@ function DeliveryMenu.start()
 		answerPhone:FireServer(false)
 	end)
 
-	Net.event("PhoneOpen").OnClientEvent:Connect(function(order: Order?, maxReward: DeliveryReward?, seconds: number?)
-		showView(order ~= nil)
-		if order == nil then
+	-- `callsOn` true without an order: calls are on but nobody calls right now.
+	local function onPhoneOpen(order: Order?, maxReward: DeliveryReward?, seconds: number?, callsOn: boolean?)
+		showView(order ~= nil or callsOn == true, order ~= nil)
+		if order == nil and callsOn then
+			title.Text = "📞 Telefon"
+			orderList.Text = "Gerade kein Anruf. Nach einer Pause klingelt es wieder, aber nie während eines Auftrags."
+		elseif order == nil then
 			title.Text = "📵 Anrufe sind aus"
 			orderList.Text = "Das Telefon klingelt nicht mehr. Hier kannst du Anrufe wieder einschalten."
 		else
@@ -268,7 +275,8 @@ function DeliveryMenu.start()
 			UiKit.menuOpened("phone")
 			UiKit.pop(panel, 0.85)
 		end
-	end)
+	end
+	Net.event("PhoneOpen").OnClientEvent:Connect(onPhoneOpen)
 	Net.event("PhoneClose").OnClientEvent:Connect(function()
 		panel.Visible = false
 	end)

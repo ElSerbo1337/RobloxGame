@@ -2,8 +2,10 @@
 -- Delivery service (phone -> order -> delivery van), one phone and one van per world.
 -- * The phone rings per player: the server asks the rules every second (rules.ringPhone)
 --   and replicates PhoneRinging; each client shows and plays the ringing for itself.
--- * Standing at the phone while it rings opens the order on the client (PhoneOpen). The
---   client only answers with AnswerPhone; the server checks the player is at a phone.
+-- * Standing at the phone opens its panel on the client (PhoneOpen): the order while it
+--   rings, otherwise just the switch to turn calls off or on (after the tutorial). The
+--   client only answers with AnswerPhone / SetPhoneCalls; the server checks the player
+--   is at a phone.
 -- * Walking into the van's zone with an active order delivers it (rules.deliverOrder).
 -- * When an order's time is up, the server ends it through rules.expireOrder.
 -- Time is the server clock (os.time(), seconds), so an accepted order keeps running
@@ -275,6 +277,14 @@ function DeliveryService.start(stations: { Station })
 		end
 		local call = rules.deliveryCall(state)
 		if call == nil then
+			-- No call right now (quiet time or an order running): the panel still offers
+			-- to switch calls off, so players can do that at any time (not during the
+			-- tutorial, where the phone stays silent anyway).
+			if rules.tutorial(state) ~= nil then
+				return
+			end
+			phoneOpen:FireClient(player, nil, nil, nil, true)
+			phoneShown[player] = true
 			return
 		end
 		-- Show the best case: the reward if delivered right after accepting.

@@ -1361,7 +1361,7 @@ Studio: Rojo verbinden, **Play** (Tutorial fertig, sonst klingelt nichts):
 - [x] Beim nächsten Anruf klingelt es wieder 3-mal.
 - [x] Am Telefon: oben rechts grauer Knopf „📵 Keine Anrufe mehr“ (Titel nicht überdeckt, auch auf dem Handy-Emulator). Drücken → Meldung „Keine Anrufe mehr…“, Blase und HUD-Hinweis verschwinden, Menü zeigt „📵 Anrufe sind aus“ mit grünem „📞 Anrufe einschalten“.
 - [x] Weggehen und wieder ans Telefon → „Anrufe sind aus“-Menü erscheint erneut; mehrere Minuten warten → kein Klingeln.
-- [ ] Mit laufendem, angenommenem Auftrag ausschalten → Auftragskarte bleibt, Lieferung klappt.
+- [x] Mit laufendem, angenommenem Auftrag ausschalten → Auftragskarte bleibt, Lieferung klappt. _(21.11.: ausschalten jetzt jederzeit möglich, Karte bleibt; Lieferung danach nicht einzeln geprüft)_
 - [x] „Anrufe einschalten“ → Menü schließt, Meldung „Anrufe sind wieder an.“, nach ca. 2 Min klingelt es wieder.
 - [x] Ausgeschaltet → Rejoin (DataStore an) → Anrufe bleiben aus. Nach einem Rebirth bleiben sie ebenfalls aus.
 - [x] Anderes Menü öffnen, während „Anrufe sind aus“ offen ist → Telefon-Menü schließt (#53).
@@ -1375,4 +1375,4 @@ Dein Spielstand war vorher gesichert (`backup_21nov_player_372358501`) und ist d
 
 **#59:** Beim Beitreten klingelt es und ist danach still, Blase und HUD-Karte bleiben. Der nächste Anruf kam 18 s nach dem Ablehnen (Testwert 20 s). Die 3 Klingeltöne konnte ich nicht hören; laut Code (`RINGS_PER_CALL = 3`, alle 3 s, Neustart pro Anruf) stimmt es, und nach dem ersten Klingeln kam kein weiterer Ton. „📵 Keine Anrufe mehr“ sitzt oben rechts, der Titel ist frei (`78`). Ausschalten → Meldung, Blase und Hinweis weg, Menü „Anrufe sind aus“ (`79`). Weg und zurück → Menü wieder da; 45 s kein Klingeln. Pets-Knopf schließt das Telefon-Menü. Rejoin → bleibt aus. Rebirth → bleibt aus. Einschalten → „Anrufe sind wieder an.“, Klingeln nach der Pause (`80`).
 
-**Offen / deine Entscheidung:** „Mit laufendem Auftrag ausschalten“ geht nicht: Das Telefon-Menü erscheint nur, wenn es klingelt, und während eines Auftrags klingelt es nicht. Die Regel selbst würde den Auftrag behalten. Soll man am Telefon auch ohne Anruf ausschalten können? Nicht geprüft: der Knopf im Handy-Emulator.
+**Nachtrag (deine Entscheidung: jederzeit ausschaltbar):** Am Telefon erscheint jetzt auch ohne Anruf ein Menü „📞 Telefon – Gerade kein Anruf …“ mit „📵 Keine Anrufe mehr“ (nicht während des Tutorials). Getestet: Auftrag annehmen, weg und zurück → Menü da (`85`); ausschalten → „Anrufe sind aus“, Auftragskarte läuft weiter (`86`). Nicht geprüft: der Knopf im Handy-Emulator.
