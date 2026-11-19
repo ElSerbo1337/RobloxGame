@@ -60,7 +60,7 @@ Was vor dem Öffentlich-Stellen noch fehlt, in Kurzform und mit aktuellen Werten
 
 - [ ] Icon (512 × 512) und 3 Thumbnails (1920 × 1080) aus `docs/store/` hochladen: Creator Hub → Experience → Places/Thumbnails bzw. Basic Settings → Icon. Details: #61
 - [ ] Name „Pizza Topping Simulator“ und Beschreibung (Sammeln, Verkaufen, 7 Inseln, Eier und Pets, Rebirth) eintragen, Genre und Geräte (Computer, Handy, Tablet) wählen.
-- [ ] Altersfreigabe-Fragebogen (Experience Questionnaire / Maturity) ausfüllen: Standard-Roblox-Chat, keine Gewalt, keine Echtgeld-Käufe (keine Game Passes oder Developer Products im Code).
+- [ ] Altersfreigabe-Fragebogen (Experience Questionnaire / Maturity) ausfüllen, passend zum Stand beim Veröffentlichen: Standard-Roblox-Chat, keine Gewalt; Robux-Käufe nur angeben, wenn sie dann schon eingebaut sind (Version 1 hat keine Game Passes oder Developer Products). Kommen In-Game-Käufe später dazu: Fragebogen erneut ausfüllen und die Kauf-Tests (Studio-Testkäufe, Gutschrift nur über den Server, kein doppeltes Gutschreiben nach Rejoin) vor dem Update abhaken.
 - [ ] Spieleranzahl pro Server festlegen (Places → Server Size, Vorschlag 10–12), danach mit 2 Spielern den Server-Wechsel prüfen. Details: #34
 - [ ] Letzter Durchlauf im veröffentlichten Spiel (nicht Studio): neuer Spieler mit Tutorial, Speichern, Bestenlisten mit echtem Namen. Details: #17, #38
 - [ ] Öffentlich stellen: Experience → Privacy → Public; danach Spielseite einmal als Gast öffnen.
