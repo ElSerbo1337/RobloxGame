@@ -1247,15 +1247,7 @@ Geschenke und Login-Kalender geben nur noch feste Gems und Tränke, keine Münze
 
 ## #51 Pet-Deckel pro Welt und Rebirth-Tempo
 
-Beim Verkauf und bei Lieferungen zählt ein Pet aus einer späteren Welt höchstens den Deckel der Welt, in der verkauft/geliefert wird (bester Pet-Bonus aus den Eiern dieser Welt × 0,3; Welt 1: +67,5 %, Welt 2: +135 %, … Welt 7: +5400 %). In seiner eigenen und allen späteren Welten zählt es voll. Details: `docs/balancing.md`.
-
-- [ ] Pet-Menü in Welt 1 mit einem Pet aus Welt 2+ (z. B. per Rebirth-Spielstand): Karte zeigt den gedeckelten Wert „+… % hier (+X %)“ in Gold (Deckel Welt 1: +67,5 %), Pets aus Welt 1 zeigen ihren normalen Bonus in Weiß; Text passt auf die Karte (PC und kleines Handy).
-- [ ] Kopfzeile im Pet-Menü: „Bonus in dieser Welt +X %“; wechselt beim Gang über die Brücke in die nächste Welt (Wert steigt bzw. Karten zeigen keinen Deckel mehr).
-- [ ] Verkauf am Ofen in Welt 1 vs. Welt 2 mit gleichen Pets/gleicher Pizza: Welt 1 zahlt weniger (gedeckelter Bonus), Rebirth-Multiplikator wirkt weiter obendrauf.
-- [ ] Lieferauftrag: HUD-Belohnung und tatsächlich gezahlte Münzen am Lieferwagen passen zur aktuellen Welt (gedeckelt wie beim Verkauf).
-- [ ] „Beste ausrüsten“ in Welt 1 nach einem Rebirth: rüstet die Pets aus, die dort am meisten zählen (eigene Welt-1-Pets können späte Pets verdrängen).
-- [ ] Alter Spielstand mit Rebirth lädt ohne Fehler, Pets und Rebirths sind vollständig da (keine Migration nötig).
-- [ ] Optional mit Stoppuhr: zweiter Durchlauf Welt 1–6 nach dem Rebirth etwa 45 Min (erster etwa 130 Min).
+Entfällt: Der Pet-Deckel wurde in #57 wieder entfernt (siehe Abschnitt #57).
 
 ## #52 Seitenknöpfe unter den Chat
 
@@ -1303,4 +1295,17 @@ Auf kleinen Bildschirmen (kurze Seite des Viewports unter 500 px) füllen Menüs
 - [ ] Hochformat (iPhone SE hochkant) kurz prüfen: Menüs passen in die Breite, nichts ragt aus dem Bild.
 - [ ] Tablet (z. B. iPad quer): normales Layout wie bisher (Menüs unter Währungen, über dem Pizza-Balken), nichts scrollt unnötig.
 - [ ] Gerät drehen bzw. im Emulator zwischen Handy und PC wechseln: Menüs passen sich an, keine Reste eines Scrollbalkens bei geschlossenem Menü.
+- [ ] Output: keine Fehler.
+
+## #57 Flache Pet-Kurve, neue Preise, kein Pet-Deckel
+
+Pets steigen pro Welt gleichmäßig (bestes Pet Welt 1: +75 %, … Welt 7: +500 %), jedes Pet zählt überall voll. Alle Münzpreise sind neu (Bauernhof 26, Strand 690, Eisberge 12.000, Vulkan 35.000, Süßigkeitenland 900.000, Weltraum 12 Mio, erster Rebirth 74 Mio, jeder weitere ×14). Ziel laut Simulator: erster Rebirth nach etwa 120 Minuten. Details: `docs/balancing.md`.
+
+- [ ] Neuer Spielstand (oder Daten zurücksetzen), Welt 1 mit Stoppuhr: Tutorial → Shop-Käufe → Bauernhof-Schranke (26) in etwa 6 Minuten. Fühlt sich das Tempo richtig an? Schranken-Preis-Schild zeigt den neuen Preis.
+- [ ] Weiter bis Welt 3–4 spielen: Welt 2 etwa 9, Welt 3 etwa 12 Minuten; Shop-Preise und Ei-Preise am Schild/Panel passen zur Config (z. B. Hof-Ei 48, Scheunen-Ei 240).
+- [ ] Pet-Menü: Karten zeigen nur den normalen Bonus (z. B. „+75 %“), kein „hier“ und kein Gold-Text mehr; Kopfzeile „Bonus +X %“ ändert sich beim Gang in eine andere Welt nicht.
+- [ ] „Beste ausrüsten“ in Welt 1 mit Pets aus späteren Welten: rüstet die Pets mit dem höchsten Bonus aus (späte Pets vorn).
+- [ ] Verkauf am Ofen in Welt 1 und Welt 2 mit gleichen Pets und gleicher Pizza: gleicher Multiplikator (nur der Belagwert unterscheidet sich). Lieferauftrag: HUD-Belohnung = gezahlte Münzen.
+- [ ] Alter Test-Spielstand mit Rebirth: lädt ohne Fehler, alle Pets da, Boni zeigen die neuen kleineren Werte (z. B. Galaxie-Pizza-Leviathan +500 %). Rebirth-Menü zeigt den neuen Preis (74 Mio × 14 je Rebirth).
+- [ ] Optional nach einem Rebirth: Welt 1 geht sehr schnell (Simulator: unter 1 Minute, Ziel 3 wurde nicht erreicht, siehe `docs/balancing.md`). Eindruck notieren: zu schnell?
 - [ ] Output: keine Fehler.

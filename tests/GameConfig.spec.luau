@@ -1,7 +1,6 @@
 local TestKit = require("./TestKit")
 local GameConfig = require("../src/shared/GameConfig")
 local GameRules = require("../src/shared/GameRules")
-local BalanceSim = require("../tools/BalanceSim")
 local ToppingField = require("../src/shared/ToppingField")
 
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
@@ -52,11 +51,11 @@ describe("GameConfig", function()
 		end
 	end)
 
-	it("puts world 2 (Bauernhof) behind a 120 coin barrier with its own four toppings", function()
+	it("puts world 2 (Bauernhof) behind a 26 coin barrier with its own four toppings", function()
 		local farm = GameConfig.worlds[2]
 
 		expect(farm.id).toBe("Farm")
-		expect(farm.unlockPrice).toBe(120)
+		expect(farm.unlockPrice).toBe(26)
 		local toppings = {}
 		for _, spawn in farm.toppingSpawns do
 			table.insert(toppings, GameConfig.toppings[spawn.topping].displayName)
@@ -74,54 +73,54 @@ describe("GameConfig", function()
 		return names
 	end
 
-	it("puts world 3 (Strand) behind a 2.000 coin barrier with tuna, shrimp and pineapple", function()
+	it("puts world 3 (Strand) behind a 690 coin barrier with tuna, shrimp and pineapple", function()
 		local beach = GameConfig.worlds[3]
 
 		expect(beach.id).toBe("Beach")
 		expect(beach.displayName).toBe("Strand")
-		expect(beach.unlockPrice).toBe(2000)
+		expect(beach.unlockPrice).toBe(690)
 		expect(toppingNames(beach)).toEqual({ "Ananas", "Garnele", "Thunfisch" })
 	end)
 
-	it("puts world 4 (Eisberge) behind a 42.000 coin barrier with frozen peas, salmon and iceberg lettuce", function()
+	it("puts world 4 (Eisberge) behind a 12.000 coin barrier with frozen peas, salmon and iceberg lettuce", function()
 		local icebergs = GameConfig.worlds[4]
 
 		expect(icebergs.id).toBe("Icebergs")
 		expect(icebergs.displayName).toBe("Eisberge")
-		expect(icebergs.unlockPrice).toBe(42000)
+		expect(icebergs.unlockPrice).toBe(12000)
 		expect(toppingNames(icebergs)).toEqual({ "Eisberg-Salat", "Gefrorene Erbsen", "Lachs" })
 	end)
 
-	it("puts world 5 (Vulkan) behind a 310.000 coin barrier with chili, pepperoni and jalapeño", function()
+	it("puts world 5 (Vulkan) behind a 35.000 coin barrier with chili, pepperoni and jalapeño", function()
 		local volcano = GameConfig.worlds[5]
 
 		expect(volcano.id).toBe("Volcano")
 		expect(volcano.displayName).toBe("Vulkan")
-		expect(volcano.unlockPrice).toBe(310000)
+		expect(volcano.unlockPrice).toBe(35000)
 		expect(toppingNames(volcano)).toEqual({ "Chili", "Jalapeño", "Peperoni" })
 	end)
 
 	it(
-		"puts world 6 (Süßigkeitenland) behind a 23 Mio coin barrier with chocolate chips, gummy bears and marshmallow",
+		"puts world 6 (Süßigkeitenland) behind a 900.000 coin barrier with chocolate chips, gummy bears and marshmallow",
 		function()
 			local candy = GameConfig.worlds[6]
 
 			expect(candy.id).toBe("CandyLand")
 			expect(candy.displayName).toBe("Süßigkeitenland")
-			expect(candy.unlockPrice).toBe(23000000)
+			expect(candy.unlockPrice).toBe(900000)
 			expect(toppingNames(candy)).toEqual({ "Gummibärchen", "Marshmallow", "Schoko-Stücke" })
 		end
 	)
 
 	it(
-		"puts world 7 (Weltraum) behind a 460 Mio coin barrier with moon cheese, star olives and alien mushroom",
+		"puts world 7 (Weltraum) behind a 12 Mio coin barrier with moon cheese, star olives and alien mushroom",
 		function()
 			local space = GameConfig.worlds[7]
 
 			expect(#GameConfig.worlds).toBe(7)
 			expect(space.id).toBe("Space")
 			expect(space.displayName).toBe("Weltraum")
-			expect(space.unlockPrice).toBe(460000000)
+			expect(space.unlockPrice).toBe(12000000)
 			expect(toppingNames(space)).toEqual({ "Alien-Pilz", "Mond-Käse", "Sternen-Oliven" })
 		end
 	)
@@ -216,31 +215,9 @@ describe("GameConfig", function()
 end)
 
 describe("GameConfig balancing", function()
-	-- Model player of tools/BalanceSim (real rules, income estimate, pets, potions, delivery,
-	-- gifts; assumptions in docs/balancing.md), medians over a few runs with different luck.
-	-- Target (#41): worlds 1-2 about 10-15 min, 3-5 about 20-25 min, 6-7 about 30-35 min
-	-- (world 7 = until the first rebirth); checked with some slack for the luck of few runs.
-	local result = BalanceSim.median(GameConfig, 9)
-	local BANDS = { { 8, 18 }, { 8, 18 }, { 16, 30 }, { 16, 30 }, { 16, 30 }, { 25, 42 }, { 25, 42 } }
-
-	it("plays worlds 1-2 in about 10-15 min, 3-5 in about 20-25 min and 6-7 in about 30-35 min", function()
-		for index, band in BANDS do
-			local minutes = result.first.worlds[index]
-			if minutes < band[1] or minutes > band[2] then
-				error(`{GameConfig.worlds[index].id}: {string.format("%.1f", minutes)} min`)
-			end
-		end
-	end)
-
-	it("makes the first rebirth affordable about 30-35 min after reaching world 7", function()
+	-- Play times per world are checked in tests/BalanceSim.spec.luau (#57).
+	it("prices the first rebirth above the world 7 barrier", function()
 		expect(GameConfig.rebirth.startPrice > GameConfig.worlds[#GameConfig.worlds].unlockPrice).toBe(true)
-		local minutes = result.first.worlds[#GameConfig.worlds]
-		expect(minutes >= 25 and minutes <= 42).toBe(true)
-	end)
-
-	it("makes a run through worlds 1-7 after the first rebirth clearly shorter (at most half)", function()
-		local ratio = result.afterRebirth.total / result.first.total
-		expect(ratio >= 0.2 and ratio <= 0.5).toBe(true)
 	end)
 
 	it("makes every later rebirth cost more than the one before", function()
@@ -528,20 +505,30 @@ describe("GameConfig worlds and eggs", function()
 		end
 	end)
 
-	it("makes the pets of a later world's egg about 2x stronger and the egg pricier", function()
-		local function averageBonus(eggId: string): number
-			local total = 0
-			for _, entry in GameConfig.eggs[eggId].pets do
-				total += GameConfig.pets[entry.pet].bonus
+	-- Flat pet curve (#57): best pet of both eggs per world, within 10 %.
+	local PET_CURVE = { 0.75, 1.1, 1.6, 2.3, 3.2, 4, 5 }
+
+	it("makes the best pet of each world follow +75/110/160/230/320/400/500 % and rise", function()
+		local previous = 0
+		for index, world in GameConfig.worlds do
+			local best = 0
+			for _, eggId in world.eggs do
+				for _, entry in GameConfig.eggs[eggId].pets do
+					best = math.max(best, GameConfig.pets[entry.pet].bonus)
+				end
 			end
-			return total / #GameConfig.eggs[eggId].pets
+			if math.abs(best / PET_CURVE[index] - 1) > 0.1 then
+				error(`{world.id}: best pet +{math.round(best * 100)} %`)
+			end
+			expect(best > previous).toBe(true)
+			previous = best
 		end
+	end)
+
+	it("makes a later world's first egg pricier", function()
 		for i = 2, #GameConfig.worlds do
-			local previous = GameConfig.worlds[i - 1].eggs[1]
-			local current = GameConfig.worlds[i].eggs[1]
-			local ratio = averageBonus(current) / averageBonus(previous)
-			expect(ratio >= 1.5 and ratio <= 2.5).toBe(true)
-			expect(GameConfig.eggs[current].price > GameConfig.eggs[previous].price).toBe(true)
+			local previous = GameConfig.eggs[GameConfig.worlds[i - 1].eggs[1]].price
+			expect(GameConfig.eggs[GameConfig.worlds[i].eggs[1]].price > previous).toBe(true)
 		end
 	end)
 end)

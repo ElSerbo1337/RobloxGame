@@ -177,28 +177,20 @@ function PetService.start()
 		end
 	end
 
-	-- World the player is in (pet cap, #51); the first world before any world was entered.
-	local function currentWorld(state: PlayerState): string
-		return rules.spawnWorld(state) or GameConfig.worlds[1].id
-	end
-
 	local function replicate(player: Player, state: PlayerState)
-		local worldId = currentWorld(state)
 		local list = {}
 		for _, pet in state.pets do
 			table.insert(list, {
 				uid = pet.uid,
 				petId = pet.petId,
 				equipped = table.find(state.equipped, pet.uid) ~= nil,
-				-- What the pet counts in the player's current world (pet cap, #51).
-				bonusHere = rules.petBonusIn(pet.petId, worldId),
 			})
 		end
 		player:SetAttribute("Pets", HttpService:JSONEncode(list))
 		player:SetAttribute("PetSlots", rules.petSlots(state))
 		player:SetAttribute("InventorySlots", rules.inventorySlots(state))
-		-- Pets only, capped for the current world (the rebirth factor is shown in the rebirth menu).
-		player:SetAttribute("CoinMultiplier", rules.petMultiplier(state, worldId))
+		-- Pets only (the rebirth factor is shown in the rebirth menu).
+		player:SetAttribute("CoinMultiplier", rules.petMultiplier(state))
 		syncModels(player, state)
 	end
 
@@ -235,7 +227,7 @@ function PetService.start()
 		if state == nil then
 			return
 		end
-		local result = rules.equipBest(state, currentWorld(state))
+		local result = rules.equipBest(state)
 		if result.ok then
 			PlayerStates.set(player, result.state)
 		else

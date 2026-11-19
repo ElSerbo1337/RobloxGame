@@ -30,22 +30,37 @@ describe("balancing simulation with rebirth-gated worlds", function()
 	end)
 end)
 
-describe("balancing simulation with the pet cap per world (#51)", function()
+describe("balancing simulation with the flat pet curve (#57)", function()
 	-- Real configuration, medians over a few runs with different luck.
+	-- Targets (#56): worlds 1-7 about 6/9/12/16/20/25/32 min (world 7 = until the first
+	-- rebirth), about 120 min in total; checked with some slack for the luck of few runs.
 	local result = BalanceSim.median(GameConfig, 9)
-	local function worlds1to6(run: BalanceSim.Run): number
-		local minutes = 0
-		for index = 1, 6 do
-			minutes += run.worlds[index]
-		end
-		return minutes
-	end
+	local TARGETS = { 6, 9, 12, 16, 20, 25, 32 }
 
-	it("plays worlds 1-6 after the first rebirth in about 1/3 of the first run's time", function()
-		local first, second = worlds1to6(result.first), worlds1to6(result.afterRebirth)
-		local ratio = second / first
-		if ratio < 0.25 or ratio > 0.42 then
-			error(`worlds 1-6: {string.format("%.1f", first)} min, then {string.format("%.1f", second)} min`)
+	it("plays the first run in about 6/9/12/16/20/25/32 min per world", function()
+		for index, target in TARGETS do
+			local minutes = result.first.worlds[index]
+			if minutes < target * 0.5 or minutes > target * 1.5 then
+				error(`{GameConfig.worlds[index].id}: {string.format("%.1f", minutes)} min (target {target})`)
+			end
+		end
+	end)
+
+	it("reaches the first rebirth after about 120 min", function()
+		local total = result.first.total
+		if total < 100 or total > 140 then
+			error(`first run: {string.format("%.1f", total)} min`)
+		end
+	end)
+
+	it("plays world 1 faster after the rebirth", function()
+		expect(result.afterRebirth.worlds[1] < result.first.worlds[1]).toBe(true)
+	end)
+
+	it("makes the second run up to the next rebirth about as long as the first", function()
+		local ratio = result.afterRebirth.total / result.first.total
+		if ratio < 0.75 or ratio > 1.25 then
+			error(`second run: {string.format("%.1f", result.afterRebirth.total)} min`)
 		end
 	end)
 end)

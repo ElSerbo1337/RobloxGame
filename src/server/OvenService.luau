@@ -17,7 +17,7 @@ local function isInside(zone: BasePart, position: Vector3): boolean
 	return math.abs(relative.X) <= half.X and math.abs(relative.Y) <= half.Y and math.abs(relative.Z) <= half.Z
 end
 
-function OvenService.start(worldId: string, sellZone: BasePart)
+function OvenService.start(sellZone: BasePart)
 	local notify = Net.event("Notify")
 
 	task.spawn(function()
@@ -28,7 +28,7 @@ function OvenService.start(worldId: string, sellZone: BasePart)
 				local character = player.Character
 				local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 				if state and root and #state.pizza > 0 and isInside(sellZone, root.Position) then
-					local result = PlayerStates.rules.sellPizza(state, worldId)
+					local result = PlayerStates.rules.sellPizza(state)
 					if result.ok then
 						PlayerStates.set(player, result.state)
 						notify:FireClient(player, "Sold", result.coinsEarned)

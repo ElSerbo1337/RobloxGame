@@ -165,6 +165,21 @@ describe("sellPizza with pets", function()
 		expect(rules.sellPizza(pizzaWorth7(state)).coinsEarned).toBe(11)
 	end)
 
+	it("counts every pet fully, whichever world the player is in (no pet cap, #57)", function()
+		-- Dragon +150 % -> x2.5; toppings worth 7 -> 17.5 -> 17, in world 1 and in the Farm.
+		local state = richState(20)
+		state = rules.openEgg(state, "TestEgg", fixedRandom(0.999)).state
+		state = rules.equipPet(state, 1).state
+		state.coins = 0
+		state.unlockedWorlds = { "Farm" }
+
+		state.lastWorldId = ""
+		expect(rules.sellPizza(pizzaWorth7(state)).coinsEarned).toBe(17)
+		state.lastWorldId = "Farm"
+		expect(rules.coinMultiplier(state)).toBe(2.5)
+		expect(rules.sellPizza(pizzaWorth7(state)).coinsEarned).toBe(17)
+	end)
+
 	it("ignores pets that are owned but not equipped", function()
 		local state = stateWithPets(3)
 		state.coins = 0
@@ -326,86 +341,5 @@ describe("equipBest", function()
 		rules.equipBest(state)
 
 		expect(state.equipped).toEqual({})
-	end)
-end)
-
-describe("pet cap per world (#51)", function()
-	-- Caps from the eggs: world 1 (TestEgg) best = Dragon +1.5, Farm (FarmTestEgg) best =
-	-- Cow +3, Beach has no eggs and keeps the Farm cap.
-	local function withPets(...: string)
-		local state = rules.newPlayerState()
-		for uid, petId in { ... } do
-			table.insert(state.pets, { uid = uid, petId = petId })
-			table.insert(state.equipped, uid)
-		end
-		return state
-	end
-
-	it("derives the cap of a world from the best pet in its eggs", function()
-		expect(rules.petCap("PizzeriaGarden")).toBe(1.5)
-		expect(rules.petCap("Farm")).toBe(3)
-		expect(rules.petCap("Beach")).toBe(3)
-	end)
-
-	it("counts a pet from a later world at most the cap of an earlier world", function()
-		local state = withPets("Cow")
-
-		-- Cow +3 counts +1.5 in world 1.
-		expect(rules.petMultiplier(state, "PizzeriaGarden")).toBe(2.5)
-		expect(rules.petBonusIn("Cow", "PizzeriaGarden")).toBe(1.5)
-	end)
-
-	it("counts a pet fully in its own and every later world", function()
-		local state = withPets("Cow", "Dragon")
-
-		expect(rules.petMultiplier(state, "Farm")).toBe(5.5)
-		expect(rules.petMultiplier(state, "Beach")).toBe(5.5)
-		expect(rules.petBonusIn("Dragon", "Farm")).toBe(1.5)
-		-- In world 1 Dragon is its own world's best and counts fully, Cow is capped.
-		expect(rules.petMultiplier(state, "PizzeriaGarden")).toBe(4)
-	end)
-
-	it("caps each pet on its own, never below its own bonus", function()
-		-- Hamster +0.1 and Cat +0.2 stay below the cap; Cow is cut to +1.5.
-		local state = withPets("Hamster", "Cat", "Cow")
-
-		expect(rules.petMultiplier(state, "PizzeriaGarden")).toBe(2.8)
-	end)
-
-	it("follows the world of the sale at the oven", function()
-		local state = withPets("Cow")
-		state.pizza = { "Mozzarella", "Mushroom" } -- 5 + 2 = 7
-
-		-- 7 x 2.5 = 17.5 -> 17 in world 1; 7 x 4 = 28 in the Farm.
-		expect(rules.sellPizza(state, "PizzeriaGarden").coinsEarned).toBe(17)
-		expect(rules.sellPizza(state, "Farm").coinsEarned).toBe(28)
-	end)
-
-	it("equips the pets that count most in the given world", function()
-		local config = table.clone(TestConfig)
-		config.rebirth = table.clone(TestConfig.rebirth)
-		config.rebirth.petCapFactor = 0.5
-		local scaled = GameRules.new(config)
-		local state = withPets("Cow", "Dragon")
-		state.equipped = {}
-
-		-- One slot: Cow counts +0.75 in world 1, Dragon +1.5; in the Farm Cow +3 wins.
-		local slots = scaled.petSlots(state)
-		local inGarden = scaled.equipBest(state, "PizzeriaGarden").state.equipped
-		expect(inGarden[1]).toBe(2)
-		expect(scaled.equipBest(state, "Farm").state.equipped[1]).toBe(1)
-		expect(#inGarden).toBe(math.min(slots, 2))
-	end)
-
-	it("scales every cap with the configured factor", function()
-		local config = table.clone(TestConfig)
-		config.rebirth = table.clone(TestConfig.rebirth)
-		config.rebirth.petCapFactor = 0.5
-		local scaled = GameRules.new(config)
-
-		expect(scaled.petCap("PizzeriaGarden")).toBe(0.75)
-		-- Own world: still full, even above the scaled cap.
-		expect(scaled.petBonusIn("Dragon", "PizzeriaGarden")).toBe(1.5)
-		expect(scaled.petBonusIn("Cow", "PizzeriaGarden")).toBe(0.75)
 	end)
 end)

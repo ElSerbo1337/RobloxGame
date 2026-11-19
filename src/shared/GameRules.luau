@@ -681,66 +681,21 @@ function GameRules.new(config: any)
 		return 1 + config.rebirth.multiplierPerRebirth * state.rebirths
 	end
 
-	-- Pet cap per world (#51): every world's cap is the best bonus of a pet from its eggs
-	-- (a world without eggs keeps the cap of the world before) x config.rebirth.petCapFactor.
-	-- A pet's home world is the first world whose eggs hold it. Derived, never saved.
-	local petCapFactor = (config.rebirth and config.rebirth.petCapFactor) or 1
-	local capByWorld: { [string]: number } = {}
-	local worldIndexById: { [string]: number } = {}
-	local petHomeIndex: { [string]: number } = {}
-	do
-		local best = 0
-		for index, world in config.worlds do
-			worldIndexById[world.id] = index
-			for _, eggId in world.eggs or {} do
-				for _, entry in config.eggs[eggId].pets do
-					best = math.max(best, config.pets[entry.pet].bonus)
-					if petHomeIndex[entry.pet] == nil then
-						petHomeIndex[entry.pet] = index
-					end
-				end
-			end
-			capByWorld[world.id] = math.round(best * petCapFactor * 1e6) / 1e6
-		end
-	end
-
-	-- Highest bonus a pet from a later world counts in this world (see above).
-	function rules.petCap(worldId: string): number
-		return capByWorld[worldId] or math.huge
-	end
-
-	-- What one pet adds to the coin multiplier when selling or delivering in `worldId`:
-	-- its full bonus in its home world and every later one, at most the world's cap in
-	-- earlier worlds. Without a world (or for pets from no egg) the full bonus.
-	function rules.petBonusIn(petId: string, worldId: string?): number
-		local bonus = config.pets[petId].bonus
-		if worldId == nil then
-			return bonus
-		end
-		local worldIndex, homeIndex = worldIndexById[worldId], petHomeIndex[petId]
-		if worldIndex == nil or homeIndex == nil or homeIndex <= worldIndex then
-			return bonus
-		end
-		return math.min(bonus, rules.petCap(worldId))
-	end
-
-	-- 1 + sum of the coin bonuses of all equipped pets (bonuses are additive), each capped
-	-- for the world the coins are earned in (petBonusIn). Without a world: uncapped.
-	function rules.petMultiplier(state: PlayerState, worldId: string?): number
+	-- 1 + sum of the coin bonuses of all equipped pets (bonuses are additive).
+	function rules.petMultiplier(state: PlayerState): number
 		local bonus = 0
 		for _, pet in state.pets do
 			if table.find(state.equipped, pet.uid) then
-				bonus += rules.petBonusIn(pet.petId, worldId)
+				bonus += config.pets[pet.petId].bonus
 			end
 		end
 		-- Round to 6 decimals so 0.2 + 0.2 + 0.2 reads as 0.6 in the HUD and tests.
 		return math.round((1 + bonus) * 1e6) / 1e6
 	end
 
-	-- Pet multiplier (capped for `worldId`) x rebirth multiplier: what selling and
-	-- delivery coins in that world are multiplied by.
-	function rules.coinMultiplier(state: PlayerState, worldId: string?): number
-		return math.round(rules.petMultiplier(state, worldId) * rules.rebirthMultiplier(state) * 1e6) / 1e6
+	-- Pet multiplier x rebirth multiplier: what selling and delivery coins are multiplied by.
+	function rules.coinMultiplier(state: PlayerState): number
+		return math.round(rules.petMultiplier(state) * rules.rebirthMultiplier(state) * 1e6) / 1e6
 	end
 
 	-- Splits the pizza into toppings the active delivery order still needs (kept, in
@@ -765,8 +720,8 @@ function GameRules.new(config: any)
 
 	-- Sells every topping on the pizza at once (during a delivery order only the ones
 	-- the order does not need): earned = sum of topping values x coinMultiplier x coin
-	-- potion (rounded down). `worldId` = world of the oven (pet cap, #51; nil = uncapped).
-	function rules.sellPizza(state: PlayerState, worldId: string?): SellResult
+	-- potion (rounded down).
+	function rules.sellPizza(state: PlayerState): SellResult
 		if #state.pizza == 0 then
 			return { ok = false, reason = "PizzaEmpty", state = state, coinsEarned = 0 }
 		end
@@ -780,8 +735,7 @@ function GameRules.new(config: any)
 			toppingValue += config.toppings[toppingId].value
 		end
 		-- Rounded down; the epsilon guards against float noise like 7 * 1.6 = 11.19999.
-		local earned =
-			math.floor(toppingValue * rules.coinMultiplier(state, worldId) * rules.potionCoinMultiplier(state) + 1e-6)
+		local earned = math.floor(toppingValue * rules.coinMultiplier(state) * rules.potionCoinMultiplier(state) + 1e-6)
 
 		local newState = table.clone(state)
 		newState.pizza = kept
@@ -1134,11 +1088,10 @@ function GameRules.new(config: any)
 
 	-- Estimated coins per minute, deterministic (no potions, no luck): average topping
 	-- value of the highest unlocked world (by spawn weight) x pizza space x
-	-- income.roundsPerMinute x coin multiplier (pets capped for that world, rebirths).
+	-- income.roundsPerMinute x coin multiplier (pets, rebirths).
 	function rules.incomePerMinute(state: PlayerState): number
-		local world = highestUnlockedWorld(state)
 		local totalWeight, totalValue = 0, 0
-		for _, spawn in world.toppingSpawns do
+		for _, spawn in highestUnlockedWorld(state).toppingSpawns do
 			totalWeight += spawn.weight
 			totalValue += spawn.weight * config.toppings[spawn.topping].value
 		end
@@ -1149,7 +1102,7 @@ function GameRules.new(config: any)
 			/ totalWeight
 			* rules.pizzaCapacity(state)
 			* config.income.roundsPerMinute
-			* rules.coinMultiplier(state, world.id)
+			* rules.coinMultiplier(state)
 	end
 
 	-- Configured rewards as they will be paid out (fixed amounts; potions not drawn yet).
@@ -1369,8 +1322,7 @@ function GameRules.new(config: any)
 	-- Coins: topping values x pet bonus x coin potion x coinFactor x speed.
 	-- Gems: base x speed (rounded, at most gemsMax). Potion: 1, or 2 in the fast part of the time.
 	-- Speed = 1 + speedBonus x share of the time left.
-	-- `worldId` = world of the van (pet cap, #51; nil = uncapped).
-	function rules.orderReward(state: PlayerState, now: number, worldId: string?): DeliveryReward?
+	function rules.orderReward(state: PlayerState, now: number): DeliveryReward?
 		local order = state.delivery.order
 		if order == nil then
 			return nil
@@ -1388,16 +1340,14 @@ function GameRules.new(config: any)
 		for toppingId, count in order.toppings do
 			value += config.toppings[toppingId].value * count
 		end
-		local multiplier = rules.coinMultiplier(state, worldId)
-			* rules.potionCoinMultiplier(state)
-			* delivery.coinFactor
+		local multiplier = rules.coinMultiplier(state) * rules.potionCoinMultiplier(state) * delivery.coinFactor
 		-- The epsilon guards against float noise (see sellPizza).
 		return { reward = "Coins", amount = math.floor(value * multiplier * speed + 1e-6) }
 	end
 
 	-- Hands the order pizza over at the delivery van. The pizza must hold exactly the
 	-- ordered toppings; they are used up (not sold) and the reward is paid out.
-	function rules.deliverOrder(state: PlayerState, now: number, worldId: string?): DeliveryResult
+	function rules.deliverOrder(state: PlayerState, now: number): DeliveryResult
 		local function reject(reason: string): DeliveryResult
 			return { ok = false, reason = reason, state = state }
 		end
@@ -1411,7 +1361,7 @@ function GameRules.new(config: any)
 		if not pizzaMatches(state.pizza, order) then
 			return reject("WrongToppings")
 		end
-		local reward = rules.orderReward(state, now, worldId) :: DeliveryReward
+		local reward = rules.orderReward(state, now) :: DeliveryReward
 		local newState = withDelivery(state, nil, nil, now)
 		newState.pizza = {}
 		if reward.reward == "Coins" then
@@ -1579,19 +1529,13 @@ function GameRules.new(config: any)
 	-- Equips the pets with the highest coin bonus, filling all pet slots. On equal bonus,
 	-- pets that are already equipped stay, then older pets (lower uid) win.
 	-- `equipped` ends up ordered from best to weakest.
-	-- With `worldId` (#51) the pets are ranked by what they count in that world (petBonusIn),
-	-- ties by their full bonus.
-	function rules.equipBest(state: PlayerState, worldId: string?): Result
+	function rules.equipBest(state: PlayerState): Result
 		if #state.pets == 0 then
 			return fail(state, "NoPets")
 		end
 
 		local ranked = table.clone(state.pets)
 		table.sort(ranked, function(a, b)
-			local countsA, countsB = rules.petBonusIn(a.petId, worldId), rules.petBonusIn(b.petId, worldId)
-			if countsA ~= countsB then
-				return countsA > countsB
-			end
 			local bonusA, bonusB = config.pets[a.petId].bonus, config.pets[b.petId].bonus
 			if bonusA ~= bonusB then
 				return bonusA > bonusB

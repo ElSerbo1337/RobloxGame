@@ -166,8 +166,6 @@ return {
 		Hamster = { displayName = "Hamster", rarity = "Common", bonus = 0.1 },
 		Cat = { displayName = "Katze", rarity = "Rare", bonus = 0.2 },
 		Dragon = { displayName = "Drache", rarity = "Mythic", bonus = 1.5 },
-		-- Only in the Farm egg: capped to the best world 1 pet (Dragon) when sold in world 1.
-		Cow = { displayName = "Kuh", rarity = "Mythic", bonus = 3 },
 	},
 	eggs = {
 		TestEgg = {
@@ -183,8 +181,7 @@ return {
 			displayName = "Hof-Test-Ei",
 			price = 100,
 			pets = {
-				{ pet = "Cat", chance = 50 },
-				{ pet = "Cow", chance = 50 },
+				{ pet = "Cat", chance = 100 },
 			},
 		},
 	},

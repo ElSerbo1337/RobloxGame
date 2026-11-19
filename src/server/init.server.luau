@@ -68,7 +68,7 @@ PlayerStates.start()
 PizzaVisual.start()
 for _, world in worlds do
 	ToppingService.start(world.worldId, world)
-	OvenService.start(world.worldId, world.sellZone)
+	OvenService.start(world.sellZone)
 end
 BarrierService.start(laterWorlds)
 -- Respawn (death, fall, rejoin) in the world the player was last in.
