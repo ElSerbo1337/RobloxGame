@@ -299,14 +299,20 @@ function GiftMenu.start()
 		end
 	end)
 
+	local function close()
+		panel.Visible = false
+	end
+	UiKit.registerMenu("gifts", close)
+
 	openButton.Activated:Connect(function()
 		UiKit.pop(openButton)
 		if panel.Visible then
-			panel.Visible = false
+			close()
 			return
 		end
 		updateRows()
 		panel.Visible = true
+		UiKit.menuOpened("gifts")
 		UiKit.pop(panel)
 		if not opened then
 			opened = true
@@ -316,9 +322,7 @@ function GiftMenu.start()
 			end
 		end
 	end)
-	closeButton.Activated:Connect(function()
-		panel.Visible = false
-	end)
+	closeButton.Activated:Connect(close)
 
 	Net.event("GiftResult").OnClientEvent:Connect(function(ok: boolean, indexOrReason: any, rewards: { Reward })
 		if ok then

@@ -214,10 +214,16 @@ function DeliveryMenu.start()
 		timeLine.Text = `Zeit: {clockText(seconds)} – je schneller, desto mehr!`
 		if not panel.Visible then
 			panel.Visible = true
+			UiKit.menuOpened("phone")
 			UiKit.pop(panel, 0.85)
 		end
 	end)
 	Net.event("PhoneClose").OnClientEvent:Connect(function()
+		panel.Visible = false
+	end)
+	-- Another menu opening hides the phone panel; it comes back with the next call or
+	-- when the player steps up to the phone again.
+	UiKit.registerMenu("phone", function()
 		panel.Visible = false
 	end)
 

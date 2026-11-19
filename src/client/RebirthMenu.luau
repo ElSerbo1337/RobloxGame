@@ -298,20 +298,24 @@ function RebirthMenu.start()
 		setPulsing(false)
 		confirm.Visible = false
 		panel.Visible = true
+		UiKit.menuOpened("rebirth")
 		UiKit.pop(panel, 0.85)
 	end
 
+	local function close()
+		panel.Visible = false
+	end
+	UiKit.registerMenu("rebirth", close)
+
 	openButton.Activated:Connect(function()
 		if panel.Visible then
-			panel.Visible = false
+			close()
 		else
 			open()
 			UiKit.pop(openButton)
 		end
 	end)
-	closeButton.Activated:Connect(function()
-		panel.Visible = false
-	end)
+	closeButton.Activated:Connect(close)
 	rebirthButton.Activated:Connect(function()
 		local offer = readOffer(player)
 		UiKit.pop(rebirthButton)

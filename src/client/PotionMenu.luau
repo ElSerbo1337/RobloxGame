@@ -276,8 +276,14 @@ function PotionMenu.start()
 		end)
 	end
 
+	local function close()
+		panel.Visible = false
+	end
+	UiKit.registerMenu("potions", close)
+
 	local function open()
 		panel.Visible = true
+		UiKit.menuOpened("potions")
 		local scale = panel:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
 		scale.Parent = panel
 		scale.Scale = 0.85
@@ -287,14 +293,12 @@ function PotionMenu.start()
 	openButton.Activated:Connect(function()
 		UiKit.pop(openButton)
 		if panel.Visible then
-			panel.Visible = false
+			close()
 		else
 			open()
 		end
 	end)
-	closeButton.Activated:Connect(function()
-		panel.Visible = false
-	end)
+	closeButton.Activated:Connect(close)
 
 	Net.event("PotionNotify").OnClientEvent:Connect(function(kind: string, potionId: string)
 		local potion = GameConfig.potions[potionId]

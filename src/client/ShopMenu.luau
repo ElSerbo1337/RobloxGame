@@ -375,6 +375,7 @@ function ShopMenu.start()
 		end
 		if not gui.Enabled then
 			gui.Enabled = true
+			UiKit.menuOpened("shop")
 			local scale = panel:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
 			scale.Parent = panel
 			scale.Scale = 0.85
@@ -382,10 +383,13 @@ function ShopMenu.start()
 		end
 	end
 
+	-- Same for "X", leaving the shop and another menu opening: ShopOpen only comes again
+	-- when the player enters a shop, so a closed shop stays closed while standing in it.
 	local function close()
 		currentShop = nil
 		gui.Enabled = false
 	end
+	UiKit.registerMenu("shop", close)
 
 	Net.event("ShopOpen").OnClientEvent:Connect(open)
 	Net.event("ShopUpdate").OnClientEvent

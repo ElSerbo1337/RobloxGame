@@ -9,6 +9,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local HudLayout = require(ReplicatedStorage.Shared.HudLayout)
+local MenuSwitch = require(ReplicatedStorage.Shared.MenuSwitch)
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -268,6 +269,19 @@ function UiKit.placeMenu(gui: ScreenGui, panel: GuiObject, designSize: Vector2, 
 	end
 	area:GetPropertyChangedSignal("AbsoluteSize"):Connect(update)
 	task.defer(update)
+end
+
+-- Only one menu at a time (#53, MenuSwitch): every menu registers its id and its normal
+-- close function (the one "X" uses) and calls UiKit.menuOpened(id) whenever it opens;
+-- all other open menus then close as if the player had closed them.
+local menus = MenuSwitch.new()
+
+function UiKit.registerMenu(id: string, close: () -> ())
+	menus.register(id, close)
+end
+
+function UiKit.menuOpened(id: string)
+	menus.opened(id)
 end
 
 function UiKit.rarityColor(rarityId: string): Color3

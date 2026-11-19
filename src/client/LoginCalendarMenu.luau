@@ -193,15 +193,19 @@ function LoginCalendarMenu.start()
 	player:GetAttributeChangedSignal("LoginCalendar"):Connect(sync)
 	sync()
 
+	local function close()
+		panel.Visible = false
+	end
+	UiKit.registerMenu("calendar", close)
+
 	openWindow = function()
 		sync()
 		panel.Visible = true
+		UiKit.menuOpened("calendar")
 		UiKit.pop(panel)
 	end
 
-	closeButton.Activated:Connect(function()
-		panel.Visible = false
-	end)
+	closeButton.Activated:Connect(close)
 	claimButton.Activated:Connect(function()
 		UiKit.pop(claimButton)
 		if current.claimable then

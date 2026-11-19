@@ -1265,3 +1265,14 @@ Die runden Seitenknöpfe (Pets, Tränke, Geschenke, Rebirth) beginnen jetzt bei 
 - [ ] Tutorial-Karte steht weiter oben links und überdeckt keinen Seitenknopf.
 - [ ] Device-Emulator Handy (z. B. iPhone SE quer und ein großes Handy): alle vier Knöpfe sichtbar und antippbar, keiner im Joystick-Bereich, keiner über Pizza-Leiste, Auto-Sammeln oder Freischalt-Knopf; Chat geöffnet verdeckt keinen Knopf.
 - [ ] Tablet/4K-Fenster: Knöpfe stehen in einer Spalte ab Bildschirmmitte, Reihenfolge Pets, Tränke, Geschenke, Rebirth.
+
+## #53 Nur ein Menü gleichzeitig
+
+Alle Menüs (Shop, Portal, Pets, Tränke, Geschenke, Rebirth, Login-Kalender, Telefon) melden sich bei der Menü-Verwaltung in `UiKit` an. Öffnet sich eins, schließen sich die anderen wie mit „X“.
+
+- [ ] Pets-Menü offen, dann Tränke-Knopf: Pets-Menü schließt sich, nur das Trank-Menü ist offen. Genauso Geschenke und Rebirth untereinander.
+- [ ] Geschenke → „📅 Kalender“: nur der Kalender ist offen.
+- [ ] Im Shop stehen (Shop offen), Pets-Knopf drücken: Shop schließt sich und geht nicht wieder auf, solange man im Shop steht (auch nicht beim Kaufen/Sammeln). Shop verlassen und wieder betreten: Shop öffnet sich, Pets-Menü schließt sich.
+- [ ] Im Portal stehen, „X“ drücken, Münzen sammeln lassen: Portal-Menü bleibt zu. Dasselbe nach Öffnen des Pets-Menüs. Portal verlassen und wieder betreten: Portal-Menü öffnet sich.
+- [ ] Pets-Menü offen, dann in den Shop bzw. ans klingelnde Telefon laufen: Pets-Menü schließt sich, Shop bzw. Telefon-Auftrag ist offen.
+- [ ] Output: keine Fehler beim Öffnen/Schließen.

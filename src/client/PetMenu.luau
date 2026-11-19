@@ -315,20 +315,23 @@ function PetMenu.start()
 	player:GetAttributeChangedSignal("CoinMultiplier"):Connect(refresh)
 	refresh()
 
-	openButton.Activated:Connect(function()
-		panel.Visible = not panel.Visible
-		if panel.Visible then
-			UiKit.pop(panel, 0.8)
-		else
-			closeConfirm()
-			setDeleteMode(false)
-		end
-	end)
-	closeButton.Activated:Connect(function()
+	local function close()
 		panel.Visible = false
 		closeConfirm()
 		setDeleteMode(false)
+	end
+	UiKit.registerMenu("pets", close)
+
+	openButton.Activated:Connect(function()
+		if panel.Visible then
+			close()
+		else
+			panel.Visible = true
+			UiKit.menuOpened("pets")
+			UiKit.pop(panel, 0.8)
+		end
 	end)
+	closeButton.Activated:Connect(close)
 
 	-- "All slots taken" feedback right in the menu.
 	Net.event("Notify").OnClientEvent:Connect(function(kind: string)

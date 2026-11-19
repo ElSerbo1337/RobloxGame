@@ -131,22 +131,38 @@ function PortalMenu.start()
 		end
 	end
 
+	-- The server re-sends PortalOpen on every state change while the player stands in the
+	-- portal. Once closed ("X" or another menu opening), it stays closed until the player
+	-- leaves the portal (PortalClose).
+	local dismissed = false
+
+	local function close()
+		if gui.Enabled then
+			gui.Enabled = false
+			dismissed = true
+		end
+	end
+	UiKit.registerMenu("portal", close)
+
 	Net.event("PortalOpen").OnClientEvent:Connect(function(currentWorldId: string, entries: { PortalEntry })
+		if dismissed then
+			return
+		end
 		local wasOpen = gui.Enabled
 		render(currentWorldId, entries)
 		gui.Enabled = true
 		if not wasOpen then
+			UiKit.menuOpened("portal")
 			UiKit.pop(panel, 0.85)
 		end
 	end)
 
 	Net.event("PortalClose").OnClientEvent:Connect(function()
 		gui.Enabled = false
+		dismissed = false
 	end)
 
-	closeButton.Activated:Connect(function()
-		gui.Enabled = false
-	end)
+	closeButton.Activated:Connect(close)
 
 	gui.Parent = player:WaitForChild("PlayerGui")
 end

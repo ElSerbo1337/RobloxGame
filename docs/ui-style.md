@@ -62,6 +62,8 @@ Koordinaten sind virtuelle Pixel nach `UiKit.autoScale`, unterhalb der Roblox-Le
 
 **Menüs** werden für ihre Wunschgröße gebaut. `UiKit.placeMenu` setzt sie mittig in die Menü-Zone; ist dort zu wenig Platz, wird ein Menü mit Scroll-Liste zuerst niedriger (bis `minHöhe`, z. B. Kopf + eine Zeile) und erst danach verkleinert, alle anderen nur verkleinert (`HudLayout.fitMenu`). Danach füllt das Panel seinen Halter: weiter `panel.Visible` und `UiKit.pop(panel)` benutzen.
 
+**Nur ein Menü gleichzeitig (#53):** Jedes Menü meldet sich mit `UiKit.registerMenu(id, schließen)` an (`schließen` = derselbe Weg wie sein „X“, auch auf einem schon geschlossenen Menü harmlos) und ruft beim Öffnen `UiKit.menuOpened(id)` auf. Dann schließen sich alle anderen offenen Menüs, als hätte man sie selbst geschlossen (Logik: `src/shared/MenuSwitch.luau`, getestet). Angemeldet: `shop`, `portal`, `pets`, `potions`, `gifts`, `rebirth`, `calendar`, `phone`. Zonen-Menüs (Shop, Portal) gehen danach erst wieder auf, wenn man die Zone verlässt und neu betritt. Neue Menüs (z. B. die Ei-Vorschau) melden sich genauso an.
+
 **Neue HUD-Teile:** zuerst eine Zone (oder einen Platz in `SIDE_SLOTS`) in `HudLayout` ergänzen, den Test um das Teil erweitern, dann über UiKit platzieren.
 
 Kein Shop- und kein Teleport-Knopf im HUD – Shops und Portale betritt man in der Welt.
