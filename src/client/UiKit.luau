@@ -197,11 +197,21 @@ local function hudGrid(): { side: Frame, right: Frame }
 
 	local side = zoneFrame(gui, "sideArea")
 	local sideLayout = Instance.new("UIGridLayout")
-	sideLayout.CellSize = UDim2.fromOffset(HudLayout.SIDE_BUTTON, HudLayout.SIDE_BUTTON)
-	sideLayout.CellPadding = UDim2.fromOffset(HudLayout.SIDE_GAP, HudLayout.SIDE_GAP)
 	sideLayout.FillDirection = Enum.FillDirection.Vertical
 	sideLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	sideLayout.Parent = side
+	-- Small screens: smaller buttons in a 2 x 2 block above the joystick.
+	local function fitSide()
+		local small = UiKit.isSmallScreen()
+		applyZone(side, HudLayout.zone("sideArea", small))
+		local button = HudLayout.sideButtonSize(small)
+		sideLayout.CellSize = UDim2.fromOffset(button.size, button.size)
+		sideLayout.CellPadding = UDim2.fromOffset(button.gap, button.gap)
+	end
+	fitSide()
+	if Workspace.CurrentCamera then
+		Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitSide)
+	end
 
 	-- Right column: a stack (potion pills, order card) that shrinks when it gets taller
 	-- than the room above the jump button.

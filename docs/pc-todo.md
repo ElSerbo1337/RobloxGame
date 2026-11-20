@@ -1440,6 +1440,16 @@ Dein Spielstand war vorher gesichert (`backup_21nov_player_372358501`) und ist d
 
 **Nachtrag (deine Entscheidung: jederzeit ausschaltbar):** Am Telefon erscheint jetzt auch ohne Anruf ein Menü „📞 Telefon – Gerade kein Anruf …“ mit „📵 Keine Anrufe mehr“ (nicht während des Tutorials). Getestet: Auftrag annehmen, weg und zurück → Menü da (`85`); ausschalten → „Anrufe sind aus“, Auftragskarte läuft weiter (`86`). Nicht geprüft: der Knopf im Handy-Emulator.
 
+## Handy: Seitenknöpfe als 2 × 2-Block, Münzen ganz oben (#62)
+
+Auf dem echten Handy ragten die vier Seitenknöpfe in einer Reihe zur Bildschirmmitte, und Münz-/Gem-Anzeige saßen unter der Roblox-Leiste recht tief. Jetzt: auf kleinen Bildschirmen (kurze Seite < 500 px) kleinere Knöpfe (72 px) als 2 × 2-Block links direkt über dem Joystick (Pets/Tränke links, Geschenke/Rebirth rechts); Münzen und Gems in einer eigenen Ebene knapp unter dem oberen Bildschirmrand (auf allen Geräten). Vorher: `lune run test` → `541 passed, 0 failed`. Danach **File → Publish to Roblox**, dann auf dem Handy prüfen.
+
+- [ ] Handy quer: Seitenknöpfe als 2 × 2-Block links über dem Joystick, nicht über dem Joystick, gut antippbar; „Neu!“-Hinweise verdecken keinen Knopf.
+- [ ] Handy quer: Münz- und Gem-Anzeige knapp unter dem oberen Rand, nicht über den Roblox-Knöpfen (links/rechts oben) und nicht in der Notch; Zahlen lesbar.
+- [ ] Verkaufen: fliegende Münzen landen weiterhin an der Münzanzeige (PC und Handy).
+- [ ] PC/Tablet: Seitenknöpfe wie bisher (ab halber Höhe), Münzen/Gems oben Mitte knapp unter dem Rand, nicht über Roblox-Menü oder Chat-Knopf.
+- [ ] Meldungen („+X Münzen“), Tutorial-Karte und Ei-Panel überlappen die Münz-/Gem-Anzeige nicht.
+
 ## Zählung (Aufräumen 19.11.2026)
 
 Von 353 offenen Punkten: **52 entfallen** (überholt durch spätere Änderungen, durchgestrichen), **61 abgehakt** (durch spätere Studio-Tests belegt), **240 weiterhin offen**. Dazu kommen 35 offene Punkte in der Release-Checkliste oben.

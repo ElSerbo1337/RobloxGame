@@ -92,6 +92,16 @@ function Hud.start(): GuiObject
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	UiKit.autoScale(gui)
 
+	-- Coins and gems sit right below the top edge of the screen: their own layer ignores
+	-- the room Roblox keeps for its top bar (the counters stand in the middle, the Roblox
+	-- buttons in the corners) but still keeps out of notches (device safe area).
+	local currency = Instance.new("ScreenGui")
+	currency.Name = "Currency"
+	currency.ResetOnSpawn = false
+	currency.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	currency.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+	UiKit.autoScale(currency)
+
 	-- Coins (top center, left of the middle)
 	local coins = Instance.new("Frame")
 	coins.Name = "Coins"
@@ -99,7 +109,7 @@ function Hud.start(): GuiObject
 	coins.BackgroundColor3 = CREAM
 	corner(coins, 30)
 	stroke(coins)
-	coins.Parent = gui
+	coins.Parent = currency
 
 	local coinIcon = UiKit.coinIcon(coins, 44)
 	coinIcon.Position = UDim2.fromOffset(8, 8)
@@ -116,7 +126,7 @@ function Hud.start(): GuiObject
 	gems.BackgroundColor3 = CREAM
 	corner(gems, 30)
 	stroke(gems)
-	gems.Parent = gui
+	gems.Parent = currency
 
 	local gemIcon = UiKit.gemIcon(gems, 48)
 	gemIcon.Position = UDim2.fromOffset(6, 6)
@@ -178,6 +188,7 @@ function Hud.start(): GuiObject
 	toast.Visible = false
 
 	gui.Parent = player:WaitForChild("PlayerGui")
+	currency.Parent = player:WaitForChild("PlayerGui")
 
 	local toastId = 0
 	local function showToast(text: string, color: Color3?)

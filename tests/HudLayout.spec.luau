@@ -139,7 +139,11 @@ describe("HUD layout", function()
 	end)
 
 	it("puts the side buttons below the chat: from half height down to the joystick", function()
-		forEachScreen(function(layout, label)
+		forEachScreen(function(layout, label, small)
+			if small then
+				-- Phones: a 2 x 2 block right above the joystick (see the next test).
+				return
+			end
 			local area, h = layout.sideArea, layout.screen.h
 			-- Half height, unless that leaves no room for one row of buttons.
 			local top = math.min(h * 0.5, layout.joystick.y - HudLayout.SIDE_BUTTON)
@@ -148,6 +152,27 @@ describe("HUD layout", function()
 			end
 			expect(area.y + area.h <= layout.joystick.y + 0.001).toBe(true)
 			expect(area.y >= layout.tutorialCard.y + layout.tutorialCard.h).toBe(true)
+		end)
+	end)
+
+	it("stacks the side buttons as a 2 x 2 block above the joystick on small screens", function()
+		forEachScreen(function(layout, label, small)
+			if not small then
+				return
+			end
+			local slots = layout.sideSlots
+			-- Column-wise: pets over potions, gifts over rebirth.
+			expect(slots.potions.x).toBe(slots.pets.x)
+			expect(slots.rebirth.x).toBe(slots.gifts.x)
+			expect(slots.gifts.y).toBe(slots.pets.y)
+			expect(slots.rebirth.y).toBe(slots.potions.y)
+			expect(slots.gifts.x > slots.pets.x).toBe(true)
+			expect(slots.potions.y > slots.pets.y).toBe(true)
+			local area = layout.sideArea
+			expect(area.y + area.h <= layout.joystick.y + 0.001).toBe(true)
+			if area.y < layout.tutorialCard.y + layout.tutorialCard.h - 0.001 then
+				error(`side block reaches into the tutorial card on {label}`)
+			end
 		end)
 	end)
 

@@ -62,6 +62,12 @@ HudLayout.JUMP_SIZE = { w = 180, h = 220 }
 HudLayout.SIDE_BUTTON = 96
 HudLayout.SIDE_GAP = 12
 HudLayout.SIDE_SLOTS = { "pets", "potions", "gifts", "rebirth" }
+-- Small screens (phones): smaller side buttons in a 2 x 2 block above the joystick, so
+-- they do not reach towards the middle of the screen.
+HudLayout.SIDE_BUTTON_SMALL = 72
+HudLayout.SIDE_GAP_SMALL = 8
+-- Room kept free for the joystick on small screens (Roblox draws it lower there).
+HudLayout.JOYSTICK_SMALL_HEIGHT = 180
 
 HudLayout.RIGHT_COLUMN_WIDTH = 260
 
@@ -126,6 +132,17 @@ HudLayout.zones = {
 		size = { 0, 4 * 96 + 3 * 12, 0.5, -HudLayout.JOYSTICK_SIZE.h },
 		minHeight = HudLayout.SIDE_BUTTON,
 	},
+	-- Small screens: a 2 x 2 block of smaller buttons right above the joystick.
+	sideAreaSmall = {
+		anchor = { 0, 1 },
+		position = { 0, 16, 1, -HudLayout.JOYSTICK_SMALL_HEIGHT },
+		size = {
+			0,
+			2 * HudLayout.SIDE_BUTTON_SMALL + HudLayout.SIDE_GAP_SMALL,
+			0,
+			2 * HudLayout.SIDE_BUTTON_SMALL + HudLayout.SIDE_GAP_SMALL,
+		},
+	},
 	pizzaBar = {
 		anchor = { 0.5, 1 },
 		position = { 0.5, 0, 1, -16 },
@@ -181,6 +198,11 @@ HudLayout.zones = {
 		position = { 0, 0, 1, 0 },
 		size = { 0, HudLayout.JOYSTICK_SIZE.w, 0, HudLayout.JOYSTICK_SIZE.h },
 	},
+	joystickSmall = {
+		anchor = { 0, 1 },
+		position = { 0, 0, 1, 0 },
+		size = { 0, HudLayout.JOYSTICK_SIZE.w, 0, HudLayout.JOYSTICK_SMALL_HEIGHT },
+	},
 	jump = {
 		anchor = { 1, 1 },
 		position = { 1, 0, 1, 0 },
@@ -203,18 +225,27 @@ function HudLayout.rect(zone: Zone, w: number, h: number): Rect
 	return { x = x, y = y, w = width, h = height }
 end
 
+-- Size of one side button and the gap between them (smaller on small screens).
+function HudLayout.sideButtonSize(small: boolean?): { size: number, gap: number }
+	if small then
+		return { size = HudLayout.SIDE_BUTTON_SMALL, gap = HudLayout.SIDE_GAP_SMALL }
+	end
+	return { size = HudLayout.SIDE_BUTTON, gap = HudLayout.SIDE_GAP }
+end
+
 -- Side buttons fill the side area top to bottom, then start the next column
 -- (like a UIGridLayout with FillDirection Vertical).
-function HudLayout.sideSlotRect(area: Rect, slot: number): Rect
-	local pitch = HudLayout.SIDE_BUTTON + HudLayout.SIDE_GAP
-	local rows = math.max(1, math.floor((area.h + HudLayout.SIDE_GAP) / pitch))
+function HudLayout.sideSlotRect(area: Rect, slot: number, small: boolean?): Rect
+	local button = HudLayout.sideButtonSize(small)
+	local pitch = button.size + button.gap
+	local rows = math.max(1, math.floor((area.h + button.gap) / pitch))
 	local column = (slot - 1) // rows
 	local row = (slot - 1) % rows
 	return {
 		x = area.x + column * pitch,
 		y = area.y + row * pitch,
-		w = HudLayout.SIDE_BUTTON,
-		h = HudLayout.SIDE_BUTTON,
+		w = button.size,
+		h = button.size,
 	}
 end
 
@@ -262,7 +293,7 @@ function HudLayout.resolve(w: number, h: number, small: boolean?): Layout
 		end
 	end
 	for slot, name in HudLayout.SIDE_SLOTS do
-		layout.sideSlots[name] = HudLayout.sideSlotRect(layout.sideArea, slot)
+		layout.sideSlots[name] = HudLayout.sideSlotRect(layout.sideArea, slot, small)
 	end
 	return layout :: Layout
 end
