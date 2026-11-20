@@ -15,6 +15,7 @@ local TweenService = game:GetService("TweenService")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 type ShopOffer = GameRules.ShopOffer
@@ -35,38 +36,37 @@ local PANEL_SIZE = Vector2.new(SHOP.width, SHOP.height)
 local CARD_HEIGHT = SHOP.card
 local HEADER_HEIGHT = SHOP.header
 
+-- Purchase refusal reason → text key.
 local MESSAGES: { [string]: string } = {
-	NotEnoughCoins = "Nicht genug Münzen!",
-	NotEnoughGems = "Nicht genug Gems!",
-	ShopLevelLimit = "Diese Stufe gibt es nur im größeren Shop.",
-	MaxLevel = "Schon auf höchster Stufe!",
-	WorldLocked = "Diese Welt ist noch gesperrt!",
+	NotEnoughCoins = "notify.NotEnoughCoins",
+	NotEnoughGems = "notify.NotEnoughGems",
+	ShopLevelLimit = "shop.ShopLevelLimit",
+	MaxLevel = "shop.MaxLevel",
+	WorldLocked = "notify.WorldLocked",
 }
 
 local ShopMenu = {}
 
 local function formatNumber(value: number): string
-	local text = tostring(math.floor(value))
-	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
-	return (string.gsub(formatted, "^%.", ""))
+	return Lang.integer(value)
 end
 
 -- What an upgrade's value means for the player.
 local function effectText(upgradeId: string, value: number): string
 	if upgradeId == "PizzaSpace" then
-		return `{value} Beläge`
+		return Lang.t("shop.effectToppings", { value = value })
 	elseif upgradeId == "CollectRange" then
-		return `{value} Studs`
+		return Lang.t("shop.effectStuds", { value = value })
 	elseif upgradeId == "Magnet" then
-		return if value > 0 then `{value} Studs` else "aus"
+		return if value > 0 then Lang.t("shop.effectStuds", { value = value }) else Lang.t("shop.effectOff")
 	elseif upgradeId == "PetSlots" then
-		return `{value} Pets`
+		return Lang.t("shop.effectPets", { value = value })
 	elseif upgradeId == "InventorySpace" then
-		return `{value} Plätze`
+		return Lang.t("shop.effectSlots", { value = value })
 	elseif upgradeId == "WalkSpeed" then
-		return `Tempo {value}`
+		return Lang.t("shop.effectSpeed", { value = value })
 	elseif upgradeId == "TripleOpen" then
-		return if value >= 3 then "an" else "aus"
+		return if value >= 3 then Lang.t("shop.effectOn") else Lang.t("shop.effectOff")
 	end
 	return tostring(value)
 end
@@ -142,7 +142,7 @@ function ShopMenu.start()
 	-- as a section header plus one whole card with its full buy button.
 	UiKit.placeMenu(gui, panel, PANEL_SIZE, UiKit.Layout.shopMinHeight(UiKit.isSmallScreen()))
 
-	local title = label(panel, "Shop", {
+	local title = label(panel, Lang.t("shop.title"), {
 		Position = UDim2.fromOffset(24, 14),
 		Size = UDim2.new(1, -120, 0, 48),
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -220,7 +220,7 @@ function ShopMenu.start()
 				corner(header, 14)
 				stroke(header, 2)
 				header.Parent = list
-				label(header, if isGem then "Gem-Tresen" else "Münz-Tresen", {
+				label(header, if isGem then Lang.t("shop.gemCounter") else Lang.t("shop.coinCounter"), {
 					Position = UDim2.fromOffset(14, 4),
 					Size = UDim2.new(1, -28, 1, -8),
 					TextXAlignment = Enum.TextXAlignment.Left,
@@ -248,7 +248,7 @@ function ShopMenu.start()
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Color3.fromRGB(110, 80, 55),
 			})
-			label(card, `Stufe {offer.level} / {offer.maxLevel}`, {
+			label(card, Lang.t("shop.level", { level = offer.level, max = offer.maxLevel }), {
 				Position = UDim2.fromOffset(14, 76),
 				Size = UDim2.new(0.42, -14, 0, 22),
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -270,7 +270,10 @@ function ShopMenu.start()
 				local canAfford = (balance[offer.currency] or 0) >= offer.nextPrice
 				button = bigButton(
 					card,
-					`{formatNumber(offer.nextPrice)} {if isGem then "Gems" else "Münzen"}`,
+					Lang.t(
+						if isGem then "shop.priceGems" else "shop.priceCoins",
+						{ price = formatNumber(offer.nextPrice) }
+					),
 					if canAfford then (if isGem then GEM else GREEN) else GREY,
 					buttonSize
 				)
@@ -281,11 +284,11 @@ function ShopMenu.start()
 					end
 				end)
 			elseif offer.status == "ShopLevelLimit" then
-				button = bigButton(card, "Weitere Stufen im größeren Shop", GREY, buttonSize)
+				button = bigButton(card, Lang.t("shop.levelLimit"), GREY, buttonSize)
 				button.AutoButtonColor = false
 				button.Active = false
 			else
-				button = bigButton(card, "MAX", COIN, buttonSize)
+				button = bigButton(card, Lang.t("shop.max"), COIN, buttonSize)
 				button.AutoButtonColor = false
 				button.Active = false
 			end
@@ -304,7 +307,7 @@ function ShopMenu.start()
 			corner(header, 14)
 			stroke(header, 2)
 			header.Parent = list
-			label(header, "Gem-Tresen: Tränke (je 10 Min.)", {
+			label(header, Lang.t("shop.potionCounter"), {
 				Position = UDim2.fromOffset(14, 4),
 				Size = UDim2.new(1, -28, 1, -8),
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -332,13 +335,13 @@ function ShopMenu.start()
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Color3.fromRGB(110, 80, 55),
 			})
-			label(card, `{math.floor(offer.durationSeconds / 60)} Minuten`, {
+			label(card, Lang.t("shop.minutes", { minutes = math.floor(offer.durationSeconds / 60) }), {
 				Position = UDim2.fromOffset(14, 76),
 				Size = UDim2.new(0.42, -14, 0, 22),
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Color3.fromRGB(110, 80, 55),
 			})
-			label(card, `Im Inventar: {offer.owned}`, {
+			label(card, Lang.t("shop.owned", { count = offer.owned }), {
 				Position = UDim2.new(0.42, 4, 0, 0),
 				Size = UDim2.new(0.28, -8, 1, 0),
 			})
@@ -346,7 +349,7 @@ function ShopMenu.start()
 			local canAfford = balance.Gems >= offer.price
 			local button = bigButton(
 				card,
-				`{formatNumber(offer.price)} Gems`,
+				Lang.t("shop.priceGems", { price = formatNumber(offer.price) }),
 				if canAfford then GEM else GREY,
 				UDim2.new(0.3, -14, 0, 76)
 			)
@@ -365,7 +368,7 @@ function ShopMenu.start()
 		currentOffers = offers
 		currentPotions = potions or {}
 		local shop = GameConfig.shops[shopId]
-		title.Text = if shop then shop.displayName else "Shop"
+		title.Text = if shop then shop.displayName else Lang.t("shop.title")
 		status.Text = ""
 		local reopened = not gui.Enabled or currentShop ~= shopId
 		currentShop = shopId
@@ -407,10 +410,10 @@ function ShopMenu.start()
 	Net.event("ShopPurchase").OnClientEvent:Connect(function(ok: boolean, detail: string)
 		if ok then
 			local item = GameConfig.upgrades[detail] or GameConfig.potions[detail]
-			local suffix = if GameConfig.potions[detail] then " – im Trank-Menü trinken" else ""
-			showStatus(`Gekauft: {item and item.displayName or detail}!{suffix}`, Color3.fromRGB(40, 150, 60))
+			local key = if GameConfig.potions[detail] then "shop.boughtPotion" else "shop.bought"
+			showStatus(Lang.t(key, { item = item and item.displayName or detail }), Color3.fromRGB(40, 150, 60))
 		else
-			showStatus(MESSAGES[detail] or "Kauf nicht möglich.", RED)
+			showStatus(Lang.t(MESSAGES[detail] or "shop.failed"), RED)
 		end
 	end)
 end

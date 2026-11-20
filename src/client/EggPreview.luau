@@ -18,6 +18,7 @@ local Workspace = game:GetService("Workspace")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Lang = require(script.Parent.Lang)
 local PetIcon = require(script.Parent.PetIcon)
 local SignCulling = require(script.Parent.SignCulling)
 local UiKit = require(script.Parent.UiKit)
@@ -129,7 +130,7 @@ local function buildPanel(playerGui: Instance): Panel
 		-- eggPreview only reads the running potions from the state.
 		local lucky = rules.eggPreview(current, { activePotions = activePotions } :: any)
 		local hasLuck = (activePotions.Luck or 0) > 0
-		title.Text = if hasLuck then `{egg.displayName} 🍀 Glück!` else egg.displayName
+		title.Text = if hasLuck then Lang.t("egg.luck", { egg = egg.displayName }) else egg.displayName
 		for _, entry in lucky.pets do
 			local chance = chanceLabels[entry.petId]
 			if chance then
@@ -149,14 +150,16 @@ local function buildPanel(playerGui: Instance): Panel
 	end)
 
 	local function tripleText(): string
-		return `3 öffnen – {price * 3}`
+		return Lang.t("egg.openThree", { price = price * 3 })
 	end
 	local function updateTriple()
 		local unlocked = ((player:GetAttribute("EggsPerOpen") :: number?) or 1) >= 3
 		tripleButton.Visible = unlocked
 		tripleButton.Text = tripleText()
 		button.Size = if unlocked then UDim2.new(0.5, -22, 0, 70) else UDim2.new(1, -32, 0, 70)
-		button.Text = if unlocked then `1 öffnen – {price}` else `1 öffnen – {price} Münzen`
+		button.Text = if unlocked
+			then Lang.t("egg.openOne", { price = price })
+			else Lang.t("egg.openOneCoins", { price = price })
 	end
 	player:GetAttributeChangedSignal("EggsPerOpen"):Connect(updateTriple)
 
@@ -252,8 +255,8 @@ local function buildPanel(playerGui: Instance): Panel
 			return
 		end
 		local message = if kind == "NotEnoughCoins"
-			then "Zu wenig Münzen!"
-			elseif kind == "InventoryFull" then "Inventar voll!"
+			then Lang.t("egg.notEnoughCoins")
+			elseif kind == "InventoryFull" then Lang.t("egg.inventoryFull")
 			else nil
 		if message then
 			busyUntil = 0

@@ -42,7 +42,7 @@ Jeder Spieler sieht das Spiel in seiner Sprache: Deutsch für deutschsprachige R
 - **Server-Meldungen:** Der Server schickt nur Notify-Arten (`"NotEnoughCoins"`); der Client zeigt `notify.<Art>`. Neue Notify-Art: Schlüssel `notify.<Art>` anlegen und die Art in `MESSAGE_KINDS` in `src/client/Hud.luau` eintragen.
 - **Keine Roblox-Autoübersetzung:** `UiKit.autoScale` setzt `AutoLocalize = false`; zusätzlich setzt `Lang.stopAutoTranslate` (beim Start) es für jede ScreenGui in PlayerGui und jede Billboard-/SurfaceGui im Workspace. Im Creator Hub die automatische Übersetzung ebenfalls ausschalten.
 - **In Studio testen:** Vor **Play** im Explorer `Workspace` wählen → Properties → Attributes → **+** → Name `Language`, Typ `string`, Wert `en` (oder `de`). Gilt nur in Studio; zum Schluss wieder löschen. Alternativ **Test → Player Emulator → Locale** (z. B. `en-us`/`de-de`) einstellen, wenn kein Attribut gesetzt ist.
-- Noch Deutsch (folgen in #68–#71): Namen aus `GameConfig` (Welten, Tränke, Pets …), Menüs, Tutorial, 3D-Schilder.
+- Noch Deutsch (folgen in #68, #70, #71): Namen aus `GameConfig` (Welten, Tränke, Pets …), übrige Menüs, 3D-Schilder. Shop, Pets, Ei und Tutorial sind umgestellt (#69).
 
 ## Formen
 

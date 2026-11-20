@@ -82,6 +82,94 @@ Texts.strings = {
 	["notify.deliveredPotion"] = { de = "Geliefert! +{amount}× {potion}", en = "Delivered! +{amount}× {potion}" },
 	["notify.potionExpired"] = { de = "{potion} ist abgelaufen.", en = "{potion} has run out." },
 	["notify.potionDrunk"] = { de = "{potion} wirkt 10 Minuten!", en = "{potion} works for 10 minutes!" },
+	-- Shop menu (#69)
+	["shop.title"] = { de = "Shop", en = "Shop" },
+	["shop.coinCounter"] = { de = "Münz-Tresen", en = "Coin counter" },
+	["shop.gemCounter"] = { de = "Gem-Tresen", en = "Gem counter" },
+	["shop.potionCounter"] = { de = "Gem-Tresen: Tränke (je 10 Min.)", en = "Gem counter: potions (10 min each)" },
+	["shop.level"] = { de = "Stufe {level} / {max}", en = "Level {level} / {max}" },
+	["shop.priceCoins"] = { de = "{price} Münzen", en = "{price} coins" },
+	["shop.priceGems"] = { de = "{price} Gems", en = "{price} gems" },
+	["shop.levelLimit"] = { de = "Weitere Stufen im größeren Shop", en = "More levels in the bigger shop" },
+	["shop.max"] = { de = "MAX", en = "MAX" },
+	["shop.minutes"] = { de = "{minutes} Minuten", en = "{minutes} minutes" },
+	["shop.owned"] = { de = "Im Inventar: {count}", en = "Owned: {count}" },
+	["shop.bought"] = { de = "Gekauft: {item}!", en = "Bought: {item}!" },
+	["shop.boughtPotion"] = {
+		de = "Gekauft: {item}! – im Trank-Menü trinken",
+		en = "Bought: {item}! – drink it in the potion menu",
+	},
+	["shop.failed"] = { de = "Kauf nicht möglich.", en = "Can't buy that." },
+	["shop.ShopLevelLimit"] = {
+		de = "Diese Stufe gibt es nur im größeren Shop.",
+		en = "This level is only in the bigger shop.",
+	},
+	["shop.MaxLevel"] = { de = "Schon auf höchster Stufe!", en = "Already at the highest level!" },
+	["shop.effectToppings"] = { de = "{value} Beläge", en = "{value} toppings" },
+	["shop.effectStuds"] = { de = "{value} Studs", en = "{value} studs" },
+	["shop.effectPets"] = { de = "{value} Pets", en = "{value} pets" },
+	["shop.effectSlots"] = { de = "{value} Plätze", en = "{value} slots" },
+	["shop.effectSpeed"] = { de = "Tempo {value}", en = "Speed {value}" },
+	["shop.effectOn"] = { de = "an", en = "on" },
+	["shop.effectOff"] = { de = "aus", en = "off" },
+
+	-- Pet menu (#69)
+	["pets.title"] = { de = "Meine Pets", en = "My pets" },
+	["pets.deleteTitle"] = { de = "Pet zum Löschen antippen", en = "Tap a pet to delete it" },
+	["pets.equipBest"] = { de = "Beste ausrüsten", en = "Equip best" },
+	["pets.delete"] = { de = "Löschen", en = "Delete" },
+	["pets.done"] = { de = "Fertig", en = "Done" },
+	["pets.keep"] = { de = "Behalten", en = "Keep" },
+	["pets.equip"] = { de = "Ausrüsten", en = "Equip" },
+	["pets.unequip"] = { de = "Ablegen", en = "Unequip" },
+	["pets.empty"] = { de = "Noch keine Pets – öffne ein Ei!", en = "No pets yet – open an egg!" },
+	["pets.confirmDelete"] = { de = "{pet} ({bonus}) wirklich löschen?", en = "Really delete {pet} ({bonus})?" },
+	["pets.confirmDeleteEquipped"] = {
+		de = "{pet} ({bonus}) wirklich löschen? Es wird dabei abgelegt.",
+		en = "Really delete {pet} ({bonus})? It will be unequipped.",
+	},
+	["pets.summary"] = {
+		de = "Ausgerüstet {equipped}/{slots}  ·  Inventar {count}/{inventory}  ·  Bonus {bonus}",
+		en = "Equipped {equipped}/{slots}  ·  Inventory {count}/{inventory}  ·  Bonus {bonus}",
+	},
+	["pets.slotsFull"] = {
+		de = "Alle Pet-Plätze belegt – erst ein Pet ablegen!",
+		en = "All pet slots taken – unequip a pet first!",
+	},
+
+	-- Egg panel, egg animation and pet card (#69)
+	["egg.luck"] = { de = "{egg} 🍀 Glück!", en = "{egg} 🍀 Luck!" },
+	["egg.openOne"] = { de = "1 öffnen – {price}", en = "Open 1 – {price}" },
+	["egg.openOneCoins"] = { de = "1 öffnen – {price} Münzen", en = "Open 1 – {price} coins" },
+	["egg.openThree"] = { de = "3 öffnen – {price}", en = "Open 3 – {price}" },
+	["egg.notEnoughCoins"] = { de = "Zu wenig Münzen!", en = "Not enough coins!" },
+	["egg.inventoryFull"] = { de = "Inventar voll!", en = "Inventory full!" },
+	["egg.bonus"] = { de = "{bonus} Münzen", en = "{bonus} coins" },
+	["egg.tapToClose"] = { de = "Tippen zum Schließen", en = "Tap to close" },
+
+	-- Tutorial card (#69); tutorial.<StepId> matches the steps in GameConfig
+	["tutorial.step"] = { de = "Tutorial – Schritt {number}/{total}", en = "Tutorial – step {number}/{total}" },
+	["tutorial.CollectToppings"] = {
+		de = "Sammle {goal} Beläge ein ({progress}/{goal}) – tippe sie an oder lauf mit Auto-Sammeln drüber!",
+		en = "Collect {goal} toppings ({progress}/{goal}) – tap them or walk over them with Auto-Collect!",
+	},
+	["tutorial.SellPizza"] = {
+		de = "Lauf in die Zone am Ofen und verkaufe deine Pizza!",
+		en = "Walk into the zone at the oven and sell your pizza!",
+	},
+	["tutorial.BuyUpgrade"] = {
+		de = "Kauf im Shop dein erstes Upgrade! Zu wenig Münzen? Sammeln und verkaufen.",
+		en = "Buy your first upgrade in the shop! Not enough coins? Collect and sell.",
+	},
+	["tutorial.OpenEgg"] = {
+		de = "Öffne am Ei dein erstes Pet! Pets bringen mehr Münzen.",
+		en = "Open your first pet at the egg! Pets bring more coins.",
+	},
+	["tutorial.doneTitle"] = { de = "Tutorial geschafft!", en = "Tutorial complete!" },
+	["tutorial.doneBody"] = {
+		de = "Viel Spaß beim Pizza-Belegen! Neue Welten warten hinter den Barrieren.",
+		en = "Have fun topping pizzas! New worlds await behind the barriers.",
+	},
 } :: { [string]: Entry }
 
 -- Locale id ("de-de", "en-us", ...) → language: every German locale is German, all else English.

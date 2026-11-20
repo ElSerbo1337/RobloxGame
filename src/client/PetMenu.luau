@@ -67,7 +67,7 @@ function PetMenu.start()
 	UiKit.stroke(panel, 4)
 	UiKit.placeMenu(gui, panel, PANEL_SIZE, MIN_PANEL_HEIGHT)
 
-	local title = UiKit.label(panel, "Meine Pets")
+	local title = UiKit.label(panel, Lang.t("pets.title"))
 	title.Position = UDim2.fromOffset(24, 14)
 	title.Size = UDim2.new(0.5, -24, 0, 48)
 	title.TextXAlignment = Enum.TextXAlignment.Left
@@ -83,12 +83,12 @@ function PetMenu.start()
 	closeButton.Size = UDim2.fromOffset(72, 72)
 
 	-- Action row: big buttons, easy to tap on a phone.
-	local bestButton = UiKit.button(panel, "Beste ausrüsten", UiKit.GREEN)
+	local bestButton = UiKit.button(panel, Lang.t("pets.equipBest"), UiKit.GREEN)
 	bestButton.Name = "EquipBestButton"
 	bestButton.Position = UDim2.fromOffset(24, 100)
 	bestButton.Size = UDim2.fromOffset(260, 64)
 
-	local deleteButton = UiKit.button(panel, "Löschen", UiKit.RED)
+	local deleteButton = UiKit.button(panel, Lang.t("pets.delete"), UiKit.RED)
 	deleteButton.Name = "DeleteModeButton"
 	deleteButton.Position = UDim2.fromOffset(300, 100)
 	deleteButton.Size = UDim2.fromOffset(180, 64)
@@ -109,7 +109,7 @@ function PetMenu.start()
 	grid.SortOrder = Enum.SortOrder.LayoutOrder
 	grid.Parent = list
 
-	local empty = UiKit.label(list, "Noch keine Pets – öffne ein Ei!")
+	local empty = UiKit.label(list, Lang.t("pets.empty"))
 	empty.Size = UDim2.fromOffset(560, 60)
 	empty.Visible = false
 
@@ -141,12 +141,12 @@ function PetMenu.start()
 	question.TextWrapped = true
 	question.ZIndex = 12
 
-	local yesButton = UiKit.button(dialog, "Löschen", UiKit.RED)
+	local yesButton = UiKit.button(dialog, Lang.t("pets.delete"), UiKit.RED)
 	yesButton.Position = UDim2.new(0, 20, 1, -96)
 	yesButton.Size = UDim2.new(0.5, -30, 0, 76)
 	yesButton.ZIndex = 12
 
-	local noButton = UiKit.button(dialog, "Behalten", UiKit.GREEN)
+	local noButton = UiKit.button(dialog, Lang.t("pets.keep"), UiKit.GREEN)
 	noButton.AnchorPoint = Vector2.new(1, 0)
 	noButton.Position = UDim2.new(1, -20, 1, -96)
 	noButton.Size = UDim2.new(0.5, -30, 0, 76)
@@ -164,9 +164,8 @@ function PetMenu.start()
 	local function askDelete(entry: PetEntry)
 		local pet = GameConfig.pets[entry.petId]
 		pendingDelete = entry.uid
-		question.Text = if entry.equipped
-			then `{pet.displayName} ({UiKit.bonusText(pet.bonus)}) wirklich löschen? Es wird dabei abgelegt.`
-			else `{pet.displayName} ({UiKit.bonusText(pet.bonus)}) wirklich löschen?`
+		local key = if entry.equipped then "pets.confirmDeleteEquipped" else "pets.confirmDelete"
+		question.Text = Lang.t(key, { pet = pet.displayName, bonus = UiKit.bonusText(pet.bonus) })
 		confirm.Visible = true
 		UiKit.pop(dialog, 0.8)
 	end
@@ -233,7 +232,10 @@ function PetMenu.start()
 		bonus.TextStrokeColor3 = UiKit.DARK
 		bonus.TextStrokeTransparency = 0
 
-		local actionText = if deleteMode then "Löschen" elseif entry.equipped then "Ablegen" else "Ausrüsten"
+		local actionText = if deleteMode
+			then Lang.t("pets.delete")
+			elseif entry.equipped then Lang.t("pets.unequip")
+			else Lang.t("pets.equip")
 		local state = UiKit.label(button, actionText)
 		state.Position = UDim2.new(0, 10, 1, -38)
 		state.Size = UDim2.new(1, -20, 0, 30)
@@ -271,17 +273,22 @@ function PetMenu.start()
 		local inventorySlots = (player:GetAttribute("InventorySlots") :: number?) or 0
 		local multiplier = (player:GetAttribute("CoinMultiplier") :: number?) or 1
 		local bonusText = UiKit.bonusText(multiplier - 1)
-		summary.Text =
-			`Ausgerüstet {equippedCount}/{slots}  ·  Inventar {#pets}/{inventorySlots}  ·  Bonus {bonusText}`
+		summary.Text = Lang.t("pets.summary", {
+			equipped = equippedCount,
+			slots = slots,
+			count = #pets,
+			inventory = inventorySlots,
+			bonus = bonusText,
+		})
 		summary.TextColor3 = if #pets >= inventorySlots and inventorySlots > 0 then UiKit.RED else UiKit.DARK
 	end
 
 	local function setDeleteMode(enabled: boolean)
 		deleteMode = enabled
-		deleteButton.Text = if enabled then "Fertig" else "Löschen"
+		deleteButton.Text = if enabled then Lang.t("pets.done") else Lang.t("pets.delete")
 		deleteButton.BackgroundColor3 = if enabled then UiKit.DARK else UiKit.RED
 		bestButton.Visible = not enabled
-		title.Text = if enabled then "Pet zum Löschen antippen" else "Meine Pets"
+		title.Text = if enabled then Lang.t("pets.deleteTitle") else Lang.t("pets.title")
 		refresh()
 	end
 
@@ -320,8 +327,8 @@ function PetMenu.start()
 	-- "All slots taken" feedback right in the menu.
 	Net.event("Notify").OnClientEvent:Connect(function(kind: string)
 		local message = if kind == "PetSlotsFull"
-			then "Alle Pet-Plätze belegt – erst ein Pet ablegen!"
-			elseif kind == "NoPets" then "Noch keine Pets – öffne ein Ei!"
+			then Lang.t("pets.slotsFull")
+			elseif kind == "NoPets" then Lang.t("pets.empty")
 			else nil
 		if message and panel.Visible then
 			local old = summary.Text

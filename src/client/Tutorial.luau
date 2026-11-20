@@ -12,6 +12,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(game:GetService("ReplicatedStorage").Shared.GameConfig)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 local TAG = "TutorialTarget"
@@ -25,14 +26,8 @@ local GEM_TOPPING = GameConfig.gems.toppingId
 local Tutorial = {}
 
 local function stepText(stepId: string, progress: number, goal: number): string
-	if stepId == "CollectToppings" then
-		return `Sammle {goal} Beläge ein ({progress}/{goal}) – tippe sie an oder lauf mit Auto-Sammeln drüber!`
-	elseif stepId == "SellPizza" then
-		return "Lauf in die Zone am Ofen und verkaufe deine Pizza!"
-	elseif stepId == "BuyUpgrade" then
-		return "Kauf im Shop dein erstes Upgrade! Zu wenig Münzen? Sammeln und verkaufen."
-	elseif stepId == "OpenEgg" then
-		return "Öffne am Ei dein erstes Pet! Pets bringen mehr Münzen."
+	if stepId == "CollectToppings" or stepId == "SellPizza" or stepId == "BuyUpgrade" or stepId == "OpenEgg" then
+		return Lang.t(`tutorial.{stepId}`, { progress = progress, goal = goal })
 	end
 	return ""
 end
@@ -170,8 +165,8 @@ function Tutorial.start()
 		if stepId == "" then
 			if currentStep ~= "" then
 				-- Just finished: say well done, then hide for good.
-				header.Text = "Tutorial geschafft!"
-				body.Text = "Viel Spaß beim Pizza-Belegen! Neue Welten warten hinter den Barrieren."
+				header.Text = Lang.t("tutorial.doneTitle")
+				body.Text = Lang.t("tutorial.doneBody")
 				UiKit.pop(card)
 				hideToken += 1
 				local myToken = hideToken
@@ -189,7 +184,7 @@ function Tutorial.start()
 
 		hideToken += 1
 		card.Visible = true
-		header.Text = `Tutorial – Schritt {number}/{total}`
+		header.Text = Lang.t("tutorial.step", { number = number, total = total })
 		body.Text = stepText(stepId, progress, goal)
 		if stepId ~= currentStep then
 			UiKit.pop(card)

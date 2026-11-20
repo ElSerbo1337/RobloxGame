@@ -9,6 +9,7 @@ local TweenService = game:GetService("TweenService")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Lang = require(script.Parent.Lang)
 local Sounds = require(script.Parent.Sounds)
 local PetIcon = require(script.Parent.PetIcon)
 local UiKit = require(script.Parent.UiKit)
@@ -121,13 +122,13 @@ function EggAnimation.start()
 		rarityName.TextStrokeTransparency = 0
 		rarityName.ZIndex = 7
 
-		local bonusText = UiKit.label(card, `{UiKit.bonusText(pet.bonus)} Münzen`)
+		local bonusText = UiKit.label(card, Lang.t("egg.bonus", { bonus = UiKit.bonusText(pet.bonus) }))
 		bonusText.Position = UDim2.fromOffset(16, 270)
 		bonusText.Size = UDim2.new(1, -32, 0, 40)
 		bonusText.TextColor3 = Color3.fromRGB(40, 130, 40)
 		bonusText.ZIndex = 7
 
-		local hint = UiKit.label(card, "Tippen zum Schließen")
+		local hint = UiKit.label(card, Lang.t("egg.tapToClose"))
 		hint.Position = UDim2.fromOffset(16, 318)
 		hint.Size = UDim2.new(1, -32, 0, 26)
 		hint.TextTransparency = 0.4

@@ -1493,3 +1493,22 @@ Sprache umschalten: `Workspace` → Attribut `Language` (string) = `de` bzw. `en
 - [ ] Seiten-Knöpfe „Pets“, „Potions“, „Gifts“ (mit „Claim!“/„Tomorrow“), „Rebirth“; Hinweise „New! Gifts for playing“ / „New! More coins“ lesbar, nichts abgeschnitten (auch Handy-Emulator).
 - [ ] Am gesperrten Tor: „🔓 Unlock <Welt> / 1,234 coins“, mit Rebirth-Sperre „🔒 <Welt>: From 1 rebirth …“.
 - [ ] Output ohne Fehler; im Explorer (während Play) bei `PlayerGui` → `Hud` ist `AutoLocalize` aus.
+
+## #69 Englisch 4: Menüs Teil 1 (Shop, Pets, Ei, Tutorial)
+
+Umgestellt auf die Textsammlung (Schlüssel `shop.`, `pets.`, `egg.`, `tutorial.`): Shop-Menü, Pet-Menü (Löschen-Dialog, Beste ausrüsten), Ei-Panel, Ei-Animation mit Pet-Karte, Tutorial-Karte. Namen aus der Config (Shops, Upgrades, Tränke, Eier, Pets samt Beschreibungen) bleiben Deutsch (#68). Vorher: `lune run test` → `553 passed, 0 failed`. Sprache wie bei #67 über das `Workspace`-Attribut `Language` umschalten.
+
+**Deutsch** (alles wie vorher):
+
+- [ ] Shop: „Münz-Tresen“, „Gem-Tresen“, „Gem-Tresen: Tränke (je 10 Min.)“, „Stufe 1 / 5“, Preis „1.500 Münzen“ / „… Gems“, „Weitere Stufen im größeren Shop“, „MAX“, Trank „10 Minuten“ / „Im Inventar: 0“; nach Kauf „Gekauft: …!“ (Trank mit „– im Trank-Menü trinken“), Fehler „Nicht genug Münzen!“ usw.
+- [ ] Pets: „Meine Pets“, „Beste ausrüsten“, „Löschen“ → „Fertig“ und Titel „Pet zum Löschen antippen“, Karten „Ausrüsten“/„Ablegen“, Zeile „Ausgerüstet x/y · Inventar … · Bonus …“, Dialog „… wirklich löschen?“ mit „Löschen“/„Behalten“, leer „Noch keine Pets – öffne ein Ei!“.
+- [ ] Ei: „1 öffnen – 100 Münzen“ (bzw. „1 öffnen – 100“ + „3 öffnen – 300“), mit Glücks-Trank „<Ei> 🍀 Glück!“, Fehler „Zu wenig Münzen!“/„Inventar voll!“; Pet-Karte „+25 % Münzen“, „Tippen zum Schließen“.
+- [ ] Tutorial: „Tutorial – Schritt 1/4“, Schritt-Texte, am Ende „Tutorial geschafft!“.
+
+**Englisch** (Attribut `en`, auch im Handy-Emulator prüfen – nichts abgeschnitten):
+
+- [ ] Shop: „Coin counter“, „Gem counter“, „Gem counter: potions (10 min each)“, „Level 1 / 5“, „1,500 coins“ / „… gems“, „More levels in the bigger shop“ passt in den grauen Knopf, Effekt „10 toppings → 15 toppings“, „off“/„on“, „Speed …“; Trank „10 minutes“ / „Owned: 0“; „Bought: …!“ / „… – drink it in the potion menu“, „Can't buy that.“, „Already at the highest level!“.
+- [ ] Pets: „My pets“, „Equip best“, „Delete“ → „Done“ + „Tap a pet to delete it“, Karten „Equip“/„Unequip“, Zeile „Equipped x/y · Inventory … · Bonus …“ passt in eine Zeile, Dialog „Really delete …?“ (ausgerüstet: „It will be unequipped.“) mit „Delete“/„Keep“, leer „No pets yet – open an egg!“, „All pet slots taken – unequip a pet first!“.
+- [ ] Ei: „Open 1 – 100 coins“ bzw. „Open 1 – 100“ + „Open 3 – 300“, „<Ei> 🍀 Luck!“, „Not enough coins!“/„Inventory full!“; Pet-Karte „+25 % coins“, „Tap to close“.
+- [ ] Tutorial: „Tutorial – step 1/4“, „Collect 10 toppings (0/10) – tap them or walk over them with Auto-Collect!“ passt in die Karte, „Walk into the zone at the oven …“, „Buy your first upgrade …“, „Open your first pet at the egg! …“, am Ende „Tutorial complete!“ / „Have fun topping pizzas! …“.
+- [ ] Output ohne Fehler.
