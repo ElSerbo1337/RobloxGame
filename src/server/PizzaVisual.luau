@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 
 local PlayerStates = require(script.Parent.PlayerStates)
+local SignText = require(script.Parent.SignText)
 local ToppingLook = require(script.Parent.ToppingLook)
 
 local PIZZA_DIAMETER = 3.4
@@ -81,7 +82,7 @@ local function showOrderTicket(handle: BasePart, isOrder: boolean)
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundColor3 = Color3.fromRGB(255, 248, 230)
-	label.Text = "🧾 Bestellung"
+	SignText.set(label, "sign.orderTicket")
 	label.TextScaled = true
 	label.Font = Enum.Font.FredokaOne
 	label.TextColor3 = Color3.fromRGB(230, 70, 50)

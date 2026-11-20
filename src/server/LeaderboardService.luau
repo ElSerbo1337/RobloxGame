@@ -22,6 +22,7 @@ local UserService = game:GetService("UserService")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Leaderboard = require(ReplicatedStorage.Shared.Leaderboard)
 local PlayerStates = require(script.Parent.PlayerStates)
+local SignText = require(script.Parent.SignText)
 
 local CONFIG = GameConfig.leaderboards
 local CREAM = Color3.fromRGB(255, 248, 230)
@@ -149,6 +150,7 @@ local function buildPanel(gui: SurfaceGui, board: Board): ({ Frame }, TextLabel)
 	local titleHeight = 1 / (rowCount + 2.5) * 1.5
 
 	local title = text(gui, "Title", board.title, ORANGE, Enum.TextXAlignment.Center)
+	SignText.set(title, `board.{board.id}`)
 	title.Size = UDim2.new(0.9, 0, titleHeight, 0)
 	title.Position = UDim2.fromScale(0.05, 0.02)
 	local stroke = Instance.new("UIStroke")
@@ -163,7 +165,8 @@ local function buildPanel(gui: SurfaceGui, board: Board): ({ Frame }, TextLabel)
 	list.Size = UDim2.fromScale(0.9, 0.94 - titleHeight)
 	list.Parent = gui
 
-	local status = text(list, "Status", "Bestenliste lädt …", DARK, Enum.TextXAlignment.Center)
+	local status = text(list, "Status", "", DARK, Enum.TextXAlignment.Center)
+	SignText.set(status, "board.loading")
 	status.Size = UDim2.fromScale(1, 1 / rowCount)
 
 	local rows = {}
@@ -200,12 +203,12 @@ local function show(rows: { Frame }, status: TextLabel, entries: { Leaderboard.R
 		local entry = entries[i]
 		row.Visible = entry ~= nil
 		if entry then
-			(row:FindFirstChild("Name") :: TextLabel).Text = entry.name;
-			(row:FindFirstChild("Value") :: TextLabel).Text = entry.value
+			(row:FindFirstChild("Name") :: TextLabel).Text = entry.name
+			SignText.set(row:FindFirstChild("Value") :: TextLabel, entry.valueKey, entry.valueArgs)
 		end
 	end
 	status.Visible = #entries == 0
-	status.Text = "Noch keine Einträge"
+	SignText.set(status, "board.empty")
 end
 
 -- Starts writing (after saves) and the refresh loop for the boards on the spawn island.

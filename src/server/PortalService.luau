@@ -12,6 +12,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
+local SignText = require(script.Parent.SignText)
 local SpawnService = require(script.Parent.SpawnService)
 local WorldMap = require(script.Parent.WorldMap)
 
@@ -105,7 +106,7 @@ function PortalService.build(parent: Instance, world: any, groundPosition: Vecto
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundTransparency = 1
-	label.Text = "🌀 Teleport"
+	SignText.set(label, "sign.portal")
 	label.TextScaled = true
 	label.Font = Enum.Font.FredokaOne
 	label.TextColor3 = Color3.fromRGB(255, 240, 200)

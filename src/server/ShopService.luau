@@ -13,6 +13,7 @@ local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local GroundMarker = require(script.Parent.GroundMarker)
 local PlayerStates = require(script.Parent.PlayerStates)
+local SignText = require(script.Parent.SignText)
 
 local CHECK_SECONDS = 0.2
 -- Width of the pizzeria stand model (#28) = width of the placeholder awning.
@@ -102,7 +103,7 @@ function ShopService.buildStand(parent: Instance, shopId: string, groundPosition
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundTransparency = 1
-	label.Text = `{shop.displayName} – Upgrades`
+	SignText.set(label, "sign.shopUpgrades", { shop = shop.displayName })
 	label.TextScaled = true
 	label.Font = Enum.Font.FredokaOne
 	label.TextColor3 = Color3.fromRGB(255, 240, 200)
@@ -129,7 +130,7 @@ function ShopService.buildStand(parent: Instance, shopId: string, groundPosition
 		14 * k,
 		9 * k,
 		Color3.fromRGB(90, 200, 120),
-		"SHOP"
+		"sign.shop"
 	)
 
 	ModelLibrary.dressPlaceholder(

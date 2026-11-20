@@ -5,7 +5,8 @@
 
 export type Format = "Number" | "Duration"
 export type Entry = { name: string, value: number }
-export type Row = { rank: number, name: string, value: string }
+-- `value` is the German text; `valueKey`/`valueArgs` the same as a sign text (Texts.render, #71).
+export type Row = { rank: number, name: string, value: string, valueKey: string, valueArgs: { [string]: any } }
 
 local Leaderboard = {}
 
@@ -30,11 +31,32 @@ function Leaderboard.formatValue(format: Format, value: number): string
 	return germanNumber(value)
 end
 
+-- The value as a sign text key + arguments (see Texts.render), shown in each player's
+-- language: "Number" -> board.number, "Duration" -> board.minutes / board.hours.
+function Leaderboard.valueText(format: Format, value: number): (string, { [string]: any })
+	if format == "Duration" then
+		local minutes = math.floor(value / 60)
+		local hours = math.floor(minutes / 60)
+		if hours == 0 then
+			return "board.minutes", { minutes = { integer = minutes } }
+		end
+		return "board.hours", { hours = { integer = hours }, minutes = { integer = minutes % 60 } }
+	end
+	return "board.number", { value = { integer = value } }
+end
+
 -- Entries in rank order (best first) -> rows numbered from 1.
 function Leaderboard.rows(entries: { Entry }, format: Format): { Row }
 	local rows = {}
 	for rank, entry in entries do
-		table.insert(rows, { rank = rank, name = entry.name, value = Leaderboard.formatValue(format, entry.value) })
+		local valueKey, valueArgs = Leaderboard.valueText(format, entry.value)
+		table.insert(rows, {
+			rank = rank,
+			name = entry.name,
+			value = Leaderboard.formatValue(format, entry.value),
+			valueKey = valueKey,
+			valueArgs = valueArgs,
+		})
 	end
 	return rows
 end

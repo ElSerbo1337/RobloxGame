@@ -303,6 +303,36 @@ Texts.strings = {
 	["delivery.ringingHint"] = { de = "Lauf zum Telefon und geh ran.", en = "Run to the phone and answer it." },
 	["delivery.allThere"] = { de = "Fertig! Ab zum 🚚 Lieferwagen.", en = "Done! Off to the 🚚 delivery van." },
 	["delivery.hurry"] = { de = "Schnell = mehr Belohnung!", en = "Fast = more reward!" },
+
+	-- 3D signs built by the server (#71); the server sets key + args on the label
+	["sign.oven"] = { de = "Ofen – hier verkaufen", en = "Oven – sell here" },
+	["sign.ovenWorld"] = { de = "Ofen ({world}) – hier verkaufen", en = "Oven ({world}) – sell here" },
+	["sign.sell"] = { de = "VERKAUFEN", en = "SELL" },
+	["sign.shop"] = { de = "SHOP", en = "SHOP" },
+	["sign.shopUpgrades"] = { de = "{shop} – Upgrades", en = "{shop} – Upgrades" },
+	["sign.gate"] = { de = "🔒 {world}\n{price} Münzen", en = "🔒 {world}\n{price} coins" },
+	["sign.gateRebirths"] = {
+		de = "🔒 {world}\n{condition}\n{price} Münzen",
+		en = "🔒 {world}\n{condition}\n{price} coins",
+	},
+	["sign.egg"] = { de = "{egg}\n💰 {price}", en = "{egg}\n💰 {price}" },
+	["sign.eggSoon"] = { de = "Bald: neues Ei!", en = "Coming soon: new egg!" },
+	["sign.portal"] = { de = "🌀 Teleport", en = "🌀 Teleport" },
+	["sign.phone"] = { de = "📞 Telefon – Aufträge", en = "📞 Phone – Orders" },
+	["sign.van"] = { de = "🚚 Lieferwagen – Bestellung abgeben", en = "🚚 Delivery van – hand in order" },
+	["sign.orderTicket"] = { de = "🧾 Bestellung", en = "🧾 Order" },
+
+	-- Leaderboard panels (titles by board id from GameConfig.leaderboards)
+	["board.Playtime"] = { de = "⏱ Spielzeit", en = "⏱ Playtime" },
+	["board.CoinsEarned"] = { de = "💰 Münzen verdient", en = "💰 Coins earned" },
+	["board.Rebirths"] = { de = "🔁 Rebirths", en = "🔁 Rebirths" },
+	["board.fallbackTitle"] = { de = "Bestenliste", en = "Leaderboard" },
+	["board.loading"] = { de = "Bestenliste lädt …", en = "Leaderboard loading …" },
+	["board.loadingTitled"] = { de = "{title}\nBestenliste lädt …", en = "{title}\nLeaderboard loading …" },
+	["board.empty"] = { de = "Noch keine Einträge", en = "No entries yet" },
+	["board.number"] = { de = "{value}", en = "{value}" },
+	["board.minutes"] = { de = "{minutes} Min.", en = "{minutes} min" },
+	["board.hours"] = { de = "{hours} Std. {minutes} Min.", en = "{hours} h {minutes} min" },
 } :: { [string]: Entry }
 
 -- Locale id ("de-de", "en-us", ...) → language: every German locale is German, all else English.
@@ -344,6 +374,35 @@ function Texts.format(language: Language, key: string, params: Params?): string
 			return if value == nil then nil else tostring(value)
 		end)
 	)
+end
+
+-- Arguments of a sign text (#71), sent as JSON by the server: a string is used as is, a
+-- number becomes a short number, `{ integer = n }` a whole number with separators and
+-- `{ key = "...", args = {...} }` another text in the same language.
+export type SignArg = string | number | { integer: number } | { key: string, args: SignArgs? }
+export type SignArgs = { [string]: SignArg }
+
+-- Sign text for `key` in `language` with its arguments formatted for that language.
+function Texts.render(language: Language, key: string, args: SignArgs?): string
+	if args == nil then
+		return Texts.format(language, key)
+	end
+	local params: Params = {}
+	for name, value in args do
+		if type(value) == "number" then
+			params[name] = Texts.shortNumber(language, value)
+		elseif type(value) == "table" then
+			local arg = value :: any
+			if type(arg.integer) == "number" then
+				params[name] = Texts.integer(language, arg.integer)
+			elseif type(arg.key) == "string" then
+				params[name] = Texts.render(language, arg.key, arg.args)
+			end
+		else
+			params[name] = tostring(value)
+		end
+	end
+	return Texts.format(language, key, params)
 end
 
 local SEPARATORS = {

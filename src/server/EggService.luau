@@ -13,6 +13,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
+local SignText = require(script.Parent.SignText)
 
 export type EggSpot = {
 	eggId: string,
@@ -53,12 +54,6 @@ local EGG_WIDTH = 5.5
 
 local CREAM = Color3.fromRGB(255, 248, 230)
 local DARK = Color3.fromRGB(60, 35, 20)
-
-local function formatNumber(value: number): string
-	local text = tostring(math.floor(value))
-	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
-	return (string.gsub(formatted, "^%.", ""))
-end
 
 type Look = { color: Color3, accent: Color3, glow: boolean }
 
@@ -106,7 +101,11 @@ local function buildSign(parent: Instance, ground: Vector3, eggId: string?, visi
 	label.TextScaled = true
 	label.TextColor3 = DARK
 	-- A spot without an egg (a world listing fewer than two eggs).
-	label.Text = if egg then `{egg.displayName}\n💰 {formatNumber(egg.price)}` else "Bald: neues Ei!"
+	if egg then
+		SignText.set(label, "sign.egg", { egg = egg.displayName, price = { integer = egg.price } })
+	else
+		SignText.set(label, "sign.eggSoon")
+	end
 	label.Parent = gui
 	local padding = Instance.new("UIPadding")
 	padding.PaddingTop = UDim.new(0.08, 0)

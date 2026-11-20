@@ -21,6 +21,7 @@ local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
+local SignText = require(script.Parent.SignText)
 local WorldMap = require(script.Parent.WorldMap)
 
 type PlayerState = GameRules.PlayerState
@@ -54,7 +55,7 @@ local function part(props: { [string]: any }): Part
 	return p
 end
 
-local function sign(parent: Instance, adornee: BasePart, text: string, height: number)
+local function sign(parent: Instance, adornee: BasePart, key: string, height: number)
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "Sign"
 	billboard.Size = UDim2.fromScale(10, 2.5)
@@ -64,7 +65,7 @@ local function sign(parent: Instance, adornee: BasePart, text: string, height: n
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundTransparency = 1
-	label.Text = text
+	SignText.set(label, key)
 	label.TextScaled = true
 	label.Font = Enum.Font.FredokaOne
 	label.TextColor3 = Color3.fromRGB(255, 240, 200)
@@ -118,7 +119,7 @@ local function buildPhone(parent: Instance, ground: Vector3): BasePart
 		Parent = model,
 	})
 	handset:SetAttribute("DeliveryPhone", true)
-	sign(model, handset, "📞 Telefon – Aufträge", 3)
+	sign(model, handset, "sign.phone", 3)
 	ModelLibrary.dressPlaceholder(
 		model,
 		"Telephone",
@@ -179,7 +180,7 @@ local function buildVan(parent: Instance, ground: Vector3): BasePart
 			Parent = model,
 		})
 	end
-	sign(model, body, "🚚 Lieferwagen – Bestellung abgeben", 5)
+	sign(model, body, "sign.van", 5)
 	ModelLibrary.dressPlaceholder(
 		model,
 		"DeliveryVan",

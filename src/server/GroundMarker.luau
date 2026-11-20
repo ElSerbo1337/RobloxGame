@@ -3,6 +3,8 @@
 -- neon rim and a word written on top ("VERKAUFEN", "SHOP"). Purely visual: players walk
 -- over it, clicks and the camera pass through. Zone detection keeps using the zone part.
 
+local SignText = require(script.Parent.SignText)
+
 local GroundMarker = {}
 
 -- Heights above the ground surface: above every thin ground layer from IslandPlan (#46,
@@ -33,14 +35,14 @@ local function decal(props: { [string]: any }): Part
 end
 
 -- Builds the marking centred on `groundCf` (on the ground surface, -Z = side players
--- come from, so the text reads from there) with footprint `width` (X) × `depth` (Z).
+-- come from, so the text reads from there; `textKey` from Texts, #71) with footprint `width` (X) × `depth` (Z).
 function GroundMarker.build(
 	parent: Instance,
 	groundCf: CFrame,
 	width: number,
 	depth: number,
 	color: Color3,
-	text: string
+	textKey: string
 ): Model
 	local model = Instance.new("Model")
 	model.Name = "GroundMarker"
@@ -90,7 +92,7 @@ function GroundMarker.build(
 	label.Position = UDim2.fromScale(0.5, 0.5)
 	label.Size = UDim2.fromScale(0.85, 0.5)
 	label.BackgroundTransparency = 1
-	label.Text = text
+	SignText.set(label, textKey)
 	label.TextScaled = true
 	label.Font = Enum.Font.FredokaOne
 	label.TextColor3 = CREAM

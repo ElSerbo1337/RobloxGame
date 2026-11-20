@@ -38,6 +38,11 @@ function Lang.t(key: string, params: Texts.Params?): string
 	return Texts.format(Lang.language, key, params)
 end
 
+-- Sign text (#71): `args` as stored by the server (see Texts.render).
+function Lang.render(key: string, args: Texts.SignArgs?): string
+	return Texts.render(Lang.language, key, args)
+end
+
 -- "1,5 Mio" / "1.5M" (whole numbers below a million).
 function Lang.shortNumber(value: number): string
 	return Texts.shortNumber(Lang.language, value)

@@ -124,8 +124,36 @@ describe("leaderboard display", function()
 		local rows = Leaderboard.rows({ { name = "Anna", value = 5000 }, { name = "Ben", value = 42 } }, "Number")
 
 		expect(rows).toEqual({
-			{ rank = 1, name = "Anna", value = "5.000" },
-			{ rank = 2, name = "Ben", value = "42" },
+			{
+				rank = 1,
+				name = "Anna",
+				value = "5.000",
+				valueKey = "board.number",
+				valueArgs = { value = { integer = 5000 } },
+			},
+			{
+				rank = 2,
+				name = "Ben",
+				value = "42",
+				valueKey = "board.number",
+				valueArgs = { value = { integer = 42 } },
+			},
 		})
+	end)
+end)
+
+describe("leaderboard values as sign texts (#71)", function()
+	local Texts = require("../src/shared/Texts")
+	local function render(language, format, value)
+		local key, args = Leaderboard.valueText(format, value)
+		return Texts.render(language, key, args)
+	end
+
+	it("matches the German format and shows English", function()
+		for _, case in { { "Number", 1234567 }, { "Duration", 45 * 60 }, { "Duration", 1234 * 3600 + 5 * 60 } } do
+			expect(render("de", case[1], case[2])).toBe(Leaderboard.formatValue(case[1], case[2]))
+		end
+		expect(render("en", "Number", 1234567)).toBe("1,234,567")
+		expect(render("en", "Duration", 3 * 3600 + 5 * 60)).toBe("3 h 5 min")
 	end)
 end)

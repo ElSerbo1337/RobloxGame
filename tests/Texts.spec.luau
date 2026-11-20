@@ -108,3 +108,39 @@ describe("Texts.integer", function()
 		expect(Texts.integer("en", 12.7)).toBe("12")
 	end)
 end)
+
+describe("Texts.render (3D signs, #71)", function()
+	it("keeps the German sign texts exactly as before", function()
+		expect(Texts.render("de", "sign.sell")).toBe("VERKAUFEN")
+		expect(Texts.render("de", "sign.ovenWorld", { world = "Pilzwald" })).toBe("Ofen (Pilzwald) – hier verkaufen")
+		expect(Texts.render("de", "sign.gate", { world = "Pilzwald", price = { integer = 1500000 } })).toBe(
+			"🔒 Pilzwald\n1.500.000 Münzen"
+		)
+		expect(Texts.render("de", "sign.gateRebirths", {
+			world = "Vulkan",
+			condition = { key = "unlock.rebirthsMany", args = { count = 3 } },
+			price = { integer = 2500 },
+		})).toBe("🔒 Vulkan\nAb 3 Rebirths\n2.500 Münzen")
+	end)
+
+	it("formats arguments in the player's language", function()
+		expect(Texts.render("en", "sign.sell")).toBe("SELL")
+		expect(Texts.render("en", "sign.gateRebirths", {
+			world = "Vulkan",
+			condition = { key = "unlock.rebirthsOne", args = { count = 1 } },
+			price = { integer = 2500 },
+		})).toBe("🔒 Vulkan\nFrom 1 rebirth\n2,500 coins")
+		expect(Texts.render("en", "sign.egg", { egg = "Ei", price = 1500000 })).toBe("Ei\n💰 1.5M")
+		expect(Texts.render("de", "sign.egg", { egg = "Ei", price = 1500000 })).toBe("Ei\n💰 1,5 Mio")
+	end)
+
+	it("has a title for every leaderboard", function()
+		local GameConfig = require("../src/shared/GameConfig")
+		for _, board in GameConfig.leaderboards.boards do
+			expect({ id = board.id, de = Texts.render("de", `board.{board.id}`) }).toEqual({
+				id = board.id,
+				de = board.title,
+			})
+		end
+	end)
+end)

@@ -13,6 +13,8 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GroundMarker = require(script.Parent.GroundMarker)
 local IslandBuilder = require(script.Parent.IslandBuilder)
 local IslandPlan = require(ReplicatedStorage.Shared.IslandPlan)
+local SignText = require(script.Parent.SignText)
+local Texts = require(ReplicatedStorage.Shared.Texts)
 local WorldDeco = require(script.Parent.WorldDeco)
 
 export type Layout = {
@@ -55,7 +57,14 @@ local function part(props: { [string]: any }): Part
 	return p
 end
 
-local function sign(parent: Instance, adornee: BasePart, text: string, height: number?, name: string?)
+local function sign(
+	parent: Instance,
+	adornee: BasePart,
+	key: string,
+	args: Texts.SignArgs?,
+	height: number?,
+	name: string?
+)
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = name or "Sign"
 	billboard.Size = UDim2.fromScale(12, 3)
@@ -65,19 +74,13 @@ local function sign(parent: Instance, adornee: BasePart, text: string, height: n
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundTransparency = 1
-	label.Text = text
+	SignText.set(label, key, args)
 	label.TextScaled = true
 	label.Font = Enum.Font.FredokaOne
 	label.TextColor3 = Color3.fromRGB(255, 240, 200)
 	label.TextStrokeTransparency = 0.2
 	label.Parent = billboard
 	billboard.Parent = parent
-end
-
-local function formatCoins(value: number): string
-	local text = tostring(math.floor(value))
-	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
-	return (string.gsub(formatted, "^%.", ""))
 end
 
 function WorldMap.centerOf(index: number): Vector3
@@ -138,16 +141,14 @@ local function buildOven(folder: Instance, cf: CFrame, world: any, color: Color3
 		CanCollide = false,
 		Parent = folder,
 	})
-	sign(
-		folder,
-		oven,
-		if world.id == GameConfig.worlds[1].id
-			then "Ofen – hier verkaufen"
-			else `Ofen ({world.displayName}) – hier verkaufen`
-	)
+	if world.id == GameConfig.worlds[1].id then
+		sign(folder, oven, "sign.oven")
+	else
+		sign(folder, oven, "sign.ovenWorld", { world = world.displayName })
+	end
 	-- The zone box stays as the (invisible) detection volume; the floor marking shows it (#60).
 	local sellColor = Color3.fromRGB(255, 150, 40)
-	GroundMarker.build(folder, cf * CFrame.new(0, 0, -9.5), 14, 10, sellColor, "VERKAUFEN")
+	GroundMarker.build(folder, cf * CFrame.new(0, 0, -9.5), 14, 10, sellColor, "sign.sell")
 	return part({
 		Name = "SellZone",
 		Size = Vector3.new(14, 6, 10),
@@ -178,16 +179,27 @@ local function buildGate(folder: Instance, world: any, index: number): (BasePart
 	barrier:SetAttribute("RequiredRebirths", requiredRebirths)
 	CollectionService:AddTag(barrier, "WorldBarrier")
 	-- Worlds behind rebirths (#43) name the condition above the price.
-	local condition = if requiredRebirths > 0
-		then `Ab {requiredRebirths} {if requiredRebirths == 1 then "Rebirth" else "Rebirths"}\n`
-		else ""
-	sign(
-		barrier,
-		barrier,
-		`🔒 {world.displayName}\n{condition}{formatCoins(world.unlockPrice)} Münzen`,
-		-barrier.Size.Y / 2 + 9,
-		"PriceSign"
-	)
+	local price = { integer = world.unlockPrice }
+	if requiredRebirths > 0 then
+		local condition = {
+			key = if requiredRebirths == 1 then "unlock.rebirthsOne" else "unlock.rebirthsMany",
+			args = { count = requiredRebirths },
+		}
+		sign(barrier, barrier, "sign.gateRebirths", {
+			world = world.displayName,
+			condition = condition,
+			price = price,
+		}, -barrier.Size.Y / 2 + 9, "PriceSign")
+	else
+		sign(
+			barrier,
+			barrier,
+			"sign.gate",
+			{ world = world.displayName, price = price },
+			-barrier.Size.Y / 2 + 9,
+			"PriceSign"
+		)
+	end
 	return barrier, IslandBuilder.vector(gate.returnPoint)
 end
 
@@ -294,7 +306,9 @@ function WorldMap.buildSpawnIsland(): Folder
 			label.TextScaled = true
 			label.TextColor3 = Color3.fromRGB(60, 35, 20)
 			local board = GameConfig.leaderboards.boards[index]
-			label.Text = `{if board then board.title else "Bestenliste"}\nBestenliste lädt …`
+			SignText.set(label, "board.loadingTitled", {
+				title = { key = if board then `board.{board.id}` else "board.fallbackTitle" },
+			})
 			label.Parent = gui
 			local padding = Instance.new("UIPadding")
 			padding.PaddingTop = UDim.new(0.1, 0)
