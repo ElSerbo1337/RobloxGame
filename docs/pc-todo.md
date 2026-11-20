@@ -38,17 +38,17 @@ Was vor dem Öffentlich-Stellen noch fehlt, in Kurzform und mit aktuellen Werten
 
 **Echtes Handy**
 
-- [ ] Alle Menüs (Shop, Portal, Pets, Tränke, Geschenke, Rebirth, Kalender, Telefon) füllen fast den Bildschirm, sind lesbar, scrollen per Wischen, „X“ erreichbar, Antippen kauft ohne Hover. Details: #55
-- [ ] Seitenknöpfe, Auto-Sammeln und Freischalt-Knopf liegen nicht unter Joystick, Sprung-Knopf oder Chat; Ei-Panel nicht über den Roblox-Knöpfen. Details: #52, #54, #20
-- [ ] Beläge und Feld-Gems lassen sich antippen (auch etwas daneben), Tutorial-Karte blockiert keine Eingaben. Details: #2, #17
-- [ ] Trank-Pillen und Auftragskarte rechts liegen nicht über dem Sprung-Knopf (3 Tränke + Auftrag gleichzeitig). Details: #20, #14
-- [ ] Hochformat und Drehen: Menüs passen sich an, nichts ragt aus dem Bild. Details: #55
+- [x] Alle Menüs (Shop, Portal, Pets, Tränke, Geschenke, Rebirth, Kalender, Telefon) füllen fast den Bildschirm, sind lesbar, scrollen per Wischen, „X“ erreichbar, Antippen kauft ohne Hover. Details: #55 _(20.11.: auf dem echten Handy geprüft, passt)_
+- [x] Seitenknöpfe, Auto-Sammeln und Freischalt-Knopf liegen nicht unter Joystick, Sprung-Knopf oder Chat; Ei-Panel nicht über den Roblox-Knöpfen. Details: #52, #54, #20 _(20.11.: auf dem echten Handy geprüft, passt)_
+- [x] Beläge und Feld-Gems lassen sich antippen (auch etwas daneben), Tutorial-Karte blockiert keine Eingaben. Details: #2, #17 _(20.11.: auf dem echten Handy geprüft, passt)_
+- [x] Trank-Pillen und Auftragskarte rechts liegen nicht über dem Sprung-Knopf (3 Tränke + Auftrag gleichzeitig). Details: #20, #14 _(20.11.: auf dem echten Handy geprüft, passt)_
+- [x] Hochformat und Drehen: Menüs passen sich an, nichts ragt aus dem Bild. Details: #55 _(20.11.: auf dem echten Handy geprüft, passt)_
 
 **Sounds** (IDs in `src/client/Sounds.luau`, Liste in #23)
 
-- [ ] Effekte: Plopp beim Sammeln (kein Dauerfeuer bei Auto-Sammeln), Kasse beim Verkaufen/Liefern, Glitzern bei Gems, Knacken beim Ei, Fanfare beim Rebirth. Details: #23, #35
-- [ ] Telefon klingelt 3-mal pro Anruf (ca. 10 s), dann still. Details: #59
-- [ ] Musik: läuft leise im Loop und wechselt pro Insel (Garten Akkordeon … Weltraum Cosmic Dust), Effekte bleiben hörbar. Details: #23, #45
+- [x] Effekte: Plopp beim Sammeln (kein Dauerfeuer bei Auto-Sammeln), Kasse beim Verkaufen/Liefern, Glitzern bei Gems, Knacken beim Ei, Fanfare beim Rebirth. Details: #23, #35 _(20.11.: angehört, passt)_
+- [x] Telefon klingelt 3-mal pro Anruf (ca. 10 s), dann still. Details: #59 _(20.11.: angehört, passt)_
+- [x] Musik: läuft leise im Loop und wechselt pro Insel (Garten Akkordeon … Weltraum Cosmic Dust), Effekte bleiben hörbar. Details: #23, #45 _(20.11.: angehört, passt)_
 
 **Leistung**
 
@@ -1444,11 +1444,11 @@ Dein Spielstand war vorher gesichert (`backup_21nov_player_372358501`) und ist d
 
 Auf dem echten Handy ragten die vier Seitenknöpfe in einer Reihe zur Bildschirmmitte, und Münz-/Gem-Anzeige saßen unter der Roblox-Leiste recht tief. Jetzt: auf kleinen Bildschirmen (kurze Seite < 500 px) kleinere Knöpfe (72 px) als 2 × 2-Block links direkt über dem Joystick (Pets/Tränke links, Geschenke/Rebirth rechts); Münzen und Gems in einer eigenen Ebene knapp unter dem oberen Bildschirmrand (auf allen Geräten). Vorher: `lune run test` → `541 passed, 0 failed`. Danach **File → Publish to Roblox**, dann auf dem Handy prüfen.
 
-- [ ] Handy quer: Seitenknöpfe als 2 × 2-Block links über dem Joystick, nicht über dem Joystick, gut antippbar; „Neu!“-Hinweise verdecken keinen Knopf.
-- [ ] Handy quer: Münz- und Gem-Anzeige knapp unter dem oberen Rand, nicht über den Roblox-Knöpfen (links/rechts oben) und nicht in der Notch; Zahlen lesbar.
-- [ ] Verkaufen: fliegende Münzen landen weiterhin an der Münzanzeige (PC und Handy).
-- [ ] PC/Tablet: Seitenknöpfe wie bisher (ab halber Höhe), Münzen/Gems oben Mitte knapp unter dem Rand, nicht über Roblox-Menü oder Chat-Knopf.
-- [ ] Meldungen („+X Münzen“), Tutorial-Karte und Ei-Panel überlappen die Münz-/Gem-Anzeige nicht.
+- [x] Handy quer: Seitenknöpfe als 2 × 2-Block links über dem Joystick, nicht über dem Joystick, gut antippbar; „Neu!“-Hinweise verdecken keinen Knopf. _(20.11.: auf dem echten Handy geprüft, passt)_
+- [x] Handy quer: Münz- und Gem-Anzeige knapp unter dem oberen Rand, nicht über den Roblox-Knöpfen (links/rechts oben) und nicht in der Notch; Zahlen lesbar. _(20.11.: auf dem echten Handy geprüft, passt)_
+- [x] Verkaufen: fliegende Münzen landen weiterhin an der Münzanzeige (PC und Handy). _(20.11.: auf dem echten Handy geprüft, passt)_
+- [x] PC/Tablet: Seitenknöpfe wie bisher (ab halber Höhe), Münzen/Gems oben Mitte knapp unter dem Rand, nicht über Roblox-Menü oder Chat-Knopf. _(20.11.: auf dem echten Handy geprüft, passt)_
+- [x] Meldungen („+X Münzen“), Tutorial-Karte und Ei-Panel überlappen die Münz-/Gem-Anzeige nicht. _(20.11.: auf dem echten Handy geprüft, passt)_
 
 ## Zählung (Aufräumen 19.11.2026)
 
