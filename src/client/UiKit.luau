@@ -433,7 +433,7 @@ function UiKit.rewardText(reward: { kind: string, amount: number, potionId: stri
 	end
 	local potion = reward.potionId and GameConfig.potions[reward.potionId]
 	if potion then
-		return `{reward.amount}× {potion.displayName}`
+		return `{reward.amount}× {Lang.name(potion)}`
 	end
 	return if reward.amount == 1
 		then Lang.t("reward.potionOne")

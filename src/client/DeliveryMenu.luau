@@ -42,7 +42,7 @@ end
 
 local function toppingName(toppingId: string): string
 	local topping = GameConfig.toppings[toppingId]
-	return if topping then topping.displayName else toppingId
+	return if topping then Lang.name(topping) else toppingId
 end
 
 -- Toppings sorted by name, so the list does not jump around.
@@ -64,7 +64,7 @@ local function rewardText(reward: string, amount: number, potionId: string?): st
 		local potion = potionId and GameConfig.potions[potionId]
 		return Lang.t("delivery.rewardPotion", {
 			amount = amount,
-			potion = if potion then potion.displayName else Lang.t("delivery.potion"),
+			potion = if potion then Lang.name(potion) else Lang.t("delivery.potion"),
 		})
 	end
 	return Lang.t("delivery.rewardCoins", { amount = UiKit.shortNumber(amount) })

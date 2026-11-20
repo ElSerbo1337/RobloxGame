@@ -144,7 +144,7 @@ local function buildOven(folder: Instance, cf: CFrame, world: any, color: Color3
 	if world.id == GameConfig.worlds[1].id then
 		sign(folder, oven, "sign.oven")
 	else
-		sign(folder, oven, "sign.ovenWorld", { world = world.displayName })
+		sign(folder, oven, "sign.ovenWorld", { world = Texts.nameArg(world) })
 	end
 	-- The zone box stays as the (invisible) detection volume; the floor marking shows it (#60).
 	local sellColor = Color3.fromRGB(255, 150, 40)
@@ -173,7 +173,6 @@ local function buildGate(folder: Instance, world: any, index: number): (BasePart
 	local barrier = IslandBuilder.part(gate.barrier, folder)
 	barrier.CastShadow = false
 	barrier:SetAttribute("WorldId", world.id)
-	barrier:SetAttribute("WorldName", world.displayName)
 	barrier:SetAttribute("UnlockPrice", world.unlockPrice)
 	local requiredRebirths = world.requiredRebirths or 0
 	barrier:SetAttribute("RequiredRebirths", requiredRebirths)
@@ -186,7 +185,7 @@ local function buildGate(folder: Instance, world: any, index: number): (BasePart
 			args = { count = requiredRebirths },
 		}
 		sign(barrier, barrier, "sign.gateRebirths", {
-			world = world.displayName,
+			world = Texts.nameArg(world),
 			condition = condition,
 			price = price,
 		}, -barrier.Size.Y / 2 + 9, "PriceSign")
@@ -195,7 +194,7 @@ local function buildGate(folder: Instance, world: any, index: number): (BasePart
 			barrier,
 			barrier,
 			"sign.gate",
-			{ world = world.displayName, price = price },
+			{ world = Texts.nameArg(world), price = price },
 			-barrier.Size.Y / 2 + 9,
 			"PriceSign"
 		)

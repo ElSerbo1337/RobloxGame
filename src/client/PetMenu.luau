@@ -165,7 +165,7 @@ function PetMenu.start()
 		local pet = GameConfig.pets[entry.petId]
 		pendingDelete = entry.uid
 		local key = if entry.equipped then "pets.confirmDeleteEquipped" else "pets.confirmDelete"
-		question.Text = Lang.t(key, { pet = pet.displayName, bonus = UiKit.bonusText(pet.bonus) })
+		question.Text = Lang.t(key, { pet = Lang.name(pet), bonus = UiKit.bonusText(pet.bonus) })
 		confirm.Visible = true
 		UiKit.pop(dialog, 0.8)
 	end
@@ -218,7 +218,7 @@ function PetMenu.start()
 		-- The 3D pet (imported model) replaces the dot.
 		dot.Visible = not PetIcon.show(icon, entry.petId, 1.2)
 
-		local name = UiKit.label(button, pet.displayName)
+		local name = UiKit.label(button, Lang.name(pet))
 		name.Position = UDim2.fromOffset(6, 78)
 		name.Size = UDim2.new(1, -12, 0, 28)
 		name.TextColor3 = UiKit.CREAM

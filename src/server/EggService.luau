@@ -14,6 +14,7 @@ local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
 local SignText = require(script.Parent.SignText)
+local Texts = require(ReplicatedStorage.Shared.Texts)
 
 export type EggSpot = {
 	eggId: string,
@@ -102,7 +103,7 @@ local function buildSign(parent: Instance, ground: Vector3, eggId: string?, visi
 	label.TextColor3 = DARK
 	-- A spot without an egg (a world listing fewer than two eggs).
 	if egg then
-		SignText.set(label, "sign.egg", { egg = egg.displayName, price = { integer = egg.price } })
+		SignText.set(label, "sign.egg", { egg = Texts.nameArg(egg), price = { integer = egg.price } })
 	else
 		SignText.set(label, "sign.eggSoon")
 	end

@@ -237,12 +237,12 @@ function ShopMenu.start()
 			stroke(card, 2)
 			card.Parent = list
 
-			label(card, offer.displayName, {
+			label(card, Lang.name(upgrade), {
 				Position = UDim2.fromOffset(14, 8),
 				Size = UDim2.new(0.42, -14, 0, 38),
 				TextXAlignment = Enum.TextXAlignment.Left,
 			})
-			label(card, upgrade and upgrade.description or "", {
+			label(card, Lang.description(upgrade), {
 				Position = UDim2.fromOffset(14, 50),
 				Size = UDim2.new(0.42, -14, 0, 24),
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -324,12 +324,12 @@ function ShopMenu.start()
 			stroke(card, 2)
 			card.Parent = list
 
-			label(card, offer.displayName, {
+			label(card, Lang.name(potion), {
 				Position = UDim2.fromOffset(14, 8),
 				Size = UDim2.new(0.42, -14, 0, 38),
 				TextXAlignment = Enum.TextXAlignment.Left,
 			})
-			label(card, potion and potion.description or "", {
+			label(card, Lang.description(potion), {
 				Position = UDim2.fromOffset(14, 50),
 				Size = UDim2.new(0.42, -14, 0, 24),
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -368,7 +368,7 @@ function ShopMenu.start()
 		currentOffers = offers
 		currentPotions = potions or {}
 		local shop = GameConfig.shops[shopId]
-		title.Text = if shop then shop.displayName else Lang.t("shop.title")
+		title.Text = if shop then Lang.name(shop) else Lang.t("shop.title")
 		status.Text = ""
 		local reopened = not gui.Enabled or currentShop ~= shopId
 		currentShop = shopId
@@ -411,7 +411,7 @@ function ShopMenu.start()
 		if ok then
 			local item = GameConfig.upgrades[detail] or GameConfig.potions[detail]
 			local key = if GameConfig.potions[detail] then "shop.boughtPotion" else "shop.bought"
-			showStatus(Lang.t(key, { item = item and item.displayName or detail }), Color3.fromRGB(40, 150, 60))
+			showStatus(Lang.t(key, { item = if item then Lang.name(item) else detail }), Color3.fromRGB(40, 150, 60))
 		else
 			showStatus(Lang.t(MESSAGES[detail] or "shop.failed"), RED)
 		end

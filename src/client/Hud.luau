@@ -266,7 +266,7 @@ function Hud.start(): GuiObject
 			if rewardKind == "Gems" then
 				showToast(Lang.t("notify.deliveredGems", { amount = formatNumber(amount) }), GEM)
 			elseif rewardKind == "Potion" and potion then
-				showToast(Lang.t("notify.deliveredPotion", { amount = amount, potion = potion.displayName }), ON)
+				showToast(Lang.t("notify.deliveredPotion", { amount = amount, potion = Lang.name(potion) }), ON)
 			else
 				showToast(Lang.t("notify.deliveredCoins", { amount = formatNumber(amount) }), COIN)
 			end
@@ -295,9 +295,9 @@ function Hud.start(): GuiObject
 	Net.event("PotionNotify").OnClientEvent:Connect(function(kind: string, potionId: string)
 		local potion = GameConfig.potions[potionId]
 		if kind == "Expired" and potion then
-			showToast(Lang.t("notify.potionExpired", { potion = potion.displayName }), CREAM)
+			showToast(Lang.t("notify.potionExpired", { potion = Lang.name(potion) }), CREAM)
 		elseif kind == "Drunk" and potion then
-			showToast(Lang.t("notify.potionDrunk", { potion = potion.displayName }), ON)
+			showToast(Lang.t("notify.potionDrunk", { potion = Lang.name(potion) }), ON)
 		end
 	end)
 

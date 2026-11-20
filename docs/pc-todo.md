@@ -1538,9 +1538,18 @@ Umgestellt auf die Textsammlung (Schlüssel `potions.`, `gifts.`, `calendar.`, `
 
 ## #71 Englisch 6: 3D-Schilder in der Sprache jedes Spielers
 
-Der Server setzt auf Schild-Texten nur noch `TextKey`/`TextArgs` (Tag `SignText`), `src/client/SignTexts.luau` zeigt sie in der Sprache des Spielers. Welt-, Ei- und Shop-Namen bleiben vorerst deutsch (#68).
+Der Server setzt auf Schild-Texten nur noch `TextKey`/`TextArgs` (Tag `SignText`), `src/client/SignTexts.luau` zeigt sie in der Sprache des Spielers. Welt-, Ei- und Shop-Namen kommen seit #68 ebenfalls in der Sprache des Spielers.
 
 - [ ] **Deutsch** (`Language` = `de` auf Workspace): alle Schilder genau wie vorher – Ofen („Ofen – hier verkaufen“, „Ofen (Welt) – hier verkaufen“), Boden „VERKAUFEN“/„SHOP“, „<Shop> – Upgrades“, Ei-Stände („<Ei>\n💰 1.500“, „Bald: neues Ei!“), Tor-Preisschild („🔒 Welt\nAb 3 Rebirths\n1.500.000 Münzen“), Portal „🌀 Teleport“, „📞 Telefon – Aufträge“, „🚚 Lieferwagen – Bestellung abgeben“, „🧾 Bestellung“ über der Pizza, Bestenlisten (Titel, „Bestenliste lädt …“, „Noch keine Einträge“, Werte „1.234“, „3 Std. 5 Min.“).
 - [ ] **Englisch** (`Language` = `en`): „Oven – sell here“, „SELL“/„SHOP“, „Coming soon: new egg!“, „🔒 World\nFrom 3 rebirths\n1,500,000 coins“, „📞 Phone – Orders“, „🚚 Delivery van – hand in order“, „🧾 Order“, Bestenlisten „⏱ Playtime“, „💰 Coins earned“, „Leaderboard loading …“, „No entries yet“, Werte „1,234“, „3 h 5 min“.
 - [ ] Schilder flackern nicht und verrutschen nicht; nach dem Bestenlisten-Refresh (2 Min.) bleiben sie englisch.
 - [ ] **2 Spieler, verschiedene Sprachen:** Test → Clients and Servers → 2 Players. In einem Client per Command Bar (Client-Seite) `require(game.Players.LocalPlayer.PlayerScripts.Client.Lang).language` prüfen; Player Emulator geht nur für alle gleich, daher: Client 1 Locale `de-de`, dann im Client-2-Fenster in der Command Bar `for _, l in game:GetService("CollectionService"):GetTagged("SignText") do l.Text = require(game:GetService("ReplicatedStorage").Shared.Texts).render("en", l:GetAttribute("TextKey"), l:GetAttribute("TextArgs") and game:GetService("HttpService"):JSONDecode(l:GetAttribute("TextArgs"))) end` – Client 1 sieht weiter „VERKAUFEN“, Client 2 „SELL“. Alternativ mit zwei Roblox-Konten (deutsch/englisch) in einem veröffentlichten Test-Server.
+
+## #68 Englisch 3: Namen im Spiel
+
+Alle Namen aus `GameConfig` (Pets, Beläge, Welten, Eier, Tränke, Upgrades, Shops, Seltenheiten) erscheinen in der Sprache des Spielers (Liste: `docs/translations-names.md`).
+
+- [ ] **Deutsch** (`Language` = `de`): alles genau wie vorher – Pet-Menü/Löschen-Frage („Teig-Hamster“), Ei-Panel und Ei-Animation (Pet + „Gewöhnlich“ …), Shop-Titel „Pizza-Shop“, Upgrade-Karten („Pizza-Platz“ + „Mehr Beläge pro Pizza“), Trank-Karten, „Pizza-Platz gekauft!“, Trank-Menü und Timer-Toasts („Münz-Trank getrunken!“), Portal („📍 Pizzeria-Garten (du bist hier)“), Tor-Knopf „🔓 Bauernhof freischalten“, Lieferauftrag („Pilz“, „Peperoni“), Geschenk-/Kalender-Belohnung „2× Glücks-Trank“, Schilder („Ofen (Bauernhof) – hier verkaufen“, „Pizza-Shop – Upgrades“, „Garten-Ei\n💰 …“, Tor-Preisschild), Namensschild über den Pets.
+- [ ] **Englisch** (`Language` = `en`): „Dough Hamster“, „Common“/„Mythic“, „Garden Egg“, „Pizza Shop“, „Pizza Space“ + „More toppings per pizza“, „3 Eggs at Once“ + „Unlocks “Open 3” at every egg“, „Coin Potion drunk!“, „📍 Pizzeria Garden (you are here)“, „🔓 Unlock Farm“, Lieferauftrag „Mushroom“, „Hot Pepper“ (nicht „Pepperoni“), „2× Luck Potion“, „Oven (Farm) – sell here“, „Pizza Shop – Upgrades“, „Sweets Egg“ im Süßigkeitenland, Pet-Namensschild „Galaxy Pizza Leviathan“ passt aufs Schild. Nichts abgeschnitten (auch Handy-Emulator).
+- [ ] **2 Spieler, verschiedene Sprachen** (wie bei #71): jeder sieht die Pet-Namensschilder der Pets (auch die des anderen Spielers) in seiner Sprache.
+- [ ] Altes Spiel laden: Pets, Tränke, Upgrades unverändert (Spielstände nutzen nur Ids). Output ohne Fehler.

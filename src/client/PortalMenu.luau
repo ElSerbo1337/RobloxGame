@@ -93,19 +93,22 @@ function PortalMenu.start()
 			if not entry.unlocked and not entry.enoughRebirths then
 				-- Behind rebirths (#43): the condition first, the price below.
 				text = Lang.t("portal.lockedRebirths", {
-					world = entry.displayName,
+					world = Lang.worldName(entry.worldId),
 					condition = rebirthsText(entry.requiredRebirths),
 					price = Lang.integer(entry.unlockPrice),
 				})
 				color = GREY
 			elseif not entry.unlocked then
-				text = Lang.t("portal.locked", { world = entry.displayName, price = Lang.integer(entry.unlockPrice) })
+				text = Lang.t(
+					"portal.locked",
+					{ world = Lang.worldName(entry.worldId), price = Lang.integer(entry.unlockPrice) }
+				)
 				color = GREY
 			elseif here then
-				text = Lang.t("portal.here", { world = entry.displayName })
+				text = Lang.t("portal.here", { world = Lang.worldName(entry.worldId) })
 				color = HERE
 			else
-				text = `{index}. {entry.displayName}`
+				text = `{index}. {Lang.worldName(entry.worldId)}`
 				color = PURPLE
 			end
 			local row = UiKit.button(list, text, color)

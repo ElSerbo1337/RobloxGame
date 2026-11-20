@@ -315,6 +315,7 @@ Texts.strings = {
 		de = "🔒 {world}\n{condition}\n{price} Münzen",
 		en = "🔒 {world}\n{condition}\n{price} coins",
 	},
+	["sign.name"] = { de = "{name}", en = "{name}" },
 	["sign.egg"] = { de = "{egg}\n💰 {price}", en = "{egg}\n💰 {price}" },
 	["sign.eggSoon"] = { de = "Bald: neues Ei!", en = "Coming soon: new egg!" },
 	["sign.portal"] = { de = "🌀 Teleport", en = "🌀 Teleport" },
@@ -378,9 +379,31 @@ end
 
 -- Arguments of a sign text (#71), sent as JSON by the server: a string is used as is, a
 -- number becomes a short number, `{ integer = n }` a whole number with separators and
--- `{ key = "...", args = {...} }` another text in the same language.
-export type SignArg = string | number | { integer: number } | { key: string, args: SignArgs? }
+-- `{ key = "...", args = {...} }` another text in the same language and `{ de = "...",
+-- en = "..." }` a name from GameConfig (Texts.nameArg, #68) in the player's language.
+export type SignArg = string | number | { integer: number } | { key: string, args: SignArgs? } | Entry
 export type SignArgs = { [string]: SignArg }
+
+-- A GameConfig entry with a German name and its English one (#68).
+export type Named = { displayName: string, displayNameEn: string?, description: string?, descriptionEn: string? }
+
+-- Name of a GameConfig entry (pet, topping, world, egg, potion, upgrade, shop, rarity).
+function Texts.name(language: Language, entry: Named): string
+	return if language == "en" and entry.displayNameEn then entry.displayNameEn else entry.displayName
+end
+
+-- Description of a potion or upgrade ("" if it has none).
+function Texts.description(language: Language, entry: Named): string
+	if language == "en" and entry.descriptionEn then
+		return entry.descriptionEn
+	end
+	return entry.description or ""
+end
+
+-- A GameConfig name as a sign argument, so every player reads it in their language.
+function Texts.nameArg(entry: Named): Entry
+	return { de = entry.displayName, en = entry.displayNameEn or entry.displayName }
+end
 
 -- Sign text for `key` in `language` with its arguments formatted for that language.
 function Texts.render(language: Language, key: string, args: SignArgs?): string
@@ -397,6 +420,8 @@ function Texts.render(language: Language, key: string, args: SignArgs?): string
 				params[name] = Texts.integer(language, arg.integer)
 			elseif type(arg.key) == "string" then
 				params[name] = Texts.render(language, arg.key, arg.args)
+			elseif type(arg.de) == "string" then
+				params[name] = if language == "en" and type(arg.en) == "string" then arg.en else arg.de
 			end
 		else
 			params[name] = tostring(value)

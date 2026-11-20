@@ -130,7 +130,7 @@ local function buildPanel(playerGui: Instance): Panel
 		-- eggPreview only reads the running potions from the state.
 		local lucky = rules.eggPreview(current, { activePotions = activePotions } :: any)
 		local hasLuck = (activePotions.Luck or 0) > 0
-		title.Text = if hasLuck then Lang.t("egg.luck", { egg = egg.displayName }) else egg.displayName
+		title.Text = if hasLuck then Lang.t("egg.luck", { egg = Lang.name(egg) }) else Lang.name(egg)
 		for _, entry in lucky.pets do
 			local chance = chanceLabels[entry.petId]
 			if chance then
@@ -197,12 +197,12 @@ local function buildPanel(playerGui: Instance): Panel
 				icon.BackgroundColor3 = UiKit.CREAM
 			end
 
-			local name = UiKit.label(row, pet.displayName)
+			local name = UiKit.label(row, Lang.name(pet))
 			name.Position = UDim2.fromOffset(46, 2)
 			name.Size = UDim2.new(0.5, -46, 0, 22)
 			name.TextXAlignment = Enum.TextXAlignment.Left
 
-			local rarity = UiKit.label(row, GameConfig.rarities[entry.rarity].displayName)
+			local rarity = UiKit.label(row, Lang.name(GameConfig.rarities[entry.rarity]))
 			rarity.Position = UDim2.fromOffset(46, 23)
 			rarity.Size = UDim2.new(0.5, -46, 0, 15)
 			rarity.TextXAlignment = Enum.TextXAlignment.Left

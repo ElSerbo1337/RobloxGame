@@ -109,6 +109,22 @@ describe("Texts.integer", function()
 	end)
 end)
 
+describe("Texts.name (#68)", function()
+	it("picks the name and description in the chosen language", function()
+		local potion = {
+			displayName = "Speed-Trank",
+			displayNameEn = "Speed Potion",
+			description = "Schneller laufen",
+			descriptionEn = "Walk faster",
+		}
+		expect(Texts.name("de", potion)).toBe("Speed-Trank")
+		expect(Texts.name("en", potion)).toBe("Speed Potion")
+		expect(Texts.description("de", potion)).toBe("Schneller laufen")
+		expect(Texts.description("en", potion)).toBe("Walk faster")
+		expect(Texts.description("en", { displayName = "X" })).toBe("")
+	end)
+end)
+
 describe("Texts.render (3D signs, #71)", function()
 	it("keeps the German sign texts exactly as before", function()
 		expect(Texts.render("de", "sign.sell")).toBe("VERKAUFEN")
@@ -132,6 +148,15 @@ describe("Texts.render (3D signs, #71)", function()
 		})).toBe("🔒 Vulkan\nFrom 1 rebirth\n2,500 coins")
 		expect(Texts.render("en", "sign.egg", { egg = "Ei", price = 1500000 })).toBe("Ei\n💰 1.5M")
 		expect(Texts.render("de", "sign.egg", { egg = "Ei", price = 1500000 })).toBe("Ei\n💰 1,5 Mio")
+	end)
+
+	it("shows GameConfig names in the player's language (#68)", function()
+		local world = Texts.nameArg({ displayName = "Süßigkeitenland", displayNameEn = "Candy Land" })
+		expect(Texts.render("de", "sign.ovenWorld", { world = world })).toBe(
+			"Ofen (Süßigkeitenland) – hier verkaufen"
+		)
+		expect(Texts.render("en", "sign.ovenWorld", { world = world })).toBe("Oven (Candy Land) – sell here")
+		expect(Texts.render("en", "sign.name", { name = world })).toBe("Candy Land")
 	end)
 
 	it("has a title for every leaderboard", function()

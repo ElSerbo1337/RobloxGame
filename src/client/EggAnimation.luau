@@ -109,12 +109,12 @@ function EggAnimation.start()
 		-- The 3D pet (imported model) jumps out in front of its rarity-coloured circle.
 		PetIcon.show(petIcon, petId, 1.2)
 
-		local petName = UiKit.label(card, pet.displayName)
+		local petName = UiKit.label(card, Lang.name(pet))
 		petName.Position = UDim2.fromOffset(16, 176)
 		petName.Size = UDim2.new(1, -32, 0, 50)
 		petName.ZIndex = 7
 
-		local rarityName = UiKit.label(card, GameConfig.rarities[pet.rarity].displayName)
+		local rarityName = UiKit.label(card, Lang.name(GameConfig.rarities[pet.rarity]))
 		rarityName.Position = UDim2.fromOffset(16, 228)
 		rarityName.Size = UDim2.new(1, -32, 0, 36)
 		rarityName.TextColor3 = color

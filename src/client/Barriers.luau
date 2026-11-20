@@ -153,14 +153,19 @@ function Barriers.start()
 			if rebirths < needed then
 				-- Behind rebirths (#43): name the condition; the server refuses anyway.
 				button.Text = Lang.t("unlock.locked", {
-					world = found:GetAttribute("WorldName"),
+					world = Lang.worldName((found:GetAttribute("WorldId") :: string?) or ""),
 					condition = rebirthsText(needed),
 					price = Lang.integer(price),
 				})
 				button.BackgroundColor3 = GRAY
 			else
-				button.Text =
-					Lang.t("unlock.open", { world = found:GetAttribute("WorldName"), price = Lang.integer(price) })
+				button.Text = Lang.t(
+					"unlock.open",
+					{
+						world = Lang.worldName((found:GetAttribute("WorldId") :: string?) or ""),
+						price = Lang.integer(price),
+					}
+				)
 				button.BackgroundColor3 = if coins >= price then GREEN else GRAY
 			end
 		end

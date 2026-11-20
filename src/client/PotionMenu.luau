@@ -163,12 +163,12 @@ function PotionMenu.start()
 		UiKit.corner(icon, 36)
 		UiKit.stroke(icon, 2)
 
-		local name = UiKit.label(card, potion.displayName)
+		local name = UiKit.label(card, Lang.name(potion))
 		name.Position = UDim2.fromOffset(96, 8)
 		name.Size = UDim2.new(0.6, -96, 0, 36)
 		name.TextXAlignment = Enum.TextXAlignment.Left
 
-		local description = UiKit.label(card, potion.description or "")
+		local description = UiKit.label(card, Lang.description(potion))
 		description.Position = UDim2.fromOffset(96, 46)
 		description.Size = UDim2.new(0.6, -96, 0, 24)
 		description.TextXAlignment = Enum.TextXAlignment.Left
@@ -305,7 +305,7 @@ function PotionMenu.start()
 
 	Net.event("PotionNotify").OnClientEvent:Connect(function(kind: string, potionId: string)
 		local potion = GameConfig.potions[potionId]
-		local name = if potion then potion.displayName else potionId
+		local name = if potion then Lang.name(potion) else potionId
 		if kind == "Drunk" then
 			showStatus(Lang.t("potions.drunk", { potion = name }), Color3.fromRGB(40, 150, 60))
 		elseif kind == "Expired" then

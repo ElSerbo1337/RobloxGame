@@ -13,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Texts = require(ReplicatedStorage.Shared.Texts)
 
 local function readLanguage(): Texts.Language
@@ -41,6 +42,26 @@ end
 -- Sign text (#71): `args` as stored by the server (see Texts.render).
 function Lang.render(key: string, args: Texts.SignArgs?): string
 	return Texts.render(Lang.language, key, args)
+end
+
+-- Name of a GameConfig entry (pet, topping, world, egg, potion, upgrade, shop, rarity, #68).
+function Lang.name(entry: Texts.Named): string
+	return Texts.name(Lang.language, entry)
+end
+
+-- Name of the world with this id (the id itself if there is none).
+function Lang.worldName(worldId: string): string
+	for _, world in GameConfig.worlds do
+		if world.id == worldId then
+			return Lang.name(world)
+		end
+	end
+	return worldId
+end
+
+-- Description of a potion or upgrade.
+function Lang.description(entry: Texts.Named): string
+	return Texts.description(Lang.language, entry)
 end
 
 -- "1,5 Mio" / "1.5M" (whole numbers below a million).

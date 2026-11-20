@@ -19,6 +19,8 @@ local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
+local SignText = require(script.Parent.SignText)
+local Texts = require(ReplicatedStorage.Shared.Texts)
 
 type PlayerState = GameRules.PlayerState
 
@@ -115,7 +117,8 @@ local function buildPet(uid: number, petId: string, origin: CFrame, parent: Inst
 	text.BackgroundTransparency = 1
 	text.Font = Enum.Font.FredokaOne
 	text.TextScaled = true
-	text.Text = GameConfig.pets[petId].displayName
+	-- Each player reads the pet name in their language (#68).
+	SignText.set(text, "sign.name", { name = Texts.nameArg(GameConfig.pets[petId]) })
 	text.TextColor3 = rarityColor(petId)
 	text.TextStrokeTransparency = 0.2
 	text.Parent = tag
