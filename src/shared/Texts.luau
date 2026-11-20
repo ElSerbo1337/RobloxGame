@@ -170,6 +170,139 @@ Texts.strings = {
 		de = "Viel Spaß beim Pizza-Belegen! Neue Welten warten hinter den Barrieren.",
 		en = "Have fun topping pizzas! New worlds await behind the barriers.",
 	},
+	-- Shared
+	["common.notNow"] = { de = "Geht gerade nicht.", en = "Not possible right now." },
+
+	-- Rewards (gifts, calendar)
+	["reward.gems"] = { de = "{amount} Gems", en = "{amount} gems" },
+	["reward.potionOne"] = { de = "1 Trank", en = "1 potion" },
+	["reward.potionMany"] = { de = "{count} Tränke", en = "{count} potions" },
+
+	-- Potion menu
+	["potions.title"] = { de = "Meine Tränke", en = "My potions" },
+	["potions.hint"] = {
+		de = "Gleiche Art nochmal trinken verlängert die Zeit.",
+		en = "Drinking the same kind again adds more time.",
+	},
+	["potions.drink"] = { de = "Trinken", en = "Drink" },
+	["potions.owned"] = { de = "Im Inventar: {count}", en = "Owned: {count}" },
+	["potions.running"] = { de = "Läuft: {time}", en = "Active: {time}" },
+	["potions.effectCoins"] = { de = "Münzen ×2", en = "Coins ×2" },
+	["potions.effectLuck"] = { de = "Glück", en = "Luck" },
+	["potions.effectSpeed"] = { de = "Speed", en = "Speed" },
+	["potions.drunk"] = { de = "{potion} getrunken!", en = "{potion} drunk!" },
+	["potions.expired"] = { de = "{potion} ist abgelaufen.", en = "{potion} has run out." },
+	["potions.NoPotion"] = {
+		de = "Davon hast du keinen Trank – kauf einen im Gem-Tresen!",
+		en = "You have none of these – buy one at the gem counter!",
+	},
+	["potions.UnknownPotion"] = { de = "Diesen Trank gibt es nicht.", en = "This potion does not exist." },
+
+	-- Gift menu
+	["gifts.title"] = { de = "Geschenke", en = "Gifts" },
+	["gifts.calendar"] = { de = "📅 Kalender", en = "📅 Calendar" },
+	["gifts.minutes"] = { de = "{minutes} Min", en = "{minutes} min" },
+	["gifts.claim"] = { de = "Abholen", en = "Claim" },
+	["gifts.hint"] = {
+		de = "Spiel jeden Tag – jedes Geschenk einmal pro Tag.",
+		en = "Play every day – each gift once per day.",
+	},
+	["gifts.claimed"] = { de = "Geschenk! +{rewards}", en = "Gift! +{rewards}" },
+	["gifts.GiftNotReady"] = {
+		de = "Noch nicht – spiel noch ein bisschen weiter!",
+		en = "Not yet – keep playing a little longer!",
+	},
+	["gifts.GiftClaimed"] = {
+		de = "Dieses Geschenk hast du heute schon abgeholt.",
+		en = "You already claimed this gift today.",
+	},
+	["gifts.UnknownGift"] = { de = "Dieses Geschenk gibt es nicht.", en = "This gift does not exist." },
+
+	-- Login calendar
+	["calendar.title"] = { de = "Login-Kalender", en = "Login calendar" },
+	["calendar.day"] = { de = "Tag {day}", en = "Day {day}" },
+	["calendar.today"] = { de = "Heute", en = "Today" },
+	["calendar.claim"] = { de = "Abholen", en = "Claim" },
+	["calendar.tomorrow"] = { de = "Morgen wieder", en = "Back tomorrow" },
+	["calendar.ready"] = { de = "Tag {day}: hol dir deine Belohnung!", en = "Day {day}: claim your reward!" },
+	["calendar.comeBack"] = {
+		de = "Komm morgen wieder – jeden Tag in Folge wird es besser!",
+		en = "Come back tomorrow – every day in a row gets better!",
+	},
+	["calendar.claimed"] = { de = "Tag {day}! +{rewards}", en = "Day {day}! +{rewards}" },
+	["calendar.LoginClaimed"] = {
+		de = "Heute schon abgeholt – morgen gibt es den nächsten Tag!",
+		en = "Already claimed today – the next day comes tomorrow!",
+	},
+
+	-- Rebirth menu and celebration
+	["rebirth.title"] = { de = "Rebirth", en = "Rebirth" },
+	["rebirth.none"] = { de = "Noch kein Rebirth", en = "No rebirth yet" },
+	["rebirth.count"] = { de = "Rebirths: {count}", en = "Rebirths: {count}" },
+	["rebirth.multiplier"] = { de = "Münzen {now}  →  {next}", en = "Coins {now}  →  {next}" },
+	["rebirth.price"] = { de = "Preis: {price} Münzen", en = "Price: {price} coins" },
+	["rebirth.progress"] = { de = "{percent} %", en = "{percent}%" },
+	["rebirth.info"] = {
+		de = "Weg: Münzen, Münz-Upgrades, Welten, Pizza, Auftrag.\nBleibt: Pets, Gems, Gem-Upgrades, Tränke im Inventar.",
+		en = "Lost: coins, coin upgrades, worlds, pizza, order.\nKept: pets, gems, gem upgrades, potions in inventory.",
+	},
+	["rebirth.potionWarning"] = {
+		de = "Achtung: Dein laufender Trank endet beim Rebirth!",
+		en = "Careful: your active potion ends on rebirth!",
+	},
+	["rebirth.button"] = { de = "Rebirth!", en = "Rebirth!" },
+	["rebirth.yes"] = { de = "Ja, Rebirth!", en = "Yes, rebirth!" },
+	["rebirth.no"] = { de = "Nein", en = "No" },
+	["rebirth.confirm"] = {
+		de = "Rebirth {number} für {price} Münzen?\nDanach: Münzen {multiplier}, Start in Welt 1.",
+		en = "Rebirth {number} for {price} coins?\nAfter that: coins {multiplier}, start in world 1.",
+	},
+	["rebirth.confirmPotion"] = { de = "Dein laufender Trank endet!", en = "Your active potion ends!" },
+	["rebirth.celebration"] = {
+		de = "Rebirth {number}! {multiplier} Münzen",
+		en = "Rebirth {number}! {multiplier} coins",
+	},
+
+	-- Portal menu
+	["portal.title"] = { de = "🌀 Teleport", en = "🌀 Teleport" },
+	["portal.lockedRebirths"] = {
+		de = "🔒 {world} – {condition}\n{price} Münzen",
+		en = "🔒 {world} – {condition}\n{price} coins",
+	},
+	["portal.locked"] = { de = "🔒 {world} – {price} Münzen", en = "🔒 {world} – {price} coins" },
+	["portal.here"] = { de = "📍 {world} (du bist hier)", en = "📍 {world} (you are here)" },
+
+	-- Phone, delivery order and order card
+	["delivery.ring"] = { de = "📞 RING!", en = "📞 RING!" },
+	["delivery.newOrder"] = { de = "📞 Neuer Auftrag!", en = "📞 New order!" },
+	["delivery.phoneTitle"] = { de = "📞 Telefon", en = "📞 Phone" },
+	["delivery.noCall"] = {
+		de = "Gerade kein Anruf. Nach einer Pause klingelt es wieder, aber nie während eines Auftrags.",
+		en = "No call right now. It rings again after a break, but never during an order.",
+	},
+	["delivery.callsOffTitle"] = { de = "📵 Anrufe sind aus", en = "📵 Calls are off" },
+	["delivery.callsOffBody"] = {
+		de = "Das Telefon klingelt nicht mehr. Hier kannst du Anrufe wieder einschalten.",
+		en = "The phone no longer rings. You can turn calls back on here.",
+	},
+	["delivery.callsOff"] = { de = "📵 Keine Anrufe mehr", en = "📵 No more calls" },
+	["delivery.callsOn"] = { de = "📞 Anrufe einschalten", en = "📞 Turn calls on" },
+	["delivery.accept"] = { de = "Annehmen", en = "Accept" },
+	["delivery.decline"] = { de = "Ablehnen", en = "Decline" },
+	["delivery.maxReward"] = { de = "Belohnung: bis zu {reward}", en = "Reward: up to {reward}" },
+	["delivery.timeLimit"] = {
+		de = "Zeit: {time} – je schneller, desto mehr!",
+		en = "Time: {time} – the faster, the more!",
+	},
+	["delivery.rewardGems"] = { de = "💎 {amount} Gems", en = "💎 {amount} gems" },
+	["delivery.rewardPotion"] = { de = "🧪 {amount}× {potion}", en = "🧪 {amount}× {potion}" },
+	["delivery.rewardCoins"] = { de = "💰 {amount} Münzen", en = "💰 {amount} coins" },
+	["delivery.potion"] = { de = "Trank", en = "Potion" },
+	["delivery.cardHeader"] = { de = "🧾 Auftrag  ⏱ {time}", en = "🧾 Order  ⏱ {time}" },
+	["delivery.ringing"] = { de = "📞 Das Telefon klingelt!", en = "📞 The phone is ringing!" },
+	["delivery.ringingHint"] = { de = "Lauf zum Telefon und geh ran.", en = "Run to the phone and answer it." },
+	["delivery.allThere"] = { de = "Fertig! Ab zum 🚚 Lieferwagen.", en = "Done! Off to the 🚚 delivery van." },
+	["delivery.hurry"] = { de = "Schnell = mehr Belohnung!", en = "Fast = more reward!" },
 } :: { [string]: Entry }
 
 -- Locale id ("de-de", "en-us", ...) → language: every German locale is German, all else English.

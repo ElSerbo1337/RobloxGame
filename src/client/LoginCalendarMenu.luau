@@ -16,6 +16,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 local DAY_COUNT = #GameConfig.loginCalendar
@@ -31,7 +32,7 @@ local TILE_CLAIMED = Color3.fromRGB(225, 215, 200)
 local HINT_COLOR = Color3.fromRGB(110, 80, 55)
 
 local MESSAGES: { [string]: string } = {
-	LoginClaimed = "Heute schon abgeholt – morgen gibt es den nächsten Tag!",
+	LoginClaimed = Lang.t("calendar.LoginClaimed"),
 }
 
 type Reward = { kind: string, amount: number, potionId: string? }
@@ -78,7 +79,7 @@ function LoginCalendarMenu.start()
 	UiKit.stroke(panel, 4)
 	UiKit.placeMenu(gui, panel, PANEL_SIZE)
 
-	local title = UiKit.label(panel, "Login-Kalender")
+	local title = UiKit.label(panel, Lang.t("calendar.title"))
 	title.Position = UDim2.fromOffset(24, 14)
 	title.Size = UDim2.new(1, -120, 0, 48)
 	title.TextXAlignment = Enum.TextXAlignment.Left
@@ -106,7 +107,7 @@ function LoginCalendarMenu.start()
 		UiKit.stroke(tile, 2)
 		tile.Parent = panel
 
-		local dayLabel = UiKit.label(tile, `Tag {day}`)
+		local dayLabel = UiKit.label(tile, Lang.t("calendar.day", { day = day }))
 		dayLabel.Position = UDim2.fromOffset(6, 8)
 		dayLabel.Size = UDim2.new(1, -12, 0, 32)
 
@@ -127,7 +128,7 @@ function LoginCalendarMenu.start()
 		}
 	end
 
-	local claimButton = UiKit.button(panel, "Abholen", UiKit.GREEN)
+	local claimButton = UiKit.button(panel, Lang.t("calendar.claim"), UiKit.GREEN)
 	claimButton.Name = "Claim"
 	claimButton.AnchorPoint = Vector2.new(0.5, 0)
 	claimButton.Position = UDim2.new(0.5, 0, 0, CLAIM_TOP)
@@ -139,8 +140,8 @@ function LoginCalendarMenu.start()
 
 	local function defaultStatus(): string
 		return if current.claimable
-			then `Tag {current.today}: hol dir deine Belohnung!`
-			else "Komm morgen wieder – jeden Tag in Folge wird es besser!"
+			then Lang.t("calendar.ready", { day = current.today })
+			else Lang.t("calendar.comeBack")
 	end
 
 	local function update()
@@ -156,7 +157,7 @@ function LoginCalendarMenu.start()
 				tile.mark.TextColor3 = Color3.fromRGB(40, 150, 60)
 			elseif entry.status == "Ready" then
 				tile.frame.BackgroundColor3 = UiKit.COIN
-				tile.mark.Text = "Heute"
+				tile.mark.Text = Lang.t("calendar.today")
 				tile.mark.TextColor3 = UiKit.DARK
 			else
 				tile.frame.BackgroundColor3 = TILE_WAITING
@@ -164,7 +165,7 @@ function LoginCalendarMenu.start()
 			end
 			tile.stroke.Thickness = if day == current.today then 4 else 2
 		end
-		claimButton.Text = if current.claimable then "Abholen" else "Morgen wieder"
+		claimButton.Text = if current.claimable then Lang.t("calendar.claim") else Lang.t("calendar.tomorrow")
 		claimButton.BackgroundColor3 = if current.claimable then UiKit.GREEN else UiKit.GREY
 		claimButton.AutoButtonColor = current.claimable
 	end
@@ -216,9 +217,12 @@ function LoginCalendarMenu.start()
 	Net.event("LoginRewardResult").OnClientEvent:Connect(function(ok: boolean, dayOrReason: any, rewards: { Reward })
 		if ok then
 			Sounds.play("Gem")
-			showStatus(`Tag {dayOrReason}! +{UiKit.rewardsText(rewards)}`, Color3.fromRGB(40, 150, 60))
+			showStatus(
+				Lang.t("calendar.claimed", { day = dayOrReason, rewards = UiKit.rewardsText(rewards) }),
+				Color3.fromRGB(40, 150, 60)
+			)
 		else
-			showStatus(MESSAGES[dayOrReason] or "Geht gerade nicht.", UiKit.RED)
+			showStatus(MESSAGES[dayOrReason] or Lang.t("common.notNow"), UiKit.RED)
 		end
 	end)
 

@@ -1512,3 +1512,26 @@ Umgestellt auf die Textsammlung (Schlüssel `shop.`, `pets.`, `egg.`, `tutorial.
 - [ ] Ei: „Open 1 – 100 coins“ bzw. „Open 1 – 100“ + „Open 3 – 300“, „<Ei> 🍀 Luck!“, „Not enough coins!“/„Inventory full!“; Pet-Karte „+25 % coins“, „Tap to close“.
 - [ ] Tutorial: „Tutorial – step 1/4“, „Collect 10 toppings (0/10) – tap them or walk over them with Auto-Collect!“ passt in die Karte, „Walk into the zone at the oven …“, „Buy your first upgrade …“, „Open your first pet at the egg! …“, am Ende „Tutorial complete!“ / „Have fun topping pizzas! …“.
 - [ ] Output ohne Fehler.
+
+## #70 Englisch 5: Menüs Teil 2 (Tränke, Geschenke, Kalender, Rebirth, Portal, Telefon)
+
+Umgestellt auf die Textsammlung (Schlüssel `potions.`, `gifts.`, `calendar.`, `rebirth.`, `portal.`, `delivery.`, `reward.`, `common.`): Trank-Menü, Geschenke, Login-Kalender, Rebirth-Menü und -Feier, Portal-Menü, Telefon-Menü, Auftragskarte, Belohnungstexte (`UiKit.rewardText`). Barrieren-Hinweise waren schon seit #67 umgestellt; das Portal nutzt jetzt dieselben `unlock.rebirthsOne/Many`. Namen aus der Config (Welten, Tränke, Beläge) bleiben Deutsch (#68). Vorher: `lune run test` → `553 passed, 0 failed`. Sprache über das `Workspace`-Attribut `Language` umschalten.
+
+**Deutsch** (alles wie vorher):
+
+- [ ] Tränke: „Meine Tränke“, „Gleiche Art nochmal trinken verlängert die Zeit.“, Karten „Im Inventar: 0“, „Trinken“, „Läuft: 9:59“; Timer oben „Münzen ×2  9:59“ / „Glück …“ / „Speed …“; „<Trank> getrunken!“, ohne Trank „Davon hast du keinen Trank – kauf einen im Gem-Tresen!“.
+- [ ] Geschenke: „Geschenke“, „📅 Kalender“, Zeilen „5 Min“, „Abholen“/„✓“, „Spiel jeden Tag – jedes Geschenk einmal pro Tag.“, nach Abholen „Geschenk! +10 Gems“ (bzw. „+1× <Trank>“), zu früh „Noch nicht – spiel noch ein bisschen weiter!“.
+- [ ] Kalender: „Login-Kalender“, Kacheln „Tag 1“ … „Tag 7“, „Heute“/„✓“, „Tag 1: hol dir deine Belohnung!“, Knopf „Abholen“ → „Morgen wieder“, „Tag 1! +…“, „Komm morgen wieder – jeden Tag in Folge wird es besser!“.
+- [ ] Rebirth: „Noch kein Rebirth“ / „Rebirths: 1“, „Münzen ×1  →  ×1,5“, „Preis: 1 Mio Münzen“, Balken „42 %“, „Weg: …/Bleibt: …“, Trank-Warnung, Bestätigung „Rebirth 1 für … Münzen? Danach: Münzen ×1,5, Start in Welt 1.“ mit „Ja, Rebirth!“/„Nein“; Feier „Rebirth 1! ×1,5 Münzen“.
+- [ ] Portal: „🌀 Teleport“, „📍 <Welt> (du bist hier)“, „🔒 <Welt> – 1.500 Münzen“, „🔒 <Welt> – Ab 1 Rebirth“ + Preis darunter.
+- [ ] Telefon: Blase „📞 RING!“, „📞 Neuer Auftrag!“ mit „Belohnung: bis zu 💰 … Münzen“, „Zeit: 2:00 – je schneller, desto mehr!“, „Annehmen“/„Ablehnen“, „📵 Keine Anrufe mehr“; ohne Anruf „📞 Telefon“ + Text; Anrufe aus „📵 Anrufe sind aus“ + „📞 Anrufe einschalten“. Auftragskarte „🧾 Auftrag  ⏱ 1:59“, „Schnell = mehr Belohnung!“ → „Fertig! Ab zum 🚚 Lieferwagen.“, ohne Auftrag „📞 Das Telefon klingelt!“ / „Lauf zum Telefon und geh ran.“.
+
+**Englisch** (Attribut `en`, auch im Handy-Emulator prüfen – nichts abgeschnitten):
+
+- [ ] Tränke: „My potions“, „Drinking the same kind again adds more time.“, „Owned: 0“, „Drink“, „Active: 9:59“, Timer „Coins ×2 …“ / „Luck …“; „<Trank> drunk!“, „<Trank> has run out.“, „You have none of these – buy one at the gem counter!“ passt in die Statuszeile.
+- [ ] Geschenke: „Gifts“, „📅 Calendar“, „5 min“, „Claim“, „Play every day – each gift once per day.“, „Gift! +10 gems“ / „+1 potion“, „Not yet – keep playing a little longer!“, „You already claimed this gift today.“.
+- [ ] Kalender: „Login calendar“, „Day 1“ … „Day 7“, „Today“, „Day 1: claim your reward!“, „Claim“ → „Back tomorrow“, „Day 1! +…“, „Come back tomorrow – every day in a row gets better!“.
+- [ ] Rebirth: „No rebirth yet“ / „Rebirths: 1“, „Coins ×1  →  ×1.5“ (Punkt statt Komma), „Price: 1M coins“, „42%“, „Lost: …/Kept: …“ passt in zwei Zeilen, „Careful: your active potion ends on rebirth!“, „Rebirth 1 for … coins? After that: coins ×1.5, start in world 1.“ mit „Yes, rebirth!“/„No“; Feier „Rebirth 1! ×1.5 coins“.
+- [ ] Portal: „📍 <Welt> (you are here)“, „🔒 <Welt> – 1,500 coins“, „🔒 <Welt> – From 1 rebirth“.
+- [ ] Telefon: „📞 New order!“, „Reward: up to 💰 … coins“, „Time: 2:00 – the faster, the more!“, „Accept“/„Decline“, „📵 No more calls“, „📞 Phone“ / „No call right now. …“, „📵 Calls are off“ / „The phone no longer rings. …“ / „📞 Turn calls on“. Auftragskarte „🧾 Order  ⏱ 1:59“, „Fast = more reward!“ → „Done! Off to the 🚚 delivery van.“, „📞 The phone is ringing!“ / „Run to the phone and answer it.“.
+- [ ] Output ohne Fehler.

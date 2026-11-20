@@ -21,6 +21,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 type Order = GameRules.Order
@@ -58,12 +59,15 @@ end
 
 local function rewardText(reward: string, amount: number, potionId: string?): string
 	if reward == "Gems" then
-		return `💎 {amount} Gems`
+		return Lang.t("delivery.rewardGems", { amount = Lang.integer(amount) })
 	elseif reward == "Potion" then
 		local potion = potionId and GameConfig.potions[potionId]
-		return `🧪 {amount}× {if potion then potion.displayName else "Trank"}`
+		return Lang.t("delivery.rewardPotion", {
+			amount = amount,
+			potion = if potion then potion.displayName else Lang.t("delivery.potion"),
+		})
 	end
-	return `💰 {UiKit.shortNumber(amount)} Münzen`
+	return Lang.t("delivery.rewardCoins", { amount = UiKit.shortNumber(amount) })
 end
 
 local function readOrder(player: Player): any?
@@ -107,7 +111,7 @@ local function startRinging(player: Player)
 			bubble.AlwaysOnTop = true
 			bubble.MaxDistance = 250
 			bubble.Adornee = handset
-			local label = UiKit.label(bubble, "📞 RING!")
+			local label = UiKit.label(bubble, Lang.t("delivery.ring"))
 			label.Size = UDim2.fromScale(1, 1)
 			label.BackgroundTransparency = 0
 			label.BackgroundColor3 = UiKit.RED
@@ -171,13 +175,13 @@ function DeliveryMenu.start()
 	UiKit.stroke(panel, 4)
 	UiKit.placeMenu(gui, panel, PANEL_SIZE)
 
-	local title = UiKit.label(panel, "📞 Neuer Auftrag!")
+	local title = UiKit.label(panel, Lang.t("delivery.newOrder"))
 	title.Position = UDim2.fromOffset(24, 14)
 	title.Size = UDim2.new(1, -268, 0, 52)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 
 	-- Small switch in the corner: no more calls for this player.
-	local callsOffButton = UiKit.button(panel, "📵 Keine Anrufe mehr", UiKit.GREY)
+	local callsOffButton = UiKit.button(panel, Lang.t("delivery.callsOff"), UiKit.GREY)
 	callsOffButton.Name = "CallsOff"
 	callsOffButton.AnchorPoint = Vector2.new(1, 0)
 	callsOffButton.Position = UDim2.new(1, -20, 0, 14)
@@ -203,19 +207,19 @@ function DeliveryMenu.start()
 	timeLine.TextXAlignment = Enum.TextXAlignment.Left
 	timeLine.TextColor3 = Color3.fromRGB(110, 80, 55)
 
-	local acceptButton = UiKit.button(panel, "Annehmen", UiKit.GREEN)
+	local acceptButton = UiKit.button(panel, Lang.t("delivery.accept"), UiKit.GREEN)
 	acceptButton.Name = "Accept"
 	acceptButton.AnchorPoint = Vector2.new(0, 1)
 	acceptButton.Position = UDim2.new(0, 24, 1, -20)
 	acceptButton.Size = UDim2.new(0.5, -36, 0, 84)
 
-	local declineButton = UiKit.button(panel, "Ablehnen", UiKit.RED)
+	local declineButton = UiKit.button(panel, Lang.t("delivery.decline"), UiKit.RED)
 	declineButton.Name = "Decline"
 	declineButton.AnchorPoint = Vector2.new(1, 1)
 	declineButton.Position = UDim2.new(1, -24, 1, -20)
 	declineButton.Size = UDim2.new(0.5, -36, 0, 84)
 
-	local callsOnButton = UiKit.button(panel, "📞 Anrufe einschalten", UiKit.GREEN)
+	local callsOnButton = UiKit.button(panel, Lang.t("delivery.callsOn"), UiKit.GREEN)
 	callsOnButton.Name = "CallsOn"
 	callsOnButton.AnchorPoint = Vector2.new(0.5, 1)
 	callsOnButton.Position = UDim2.new(0.5, 0, 1, -20)
@@ -253,22 +257,24 @@ function DeliveryMenu.start()
 	local function onPhoneOpen(order: Order?, maxReward: DeliveryReward?, seconds: number?, callsOn: boolean?)
 		showView(order ~= nil or callsOn == true, order ~= nil)
 		if order == nil and callsOn then
-			title.Text = "📞 Telefon"
-			orderList.Text = "Gerade kein Anruf. Nach einer Pause klingelt es wieder, aber nie während eines Auftrags."
+			title.Text = Lang.t("delivery.phoneTitle")
+			orderList.Text = Lang.t("delivery.noCall")
 		elseif order == nil then
-			title.Text = "📵 Anrufe sind aus"
-			orderList.Text = "Das Telefon klingelt nicht mehr. Hier kannst du Anrufe wieder einschalten."
+			title.Text = Lang.t("delivery.callsOffTitle")
+			orderList.Text = Lang.t("delivery.callsOffBody")
 		else
-			title.Text = "📞 Neuer Auftrag!"
+			title.Text = Lang.t("delivery.newOrder")
 			local lines = {}
 			for _, toppingId in sortedToppings(order.toppings) do
 				table.insert(lines, `{order.toppings[toppingId]}× {toppingName(toppingId)}`)
 			end
 			orderList.Text = table.concat(lines, "\n")
 			rewardLine.Text = if maxReward
-				then `Belohnung: bis zu {rewardText(maxReward.reward, maxReward.amount, maxReward.potionId)}`
+				then Lang.t("delivery.maxReward", {
+					reward = rewardText(maxReward.reward, maxReward.amount, maxReward.potionId),
+				})
 				else ""
-			timeLine.Text = `Zeit: {clockText(seconds or 0)} – je schneller, desto mehr!`
+			timeLine.Text = Lang.t("delivery.timeLimit", { time = clockText(seconds or 0) })
 		end
 		if not panel.Visible then
 			panel.Visible = true
@@ -341,7 +347,7 @@ function DeliveryMenu.start()
 	local function updateTimer()
 		if current then
 			local left = math.max(0, secondsLeft - (os.clock() - syncedAt))
-			header.Text = `🧾 Auftrag  ⏱ {clockText(left)}`
+			header.Text = Lang.t("delivery.cardHeader", { time = clockText(left) })
 			header.TextColor3 = if left <= 30 then UiKit.RED else UiKit.DARK
 		end
 	end
@@ -357,10 +363,10 @@ function DeliveryMenu.start()
 		if current == nil then
 			-- No order: the card only reminds of a ringing phone.
 			card.Visible = ringing
-			header.Text = "📞 Das Telefon klingelt!"
+			header.Text = Lang.t("delivery.ringing")
 			header.TextColor3 = UiKit.RED
 			rewardNow.Text = ""
-			hint.Text = "Lauf zum Telefon und geh ran."
+			hint.Text = Lang.t("delivery.ringingHint")
 			return
 		end
 		secondsLeft = tonumber(current.secondsLeft) or 0
@@ -379,7 +385,7 @@ function DeliveryMenu.start()
 			line.TextColor3 = if done then Color3.fromRGB(40, 140, 50) else UiKit.DARK
 		end
 		rewardNow.Text = rewardText(current.reward, tonumber(current.rewardNow) or 0, current.potionId)
-		hint.Text = if allThere then "Fertig! Ab zum 🚚 Lieferwagen." else "Schnell = mehr Belohnung!"
+		hint.Text = if allThere then Lang.t("delivery.allThere") else Lang.t("delivery.hurry")
 		updateTimer()
 		if not card.Visible then
 			card.Visible = true

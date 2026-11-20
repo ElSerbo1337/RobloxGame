@@ -30,9 +30,9 @@ local HEADER_HEIGHT = 100
 local PANEL_SIZE = Vector2.new(560, HEADER_HEIGHT + #GameConfig.gifts * (ROW_HEIGHT + ROW_GAP) + 12)
 
 local MESSAGES: { [string]: string } = {
-	GiftNotReady = "Noch nicht – spiel noch ein bisschen weiter!",
-	GiftClaimed = "Dieses Geschenk hast du heute schon abgeholt.",
-	UnknownGift = "Dieses Geschenk gibt es nicht.",
+	GiftNotReady = Lang.t("gifts.GiftNotReady"),
+	GiftClaimed = Lang.t("gifts.GiftClaimed"),
+	UnknownGift = Lang.t("gifts.UnknownGift"),
 }
 
 type Reward = { kind: string, amount: number, potionId: string? }
@@ -130,7 +130,7 @@ function GiftMenu.start()
 	UiKit.stroke(panel, 4)
 	UiKit.placeMenu(gui, panel, PANEL_SIZE)
 
-	local title = UiKit.label(panel, "Geschenke")
+	local title = UiKit.label(panel, Lang.t("gifts.title"))
 	title.Position = UDim2.fromOffset(24, 14)
 	title.Size = UDim2.new(1, -290, 0, 48)
 	title.TextXAlignment = Enum.TextXAlignment.Left
@@ -149,7 +149,7 @@ function GiftMenu.start()
 	closeButton.Size = UDim2.fromOffset(72, 72)
 
 	-- Opens the login calendar (it opens by itself only once a day on join).
-	local calendarButton = UiKit.button(panel, "📅 Kalender", UiKit.ORANGE)
+	local calendarButton = UiKit.button(panel, Lang.t("gifts.calendar"), UiKit.ORANGE)
 	calendarButton.Name = "Calendar"
 	calendarButton.AnchorPoint = Vector2.new(1, 0)
 	calendarButton.Position = UDim2.new(1, -96, 0, 14)
@@ -224,14 +224,14 @@ function GiftMenu.start()
 			if gift == nil then
 				continue
 			end
-			row.minutes.Text = `{gift.minutes} Min`
+			row.minutes.Text = Lang.t("gifts.minutes", { minutes = gift.minutes })
 			row.rewards.Text = UiKit.rewardsText(gift.rewards)
 			if gift.status == "Claimed" then
 				row.button.Text = "✓"
 				row.button.BackgroundColor3 = UiKit.GREY
 				row.button.AutoButtonColor = false
 			elseif gift.status == "Ready" then
-				row.button.Text = "Abholen"
+				row.button.Text = Lang.t("gifts.claim")
 				row.button.BackgroundColor3 = UiKit.GREEN
 				row.button.AutoButtonColor = true
 			else
@@ -242,7 +242,7 @@ function GiftMenu.start()
 		end
 	end
 
-	local defaultStatus = "Spiel jeden Tag – jedes Geschenk einmal pro Tag."
+	local defaultStatus = Lang.t("gifts.hint")
 	local statusId = 0
 	local function showStatus(text: string, color: Color3)
 		statusId += 1
@@ -327,9 +327,9 @@ function GiftMenu.start()
 	Net.event("GiftResult").OnClientEvent:Connect(function(ok: boolean, indexOrReason: any, rewards: { Reward })
 		if ok then
 			Sounds.play("Gem")
-			showStatus(`Geschenk! +{UiKit.rewardsText(rewards)}`, Color3.fromRGB(40, 150, 60))
+			showStatus(Lang.t("gifts.claimed", { rewards = UiKit.rewardsText(rewards) }), Color3.fromRGB(40, 150, 60))
 		else
-			showStatus(MESSAGES[indexOrReason] or "Geht gerade nicht.", UiKit.RED)
+			showStatus(MESSAGES[indexOrReason] or Lang.t("common.notNow"), UiKit.RED)
 		end
 	end)
 end

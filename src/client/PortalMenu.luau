@@ -10,6 +10,7 @@ local Players = game:GetService("Players")
 
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 type PortalEntry = GameRules.PortalEntry
@@ -24,15 +25,9 @@ local HERE = Color3.fromRGB(240, 170, 60)
 
 local PortalMenu = {}
 
-local function formatNumber(value: number): string
-	local text = tostring(math.floor(value))
-	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
-	return (string.gsub(formatted, "^%.", ""))
-end
-
 -- "Ab 1 Rebirth" / "Ab 3 Rebirths" (#43).
 local function rebirthsText(count: number): string
-	return `Ab {count} {if count == 1 then "Rebirth" else "Rebirths"}`
+	return Lang.t(if count == 1 then "unlock.rebirthsOne" else "unlock.rebirthsMany", { count = count })
 end
 
 function PortalMenu.start()
@@ -53,7 +48,7 @@ function PortalMenu.start()
 	UiKit.stroke(panel, 4)
 	UiKit.placeMenu(gui, panel, PANEL_SIZE, MIN_PANEL_HEIGHT)
 
-	local title = UiKit.label(panel, "🌀 Teleport")
+	local title = UiKit.label(panel, Lang.t("portal.title"))
 	title.Position = UDim2.fromOffset(20, 12)
 	title.Size = UDim2.new(1, -120, 0, 52)
 	title.TextXAlignment = Enum.TextXAlignment.Left
@@ -97,15 +92,17 @@ function PortalMenu.start()
 			local text, color
 			if not entry.unlocked and not entry.enoughRebirths then
 				-- Behind rebirths (#43): the condition first, the price below.
-				text = `🔒 {entry.displayName} – {rebirthsText(entry.requiredRebirths)}\n{formatNumber(
-					entry.unlockPrice
-				)} Münzen`
+				text = Lang.t("portal.lockedRebirths", {
+					world = entry.displayName,
+					condition = rebirthsText(entry.requiredRebirths),
+					price = Lang.integer(entry.unlockPrice),
+				})
 				color = GREY
 			elseif not entry.unlocked then
-				text = `🔒 {entry.displayName} – {formatNumber(entry.unlockPrice)} Münzen`
+				text = Lang.t("portal.locked", { world = entry.displayName, price = Lang.integer(entry.unlockPrice) })
 				color = GREY
 			elseif here then
-				text = `📍 {entry.displayName} (du bist hier)`
+				text = Lang.t("portal.here", { world = entry.displayName })
 				color = HERE
 			else
 				text = `{index}. {entry.displayName}`

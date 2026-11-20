@@ -20,9 +20,9 @@ local UiKit = require(script.Parent.UiKit)
 
 -- Display order and look of each potion (the effects live in GameConfig / GameRules).
 local LOOKS: { { potionId: string, icon: string, color: Color3, effect: string } } = {
-	{ potionId = "Coins", icon = "💰", color = UiKit.COIN, effect = "Münzen ×2" },
-	{ potionId = "Luck", icon = "🍀", color = UiKit.GREEN, effect = "Glück" },
-	{ potionId = "Speed", icon = "⚡", color = Color3.fromRGB(90, 170, 255), effect = "Speed" },
+	{ potionId = "Coins", icon = "💰", color = UiKit.COIN, effect = Lang.t("potions.effectCoins") },
+	{ potionId = "Luck", icon = "🍀", color = UiKit.GREEN, effect = Lang.t("potions.effectLuck") },
+	{ potionId = "Speed", icon = "⚡", color = Color3.fromRGB(90, 170, 255), effect = Lang.t("potions.effectSpeed") },
 }
 
 -- Subtitle sits below the close button (full width, never covered); the cards follow.
@@ -32,8 +32,8 @@ local CARD_HEIGHT = 112
 local TIMER_SIZE = Vector2.new(230, 64)
 
 local MESSAGES: { [string]: string } = {
-	NoPotion = "Davon hast du keinen Trank – kauf einen im Gem-Tresen!",
-	UnknownPotion = "Diesen Trank gibt es nicht.",
+	NoPotion = Lang.t("potions.NoPotion"),
+	UnknownPotion = Lang.t("potions.UnknownPotion"),
 }
 
 local PotionMenu = {}
@@ -125,12 +125,12 @@ function PotionMenu.start()
 	UiKit.stroke(panel, 4)
 	UiKit.placeMenu(gui, panel, PANEL_SIZE)
 
-	local title = UiKit.label(panel, "Meine Tränke")
+	local title = UiKit.label(panel, Lang.t("potions.title"))
 	title.Position = UDim2.fromOffset(24, 14)
 	title.Size = UDim2.new(1, -120, 0, 48)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 
-	local status = UiKit.label(panel, "Gleiche Art nochmal trinken verlängert die Zeit.")
+	local status = UiKit.label(panel, Lang.t("potions.hint"))
 	status.Position = UDim2.fromOffset(24, 94)
 	status.Size = UDim2.new(1, -48, 0, 30)
 	status.TextXAlignment = Enum.TextXAlignment.Left
@@ -185,7 +185,7 @@ function PotionMenu.start()
 		left.TextXAlignment = Enum.TextXAlignment.Left
 		left.TextColor3 = Color3.fromRGB(40, 130, 40)
 
-		local button = UiKit.button(card, "Trinken", UiKit.GREEN)
+		local button = UiKit.button(card, Lang.t("potions.drink"), UiKit.GREEN)
 		button.AnchorPoint = Vector2.new(1, 0.5)
 		button.Position = UDim2.new(1, -12, 0.5, 0)
 		button.Size = UDim2.new(0.4, -24, 0, 76)
@@ -214,7 +214,7 @@ function PotionMenu.start()
 		for _, look in LOOKS do
 			local card = cards[look.potionId]
 			local count = owned[look.potionId] or 0
-			card.owned.Text = `Im Inventar: {count}`
+			card.owned.Text = Lang.t("potions.owned", { count = Lang.integer(count) })
 			card.button.BackgroundColor3 = if count > 0 then UiKit.GREEN else UiKit.GREY
 			card.button.AutoButtonColor = count > 0
 		end
@@ -236,7 +236,9 @@ function PotionMenu.start()
 			if running then
 				timer.text.Text = `{look.effect}  {clockText(left)}`
 			end
-			cards[look.potionId].left.Text = if running then `Läuft: {clockText(left)}` else ""
+			cards[look.potionId].left.Text = if running
+				then Lang.t("potions.running", { time = clockText(left) })
+				else ""
 		end
 		-- Hidden when empty, so the order card moves up in the right column.
 		timers.Visible = anyRunning
@@ -305,11 +307,11 @@ function PotionMenu.start()
 		local potion = GameConfig.potions[potionId]
 		local name = if potion then potion.displayName else potionId
 		if kind == "Drunk" then
-			showStatus(`{name} getrunken!`, Color3.fromRGB(40, 150, 60))
+			showStatus(Lang.t("potions.drunk", { potion = name }), Color3.fromRGB(40, 150, 60))
 		elseif kind == "Expired" then
-			showStatus(`{name} ist abgelaufen.`, UiKit.RED)
+			showStatus(Lang.t("potions.expired", { potion = name }), UiKit.RED)
 		else
-			showStatus(MESSAGES[kind] or "Geht gerade nicht.", UiKit.RED)
+			showStatus(MESSAGES[kind] or Lang.t("common.notNow"), UiKit.RED)
 		end
 	end)
 end

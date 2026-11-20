@@ -49,10 +49,10 @@ local function readOffer(player: Player): Offer?
 	return value :: Offer
 end
 
--- "×1,5" / "×2" from a multiplier.
+-- "×1,5" / "×1.5" / "×2" from a multiplier.
 local function multiplierText(value: number): string
 	local text = if value == math.floor(value) then tostring(value) else string.format("%.1f", value)
-	return "×" .. (string.gsub(text, "%.", ","))
+	return "×" .. (if Lang.language == "de" then (string.gsub(text, "%.", ",")) else text)
 end
 
 function RebirthMenu.start()
@@ -102,7 +102,7 @@ function RebirthMenu.start()
 	UiKit.stroke(panel, 4)
 	UiKit.placeMenu(gui, panel, PANEL_SIZE)
 
-	local title = UiKit.label(panel, "Rebirth")
+	local title = UiKit.label(panel, Lang.t("rebirth.title"))
 	title.Position = UDim2.fromOffset(24, 14)
 	title.Size = UDim2.new(1, -120, 0, 48)
 	title.TextXAlignment = Enum.TextXAlignment.Left
@@ -152,21 +152,18 @@ function RebirthMenu.start()
 	barText.Size = UDim2.fromScale(1, 1)
 	barText.ZIndex = 2
 
-	local info = UiKit.label(
-		panel,
-		"Weg: Münzen, Münz-Upgrades, Welten, Pizza, Auftrag.\nBleibt: Pets, Gems, Gem-Upgrades, Tränke im Inventar."
-	)
+	local info = UiKit.label(panel, Lang.t("rebirth.info"))
 	info.Position = UDim2.fromOffset(24, 252)
 	info.Size = UDim2.new(1, -48, 0, 56)
 	info.TextColor3 = SOFT
 
-	local warning = UiKit.label(panel, "Achtung: Dein laufender Trank endet beim Rebirth!")
+	local warning = UiKit.label(panel, Lang.t("rebirth.potionWarning"))
 	warning.Position = UDim2.fromOffset(24, 314)
 	warning.Size = UDim2.new(1, -48, 0, 30)
 	warning.TextColor3 = UiKit.RED
 	warning.Visible = false
 
-	local rebirthButton = UiKit.button(panel, "Rebirth!", UiKit.GREEN)
+	local rebirthButton = UiKit.button(panel, Lang.t("rebirth.button"), UiKit.GREEN)
 	rebirthButton.Name = "DoRebirth"
 	rebirthButton.AnchorPoint = Vector2.new(0.5, 1)
 	rebirthButton.Position = UDim2.new(0.5, 0, 1, -24)
@@ -199,11 +196,11 @@ function RebirthMenu.start()
 	confirmText.Size = UDim2.new(1, -40, 0, 140)
 	confirmText.ZIndex = 12
 
-	local yesButton = UiKit.button(confirmBox, "Ja, Rebirth!", UiKit.GREEN)
+	local yesButton = UiKit.button(confirmBox, Lang.t("rebirth.yes"), UiKit.GREEN)
 	yesButton.Position = UDim2.new(0, 20, 1, -92)
 	yesButton.Size = UDim2.new(0.5, -30, 0, 72)
 	yesButton.ZIndex = 12
-	local noButton = UiKit.button(confirmBox, "Nein", UiKit.RED)
+	local noButton = UiKit.button(confirmBox, Lang.t("rebirth.no"), UiKit.RED)
 	noButton.Position = UDim2.new(0.5, 10, 1, -92)
 	noButton.Size = UDim2.new(0.5, -30, 0, 72)
 	noButton.ZIndex = 12
@@ -272,18 +269,25 @@ function RebirthMenu.start()
 		if offer == nil then
 			return
 		end
-		count.Text = if offer.rebirths == 0 then "Noch kein Rebirth" else `Rebirths: {offer.rebirths}`
-		multiplier.Text = `Münzen {multiplierText(offer.multiplier)}  →  {multiplierText(offer.nextMultiplier)}`
-		price.Text = `Preis: {UiKit.shortNumber(offer.price)} Münzen`
+		count.Text = if offer.rebirths == 0
+			then Lang.t("rebirth.none")
+			else Lang.t("rebirth.count", { count = Lang.integer(offer.rebirths) })
+		multiplier.Text = Lang.t(
+			"rebirth.multiplier",
+			{ now = multiplierText(offer.multiplier), next = multiplierText(offer.nextMultiplier) }
+		)
+		price.Text = Lang.t("rebirth.price", { price = UiKit.shortNumber(offer.price) })
 		fill.Size = UDim2.fromScale(math.clamp(offer.progress, 0, 1), 1)
 		fill.Visible = offer.progress > 0
-		barText.Text = `{math.floor(offer.progress * 100)} %`
+		barText.Text = Lang.t("rebirth.progress", { percent = math.floor(offer.progress * 100) })
 		warning.Visible = offer.potionWarning
 		rebirthButton.BackgroundColor3 = if offer.affordable then UiKit.GREEN else UiKit.GREY
 		rebirthButton.AutoButtonColor = offer.affordable
-		confirmText.Text = `Rebirth {offer.rebirths + 1} für {UiKit.shortNumber(offer.price)} Münzen?\nDanach: Münzen {multiplierText(
-			offer.nextMultiplier
-		)}, Start in Welt 1.` .. (if offer.potionWarning then "\nDein laufender Trank endet!" else "")
+		confirmText.Text = Lang.t("rebirth.confirm", {
+			number = offer.rebirths + 1,
+			price = UiKit.shortNumber(offer.price),
+			multiplier = multiplierText(offer.nextMultiplier),
+		}) .. (if offer.potionWarning then "\n" .. Lang.t("rebirth.confirmPotion") else "")
 		-- First time a rebirth is possible: draw attention until the menu is opened.
 		setPulsing(not opened and not seen() and offer.rebirths == 0 and offer.affordable)
 	end
@@ -337,7 +341,8 @@ function RebirthMenu.start()
 		panel.Visible = false
 		celebrationId += 1
 		local myId = celebrationId
-		celebration.Text = `Rebirth {rebirths}! {multiplierText(newMultiplier)} Münzen`
+		celebration.Text =
+			Lang.t("rebirth.celebration", { number = rebirths, multiplier = multiplierText(newMultiplier) })
 		celebration.TextTransparency = 0
 		celebrationStroke.Transparency = 0
 		celebration.Visible = true

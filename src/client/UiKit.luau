@@ -429,13 +429,15 @@ end
 -- as short German text: "10 Gems", "2× Glücks-Trank", "1 Trank".
 function UiKit.rewardText(reward: { kind: string, amount: number, potionId: string? }): string
 	if reward.kind == "Gems" then
-		return `{UiKit.shortNumber(reward.amount)} Gems`
+		return Lang.t("reward.gems", { amount = UiKit.shortNumber(reward.amount) })
 	end
 	local potion = reward.potionId and GameConfig.potions[reward.potionId]
 	if potion then
 		return `{reward.amount}× {potion.displayName}`
 	end
-	return if reward.amount == 1 then "1 Trank" else `{reward.amount} Tränke`
+	return if reward.amount == 1
+		then Lang.t("reward.potionOne")
+		else Lang.t("reward.potionMany", { count = reward.amount })
 end
 
 -- Several rewards joined with " + ".
