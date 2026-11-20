@@ -12,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PetIcon = require(script.Parent.PetIcon)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 type PetEntry = { uid: number, petId: string, equipped: boolean }
@@ -55,7 +56,7 @@ function PetMenu.start()
 	UiKit.autoScale(gui)
 
 	-- Left side, first slot of the HUD grid: big round button.
-	local openButton = UiKit.sideButton("pets", "Pets", UiKit.ORANGE)
+	local openButton = UiKit.sideButton("pets", Lang.t("side.pets"), UiKit.ORANGE)
 	openButton.Name = "PetsButton"
 
 	local panel = Instance.new("Frame")

@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local Lang = require(script.Parent.Lang)
 local Net = require(ReplicatedStorage.Shared.Net)
 local SignCulling = require(script.Parent.SignCulling)
 local UiKit = require(script.Parent.UiKit)
@@ -24,15 +25,9 @@ local GRAY = Color3.fromRGB(170, 160, 150)
 
 local Barriers = {}
 
-local function formatNumber(value: number): string
-	local text = tostring(math.floor(value))
-	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
-	return (string.gsub(formatted, "^%.", ""))
-end
-
 -- "Ab 1 Rebirth" / "Ab 3 Rebirths" (#43).
 local function rebirthsText(count: number): string
-	return `Ab {count} {if count == 1 then "Rebirth" else "Rebirths"}`
+	return Lang.t(if count == 1 then "unlock.rebirthsOne" else "unlock.rebirthsMany", { count = count })
 end
 
 local function unlockedWorlds(player: Player): { [string]: boolean }
@@ -157,11 +152,15 @@ function Barriers.start()
 			local rebirths = (player:GetAttribute("Rebirths") :: number?) or 0
 			if rebirths < needed then
 				-- Behind rebirths (#43): name the condition; the server refuses anyway.
-				button.Text =
-					`🔒 {found:GetAttribute("WorldName")}: {rebirthsText(needed)}\n{formatNumber(price)} Münzen`
+				button.Text = Lang.t("unlock.locked", {
+					world = found:GetAttribute("WorldName"),
+					condition = rebirthsText(needed),
+					price = Lang.integer(price),
+				})
 				button.BackgroundColor3 = GRAY
 			else
-				button.Text = `🔓 {found:GetAttribute("WorldName")} freischalten\n{formatNumber(price)} Münzen`
+				button.Text =
+					Lang.t("unlock.open", { world = found:GetAttribute("WorldName"), price = Lang.integer(price) })
 				button.BackgroundColor3 = if coins >= price then GREEN else GRAY
 			end
 		end

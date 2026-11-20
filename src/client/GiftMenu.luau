@@ -19,6 +19,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local LoginCalendarMenu = require(script.Parent.LoginCalendarMenu)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 local HINT_ID = "Gifts"
@@ -73,7 +74,7 @@ function GiftMenu.start()
 	-- Left side, HUD slot "gifts": title and countdown inside the circle.
 	local openButton = UiKit.sideButton("gifts", "", BUTTON_COLOR)
 	openButton.Name = "GiftsButton"
-	local buttonTitle = UiKit.label(openButton, "Geschenke")
+	local buttonTitle = UiKit.label(openButton, Lang.t("side.gifts"))
 	buttonTitle.Size = UDim2.fromScale(1, 0.42)
 	buttonTitle.Position = UDim2.fromScale(0, 0.08)
 	buttonTitle.TextColor3 = UiKit.CREAM
@@ -103,7 +104,7 @@ function GiftMenu.start()
 	UiKit.stroke(badge, 2)
 
 	-- Short note next to the button while it is new.
-	local note = UiKit.label(openButton, "Neu! Geschenke fürs Spielen")
+	local note = UiKit.label(openButton, Lang.t("side.giftsNote"))
 	note.Name = "Note"
 	UiKit.placeSideNote(note, openButton, 22)
 	note.Size = UDim2.fromOffset(200, 52)
@@ -209,11 +210,11 @@ function GiftMenu.start()
 	local function updateButton()
 		badge.Visible = current.ready > 0
 		if current.ready > 0 then
-			countdown.Text = "Abholen!"
+			countdown.Text = Lang.t("side.giftsReady")
 		elseif current.nextSeconds >= 0 then
 			countdown.Text = clockText(current.nextSeconds - passed())
 		else
-			countdown.Text = "Morgen"
+			countdown.Text = Lang.t("side.giftsTomorrow")
 		end
 	end
 

@@ -26,7 +26,23 @@ Seltenheiten haben eigene Farben in `GameConfig.rarities` (`UiKit.rarityColor`).
 - Immer `Enum.Font.FredokaOne` (`UiKit.FONT`), `TextScaled = true`.
 - Text auf farbigen Flächen: `CREAM` mit dunklem Text-Rand (`UIStroke` Contextual, 2 px, `DARK`).
 - Text auf `CREAM`: `DARK`.
-- Kurz und auf Deutsch, Zahlen mit Tausenderpunkt (`1.500`), Prozent mit Komma (`0,5 %`).
+- Kurz, in der Sprache des Spielers (Deutsch oder Englisch, siehe „Texte und Sprachen“). Deutsch: Zahlen mit Tausenderpunkt (`1.500`), Prozent mit Komma (`0,5 %`); Englisch: `1,500`, `0.5%`.
+
+## Texte und Sprachen (#65, #67)
+
+Jeder Spieler sieht das Spiel in seiner Sprache: Deutsch für deutschsprachige Roblox-Konten (Locale `de-*`), Englisch für alle anderen. Kein Text steht mehr fest im UI-Code.
+
+- **Textsammlung:** `src/shared/Texts.luau` (rein, ohne Roblox-API, in Lune getestet). `Texts.strings` ordnet jedem Schlüssel `{ de = "…", en = "…" }` zu. Platzhalter heißen `{name}` und müssen in beiden Sprachen gleich sein.
+- **Im Client:** `src/client/Lang.luau` liest die Sprache einmal (`LocalizationService.RobloxLocaleId`, sonst `SystemLocaleId`) und liefert:
+  - `Lang.t(schlüssel, { name = wert })` – fertiger Text, z. B. `Lang.t("notify.sold", { amount = Lang.shortNumber(1500) })` → „+1.500 Münzen“ / „+1,500 coins“.
+  - `Lang.shortNumber(n)` – Kurzzahl: Deutsch „1.234“, „1,5 Mio“, „2 Mrd“, „3 Bio“; Englisch „1,234“, „1.5M“, „2B“, „3T“ (`UiKit.shortNumber` ist dasselbe).
+  - `Lang.integer(n)` – ganze Zahl ohne Kurzform („2.500.000“ / „2,500,000“).
+  - `Lang.language` – `"de"` oder `"en"`, falls etwas anderes als Text sprachabhängig ist.
+- **Neuer Text:** Schlüssel in `Texts.strings` ergänzen (Gruppe als Präfix: `hud.`, `side.`, `unlock.`, `notify.`; neue Bildschirme bekommen ein eigenes Präfix, z. B. `shop.`, `pets.`, `tutorial.`, `sign.`), beide Sprachen ausfüllen, im UI `Lang.t` benutzen. `lune run test` prüft, dass jeder Schlüssel beide Sprachen und dieselben Platzhalter hat. Zahlen erst formatieren (`Lang.shortNumber`/`Lang.integer`), dann als Platzhalter einsetzen. Einzahl/Mehrzahl: zwei Schlüssel (z. B. `unlock.rebirthsOne`/`unlock.rebirthsMany`). Unbekannte Schlüssel erscheinen als Schlüsselname im Spiel – so fällt ein fehlender Text auf.
+- **Server-Meldungen:** Der Server schickt nur Notify-Arten (`"NotEnoughCoins"`); der Client zeigt `notify.<Art>`. Neue Notify-Art: Schlüssel `notify.<Art>` anlegen und die Art in `MESSAGE_KINDS` in `src/client/Hud.luau` eintragen.
+- **Keine Roblox-Autoübersetzung:** `UiKit.autoScale` setzt `AutoLocalize = false`; zusätzlich setzt `Lang.stopAutoTranslate` (beim Start) es für jede ScreenGui in PlayerGui und jede Billboard-/SurfaceGui im Workspace. Im Creator Hub die automatische Übersetzung ebenfalls ausschalten.
+- **In Studio testen:** Vor **Play** im Explorer `Workspace` wählen → Properties → Attributes → **+** → Name `Language`, Typ `string`, Wert `en` (oder `de`). Gilt nur in Studio; zum Schluss wieder löschen. Alternativ **Test → Player Emulator → Locale** (z. B. `en-us`/`de-de`) einstellen, wenn kein Attribut gesetzt ist.
+- Noch Deutsch (folgen in #68–#71): Namen aus `GameConfig` (Welten, Tränke, Pets …), Menüs, Tutorial, 3D-Schilder.
 
 ## Formen
 

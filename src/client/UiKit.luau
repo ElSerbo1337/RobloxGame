@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local HudLayout = require(ReplicatedStorage.Shared.HudLayout)
 local MenuSwitch = require(ReplicatedStorage.Shared.MenuSwitch)
+local Lang = require(script.Parent.Lang)
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -90,6 +91,7 @@ end
 
 -- Scales a ScreenGui so it stays readable on small phones and large monitors alike.
 function UiKit.autoScale(gui: ScreenGui)
+	gui.AutoLocalize = false
 	local uiScale = Instance.new("UIScale")
 	uiScale.Parent = gui
 	local function update()
@@ -114,23 +116,9 @@ function UiKit.pop(target: GuiObject, from: number?)
 	TweenService:Create(uiScale, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Scale = 1 }):Play()
 end
 
--- Short number for small labels: 999.999 stays as is, then "1,5 Mio", "12 Mrd", "3,4 Bio".
-function UiKit.shortNumber(value: number): string
-	local units = { { 1e12, "Bio" }, { 1e9, "Mrd" }, { 1e6, "Mio" } }
-	for _, unit in units do
-		if value >= unit[1] then
-			local scaled = value / unit[1]
-			local text = if scaled >= 100
-				then tostring(math.floor(scaled))
-				else string.format("%.1f", math.floor(scaled * 10) / 10)
-			text = string.gsub(string.gsub(text, "%.0$", ""), "%.", ",")
-			return `{text} {unit[2]}`
-		end
-	end
-	local text = tostring(math.floor(value))
-	local formatted = string.reverse((string.gsub(string.reverse(text), "(%d%d%d)", "%1.")))
-	return (string.gsub(formatted, "^%.", ""))
-end
+-- Short number for small labels in the player's language (Texts.shortNumber):
+-- 999.999 stays as is, then "1,5 Mio", "12 Mrd", "3,4 Bio" / "1.5M", "12B", "3.4T".
+UiKit.shortNumber = Lang.shortNumber
 
 -- HUD grid ------------------------------------------------------------------------
 

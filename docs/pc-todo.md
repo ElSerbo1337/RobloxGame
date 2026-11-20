@@ -1472,3 +1472,24 @@ Hochladen (Spiel muss veröffentlicht sein):
 - [ ] Alternativ im Creator Hub (create.roblox.com → Creations → Spiel → Basic Info / Places-Einstellungen), falls Studio den Upload verweigert.
 - [ ] Nach der Moderation (kann ein paar Minuten dauern) die Spielseite öffnen: Icon in der Spieleliste erkennbar, Thumbnails in der richtigen Reihenfolge, Titel nicht abgeschnitten.
 - [ ] Wird ein Bild abgelehnt: Grund notieren und als Issue melden (dann neu rendern).
+
+## #67 Englisch 2: Sprach-Baustein, HUD und Meldungen
+
+Neu: Textsammlung `src/shared/Texts.luau` (Deutsch/Englisch), Sprach-Helfer `src/client/Lang.luau`. Umgestellt: HUD (Pizza-Leiste, Auto-Sammeln, Münz-/Gem-Zahlen), Freischalt-Knopf an Welt-Toren, alle Meldungen (Toasts), Seiten-Knöpfe (Pets, Tränke, Geschenke, Rebirth samt „Neu!“-Hinweisen). Namen (Welten, Tränke), Menüs, Tutorial und Schilder bleiben vorerst Deutsch (#68–#71). Vorher: `lune run test` → `553 passed, 0 failed`.
+
+Sprache umschalten: `Workspace` → Attribut `Language` (string) = `de` bzw. `en`, dann **Play** (Anleitung in `docs/ui-style.md`, „Texte und Sprachen“). Danach das Attribut wieder löschen.
+
+**Deutsch** (Attribut `de` oder ohne Attribut bei deutschem Konto):
+
+- [ ] HUD wie vorher: „Pizza 0/…“, voll „Pizza VOLL …“, „Auto-Sammeln: AN/AUS“, Münzen „1.234“ / „1,5 Mio“.
+- [ ] Meldungen wie vorher: „+X Münzen“ beim Verkaufen, „Nicht genug Münzen!“, „Pizza voll! Ab zum Ofen.“, Telefon-Meldungen, „Geliefert! +…“.
+- [ ] Seiten-Knöpfe „Pets“, „Tränke“, „Geschenke“ (mit „Abholen!“/Countdown/„Morgen“), „Rebirth“; Hinweise „Neu! …“ unverändert.
+- [ ] Am gesperrten Tor: „🔓 <Welt> freischalten / 1.234 Münzen“, mit Rebirth-Sperre „🔒 <Welt>: Ab 1 Rebirth …“.
+
+**Englisch** (Attribut `en`):
+
+- [ ] HUD: „Pizza 0/…“, „Pizza FULL …“, „Auto-Collect: ON/OFF“, Münzen „1,234“ / „1.5M“ / „2B“; Texte passen in die Felder.
+- [ ] Meldungen: „+X coins“, „+X gems!“, „Not enough coins!“, „Pizza full! Off to the oven.“, „📞 The phone is ringing!“, „Order accepted! …“, „Delivered! +…“, Trank „… has run out.“ / „… works for 10 minutes!“.
+- [ ] Seiten-Knöpfe „Pets“, „Potions“, „Gifts“ (mit „Claim!“/„Tomorrow“), „Rebirth“; Hinweise „New! Gifts for playing“ / „New! More coins“ lesbar, nichts abgeschnitten (auch Handy-Emulator).
+- [ ] Am gesperrten Tor: „🔓 Unlock <Welt> / 1,234 coins“, mit Rebirth-Sperre „🔒 <Welt>: From 1 rebirth …“.
+- [ ] Output ohne Fehler; im Explorer (während Play) bei `PlayerGui` → `Hud` ist `AutoLocalize` aus.

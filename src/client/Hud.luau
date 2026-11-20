@@ -11,6 +11,7 @@ local TweenService = game:GetService("TweenService")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 local FONT = Enum.Font.FredokaOne
@@ -22,31 +23,32 @@ local FULL = Color3.fromRGB(230, 70, 50)
 local ON = Color3.fromRGB(110, 200, 90)
 local OFF = Color3.fromRGB(190, 180, 170)
 
-local MESSAGES: { [string]: string } = {
-	PizzaFull = "Pizza voll! Ab zum Ofen.",
-	OutOfRange = "Zu weit weg!",
-	NotEnoughCoins = "Nicht genug Münzen!",
-	WorldLocked = "Diese Welt ist noch gesperrt!",
-	PreviousWorldLocked = "Erst die vorige Welt freischalten!",
-	NotEnoughRebirths = "Dafür brauchst du mehr Rebirths!",
-	WorldUnlocked = "Neue Welt freigeschaltet!",
-	InventoryFull = "Pet-Inventar voll! Lösche erst ein Pet.",
-	NotEnoughGems = "Nicht genug Gems!",
+-- Notify kinds with a fixed text (Texts key "notify.<kind>").
+local MESSAGE_KINDS = {
+	PizzaFull = true,
+	OutOfRange = true,
+	NotEnoughCoins = true,
+	WorldLocked = true,
+	PreviousWorldLocked = true,
+	NotEnoughRebirths = true,
+	WorldUnlocked = true,
+	InventoryFull = true,
+	NotEnoughGems = true,
 	-- Delivery service
-	PhoneRinging = "📞 Das Telefon klingelt!",
-	OrderAccepted = "Auftrag angenommen! Beläge sammeln, dann zum 🚚.",
-	OrderDeclined = "Auftrag abgelehnt.",
-	OrderExpired = "Zeit um – der Auftrag ist verfallen.",
-	WrongToppings = "Falsche Beläge! Überzählige am Ofen verkaufen.",
-	NoOrder = "Kein Auftrag – geh ans Telefon!",
-	PhoneCallsOff = "📵 Keine Anrufe mehr. Am Telefon wieder einschalten.",
-	PhoneCallsOn = "📞 Anrufe sind wieder an.",
+	PhoneRinging = true,
+	OrderAccepted = true,
+	OrderDeclined = true,
+	OrderExpired = true,
+	WrongToppings = true,
+	NoOrder = true,
+	PhoneCallsOff = true,
+	PhoneCallsOn = true,
 }
 
 local Hud = {}
 
--- Short form from a million on ("1,5 Mio"), so late-world amounts fit the counters on phones.
-local formatNumber = UiKit.shortNumber
+-- Short form from a million on ("1,5 Mio" / "1.5M"), so late-world amounts fit the counters on phones.
+local formatNumber = Lang.shortNumber
 
 local function corner(parent: Instance, radius: number)
 	local uiCorner = Instance.new("UICorner")
@@ -153,7 +155,7 @@ function Hud.start(): GuiObject
 	corner(bar, 24)
 	bar.Parent = pizza
 
-	local pizzaText = label(pizza, "Pizza 0/2")
+	local pizzaText = label(pizza, Lang.t("hud.pizza", { count = 0, capacity = 2 }))
 	pizzaText.Position = UDim2.fromOffset(12, 10)
 	pizzaText.Size = UDim2.new(1, -24, 1, -20)
 	pizzaText.ZIndex = 2
@@ -167,7 +169,7 @@ function Hud.start(): GuiObject
 	autoButton.Font = FONT
 	autoButton.TextScaled = true
 	autoButton.TextColor3 = DARK
-	autoButton.Text = "Auto-Sammeln: AUS"
+	autoButton.Text = Lang.t("hud.autoCollectOff")
 	corner(autoButton, 32)
 	stroke(autoButton)
 	local padding = Instance.new("UIPadding")
@@ -229,7 +231,7 @@ function Hud.start(): GuiObject
 		local count = (player:GetAttribute("PizzaCount") :: number?) or 0
 		local capacity = (player:GetAttribute("PizzaCapacity") :: number?) or 1
 		local isFull = count >= capacity
-		pizzaText.Text = if isFull then `Pizza VOLL {count}/{capacity}` else `Pizza {count}/{capacity}`
+		pizzaText.Text = Lang.t(if isFull then "hud.pizzaFull" else "hud.pizza", { count = count, capacity = capacity })
 		bar.BackgroundColor3 = if isFull then FULL else Color3.fromRGB(240, 160, 60)
 		TweenService:Create(bar, TweenInfo.new(0.2), {
 			Size = UDim2.new(math.clamp(count / capacity, 0, 1), -16 * math.clamp(count / capacity, 0, 1), 1, -16),
@@ -238,7 +240,7 @@ function Hud.start(): GuiObject
 
 	local function updateAutoCollect()
 		local enabled = player:GetAttribute("AutoCollect") == true
-		autoButton.Text = if enabled then "Auto-Sammeln: AN" else "Auto-Sammeln: AUS"
+		autoButton.Text = Lang.t(if enabled then "hud.autoCollectOn" else "hud.autoCollectOff")
 		autoButton.BackgroundColor3 = if enabled then ON else OFF
 	end
 
@@ -262,17 +264,17 @@ function Hud.start(): GuiObject
 		if kind == "Delivered" and amount then
 			local potion = potionId and GameConfig.potions[potionId]
 			if rewardKind == "Gems" then
-				showToast(`Geliefert! +{formatNumber(amount)} Gems`, GEM)
+				showToast(Lang.t("notify.deliveredGems", { amount = formatNumber(amount) }), GEM)
 			elseif rewardKind == "Potion" and potion then
-				showToast(`Geliefert! +{amount}× {potion.displayName}`, ON)
+				showToast(Lang.t("notify.deliveredPotion", { amount = amount, potion = potion.displayName }), ON)
 			else
-				showToast(`Geliefert! +{formatNumber(amount)} Münzen`, COIN)
+				showToast(Lang.t("notify.deliveredCoins", { amount = formatNumber(amount) }), COIN)
 			end
 		elseif kind == "Sold" and amount then
-			showToast(`+{formatNumber(amount)} Münzen`, COIN)
+			showToast(Lang.t("notify.sold", { amount = formatNumber(amount) }), COIN)
 		elseif kind == "Gems" and amount then
-			showToast(`+{formatNumber(amount)} Gems!`, GEM)
-		elseif MESSAGES[kind] then
+			showToast(Lang.t("notify.gems", { amount = formatNumber(amount) }), GEM)
+		elseif MESSAGE_KINDS[kind] then
 			local color = if kind == "PizzaFull"
 					or kind == "NotEnoughCoins"
 					or kind == "WorldLocked"
@@ -284,7 +286,7 @@ function Hud.start(): GuiObject
 				then FULL
 				elseif kind == "WorldUnlocked" then COIN
 				else nil
-			showToast(MESSAGES[kind], color)
+			showToast(Lang.t(`notify.{kind}`), color)
 		end
 	end
 	Net.event("Notify").OnClientEvent:Connect(onNotify)
@@ -293,9 +295,9 @@ function Hud.start(): GuiObject
 	Net.event("PotionNotify").OnClientEvent:Connect(function(kind: string, potionId: string)
 		local potion = GameConfig.potions[potionId]
 		if kind == "Expired" and potion then
-			showToast(`{potion.displayName} ist abgelaufen.`, CREAM)
+			showToast(Lang.t("notify.potionExpired", { potion = potion.displayName }), CREAM)
 		elseif kind == "Drunk" and potion then
-			showToast(`{potion.displayName} wirkt 10 Minuten!`, ON)
+			showToast(Lang.t("notify.potionDrunk", { potion = potion.displayName }), ON)
 		end
 	end)
 

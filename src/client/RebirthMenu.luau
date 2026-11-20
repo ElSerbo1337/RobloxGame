@@ -17,6 +17,7 @@ local TweenService = game:GetService("TweenService")
 
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 local PANEL_SIZE = Vector2.new(560, 500)
@@ -65,7 +66,7 @@ function RebirthMenu.start()
 	UiKit.autoScale(gui)
 
 	-- HUD button with badge -------------------------------------------------------
-	local openButton = UiKit.sideButton("rebirth", "Rebirth", PURPLE)
+	local openButton = UiKit.sideButton("rebirth", Lang.t("side.rebirth"), PURPLE)
 	openButton.Name = "RebirthButton"
 
 	local badge = UiKit.label(openButton, "0")
@@ -81,7 +82,7 @@ function RebirthMenu.start()
 	UiKit.stroke(badge, 2)
 
 	-- Short hint next to the button while it pulses.
-	local hintBubble = UiKit.label(openButton, "Neu! Mehr Münzen")
+	local hintBubble = UiKit.label(openButton, Lang.t("side.rebirthNote"))
 	hintBubble.Name = "Hint"
 	UiKit.placeSideNote(hintBubble, openButton, 12)
 	hintBubble.Size = UDim2.fromOffset(190, 44)

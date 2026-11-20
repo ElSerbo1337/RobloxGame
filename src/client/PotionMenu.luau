@@ -15,6 +15,7 @@ local TweenService = game:GetService("TweenService")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Lang = require(script.Parent.Lang)
 local UiKit = require(script.Parent.UiKit)
 
 -- Display order and look of each potion (the effects live in GameConfig / GameRules).
@@ -72,7 +73,7 @@ function PotionMenu.start()
 	UiKit.autoScale(gui)
 
 	-- Left side, the slot after "Pets" in the HUD grid.
-	local openButton = UiKit.sideButton("potions", "Tränke", Color3.fromRGB(170, 90, 230))
+	local openButton = UiKit.sideButton("potions", Lang.t("side.potions"), Color3.fromRGB(170, 90, 230))
 	openButton.Name = "PotionsButton"
 
 	-- Running potions: top of the right column (HUD grid), the order card goes below.
