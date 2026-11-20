@@ -49,9 +49,9 @@ ORANGE = (240, 130, 60)
 # Shot -> (output file, size, samples, title, subtitle)
 SHOTS = {
     "icon": ("Icon", (512, 512), 96, None, None),
-    "collect": ("Thumbnail1_Collect", (1920, 1080), 64, TITLE, "Sammeln · Backen · Verkaufen"),
-    "islands": ("Thumbnail2_Islands", (1920, 1080), 64, TITLE, "7 Welten zum Freischalten"),
-    "pets": ("Thumbnail3_Pets", (1920, 1080), 64, TITLE, "Über 60 Pets ausbrüten"),
+    "collect": ("Thumbnail1_Collect", (1920, 1080), 64, TITLE, "Collect · Bake · Sell"),
+    "islands": ("Thumbnail2_Islands", (1920, 1080), 64, TITLE, "Unlock 7 Worlds"),
+    "pets": ("Thumbnail3_Pets", (1920, 1080), 64, TITLE, "Hatch 70 Pets"),
 }
 
 
@@ -264,7 +264,7 @@ def shot_collect():
     # The word turned towards the camera (it looks along +Z), so it reads in the picture.
     text3d("VERKAUFEN", 1.8, to_b(sx, gy + 0.3, sz), (0, 0, math.pi), CREAM, emission=0.6, extrude=0.1)
     # Seen from the field the word on the floor is tiny, so the picture also gets a label.
-    LABELS.append((to_b(sx, gy + 5, sz), "VERKAUFEN"))
+    LABELS.append((to_b(sx, gy + 5, sz), "SELL"))
     # Toppings on the field (field centre z = -25, the camera looks from +X/+Z).
     import random
 
