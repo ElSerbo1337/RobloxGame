@@ -122,6 +122,11 @@ local function buildPet(uid: number, petId: string, origin: CFrame, parent: Inst
 	tag.Parent = body
 
 	model.PrimaryPart = body
+	-- Pets stay anchored where they were equipped on the server; every client moves them
+	-- behind their owner (PetFollow). With streaming (phones) single parts of a model
+	-- arrived later at that old server spot and floated in the air. Persistent models
+	-- are always sent whole to every client and never streamed out.
+	model.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
 	model.Parent = parent
 	return model
 end

@@ -22,6 +22,8 @@ local MAX_STEP = 1.5
 local WALL_GAP = 1.5
 -- Height above the owner's feet of the ray that checks for walls.
 local WALL_RAY_HEIGHT = 1.2
+-- Where pets of owners without a loaded character wait, out of sight below the islands.
+local HIDDEN_Y = -500
 
 local PetFollow = {}
 
@@ -85,6 +87,13 @@ function PetFollow.start()
 			local character = owner and owner.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 			if root == nil then
+				-- Owner not loaded on this client (streamed out on phones, respawning):
+				-- park the pets out of sight instead of leaving them at their server spot.
+				for _, pet in ownerFolder:GetChildren() do
+					if pet:IsA("Model") and pet:GetPivot().Position.Y > HIDDEN_Y + 1 then
+						pet:PivotTo(CFrame.new(0, HIDDEN_Y, 0))
+					end
+				end
 				continue
 			end
 			local pets = ownerFolder:GetChildren()
@@ -100,7 +109,10 @@ function PetFollow.start()
 				target += Vector3.new(0, HOVER + hop, 0)
 
 				local current = pet:GetPivot()
-				local position = current.Position:Lerp(target, alpha)
+				-- Coming back from the hiding spot: appear at once instead of flying up.
+				local position = if current.Position.Y < HIDDEN_Y + 10
+					then target
+					else current.Position:Lerp(target, alpha)
 				-- Face the walking direction of the owner.
 				local look = flat.LookVector
 				pet:PivotTo(CFrame.lookAt(position, position + look))
