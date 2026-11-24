@@ -237,8 +237,14 @@ function LoginCalendarMenu.start()
 		end
 		waiting = true
 		task.spawn(function()
+			local hadTutorial = false
 			while player:GetAttribute("TutorialStep") ~= "" do
+				hadTutorial = true
 				task.wait(1)
+			end
+			if hadTutorial then
+				-- Let the first pet card and "Tutorial complete!" (4 s) be seen first.
+				task.wait(5)
 			end
 			waiting = false
 			handledAutoOpen = player:GetAttribute("LoginCalendarAutoOpen")

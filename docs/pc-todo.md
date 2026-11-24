@@ -1484,7 +1484,16 @@ Dein Spielstand war vorher gesichert (`backup_24nov_player_372358501`) und ist d
 
 **Englisch:** Kein deutscher Text gefunden in HUD, Kalender, Pets, Tränken, Geschenken, Rebirth, Shop, Ei-Panel, Pet-Karte, Portal, Telefon, Auftrag, Toasts, Schildern und Pet-Namen. Zahlen „107,344“, „900,000“, „74M“, „×1.5“; Deutsch „107.359“, „74 Mio“, „×1,5“.
 
-**Nicht geprüft:** Tutorial (braucht einen neuen Spielstand), Rebirth-Bestätigung und -Feier, „Delivered!“, Bestenlisten (Titel/Werte, Refresh nach 2 Min.), Tor mit Rebirth-Sperre, Flackern der Schilder in Bewegung, Deutsch am PC ohne Handy-Emulator nur teilweise (Handy-Ansicht und 2-Spieler-Test).
+**Nicht geprüft:** ~~Tutorial, Rebirth-Bestätigung und -Feier, „Delivered!“, Bestenlisten~~ (Nachtest unten), Bestenlisten-Refresh nach 2 Min., Tor mit Rebirth-Sperre, Flackern der Schilder in Bewegung, Deutsch am PC ohne Handy-Emulator nur teilweise (Handy-Ansicht und 2-Spieler-Test).
+
+**Nachtest 24.11.2026 (Clients and Servers, 1 Spieler, `Language` = `en`):** Test-Spieler `player_-1` mit frischem Spielstand (vorher gesichert als `backup_24nov_player_-1`, am Ende zurückgeschrieben); dein Spielstand blieb unberührt (107.344). Für den Rebirth bekam der Test-Spieler 80 Mio Münzen direkt in seinen Spielstand (nur Testwert, kein Code). Attribut wieder gelöscht, Output ohne Fehler. Screenshots `109-…` bis `123-…`.
+
+- Tutorial komplett auf Englisch: „Tutorial – step 1/4“ … „4/4“ mit allen Schritt-Texten, Ende „Tutorial complete! / Have fun topping pizzas! New worlds await behind the barriers.“, Pet-Karte „Dough Hamster / Common / +3 % coins / Tap to close“ (`109`–`113`). Hinweis: Schritt 1 heißt jetzt „Collect 2 toppings“ (`tutorial.collectToppings = 2`), nicht 10 wie in #69 notiert.
+- **Behoben:** Der Login-Kalender sprang direkt beim Tutorial-Ende auf, zeitgleich mit der ersten Pet-Karte und „Tutorial complete!“. Er öffnet jetzt 5 s später (`LoginCalendarMenu`), erst sieht man Pet-Karte und Abschluss, dann den Kalender (`113`, `114`).
+- Lieferauftrag: „Done! Off to the 🚚 delivery van.“, mit überzähligem Belag „Wrong toppings! Sell the extra ones at the oven.“, nach Abgabe „Delivered! +24 coins“ (`115`–`117`).
+- Rebirth: „Rebirth 1 for 74M coins? After that: coins ×1.5, start in world 1.“ mit „Yes, rebirth!“/„No“, Feier „Rebirth 1! ×1.5 coins“, danach „Rebirths: 1“, „Coins ×1.5 → ×2“, „Price: 111M coins“ (`118`–`120`).
+- Bestenlisten auf der Spawn-Insel: „💰 Coins earned“ (filipocool 294,426), „🔁 Rebirths“ „No entries yet“, „⏱ Playtime“ (filipocool 1 h 56 min). Test-Spieler landen wie vorgesehen nicht darauf (`121`–`123`).
+
 
 ## #67 Englisch 2: Sprach-Baustein, HUD und Meldungen
 
@@ -1523,7 +1532,7 @@ Umgestellt auf die Textsammlung (Schlüssel `shop.`, `pets.`, `egg.`, `tutorial.
 - [x] Shop: „Coin counter“, „Gem counter“, „Gem counter: potions (10 min each)“, „Level 1 / 5“, „1,500 coins“ / „… gems“, „More levels in the bigger shop“ passt in den grauen Knopf, Effekt „10 toppings → 15 toppings“, „off“/„on“, „Speed …“; Trank „10 minutes“ / „Owned: 0“; „Bought: …!“ / „… – drink it in the potion menu“, „Can't buy that.“, „Already at the highest level!“. _(24.11.: `93`; „Bought: Speed Potion! – drink it in the potion menu“ lief in den Schließen-Knopf → behoben, `94`/`105`)_
 - [x] Pets: „My pets“, „Equip best“, „Delete“ → „Done“ + „Tap a pet to delete it“, Karten „Equip“/„Unequip“, Zeile „Equipped x/y · Inventory … · Bonus …“ passt in eine Zeile, Dialog „Really delete …?“ (ausgerüstet: „It will be unequipped.“) mit „Delete“/„Keep“, leer „No pets yet – open an egg!“, „All pet slots taken – unequip a pet first!“. _(24.11.: Löschen-Dialog „Really delete Lava Lizard (+14 %)? It will be unequipped.“, `89`)_
 - [x] Ei: „Open 1 – 100 coins“ bzw. „Open 1 – 100“ + „Open 3 – 300“, „<Ei> 🍀 Luck!“, „Not enough coins!“/„Inventory full!“; Pet-Karte „+25 % coins“, „Tap to close“. _(24.11.: Garden Egg „Open 1 – 25“/„Open 3 – 75“, Pet-Karte „Basil Bunny / Uncommon / +5 % coins / Tap to close“, `100`, `101`)_
-- [ ] Tutorial: „Tutorial – step 1/4“, „Collect 10 toppings (0/10) – tap them or walk over them with Auto-Collect!“ passt in die Karte, „Walk into the zone at the oven …“, „Buy your first upgrade …“, „Open your first pet at the egg! …“, am Ende „Tutorial complete!“ / „Have fun topping pizzas! …“.
+- [x] Tutorial: „Tutorial – step 1/4“, „Collect 10 toppings (0/10) – tap them or walk over them with Auto-Collect!“ passt in die Karte, „Walk into the zone at the oven …“, „Buy your first upgrade …“, „Open your first pet at the egg! …“, am Ende „Tutorial complete!“ / „Have fun topping pizzas! …“. _(24.11.: komplett auf Englisch, Schritt 1 sammelt jetzt 2 Beläge, `109`–`113`)_
 - [ ] Output ohne Fehler.
 
 ## #70 Englisch 5: Menüs Teil 2 (Tränke, Geschenke, Kalender, Rebirth, Portal, Telefon)
