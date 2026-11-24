@@ -1473,6 +1473,19 @@ Hochladen (Spiel muss veröffentlicht sein):
 - [ ] Nach der Moderation (kann ein paar Minuten dauern) die Spielseite öffnen: Icon in der Spieleliste erkennbar, Thumbnails in der richtigen Reihenfolge, Titel nicht abgeschnitten.
 - [ ] Wird ein Bild abgelehnt: Grund notieren und als Issue melden (dann neu rendern).
 
+## Studio-Test 24.11.2026 (Englisch #67–#71)
+
+Dein Spielstand war vorher gesichert (`backup_24nov_player_372358501`) und ist danach wiederhergestellt (107.344 Münzen). Das `Language`-Attribut ist wieder gelöscht. Output ohne Spiel-Fehler, `lune run test` → `561 passed, 0 failed`. Screenshots: `docs/playtest/87-…` bis `108-…`.
+
+**Behoben:**
+
+1. **Geschenke-Menü:** Der Untertitel „Spiel jeden Tag – …“ / „Play every day – …“ lag unter dem Kalender- und dem Schließen-Knopf (in beiden Sprachen, `91`). Er steht jetzt darunter, das Menü ist 24 px höher (`104`).
+2. **Shop-Meldung:** „Bought: Speed Potion! – drink it in the potion menu“ lief in den Schließen-Knopf (`94`). Die Statuszeile endet jetzt vor dem Knopf (`105`).
+
+**Englisch:** Kein deutscher Text gefunden in HUD, Kalender, Pets, Tränken, Geschenken, Rebirth, Shop, Ei-Panel, Pet-Karte, Portal, Telefon, Auftrag, Toasts, Schildern und Pet-Namen. Zahlen „107,344“, „900,000“, „74M“, „×1.5“; Deutsch „107.359“, „74 Mio“, „×1,5“.
+
+**Nicht geprüft:** Tutorial (braucht einen neuen Spielstand), Rebirth-Bestätigung und -Feier, „Delivered!“, Bestenlisten (Titel/Werte, Refresh nach 2 Min.), Tor mit Rebirth-Sperre, Flackern der Schilder in Bewegung, Deutsch am PC ohne Handy-Emulator nur teilweise (Handy-Ansicht und 2-Spieler-Test).
+
 ## #67 Englisch 2: Sprach-Baustein, HUD und Meldungen
 
 Neu: Textsammlung `src/shared/Texts.luau` (Deutsch/Englisch), Sprach-Helfer `src/client/Lang.luau`. Umgestellt: HUD (Pizza-Leiste, Auto-Sammeln, Münz-/Gem-Zahlen), Freischalt-Knopf an Welt-Toren, alle Meldungen (Toasts), Seiten-Knöpfe (Pets, Tränke, Geschenke, Rebirth samt „Neu!“-Hinweisen). Namen (Welten, Tränke), Menüs, Tutorial und Schilder bleiben vorerst Deutsch (#68–#71). Vorher: `lune run test` → `553 passed, 0 failed`.
@@ -1481,18 +1494,18 @@ Sprache umschalten: `Workspace` → Attribut `Language` (string) = `de` bzw. `en
 
 **Deutsch** (Attribut `de` oder ohne Attribut bei deutschem Konto):
 
-- [ ] HUD wie vorher: „Pizza 0/…“, voll „Pizza VOLL …“, „Auto-Sammeln: AN/AUS“, Münzen „1.234“ / „1,5 Mio“.
+- [x] HUD wie vorher: „Pizza 0/…“, voll „Pizza VOLL …“, „Auto-Sammeln: AN/AUS“, Münzen „1.234“ / „1,5 Mio“. _(24.11.: Pizza 0/12, „Pizza VOLL 3/3“, „Auto-Sammeln: AN“, „107.359“)_
 - [ ] Meldungen wie vorher: „+X Münzen“ beim Verkaufen, „Nicht genug Münzen!“, „Pizza voll! Ab zum Ofen.“, Telefon-Meldungen, „Geliefert! +…“.
-- [ ] Seiten-Knöpfe „Pets“, „Tränke“, „Geschenke“ (mit „Abholen!“/Countdown/„Morgen“), „Rebirth“; Hinweise „Neu! …“ unverändert.
+- [x] Seiten-Knöpfe „Pets“, „Tränke“, „Geschenke“ (mit „Abholen!“/Countdown/„Morgen“), „Rebirth“; Hinweise „Neu! …“ unverändert. _(24.11.: auch „Abholen!“, Countdown, „Neu! Geschenke fürs Spielen“)_
 - [ ] Am gesperrten Tor: „🔓 <Welt> freischalten / 1.234 Münzen“, mit Rebirth-Sperre „🔒 <Welt>: Ab 1 Rebirth …“.
 
 **Englisch** (Attribut `en`):
 
-- [ ] HUD: „Pizza 0/…“, „Pizza FULL …“, „Auto-Collect: ON/OFF“, Münzen „1,234“ / „1.5M“ / „2B“; Texte passen in die Felder.
-- [ ] Meldungen: „+X coins“, „+X gems!“, „Not enough coins!“, „Pizza full! Off to the oven.“, „📞 The phone is ringing!“, „Order accepted! …“, „Delivered! +…“, Trank „… has run out.“ / „… works for 10 minutes!“.
-- [ ] Seiten-Knöpfe „Pets“, „Potions“, „Gifts“ (mit „Claim!“/„Tomorrow“), „Rebirth“; Hinweise „New! Gifts for playing“ / „New! More coins“ lesbar, nichts abgeschnitten (auch Handy-Emulator).
-- [ ] Am gesperrten Tor: „🔓 Unlock <Welt> / 1,234 coins“, mit Rebirth-Sperre „🔒 <Welt>: From 1 rebirth …“.
-- [ ] Output ohne Fehler; im Explorer (während Play) bei `PlayerGui` → `Hud` ist `AutoLocalize` aus.
+- [x] HUD: „Pizza 0/…“, „Pizza FULL …“, „Auto-Collect: ON/OFF“, Münzen „1,234“ / „1.5M“ / „2B“; Texte passen in die Felder. _(24.11.: „Pizza FULL 12/12“, „Auto-Collect: ON“, „107,344“, Rebirth-Preis „74M“; passt, `96`)_
+- [x] Meldungen: „+X coins“, „+X gems!“, „Not enough coins!“, „Pizza full! Off to the oven.“, „📞 The phone is ringing!“, „Order accepted! …“, „Delivered! +…“, Trank „… has run out.“ / „… works for 10 minutes!“. _(24.11.: „+40 coins“, „Speed Potion works for 10 minutes!“, „Order accepted! …“, „Calls are back on.“, „The phone is ringing!“ gesehen, `95`, `97`, `103`; „Not enough coins!“ und „Delivered!“ nicht ausgelöst)_
+- [x] Seiten-Knöpfe „Pets“, „Potions“, „Gifts“ (mit „Claim!“/„Tomorrow“), „Rebirth“; Hinweise „New! Gifts for playing“ / „New! More coins“ lesbar, nichts abgeschnitten (auch Handy-Emulator). _(24.11.: auch Handy-Emulator Galaxy S22, `102`)_
+- [x] Am gesperrten Tor: „🔓 Unlock <Welt> / 1,234 coins“, mit Rebirth-Sperre „🔒 <Welt>: From 1 rebirth …“. _(24.11.: „🔓 Unlock Candy Land / 900,000 coins“, `98`; Rebirth-Sperre gibt es bei deinem Stand nicht)_
+- [x] Output ohne Fehler; im Explorer (während Play) bei `PlayerGui` → `Hud` ist `AutoLocalize` aus. _(24.11.: 0 Fehler; `AutoLocalize = false` bei allen ScreenGuis)_
 
 ## #69 Englisch 4: Menüs Teil 1 (Shop, Pets, Ei, Tutorial)
 
@@ -1501,15 +1514,15 @@ Umgestellt auf die Textsammlung (Schlüssel `shop.`, `pets.`, `egg.`, `tutorial.
 **Deutsch** (alles wie vorher):
 
 - [ ] Shop: „Münz-Tresen“, „Gem-Tresen“, „Gem-Tresen: Tränke (je 10 Min.)“, „Stufe 1 / 5“, Preis „1.500 Münzen“ / „… Gems“, „Weitere Stufen im größeren Shop“, „MAX“, Trank „10 Minuten“ / „Im Inventar: 0“; nach Kauf „Gekauft: …!“ (Trank mit „– im Trank-Menü trinken“), Fehler „Nicht genug Münzen!“ usw.
-- [ ] Pets: „Meine Pets“, „Beste ausrüsten“, „Löschen“ → „Fertig“ und Titel „Pet zum Löschen antippen“, Karten „Ausrüsten“/„Ablegen“, Zeile „Ausgerüstet x/y · Inventar … · Bonus …“, Dialog „… wirklich löschen?“ mit „Löschen“/„Behalten“, leer „Noch keine Pets – öffne ein Ei!“.
+- [x] Pets: „Meine Pets“, „Beste ausrüsten“, „Löschen“ → „Fertig“ und Titel „Pet zum Löschen antippen“, Karten „Ausrüsten“/„Ablegen“, Zeile „Ausgerüstet x/y · Inventar … · Bonus …“, Dialog „… wirklich löschen?“ mit „Löschen“/„Behalten“, leer „Noch keine Pets – öffne ein Ei!“. _(24.11.: Handy, `106`)_
 - [ ] Ei: „1 öffnen – 100 Münzen“ (bzw. „1 öffnen – 100“ + „3 öffnen – 300“), mit Glücks-Trank „<Ei> 🍀 Glück!“, Fehler „Zu wenig Münzen!“/„Inventar voll!“; Pet-Karte „+25 % Münzen“, „Tippen zum Schließen“.
 - [ ] Tutorial: „Tutorial – Schritt 1/4“, Schritt-Texte, am Ende „Tutorial geschafft!“.
 
 **Englisch** (Attribut `en`, auch im Handy-Emulator prüfen – nichts abgeschnitten):
 
-- [ ] Shop: „Coin counter“, „Gem counter“, „Gem counter: potions (10 min each)“, „Level 1 / 5“, „1,500 coins“ / „… gems“, „More levels in the bigger shop“ passt in den grauen Knopf, Effekt „10 toppings → 15 toppings“, „off“/„on“, „Speed …“; Trank „10 minutes“ / „Owned: 0“; „Bought: …!“ / „… – drink it in the potion menu“, „Can't buy that.“, „Already at the highest level!“.
-- [ ] Pets: „My pets“, „Equip best“, „Delete“ → „Done“ + „Tap a pet to delete it“, Karten „Equip“/„Unequip“, Zeile „Equipped x/y · Inventory … · Bonus …“ passt in eine Zeile, Dialog „Really delete …?“ (ausgerüstet: „It will be unequipped.“) mit „Delete“/„Keep“, leer „No pets yet – open an egg!“, „All pet slots taken – unequip a pet first!“.
-- [ ] Ei: „Open 1 – 100 coins“ bzw. „Open 1 – 100“ + „Open 3 – 300“, „<Ei> 🍀 Luck!“, „Not enough coins!“/„Inventory full!“; Pet-Karte „+25 % coins“, „Tap to close“.
+- [x] Shop: „Coin counter“, „Gem counter“, „Gem counter: potions (10 min each)“, „Level 1 / 5“, „1,500 coins“ / „… gems“, „More levels in the bigger shop“ passt in den grauen Knopf, Effekt „10 toppings → 15 toppings“, „off“/„on“, „Speed …“; Trank „10 minutes“ / „Owned: 0“; „Bought: …!“ / „… – drink it in the potion menu“, „Can't buy that.“, „Already at the highest level!“. _(24.11.: `93`; „Bought: Speed Potion! – drink it in the potion menu“ lief in den Schließen-Knopf → behoben, `94`/`105`)_
+- [x] Pets: „My pets“, „Equip best“, „Delete“ → „Done“ + „Tap a pet to delete it“, Karten „Equip“/„Unequip“, Zeile „Equipped x/y · Inventory … · Bonus …“ passt in eine Zeile, Dialog „Really delete …?“ (ausgerüstet: „It will be unequipped.“) mit „Delete“/„Keep“, leer „No pets yet – open an egg!“, „All pet slots taken – unequip a pet first!“. _(24.11.: Löschen-Dialog „Really delete Lava Lizard (+14 %)? It will be unequipped.“, `89`)_
+- [x] Ei: „Open 1 – 100 coins“ bzw. „Open 1 – 100“ + „Open 3 – 300“, „<Ei> 🍀 Luck!“, „Not enough coins!“/„Inventory full!“; Pet-Karte „+25 % coins“, „Tap to close“. _(24.11.: Garden Egg „Open 1 – 25“/„Open 3 – 75“, Pet-Karte „Basil Bunny / Uncommon / +5 % coins / Tap to close“, `100`, `101`)_
 - [ ] Tutorial: „Tutorial – step 1/4“, „Collect 10 toppings (0/10) – tap them or walk over them with Auto-Collect!“ passt in die Karte, „Walk into the zone at the oven …“, „Buy your first upgrade …“, „Open your first pet at the egg! …“, am Ende „Tutorial complete!“ / „Have fun topping pizzas! …“.
 - [ ] Output ohne Fehler.
 
@@ -1519,21 +1532,21 @@ Umgestellt auf die Textsammlung (Schlüssel `potions.`, `gifts.`, `calendar.`, `
 
 **Deutsch** (alles wie vorher):
 
-- [ ] Tränke: „Meine Tränke“, „Gleiche Art nochmal trinken verlängert die Zeit.“, Karten „Im Inventar: 0“, „Trinken“, „Läuft: 9:59“; Timer oben „Münzen ×2  9:59“ / „Glück …“ / „Speed …“; „<Trank> getrunken!“, ohne Trank „Davon hast du keinen Trank – kauf einen im Gem-Tresen!“.
-- [ ] Geschenke: „Geschenke“, „📅 Kalender“, Zeilen „5 Min“, „Abholen“/„✓“, „Spiel jeden Tag – jedes Geschenk einmal pro Tag.“, nach Abholen „Geschenk! +10 Gems“ (bzw. „+1× <Trank>“), zu früh „Noch nicht – spiel noch ein bisschen weiter!“.
+- [x] Tränke: „Meine Tränke“, „Gleiche Art nochmal trinken verlängert die Zeit.“, Karten „Im Inventar: 0“, „Trinken“, „Läuft: 9:59“; Timer oben „Münzen ×2  9:59“ / „Glück …“ / „Speed …“; „<Trank> getrunken!“, ohne Trank „Davon hast du keinen Trank – kauf einen im Gem-Tresen!“. _(24.11.: Handy)_
+- [x] Geschenke: „Geschenke“, „📅 Kalender“, Zeilen „5 Min“, „Abholen“/„✓“, „Spiel jeden Tag – jedes Geschenk einmal pro Tag.“, nach Abholen „Geschenk! +10 Gems“ (bzw. „+1× <Trank>“), zu früh „Noch nicht – spiel noch ein bisschen weiter!“. _(24.11.: „Geschenk! +3 Gems“, `104`)_
 - [ ] Kalender: „Login-Kalender“, Kacheln „Tag 1“ … „Tag 7“, „Heute“/„✓“, „Tag 1: hol dir deine Belohnung!“, Knopf „Abholen“ → „Morgen wieder“, „Tag 1! +…“, „Komm morgen wieder – jeden Tag in Folge wird es besser!“.
-- [ ] Rebirth: „Noch kein Rebirth“ / „Rebirths: 1“, „Münzen ×1  →  ×1,5“, „Preis: 1 Mio Münzen“, Balken „42 %“, „Weg: …/Bleibt: …“, Trank-Warnung, Bestätigung „Rebirth 1 für … Münzen? Danach: Münzen ×1,5, Start in Welt 1.“ mit „Ja, Rebirth!“/„Nein“; Feier „Rebirth 1! ×1,5 Münzen“.
+- [x] Rebirth: „Noch kein Rebirth“ / „Rebirths: 1“, „Münzen ×1  →  ×1,5“, „Preis: 1 Mio Münzen“, Balken „42 %“, „Weg: …/Bleibt: …“, Trank-Warnung, Bestätigung „Rebirth 1 für … Münzen? Danach: Münzen ×1,5, Start in Welt 1.“ mit „Ja, Rebirth!“/„Nein“; Feier „Rebirth 1! ×1,5 Münzen“. _(24.11.: Menü auf dem Handy; Bestätigung/Feier nicht ausgelöst)_
 - [ ] Portal: „🌀 Teleport“, „📍 <Welt> (du bist hier)“, „🔒 <Welt> – 1.500 Münzen“, „🔒 <Welt> – Ab 1 Rebirth“ + Preis darunter.
 - [ ] Telefon: Blase „📞 RING!“, „📞 Neuer Auftrag!“ mit „Belohnung: bis zu 💰 … Münzen“, „Zeit: 2:00 – je schneller, desto mehr!“, „Annehmen“/„Ablehnen“, „📵 Keine Anrufe mehr“; ohne Anruf „📞 Telefon“ + Text; Anrufe aus „📵 Anrufe sind aus“ + „📞 Anrufe einschalten“. Auftragskarte „🧾 Auftrag  ⏱ 1:59“, „Schnell = mehr Belohnung!“ → „Fertig! Ab zum 🚚 Lieferwagen.“, ohne Auftrag „📞 Das Telefon klingelt!“ / „Lauf zum Telefon und geh ran.“.
 
 **Englisch** (Attribut `en`, auch im Handy-Emulator prüfen – nichts abgeschnitten):
 
-- [ ] Tränke: „My potions“, „Drinking the same kind again adds more time.“, „Owned: 0“, „Drink“, „Active: 9:59“, Timer „Coins ×2 …“ / „Luck …“; „<Trank> drunk!“, „<Trank> has run out.“, „You have none of these – buy one at the gem counter!“ passt in die Statuszeile.
-- [ ] Geschenke: „Gifts“, „📅 Calendar“, „5 min“, „Claim“, „Play every day – each gift once per day.“, „Gift! +10 gems“ / „+1 potion“, „Not yet – keep playing a little longer!“, „You already claimed this gift today.“.
-- [ ] Kalender: „Login calendar“, „Day 1“ … „Day 7“, „Today“, „Day 1: claim your reward!“, „Claim“ → „Back tomorrow“, „Day 1! +…“, „Come back tomorrow – every day in a row gets better!“.
-- [ ] Rebirth: „No rebirth yet“ / „Rebirths: 1“, „Coins ×1  →  ×1.5“ (Punkt statt Komma), „Price: 1M coins“, „42%“, „Lost: …/Kept: …“ passt in zwei Zeilen, „Careful: your active potion ends on rebirth!“, „Rebirth 1 for … coins? After that: coins ×1.5, start in world 1.“ mit „Yes, rebirth!“/„No“; Feier „Rebirth 1! ×1.5 coins“.
-- [ ] Portal: „📍 <Welt> (you are here)“, „🔒 <Welt> – 1,500 coins“, „🔒 <Welt> – From 1 rebirth“.
-- [ ] Telefon: „📞 New order!“, „Reward: up to 💰 … coins“, „Time: 2:00 – the faster, the more!“, „Accept“/„Decline“, „📵 No more calls“, „📞 Phone“ / „No call right now. …“, „📵 Calls are off“ / „The phone no longer rings. …“ / „📞 Turn calls on“. Auftragskarte „🧾 Order  ⏱ 1:59“, „Fast = more reward!“ → „Done! Off to the 🚚 delivery van.“, „📞 The phone is ringing!“ / „Run to the phone and answer it.“.
+- [x] Tränke: „My potions“, „Drinking the same kind again adds more time.“, „Owned: 0“, „Drink“, „Active: 9:59“, Timer „Coins ×2 …“ / „Luck …“; „<Trank> drunk!“, „<Trank> has run out.“, „You have none of these – buy one at the gem counter!“ passt in die Statuszeile. _(24.11.: `90`, `95`)_
+- [x] Geschenke: „Gifts“, „📅 Calendar“, „5 min“, „Claim“, „Play every day – each gift once per day.“, „Gift! +10 gems“ / „+1 potion“, „Not yet – keep playing a little longer!“, „You already claimed this gift today.“. _(24.11.: Untertitel lag unter dem Kalender-Knopf → behoben, `91`/`104`)_
+- [x] Kalender: „Login calendar“, „Day 1“ … „Day 7“, „Today“, „Day 1: claim your reward!“, „Claim“ → „Back tomorrow“, „Day 1! +…“, „Come back tomorrow – every day in a row gets better!“. _(24.11.: „Day 1! +5 gems“, „Back tomorrow“, `87`, `88`)_
+- [x] Rebirth: „No rebirth yet“ / „Rebirths: 1“, „Coins ×1  →  ×1.5“ (Punkt statt Komma), „Price: 1M coins“, „42%“, „Lost: …/Kept: …“ passt in zwei Zeilen, „Careful: your active potion ends on rebirth!“, „Rebirth 1 for … coins? After that: coins ×1.5, start in world 1.“ mit „Yes, rebirth!“/„No“; Feier „Rebirth 1! ×1.5 coins“. _(24.11.: Menü + Trank-Warnung, `92`; Bestätigung/Feier nicht ausgelöst)_
+- [x] Portal: „📍 <Welt> (you are here)“, „🔒 <Welt> – 1,500 coins“, „🔒 <Welt> – From 1 rebirth“. _(24.11.: `99`)_
+- [x] Telefon: „📞 New order!“, „Reward: up to 💰 … coins“, „Time: 2:00 – the faster, the more!“, „Accept“/„Decline“, „📵 No more calls“, „📞 Phone“ / „No call right now. …“, „📵 Calls are off“ / „The phone no longer rings. …“ / „📞 Turn calls on“. Auftragskarte „🧾 Order  ⏱ 1:59“, „Fast = more reward!“ → „Done! Off to the 🚚 delivery van.“, „📞 The phone is ringing!“ / „Run to the phone and answer it.“. _(24.11.: Anruf, „Calls are off“ → „Turn calls on“, Auftragskarte, `103`)_
 - [ ] Output ohne Fehler.
 
 ## #71 Englisch 6: 3D-Schilder in der Sprache jedes Spielers
@@ -1543,7 +1556,7 @@ Der Server setzt auf Schild-Texten nur noch `TextKey`/`TextArgs` (Tag `SignText`
 - [ ] **Deutsch** (`Language` = `de` auf Workspace): alle Schilder genau wie vorher – Ofen („Ofen – hier verkaufen“, „Ofen (Welt) – hier verkaufen“), Boden „VERKAUFEN“/„SHOP“, „<Shop> – Upgrades“, Ei-Stände („<Ei>\n💰 1.500“, „Bald: neues Ei!“), Tor-Preisschild („🔒 Welt\nAb 3 Rebirths\n1.500.000 Münzen“), Portal „🌀 Teleport“, „📞 Telefon – Aufträge“, „🚚 Lieferwagen – Bestellung abgeben“, „🧾 Bestellung“ über der Pizza, Bestenlisten (Titel, „Bestenliste lädt …“, „Noch keine Einträge“, Werte „1.234“, „3 Std. 5 Min.“).
 - [ ] **Englisch** (`Language` = `en`): „Oven – sell here“, „SELL“/„SHOP“, „Coming soon: new egg!“, „🔒 World\nFrom 3 rebirths\n1,500,000 coins“, „📞 Phone – Orders“, „🚚 Delivery van – hand in order“, „🧾 Order“, Bestenlisten „⏱ Playtime“, „💰 Coins earned“, „Leaderboard loading …“, „No entries yet“, Werte „1,234“, „3 h 5 min“.
 - [ ] Schilder flackern nicht und verrutschen nicht; nach dem Bestenlisten-Refresh (2 Min.) bleiben sie englisch.
-- [ ] **2 Spieler, verschiedene Sprachen:** Test → Clients and Servers → 2 Players. In einem Client per Command Bar (Client-Seite) `require(game.Players.LocalPlayer.PlayerScripts.Client.Lang).language` prüfen; Player Emulator geht nur für alle gleich, daher: Client 1 Locale `de-de`, dann im Client-2-Fenster in der Command Bar `for _, l in game:GetService("CollectionService"):GetTagged("SignText") do l.Text = require(game:GetService("ReplicatedStorage").Shared.Texts).render("en", l:GetAttribute("TextKey"), l:GetAttribute("TextArgs") and game:GetService("HttpService"):JSONDecode(l:GetAttribute("TextArgs"))) end` – Client 1 sieht weiter „VERKAUFEN“, Client 2 „SELL“. Alternativ mit zwei Roblox-Konten (deutsch/englisch) in einem veröffentlichten Test-Server.
+- [x] **2 Spieler, verschiedene Sprachen:** Test → Clients and Servers → 2 Players. In einem Client per Command Bar (Client-Seite) `require(game.Players.LocalPlayer.PlayerScripts.Client.Lang).language` prüfen; Player Emulator geht nur für alle gleich, daher: Client 1 Locale `de-de`, dann im Client-2-Fenster in der Command Bar `for _, l in game:GetService("CollectionService"):GetTagged("SignText") do l.Text = require(game:GetService("ReplicatedStorage").Shared.Texts).render("en", l:GetAttribute("TextKey"), l:GetAttribute("TextArgs") and game:GetService("HttpService"):JSONDecode(l:GetAttribute("TextArgs"))) end` – Client 1 sieht weiter „VERKAUFEN“, Client 2 „SELL“. Alternativ mit zwei Roblox-Konten (deutsch/englisch) in einem veröffentlichten Test-Server. _(24.11.: Der Command-Bar-Trick klappt nicht – `SignTexts` stellt jeden geänderten Text sofort zurück. Getestet mit einer vorübergehenden Studio-Zeile (`Language_<Spielername>`, nicht committet): Player1 Deutsch „Ofen – hier verkaufen“/„Teig-Hamster“, Player2 am selben Ofen „Oven – sell here“/„SELL“/„Dough Hamster“, `107`, `108`)_
 
 ## #68 Englisch 3: Namen im Spiel
 
@@ -1551,5 +1564,5 @@ Alle Namen aus `GameConfig` (Pets, Beläge, Welten, Eier, Tränke, Upgrades, Sho
 
 - [ ] **Deutsch** (`Language` = `de`): alles genau wie vorher – Pet-Menü/Löschen-Frage („Teig-Hamster“), Ei-Panel und Ei-Animation (Pet + „Gewöhnlich“ …), Shop-Titel „Pizza-Shop“, Upgrade-Karten („Pizza-Platz“ + „Mehr Beläge pro Pizza“), Trank-Karten, „Pizza-Platz gekauft!“, Trank-Menü und Timer-Toasts („Münz-Trank getrunken!“), Portal („📍 Pizzeria-Garten (du bist hier)“), Tor-Knopf „🔓 Bauernhof freischalten“, Lieferauftrag („Pilz“, „Peperoni“), Geschenk-/Kalender-Belohnung „2× Glücks-Trank“, Schilder („Ofen (Bauernhof) – hier verkaufen“, „Pizza-Shop – Upgrades“, „Garten-Ei\n💰 …“, Tor-Preisschild), Namensschild über den Pets.
 - [ ] **Englisch** (`Language` = `en`): „Dough Hamster“, „Common“/„Mythic“, „Garden Egg“, „Pizza Shop“, „Pizza Space“ + „More toppings per pizza“, „3 Eggs at Once“ + „Unlocks “Open 3” at every egg“, „Coin Potion drunk!“, „📍 Pizzeria Garden (you are here)“, „🔓 Unlock Farm“, Lieferauftrag „Mushroom“, „Hot Pepper“ (nicht „Pepperoni“), „2× Luck Potion“, „Oven (Farm) – sell here“, „Pizza Shop – Upgrades“, „Sweets Egg“ im Süßigkeitenland, Pet-Namensschild „Galaxy Pizza Leviathan“ passt aufs Schild. Nichts abgeschnitten (auch Handy-Emulator).
-- [ ] **2 Spieler, verschiedene Sprachen** (wie bei #71): jeder sieht die Pet-Namensschilder der Pets (auch die des anderen Spielers) in seiner Sprache.
-- [ ] Altes Spiel laden: Pets, Tränke, Upgrades unverändert (Spielstände nutzen nur Ids). Output ohne Fehler.
+- [x] **2 Spieler, verschiedene Sprachen** (wie bei #71): jeder sieht die Pet-Namensschilder der Pets (auch die des anderen Spielers) in seiner Sprache. _(24.11.: Pet-Namensschilder beider Spieler je in der eigenen Sprache, `107`, `108`)_
+- [x] Altes Spiel laden: Pets, Tränke, Upgrades unverändert (Spielstände nutzen nur Ids). Output ohne Fehler. _(24.11.: dein Spielstand lädt unverändert, 0 Fehler)_

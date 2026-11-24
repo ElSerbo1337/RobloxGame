@@ -157,7 +157,8 @@ function ShopMenu.start()
 	local status = label(panel, "", {
 		Name = "Status",
 		Position = UDim2.fromOffset(24, 66),
-		Size = UDim2.new(1, -48, 0, 30),
+		-- Stops short of the close button (it reaches down to y = 74).
+		Size = UDim2.new(1, -110, 0, 30),
 		TextXAlignment = Enum.TextXAlignment.Left,
 	})
 

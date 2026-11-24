@@ -26,7 +26,7 @@ local HINT_ID = "Gifts"
 local BUTTON_COLOR = Color3.fromRGB(235, 90, 140)
 local ROW_HEIGHT = 64
 local ROW_GAP = 8
-local HEADER_HEIGHT = 100
+local HEADER_HEIGHT = 124
 local PANEL_SIZE = Vector2.new(560, HEADER_HEIGHT + #GameConfig.gifts * (ROW_HEIGHT + ROW_GAP) + 12)
 
 local MESSAGES: { [string]: string } = {
@@ -136,7 +136,7 @@ function GiftMenu.start()
 	title.TextXAlignment = Enum.TextXAlignment.Left
 
 	local status = UiKit.label(panel, "")
-	status.Position = UDim2.fromOffset(24, 64)
+	status.Position = UDim2.fromOffset(24, 90)
 	status.Size = UDim2.new(1, -48, 0, 28)
 	status.TextXAlignment = Enum.TextXAlignment.Left
 	local hintColor = Color3.fromRGB(110, 80, 55)

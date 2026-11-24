@@ -159,13 +159,10 @@ function Barriers.start()
 				})
 				button.BackgroundColor3 = GRAY
 			else
-				button.Text = Lang.t(
-					"unlock.open",
-					{
-						world = Lang.worldName((found:GetAttribute("WorldId") :: string?) or ""),
-						price = Lang.integer(price),
-					}
-				)
+				button.Text = Lang.t("unlock.open", {
+					world = Lang.worldName((found:GetAttribute("WorldId") :: string?) or ""),
+					price = Lang.integer(price),
+				})
 				button.BackgroundColor3 = if coins >= price then GREEN else GRAY
 			end
 		end
