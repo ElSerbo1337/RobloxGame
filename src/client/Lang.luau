@@ -1,5 +1,6 @@
 --!strict
--- The player's language on this client (#67): read once from the Roblox account locale
+-- The player's language on this client (#67): read once at join from the experience
+-- language chosen in the Roblox menu (Player.LocaleId), else the Roblox account locale
 -- (German locales → "de", everything else → "en"); texts and numbers come from
 -- src/shared/Texts.luau.
 --
@@ -23,7 +24,13 @@ local function readLanguage(): Texts.Language
 			return override
 		end
 	end
-	local locale = LocalizationService.RobloxLocaleId
+	-- The experience language the player picks in the Roblox menu (Player.LocaleId), then
+	-- the Roblox app language, then the device language.
+	local player = Players.LocalPlayer
+	local locale = if player then player.LocaleId else nil
+	if locale == nil or locale == "" then
+		locale = LocalizationService.RobloxLocaleId
+	end
 	if locale == nil or locale == "" then
 		locale = LocalizationService.SystemLocaleId
 	end
@@ -33,6 +40,25 @@ end
 local Lang = {}
 
 Lang.language = readLanguage()
+
+-- Calls `callback(newLanguage)` when the player switches to another language while
+-- playing. The UI is built in the language read at join, so callers only tell the player
+-- to rejoin (Lang.language stays as it is).
+function Lang.onLanguageChanged(callback: (Texts.Language) -> ())
+	local last = Lang.language
+	local function check()
+		local now = readLanguage()
+		if now ~= last then
+			last = now
+			callback(now)
+		end
+	end
+	local player = Players.LocalPlayer
+	if player then
+		player:GetPropertyChangedSignal("LocaleId"):Connect(check)
+	end
+	LocalizationService:GetPropertyChangedSignal("RobloxLocaleId"):Connect(check)
+end
 
 -- Text for `key` with its {placeholders} filled from `params`.
 function Lang.t(key: string, params: Texts.Params?): string

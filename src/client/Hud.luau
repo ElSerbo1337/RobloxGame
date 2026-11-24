@@ -12,6 +12,7 @@ local TweenService = game:GetService("TweenService")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Lang = require(script.Parent.Lang)
+local Texts = require(ReplicatedStorage.Shared.Texts)
 local UiKit = require(script.Parent.UiKit)
 
 local FONT = Enum.Font.FredokaOne
@@ -193,19 +194,25 @@ function Hud.start(): GuiObject
 	currency.Parent = player:WaitForChild("PlayerGui")
 
 	local toastId = 0
-	local function showToast(text: string, color: Color3?)
+	local function showToast(text: string, color: Color3?, seconds: number?)
 		toastId += 1
 		local myId = toastId
 		toast.Text = text
 		toast.TextColor3 = color or CREAM
 		toast.Visible = true
 		pop(toast)
-		task.delay(1.8, function()
+		task.delay(seconds or 1.8, function()
 			if toastId == myId then
 				toast.Visible = false
 			end
 		end)
 	end
+
+	-- Language switched in the Roblox menu while playing: the UI keeps the language it was
+	-- built in, so ask (in the new language) to rejoin.
+	Lang.onLanguageChanged(function(language)
+		showToast(Texts.format(language, "notify.languageChanged"), CREAM, 6)
+	end)
 
 	local lastCoins = 0
 	local function updateCoins()

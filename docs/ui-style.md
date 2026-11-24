@@ -33,7 +33,7 @@ Seltenheiten haben eigene Farben in `GameConfig.rarities` (`UiKit.rarityColor`).
 Jeder Spieler sieht das Spiel in seiner Sprache: Deutsch für deutschsprachige Roblox-Konten (Locale `de-*`), Englisch für alle anderen. Kein Text steht mehr fest im UI-Code.
 
 - **Textsammlung:** `src/shared/Texts.luau` (rein, ohne Roblox-API, in Lune getestet). `Texts.strings` ordnet jedem Schlüssel `{ de = "…", en = "…" }` zu. Platzhalter heißen `{name}` und müssen in beiden Sprachen gleich sein.
-- **Im Client:** `src/client/Lang.luau` liest die Sprache einmal (`LocalizationService.RobloxLocaleId`, sonst `SystemLocaleId`) und liefert:
+- **Im Client:** `src/client/Lang.luau` liest die Sprache einmal beim Beitreten (`Players.LocalPlayer.LocaleId` = im Roblox-Menü gewählte Spielsprache, sonst `LocalizationService.RobloxLocaleId`, sonst `SystemLocaleId`); wechselt der Spieler die Sprache während des Spiels, erscheint der Hinweis „Sprache geändert – zum Übernehmen neu beitreten.“ in der neuen Sprache und liefert:
   - `Lang.t(schlüssel, { name = wert })` – fertiger Text, z. B. `Lang.t("notify.sold", { amount = Lang.shortNumber(1500) })` → „+1.500 Münzen“ / „+1,500 coins“.
   - `Lang.shortNumber(n)` – Kurzzahl: Deutsch „1.234“, „1,5 Mio“, „2 Mrd“, „3 Bio“; Englisch „1,234“, „1.5M“, „2B“, „3T“ (`UiKit.shortNumber` ist dasselbe).
   - `Lang.integer(n)` – ganze Zahl ohne Kurzform („2.500.000“ / „2,500,000“).

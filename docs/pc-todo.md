@@ -1495,6 +1495,13 @@ Dein Spielstand war vorher gesichert (`backup_24nov_player_372358501`) und ist d
 - Bestenlisten auf der Spawn-Insel: „💰 Coins earned“ (filipocool 294,426), „🔁 Rebirths“ „No entries yet“, „⏱ Playtime“ (filipocool 1 h 56 min). Test-Spieler landen wie vorgesehen nicht darauf (`121`–`123`).
 
 
+## Sprache aus dem Roblox-Menü (Spielsprache)
+
+Im veröffentlichten Spiel blieb alles Deutsch, obwohl im Roblox-Menü die Spielsprache auf Englisch (USA) stand: Das Spiel las nur die Sprache des Roblox-Kontos. Jetzt zählt zuerst die im Menü gewählte Spielsprache (`Player.LocaleId`). Beim Umstellen während des Spiels erscheint der Hinweis „Language changed – rejoin to apply it.“ (in der neuen Sprache); nach dem Neu-Beitreten ist alles in der neuen Sprache.
+
+- [ ] Veröffentlichtes Spiel: Spielsprache im Roblox-Menü auf Englisch → Hinweis erscheint → Spiel verlassen und neu beitreten → alles Englisch.
+- [ ] Zurück auf Deutsch → Hinweis auf Deutsch → neu beitreten → alles Deutsch.
+
 ## #67 Englisch 2: Sprach-Baustein, HUD und Meldungen
 
 Neu: Textsammlung `src/shared/Texts.luau` (Deutsch/Englisch), Sprach-Helfer `src/client/Lang.luau`. Umgestellt: HUD (Pizza-Leiste, Auto-Sammeln, Münz-/Gem-Zahlen), Freischalt-Knopf an Welt-Toren, alle Meldungen (Toasts), Seiten-Knöpfe (Pets, Tränke, Geschenke, Rebirth samt „Neu!“-Hinweisen). Namen (Welten, Tränke), Menüs, Tutorial und Schilder bleiben vorerst Deutsch (#68–#71). Vorher: `lune run test` → `553 passed, 0 failed`.

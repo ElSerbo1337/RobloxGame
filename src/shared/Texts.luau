@@ -43,6 +43,11 @@ Texts.strings = {
 	["side.rebirthNote"] = { de = "Neu! Mehr Münzen", en = "New! More coins" },
 
 	-- Messages (toasts); notify.<Kind> matches the Notify kinds the server sends
+	-- Shown in the newly chosen language when the player switches languages in the menu.
+	["notify.languageChanged"] = {
+		de = "Sprache geändert – zum Übernehmen neu beitreten.",
+		en = "Language changed – rejoin to apply it.",
+	},
 	["notify.PizzaFull"] = { de = "Pizza voll! Ab zum Ofen.", en = "Pizza full! Off to the oven." },
 	["notify.OutOfRange"] = { de = "Zu weit weg!", en = "Too far away!" },
 	["notify.NotEnoughCoins"] = { de = "Nicht genug Münzen!", en = "Not enough coins!" },
