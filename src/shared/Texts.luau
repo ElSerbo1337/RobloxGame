@@ -354,6 +354,20 @@ Texts.strings = {
 	-- Opened from the side bar outside a portal (#75): the list is for viewing only.
 	["portal.preview"] = { de = "Zum Reisen in ein Portal stellen", en = "Step into a portal to travel" },
 
+	-- World menu with cards (#78)
+	["worldMenu.title"] = { de = "🌍 Welten", en = "🌍 Worlds" },
+	["worldMenu.count"] = { de = "{open}/{total} offen", en = "{open}/{total} unlocked" },
+	["worldMenu.travel"] = { de = "Reisen", en = "Travel" },
+	["worldMenu.here"] = { de = "📍 Du bist hier", en = "📍 You are here" },
+	["worldMenu.open"] = { de = "✅ Offen", en = "✅ Unlocked" },
+	["worldMenu.canUnlock"] = { de = "Am Tor freischalten", en = "Unlock at the gate" },
+	["worldMenu.price"] = { de = "{price} Münzen", en = "{price} coins" },
+	["worldMenu.missing"] = { de = "Es fehlt:", en = "Missing:" },
+	["worldMenu.missingPrevious"] = { de = "Erst {world}", en = "First {world}" },
+	["worldMenu.missingRebirthsOne"] = { de = "{count} Rebirth", en = "{count} rebirth" },
+	["worldMenu.missingRebirthsMany"] = { de = "{count} Rebirths", en = "{count} rebirths" },
+	["worldMenu.missingCoins"] = { de = "{amount} Münzen", en = "{amount} coins" },
+
 	-- Phone, delivery order and order card
 	["delivery.ring"] = { de = "📞 RING!", en = "📞 RING!" },
 	["delivery.newOrder"] = { de = "📞 Neuer Auftrag!", en = "📞 New order!" },

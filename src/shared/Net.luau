@@ -22,7 +22,8 @@
 -- PortalOpen      server -> client  (worldId: string, entries: { GameRules.PortalEntry }, preview: boolean?)
 --                                     player stands in this world's portal; preview = true: answer to
 --                                     PortalPreview (list for viewing only, the player is in no portal)
--- PortalPreview   client -> server  ()                           "show me the world list" (side bar tile, #75)
+-- PortalPreview   client -> server  (open: boolean?)             "show me the world list" (side bar tile, #75);
+--                                     false = closed again (stops its live updates, #78)
 -- PortalClose     server -> client  ()                           player left the portal (or was teleported)
 -- Teleport        client -> server  (worldId: string)            "send me to this world" (only from inside a portal)
 -- EquipBest       client -> server  ()                           "equip my pets with the highest bonus"

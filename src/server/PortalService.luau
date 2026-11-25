@@ -22,6 +22,8 @@ local WorldMap = require(script.Parent.WorldMap)
 local CHECK_SECONDS = 0.2
 local TELEPORT_COOLDOWN = 1
 local PREVIEW_COOLDOWN = 0.5
+-- Viewing-only list (#78): at most one update per this many seconds while it is open.
+local PREVIEW_REFRESH = 1
 local features = Features.new(GameConfig.features)
 -- The spawn island's portal gate has no world of its own.
 local SPAWN_PORTAL_ID = "SpawnIsland"
@@ -223,8 +225,28 @@ function PortalService.start(portals: { Portal })
 
 	-- World list for viewing from anywhere (side bar tile "Worlds", #75). Teleporting
 	-- still needs the player to stand in a portal (see Teleport above).
+	-- PortalPreview(true / nothing) opens it; while open the list stays current (#78:
+	-- missing coins on the world cards), throttled to PREVIEW_REFRESH. PortalPreview(false)
+	-- = the player closed it.
 	local lastPreview: { [Player]: number } = {}
-	Net.event("PortalPreview").OnServerEvent:Connect(features.guard("sideBar", function(player: Player)
+	local previewers: { [Player]: boolean } = {}
+	local refreshPending: { [Player]: boolean } = {}
+	local rules = PlayerStates.rules
+
+	local function sendPreview(player: Player)
+		local state = PlayerStates.get(player)
+		if state == nil or insidePortal[player] ~= nil then
+			return
+		end
+		local currentWorld = rules.spawnWorld(state) or GameConfig.worlds[1].id
+		portalOpen:FireClient(player, currentWorld, rules.portalMenu(state), true)
+	end
+
+	Net.event("PortalPreview").OnServerEvent:Connect(features.guard("sideBar", function(player: Player, open: unknown)
+		if open == false then
+			previewers[player] = nil
+			return
+		end
 		local state = PlayerStates.get(player)
 		local now = os.clock()
 		if state == nil or now - (lastPreview[player] or 0) < PREVIEW_COOLDOWN then
@@ -232,16 +254,27 @@ function PortalService.start(portals: { Portal })
 		end
 		lastPreview[player] = now
 		local inside = insidePortal[player]
-		local rules = PlayerStates.rules
-		local currentWorld = inside or rules.spawnWorld(state) or GameConfig.worlds[1].id
-		portalOpen:FireClient(player, currentWorld, rules.portalMenu(state), inside == nil)
+		if inside then
+			portalOpen:FireClient(player, inside, rules.portalMenu(state), false)
+		else
+			previewers[player] = true
+			sendPreview(player)
+		end
 	end))
 
 	-- Keep an open menu current (e.g. a world unlocked while standing in the portal).
 	PlayerStates.onChanged(function(player, state)
 		local worldId = insidePortal[player]
 		if worldId then
-			portalOpen:FireClient(player, worldId, PlayerStates.rules.portalMenu(state))
+			portalOpen:FireClient(player, worldId, rules.portalMenu(state))
+		elseif previewers[player] and not refreshPending[player] then
+			refreshPending[player] = true
+			task.delay(PREVIEW_REFRESH, function()
+				refreshPending[player] = nil
+				if previewers[player] then
+					sendPreview(player)
+				end
+			end)
 		end
 	end)
 
@@ -249,6 +282,7 @@ function PortalService.start(portals: { Portal })
 		insidePortal[player] = nil
 		lastTeleport[player] = nil
 		lastPreview[player] = nil
+		previewers[player] = nil
 	end)
 
 	task.spawn(function()
@@ -275,6 +309,7 @@ function PortalService.start(portals: { Portal })
 					local state = PlayerStates.get(player)
 					if current and state then
 						insidePortal[player] = current
+						previewers[player] = nil
 						portalOpen:FireClient(player, current, PlayerStates.rules.portalMenu(state))
 					else
 						insidePortal[player] = nil

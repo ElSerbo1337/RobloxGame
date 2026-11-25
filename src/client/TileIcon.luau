@@ -343,6 +343,23 @@ function TileIcon.build(holder: GuiObject, icon: Icon): ViewportFrame
 		shape(model)
 		frame, camera, focus, offset = viewFor(model)
 	end
+	return TileIcon.attach(holder, frame, camera, focus, offset)
+end
+
+-- Like build, but with a model the caller put together (world menu cards, #78): the
+-- view is framed around it and sways like the tiles.
+function TileIcon.buildModel(holder: GuiObject, model: Model): ViewportFrame
+	local frame, camera, focus, offset = viewFor(model)
+	return TileIcon.attach(holder, frame, camera, focus, offset)
+end
+
+function TileIcon.attach(
+	holder: GuiObject,
+	frame: ViewportFrame,
+	camera: Camera,
+	focus: Vector3,
+	offset: Vector3
+): ViewportFrame
 	frame.Name = "TileIcon"
 	frame.AnchorPoint = Vector2.new(0.5, 0.5)
 	frame.Position = UDim2.fromScale(0.5, 0.5)
