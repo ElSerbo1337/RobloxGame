@@ -353,6 +353,16 @@ describe("quest progress", function()
 		expect(result.state.dailyQuests[1].progress).toBe(1)
 	end)
 
+	it("coins won on the lucky wheel count as earned coins", function()
+		local r = rulesWith({ "EarnCoins" })
+
+		local result = r.spinWheel(withQuests(r), NOW, sequenceRandom({ 0 })) -- coin field
+
+		expect(result.ok).toBe(true)
+		expect(result.rewards[1].kind).toBe("Coins")
+		expect(result.state.dailyQuests[1].progress).toBe(result.rewards[1].amount)
+	end)
+
 	it("never goes past the goal and counts weekly quests too", function()
 		local r = rulesWith({ "SellPizzas" })
 		local state = withQuests(r)

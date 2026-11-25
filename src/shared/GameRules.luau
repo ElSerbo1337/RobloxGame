@@ -2174,6 +2174,8 @@ function GameRules.new(config: any)
 			newState.coins = state.coins + coins
 			newState.totalCoinsEarned = state.totalCoinsEarned + coins
 			table.insert(paid, 1, { kind = "Coins", amount = coins })
+			-- Like selling and delivering: coins that count as earned also count for quests.
+			addQuestProgress(newState, "EarnCoins", coins)
 		end
 		newState.wheelSpins = state.wheelSpins + 1
 		addQuestProgress(newState, "SpinWheel", 1)
