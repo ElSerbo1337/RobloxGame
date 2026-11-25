@@ -19,6 +19,7 @@ local PlayerStates = require(script.PlayerStates)
 local PortalService = require(script.PortalService)
 local PotionService = require(script.PotionService)
 local RebirthService = require(script.RebirthService)
+local SettingsService = require(script.SettingsService)
 local ShopService = require(script.ShopService)
 local SpawnService = require(script.SpawnService)
 local ToppingService = require(script.ToppingService)
@@ -52,6 +53,9 @@ for _, name in { "ClaimGift", "GiftResult", "HintSeen", "ClaimLoginReward", "Log
 end
 Net.event("AdminRun")
 Net.event("AdminResult")
+for _, name in { "SetSetting", "RedeemCode", "CodeResult" } do
+	Net.event(name)
+end
 
 CameraService.start()
 -- Flying islands (#27): spawn island -> bridge -> world 1 -> bridge -> world 2 ...
@@ -131,5 +135,7 @@ PortalService.start(PortalService.buildAll())
 RebirthService.start()
 -- Admin panel (#74): only GameConfig.admin.userIds, checked per action.
 AdminService.start()
+-- Settings menu (#76): volume, graphics, camera, egg animation; saved per player.
+SettingsService.start()
 
 print(`[{Constants.GAME_NAME}] Server gestartet`)

@@ -46,6 +46,12 @@
 -- AdminRun        client -> server  (actionId: string, args: { any })  "run this admin action" (#74; the
 --                                    server checks the user id and every argument, see AdminActions)
 -- AdminResult     server -> client  (actionId: string, ok: boolean, reason: string?)  answer to AdminRun (admins only)
+-- SetSetting      client -> server  (key: string, value: any)   "store this setting" (#76; the server
+--                                    validates key and value, see GameRules.SETTINGS)
+-- RedeemCode      client -> server  (code: string)              "redeem this code" (settings menu, #76;
+--                                    the code rules and the server handler come with #99)
+-- CodeResult      server -> client  (ok: boolean, reason: string?, rewards: { GameRules.Reward }?)
+--                                    answer to RedeemCode (#99); reason is shown as `codes.<reason>`
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -66,6 +72,8 @@
 --   next gift (-1 = none left today), gifts = { { minutes, status "Claimed" | "Ready" | "Waiting",
 --   secondsLeft, rewards = { { kind, amount } } } } }; the client counts the seconds down until the
 --   next update), SeenHints (comma-separated GameConfig.hints ids the player has opened).
+-- Settings (see SettingsService, #76): Settings (JSON of state.settings: only the keys the player
+--   changed; the client fills in the defaults with GameRules.resolveSettings).
 -- Login calendar (see LoginCalendarService): LoginCalendar (JSON { today = calendar day 1-7, claimable,
 --   days = { { day, status "Claimed" | "Ready" | "Waiting", rewards = { { kind, amount } } } } }),
 --   LoginCalendarAutoOpen (German day number: set on the first join of a day; the client opens the
@@ -111,6 +119,9 @@ local EVENTS = {
 	LoginRewardResult = true,
 	AdminRun = true,
 	AdminResult = true,
+	SetSetting = true,
+	RedeemCode = true,
+	CodeResult = true,
 }
 
 local Net = {}
