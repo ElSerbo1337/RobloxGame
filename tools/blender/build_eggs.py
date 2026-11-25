@@ -365,6 +365,27 @@ def pattern_bubbles(look):
     return objs
 
 
+def pattern_vines(look):
+    """Jungle temple (#83): two lianas winding up around the egg with small leaves on them."""
+    def keep(t, u):
+        for phase in (0.0, math.pi):
+            # The vine climbs: one full turn from the bottom to the top.
+            if abs(angle_diff(t, phase + (u + 1) * math.pi)) < 0.16:
+                return True
+        return False
+
+    objs = [shell_region(keep, cuts=4)]
+    for phase in (0.0, math.pi):
+        for i, u in enumerate((-0.6, -0.3, 0.0, 0.3, 0.6)):
+            theta = phase + (u + 1) * math.pi + (0.28 if i % 2 else -0.28)
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=5, radius=0.2)
+            o = bpy.context.active_object
+            o.scale = (1, 0.45, 0.18)
+            bpy.ops.object.transform_apply(scale=True)
+            objs.append(on_surface(o, theta, u, lift=0.0, spin=0.8 if i % 2 else -0.8))
+    return [o for o in objs if o]
+
+
 PATTERNS = {
     "Spots": pattern_spots,
     "Stripes": pattern_stripes,
@@ -374,6 +395,7 @@ PATTERNS = {
     "Swirl": pattern_swirl,
     "Stars": pattern_stars,
     "Bubbles": pattern_bubbles,
+    "Vines": pattern_vines,
 }
 
 

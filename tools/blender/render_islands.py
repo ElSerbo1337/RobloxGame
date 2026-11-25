@@ -356,6 +356,11 @@ VIEWS = {
     "World8_Overview": ((150, 150, -1505), (0, -6, -1685), 32, (1600, 900)),
     "World8_Landmark": ((10, 22, -1710), (-40, 12, -1766), 30, (1600, 900)),
     "World8_Player": ((0, 14, -1560), (0, 2, -1660), 30, (1600, 900)),
+    # World 9 Jungle Temple (#83) at z = -1920: overview, stepped temple (with the chest
+    # spot behind it) and the deco from the main path.
+    "World9_Overview": ((150, 150, -1745), (0, -6, -1925), 32, (1600, 900)),
+    "World9_Landmark": ((10, 22, -1950), (-40, 12, -2006), 30, (1600, 900)),
+    "World9_Player": ((0, 14, -1800), (0, 2, -1900), 30, (1600, 900)),
     # The whole chain, spawn island (z = +202) to world 7 (z = -1440).
     "Islands_FullChain": ((980, 640, 420), (0, -20, -600), 27, (1920, 820)),
 }
