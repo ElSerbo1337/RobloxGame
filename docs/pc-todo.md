@@ -1820,6 +1820,25 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Rejoin → Level und XP-Balken bleiben erhalten.
 - [ ] `GameConfig.features.petLevels = false` → kein Badge/Balken, kein XP, Bonus ohne Level, Admin-Aktion weg. Danach wieder `true`.
 
+## MEGA UPDATE – #91 Pet-Verwaltung
+
+Neu im Pet-Menü und im Ei-Panel: **Detailkarte** (Pet antippen: großes 3D-Pet, Bonus, Seltenheit/Variante/Shiny, Level, Welt, „Gefunden am …“, „Du hast n× …“) mit Ausrüsten, **🔒 Sperren** und Löschen, **Umbenennen** (max. 20 Zeichen, Server filtert mit TextService), **Auswahl-Modus** zum Mehrfach-Löschen („Löschen“ → Karten antippen → „🗑 Löschen (n)“), **3 Pet-Teams** (Team-Knöpfe über der Liste, „💾 Speichern“), **Auto-Delete** im Ei-Panel (Pet-Zeile antippen → Seltenheit wird beim Schlüpfen gelöscht, 🗑-Kästchen rechts; Geheim nie, Shiny nie). Gesperrte Pets werden nie gelöscht, auto-gelöscht oder verschmolzen. Schalter: `petDetails`, `petLock`, `petRename`, `petMultiDelete`, `petTeams`, `petAutoDelete`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/PetManagement.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin), zuerst Admin **Upgrade setzen** InventorySpace auf Max und **Pet geben** Katze 6 + Hamster 3:
+
+- [ ] Pet-Menü: Pet antippen → **Detailkarte** statt sofort ausrüsten: 3D-Pet groß, Name, Seltenheit in Farbe, Bonus, „Lv. 1 · 0/300 XP“, „Welt: Pizzeria-Garten“ (bzw. die richtige Welt), „Gefunden am 25. November 2026“ (heutiges Datum), „Du hast 6× Katze“. „Ausrüsten“ → Pet folgt, Knopf wird „Ablegen“. X schließt die Karte. Output ohne rote Fehler.
+- [ ] **🔒 Sperren** → Knopf wird gold „🔓 Entsperren“, Name „🔒 Katze“, im Menü 🔒 auf der Karte, kein „Vergolden“-Knopf auf dieser Karte, Vergolden zählt nur noch 5/5 statt 6/5. „Löschen“ auf der Detailkarte → grau, Hinweis „Gesperrte Pets kann man nicht löschen!“.
+- [ ] **Umbenennen**: „Mietzi“ eintippen → „✏ Name“ → „Name wird geprüft …“, nach ~1 s heißt das Pet auf Karte, Detailkarte und **Namensschild über dem Pet** (ausgerüstet) „Mietzi“; die Detailkarte zeigt darunter „Katze“. Ein Schimpfwort → kommt als „####“ an. Leeres Feld + „✏ Name“ → wieder „Katze“. 21 Zeichen → „Dieser Name geht nicht …“. (In Studio filtert TextService oft nicht – im Live-Test noch einmal prüfen.)
+- [ ] **Mehrfach-Löschen**: „Löschen“ → Titel „Pets zum Löschen auswählen“, Karten zeigen „Auswählen“, gesperrte „🔒 Gesperrt“ (Tippen wackelt nur). 3 Hamster antippen → weiße Hülle mit ✓, roter Rahmen, Knopf „🗑 Löschen (3)“ → Frage „3 Pets wirklich löschen?“ → „Löschen“ → weg, Modus beendet. „Behalten“ bricht ab.
+- [ ] **Teams**: 2 Pets ausrüsten → „Team 1 +“ antippen → wird „Team 1 (2)“ grün. Anderes Pet ausrüsten → Team 1 orange. „💾 Speichern“ → alle Knöpfe gelb „💾 Team n“ → Team 2 antippen → gespeichert. Team 1 antippen → genau die 2 Pets sind ausgerüstet, Team 1 grün. Ein Team-Pet löschen → Team zählt eins weniger. 5 gleiche aus einem Team vergolden → das Gold-Pet steht im Team.
+- [ ] **Auto-Delete**: am Ei stehen → Hinweis „Pet antippen = Seltenheit beim Schlüpfen löschen 🗑“. Zeile „Gewöhnlich“ antippen → rotes 🗑-Kästchen, Zeile blasser (alle Pets dieser Seltenheit). Admin **Münzen geben**, mehrmals öffnen → Gewöhnliche erscheinen in der Animation grau mit rotem Stempel „🗑 Auto-gelöscht“ und sind **nicht** im Inventar, andere schon. Geheim-Zeile hat kein Kästchen. Nochmal antippen → Häkchen weg. Rejoin → Häkchen bleiben.
+- [ ] Admin **Shiny-Chance testen** 100 + Gewöhnlich angehakt → Shiny-Gewöhnliche bleiben trotzdem (kein Stempel).
+- [ ] Handy: Detailkarte scrollt bei kleiner Höhe, Team-Knöpfe und „💾 Speichern“ passen in eine Zeile, Ei-Panel-Zeilen mit Kästchen gut zu treffen; Englisch: „Lock“, „Select pets to delete“, „Team 1 (2)“, „Found on November 25, 2026“.
+- [ ] Rejoin → Schlösser, Namen, Teams, Auto-Delete und „Gefunden am“ bleiben. Rebirth (Admin **Rebirths setzen** bzw. echter Rebirth) → alles bleibt.
+- [ ] Schalter einzeln `false` (danach wieder `true`): `petDetails`/`petLock`/`petRename` alle aus → Tippen rüstet wieder direkt aus; `petLock` aus → keine 🔒, Löschen geht wieder; `petMultiDelete` aus → altes Einzel-Löschen mit Frage; `petTeams` aus → keine Team-Zeile; `petAutoDelete` aus → keine Kästchen, nichts wird gelöscht.
+
 ## MEGA UPDATE – #98 Glücksrad
 
 Neu: 3D-Glücksrad auf dem freien Platz rechts hinten auf der Spawn-Insel (`SpawnIsland/LuckyWheel` am `WheelAnchor`): Holzständer, Goldrand mit 16 blinkenden Lichtern, 8 farbige Felder mit Beschriftung, roter Zeiger oben, Schild „🎡 Glücksrad“. Kachel 🎡 „Glücksrad“ in der Seitenleiste öffnet dasselbe Menü von überall. 1 Gratis-Drehung pro deutschem Tag + 1 nach 30 min Tages-Spielzeit, sonst 25 Gems. Felder: 5/15 min Einkommen als Münzen, 5/10/25 Gems, 1/2 Tränke, Jackpot 100 Gems + 3 Tränke (2 %). Der Server würfelt, Gewinne sind sofort gutgeschrieben. Sounds `WheelTick`/`WheelWin` in `src/client/Sounds.luau` haben noch **keine ID** (Suchbegriffe stehen dort). Schalter: `luckyWheel`.

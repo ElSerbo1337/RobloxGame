@@ -10,10 +10,15 @@
 --   PetSlots        how many pets can be equipped
 --   InventorySlots  how many pets can be owned (full inventory blocks opening eggs)
 --   CoinMultiplier  1 + sum of equipped pet bonuses
+--   PetTeams        JSON list (one per team) of saved pet uids that still exist (#91)
+--   AutoDelete      JSON { [rarity]: true } of the rarities deleted when hatching (#91)
+-- Pet management (#91): the Pets list also carries `name` (custom name, already filtered
+-- by TextService) and `foundAt` (Unix time); `locked` only while features.petLock is on.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextService = game:GetService("TextService")
 local Workspace = game:GetService("Workspace")
 
 local Features = require(ReplicatedStorage.Shared.Features)
@@ -38,6 +43,12 @@ local MODEL_LIFT = 1.2
 local MERGE_COOLDOWN = 0.4
 -- Pet levels (#90): play time is credited as XP to the equipped pets every this many seconds.
 local XP_TICK = 10
+-- Pet management (#91): at most one request per player in this many seconds (renaming
+-- calls the text filter, so it waits longer).
+local MANAGE_COOLDOWN = 0.25
+local RENAME_COOLDOWN = 2
+-- Longer raw names are refused before they reach the text filter.
+local RENAME_MAX_BYTES = 200
 -- Name tag / glow colours of the variants and the Shiny sparkles.
 local GOLD_COLOR = Color3.fromRGB(255, 200, 40)
 local RAINBOW_COLOR = Color3.fromRGB(255, 120, 220)
@@ -161,8 +172,12 @@ local function buildPet(pet: GameRules.OwnedPet, origin: CFrame, parent: Instanc
 	text.Font = Enum.Font.FredokaOne
 	text.TextScaled = true
 	-- Each player reads the pet name in their language (#68), with variant/Shiny (#80).
+	-- A custom name (#91, filtered for everyone on the server) replaces it.
 	local variant = pet.variant or "Normal"
-	if variant ~= "Normal" or pet.shiny then
+	model:SetAttribute("PetName", pet.name or "")
+	if pet.name then
+		SignText.set(text, "sign.name", { name = if pet.shiny then `✨ {pet.name}` else pet.name })
+	elseif variant ~= "Normal" or pet.shiny then
 		local key = if variant ~= "Normal" then `pets.name.{variant}` else "pets.name.shiny"
 		local nameArg = Texts.nameArg(GameConfig.pets[petId])
 		if variant ~= "Normal" and pet.shiny then
@@ -222,7 +237,9 @@ function PetService.start()
 			end
 		end
 		for _, child in folder:GetChildren() do
-			if wanted[child.Name] == nil then
+			local pet = wanted[child.Name]
+			-- Renamed (#91): rebuild the model so its name tag shows the new name.
+			if pet == nil or child:GetAttribute("PetName") ~= (pet.name or "") then
 				child:Destroy()
 			end
 		end
@@ -257,9 +274,17 @@ function PetService.start()
 				level = rules.petLevel(pet),
 				xp = math.floor(rules.petXp(pet)),
 				xpNeeded = rules.petXpNeeded(rules.petLevel(pet)) or -1,
+				name = pet.name,
+				foundAt = pet.foundAt,
 			})
 		end
 		player:SetAttribute("Pets", HttpService:JSONEncode(list))
+		local teams = {}
+		for i = 1, rules.teamCount() do
+			teams[i] = rules.petTeam(state, i)
+		end
+		player:SetAttribute("PetTeams", HttpService:JSONEncode(teams))
+		player:SetAttribute("AutoDelete", HttpService:JSONEncode(state.autoDelete or {}))
 		player:SetAttribute("PetSlots", rules.petSlots(state))
 		player:SetAttribute("InventorySlots", rules.inventorySlots(state))
 		-- Pets only (the rebirth factor is shown in the rebirth menu).
@@ -327,7 +352,7 @@ function PetService.start()
 			if state == nil then
 				return
 			end
-			local result = rules.mergePets(state, petId, variant)
+			local result = rules.mergePets(state, petId, variant, os.time())
 			if not result.ok then
 				notify:FireClient(player, result.reason)
 				return
@@ -382,7 +407,92 @@ function PetService.start()
 		end
 	end)
 
+	-- Pet management (#91): lock, delete several, auto-delete, teams, rename. Every request
+	-- goes through its feature switch and the rules; failures come back as Notify.
+	local lastManage: { [Player]: number } = {}
+	local function manage(featureId: string, cooldown: number, run: (Player, PlayerState, ...any) -> GameRules.Result?)
+		return features.guard(featureId, function(player: Player, ...: any)
+			local now = os.clock()
+			if now - (lastManage[player] or -math.huge) < cooldown then
+				return
+			end
+			lastManage[player] = now
+			local state = PlayerStates.get(player)
+			if state == nil then
+				return
+			end
+			local result = run(player, state, ...)
+			if result == nil then
+				return
+			end
+			if result.ok then
+				-- The state may have changed while the text filter ran (rename).
+				PlayerStates.set(player, result.state)
+			elseif result.reason ~= "Unchanged" then
+				notify:FireClient(player, result.reason)
+			end
+		end)
+	end
+
+	Net.event("LockPet").OnServerEvent:Connect(manage("petLock", MANAGE_COOLDOWN, function(_, state, uid, locked)
+		if type(uid) ~= "number" or type(locked) ~= "boolean" then
+			return nil
+		end
+		return rules.setPetLocked(state, uid, locked)
+	end))
+	Net.event("DeletePets").OnServerEvent:Connect(manage("petMultiDelete", MANAGE_COOLDOWN, function(_, state, uids)
+		if type(uids) ~= "table" then
+			return nil
+		end
+		return rules.deletePets(state, uids)
+	end))
+	Net.event("SetAutoDelete").OnServerEvent
+		:Connect(manage("petAutoDelete", MANAGE_COOLDOWN, function(_, state, rarity, enabled)
+			if type(rarity) ~= "string" or type(enabled) ~= "boolean" then
+				return nil
+			end
+			return rules.setAutoDelete(state, rarity, enabled)
+		end))
+	Net.event("SaveTeam").OnServerEvent:Connect(manage("petTeams", MANAGE_COOLDOWN, function(_, state, index)
+		if type(index) ~= "number" then
+			return nil
+		end
+		return rules.saveTeam(state, index)
+	end))
+	Net.event("EquipTeam").OnServerEvent:Connect(manage("petTeams", MANAGE_COOLDOWN, function(_, state, index)
+		if type(index) ~= "number" then
+			return nil
+		end
+		return rules.equipTeam(state, index)
+	end))
+	-- Renaming: the raw name is filtered for everyone (it shows on the name tag above the
+	-- pet) before the rules check it. A filter error refuses the name (Notify FilterFailed).
+	Net.event("RenamePet").OnServerEvent:Connect(manage("petRename", RENAME_COOLDOWN, function(player, _, uid, name)
+		if type(uid) ~= "number" or type(name) ~= "string" or #name > RENAME_MAX_BYTES then
+			return nil
+		end
+		local filtered = ""
+		if string.match(name, "%S") then
+			local ok, text = pcall(function()
+				local result = TextService:FilterStringAsync(name, player.UserId, Enum.TextFilterContext.PublicChat)
+				return result:GetNonChatStringForBroadcastAsync()
+			end)
+			if not ok or type(text) ~= "string" then
+				notify:FireClient(player, "FilterFailed")
+				return nil
+			end
+			filtered = text
+		end
+		-- Re-read the state: the filter call yields.
+		local current = PlayerStates.get(player)
+		if current == nil then
+			return nil
+		end
+		return rules.renamePet(current, uid, filtered)
+	end))
+
 	Players.PlayerRemoving:Connect(function(player)
+		lastManage[player] = nil
 		lastMerge[player] = nil
 		lastXp[player] = nil
 		local folder = petsFolder:FindFirstChild(tostring(player.UserId))

@@ -16,7 +16,7 @@
 -- DrinkPotion     client -> server  (potionId: string)           "drink one of my potions"
 -- PotionNotify    server -> client  (kind: string, potionId: string)  "Drunk" | "Expired" | a rule's failure reason
 -- OpenEgg         client -> server  (eggId: string, count: number?)  "open 1 (or 3, if bought) of this egg"
--- EggOpened       server -> client  (eggId: string, pets: { { petId: string, shiny: boolean } })  plays the
+-- EggOpened       server -> client  (eggId: string, pets: { { petId: string, shiny: boolean, autoDeleted: boolean } })  plays the
 --                                    hatch animation (one pet per egg; shiny = Shiny pet, #80)
 -- EquipPet        client -> server  (uid: number)               "equip this pet"
 -- UnequipPet      client -> server  (uid: number)               "put this pet away"
@@ -30,6 +30,13 @@
 -- EquipBest       client -> server  ()                           "equip my pets with the highest bonus"
 -- DeletePet       client -> server  (uid: number)               "delete this pet for good" (client asked to confirm)
 -- MergePets       client -> server  (petId: string, variant: string)  "merge 5 equal pets of this kind" (#80)
+-- DeletePets      client -> server  (uids: { number })          "delete all these pets" (selection mode, #91)
+-- LockPet         client -> server  (uid: number, locked: boolean)  "lock / unlock this pet" (#91)
+-- RenamePet       client -> server  (uid: number, name: string)  "rename this pet" ("" = config name; the server
+--                                   filters it with TextService, answers with Notify on failure, #91)
+-- SetAutoDelete   client -> server  (rarity: string, enabled: boolean)  "auto-delete this rarity when hatching" (#91)
+-- SaveTeam        client -> server  (index: number)             "save the equipped pets as team n" (#91)
+-- EquipTeam       client -> server  (index: number)             "equip team n" (#91)
 -- PetMerged       server -> client  (pet: { uid, petId, variant, shiny }, consumed: { number })  play the merge animation
 -- PhoneOpen       server -> client  (order: GameRules.Order?, maxReward: GameRules.DeliveryReward?, seconds: number?)
 --                                    player stands at a ringing phone: show the order with accept/decline;
@@ -77,8 +84,9 @@
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
 -- EggsPerOpen (1, or 3 after the gem upgrade).
 -- Tutorial: TutorialStep (step id, "" = finished), TutorialNumber, TutorialTotal, TutorialProgress, TutorialGoal.
--- Pets (see PetService): Pets (JSON list of { uid, petId, equipped, variant, shiny, locked, bonus }), PetSlots, InventorySlots,
--- CoinMultiplier (pets only).
+-- Pets (see PetService): Pets (JSON list of { uid, petId, equipped, variant, shiny, locked, bonus, level, xp,
+-- xpNeeded, name?, foundAt? }), PetSlots, InventorySlots, CoinMultiplier (pets only), PetTeams (JSON list of
+-- uid lists, #91), AutoDelete (JSON { [rarity]: true }, #91).
 -- Rebirth (see RebirthService): Rebirths (number done), RebirthOffer (JSON GameRules.RebirthOffer).
 -- Potions (see PotionService): Potions (JSON { [potionId]: count owned }),
 -- ActivePotions (JSON { [potionId]: seconds left when the attribute was set; the client counts down from there }).
@@ -130,6 +138,12 @@ local EVENTS = {
 	DeletePet = true,
 	MergePets = true,
 	PetMerged = true,
+	DeletePets = true,
+	LockPet = true,
+	RenamePet = true,
+	SetAutoDelete = true,
+	SaveTeam = true,
+	EquipTeam = true,
 	BuyPotion = true,
 	DrinkPotion = true,
 	PotionNotify = true,

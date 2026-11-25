@@ -8,6 +8,9 @@
 -- While the luck potion runs, the chances shown are the lucky ones (from the
 -- ActivePotions attribute) and the title says so.
 -- The button only sends the wish "OpenEgg"; the server decides.
+-- Auto-delete (#91, features.petAutoDelete): tapping a pet row ticks its rarity for
+-- auto-delete when hatching (box with 🗑 on the right, row greyed); the server keeps the
+-- ticked rarities (SetAutoDelete, attribute AutoDelete). Secret rows cannot be ticked.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -15,6 +18,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
@@ -42,6 +46,8 @@ local FOOTER = SIZES.footer
 local EggPreview = {}
 
 local rules = GameRules.new(GameConfig)
+local features = Features.new(GameConfig.features)
+local AUTO_DELETE = features.enabled("petAutoDelete")
 
 type Panel = {
 	gui: ScreenGui,
@@ -78,7 +84,14 @@ local function buildPanel(playerGui: Instance): Panel
 
 	local title = UiKit.label(root, "")
 	title.Position = UDim2.fromOffset(16, 10)
-	title.Size = UDim2.new(1, -32, 0, 44)
+	title.Size = UDim2.new(1, -32, 0, if AUTO_DELETE then 32 else 44)
+
+	-- Auto-delete hint under the title (#91).
+	local autoHint = UiKit.label(root, Lang.t("egg.autoDeleteHint"))
+	autoHint.Position = UDim2.fromOffset(16, 42)
+	autoHint.Size = UDim2.new(1, -32, 0, 16)
+	autoHint.TextTransparency = 0.25
+	autoHint.Visible = AUTO_DELETE
 
 	-- Pet rows scroll when the panel is shorter than all of them.
 	local list = Instance.new("ScrollingFrame")
@@ -118,6 +131,22 @@ local function buildPanel(playerGui: Instance): Panel
 	local price = 0
 	-- Chance label per pet id, updated when the luck potion starts or ends.
 	local chanceLabels: { [string]: TextLabel } = {}
+	-- Auto-delete (#91): row and tick box per pet id, and the ticked rarities.
+	local autoRows: { [string]: { row: GuiObject, box: TextLabel, rarity: string } } = {}
+	local function autoDeleted(): { [string]: boolean }
+		local ok, value = pcall(HttpService.JSONDecode, HttpService, player:GetAttribute("AutoDelete") or "{}")
+		return if ok and type(value) == "table" then value else {}
+	end
+	local function updateAutoDelete()
+		local ticked = autoDeleted()
+		for _, entry in autoRows do
+			local on = ticked[entry.rarity] == true
+			entry.box.Text = if on then "🗑" else ""
+			entry.box.BackgroundColor3 = if on then UiKit.RED else UiKit.CREAM
+			entry.row.BackgroundTransparency = if on then 0.85 else 0.55
+		end
+	end
+	player:GetAttributeChangedSignal("AutoDelete"):Connect(updateAutoDelete)
 
 	-- Tiny Secret chances as odds ("1 : 20.000"), all others in percent.
 	local function chanceText(entry: { rarity: string, chancePercent: number }): string
@@ -185,6 +214,7 @@ local function buildPanel(playerGui: Instance): Panel
 			end
 		end
 		table.clear(chanceLabels)
+		table.clear(autoRows)
 
 		-- The Secret pet of the egg's world (#81) as last row: "???" and odds like "1 : 20.000".
 		local entries = table.clone(preview.pets)
@@ -195,7 +225,21 @@ local function buildPanel(playerGui: Instance): Panel
 			local pet = GameConfig.pets[entry.petId]
 			local hidden = entry.rarity == "Secret"
 			local color = UiKit.rarityColor(entry.rarity)
-			local row = Instance.new("Frame")
+			local canTick = AUTO_DELETE and table.find(rules.autoDeleteRarities(), entry.rarity) ~= nil
+			local row: GuiObject
+			if canTick then
+				local rowButton = Instance.new("TextButton")
+				rowButton.Text = ""
+				rowButton.AutoButtonColor = false
+				local rarityId = entry.rarity
+				rowButton.Activated:Connect(function()
+					Net.event("SetAutoDelete"):FireServer(rarityId, autoDeleted()[rarityId] ~= true)
+					UiKit.pop(rowButton, 0.95)
+				end)
+				row = rowButton
+			else
+				row = Instance.new("Frame")
+			end
 			row.LayoutOrder = i
 			row.Size = UDim2.new(1, -12, 0, ROW_HEIGHT - 4)
 			row.BackgroundColor3 = color
@@ -242,7 +286,31 @@ local function buildPanel(playerGui: Instance): Panel
 			bonus.Position = UDim2.new(0.75, 0, 0, 6)
 			bonus.Size = UDim2.new(0.25, -8, 0, 28)
 			bonus.TextColor3 = Color3.fromRGB(40, 130, 40)
+
+			if AUTO_DELETE then
+				-- Columns make room for the tick box on the right.
+				chance.Position = UDim2.new(0.47, 0, 0, 6)
+				chance.Size = UDim2.new(0.21, 0, 0, 28)
+				bonus.Position = UDim2.new(0.68, 0, 0, 6)
+				bonus.Size = UDim2.new(0.2, 0, 0, 28)
+				name.Size = UDim2.new(0.47, -46, 0, 22)
+				rarity.Size = UDim2.new(0.47, -46, 0, 15)
+			end
+			if canTick then
+				local box = UiKit.label(row, "")
+				box.Name = "AutoDelete"
+				box.AnchorPoint = Vector2.new(1, 0.5)
+				box.Position = UDim2.new(1, -6, 0.5, 0)
+				box.Size = UDim2.fromOffset(30, 30)
+				box.BackgroundTransparency = 0
+				box.BackgroundColor3 = UiKit.CREAM
+				box.TextColor3 = UiKit.CREAM
+				UiKit.corner(box, 8)
+				UiKit.stroke(box, 2)
+				autoRows[entry.petId] = { row = row, box = box, rarity = entry.rarity }
+			end
 		end
+		updateAutoDelete()
 		list.CanvasPosition = Vector2.zero
 		-- Tall enough for all rows; on short screens it gets shorter and the list scrolls.
 		-- Narrower on small screens, so it stays readable (HudLayout.eggPreviewSize).

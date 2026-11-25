@@ -40,7 +40,8 @@ local SHINY_COLOR = Color3.fromRGB(255, 215, 70)
 
 local rules = GameRules.new(GameConfig)
 
-type Hatched = { petId: string, shiny: boolean }
+-- autoDeleted (#91): the pet's rarity is ticked for auto-delete, it was not kept.
+type Hatched = { petId: string, shiny: boolean, autoDeleted: boolean? }
 
 local EggAnimation = {}
 
@@ -218,6 +219,23 @@ function EggAnimation.start()
 		hint.Size = UDim2.new(1, -32, 0, 26)
 		hint.TextTransparency = 0.4
 		hint.ZIndex = 7
+
+		-- Auto-delete (#91): the card is shown greyed with a red stamp instead of the hint.
+		if hatched.autoDeleted then
+			card.BackgroundColor3 = UiKit.GREY
+			hint.Visible = false
+			local stamp = UiKit.label(card, Lang.t("egg.autoDeleted"))
+			stamp.AnchorPoint = Vector2.new(0.5, 0.5)
+			stamp.Position = UDim2.new(0.5, 0, 0, 94)
+			stamp.Size = UDim2.new(1, -24, 0, 44)
+			stamp.Rotation = -12
+			stamp.BackgroundTransparency = 0
+			stamp.BackgroundColor3 = UiKit.RED
+			stamp.TextColor3 = UiKit.CREAM
+			stamp.ZIndex = 9
+			UiKit.corner(stamp, 12)
+			UiKit.stroke(stamp, 3)
+		end
 		return card
 	end
 
@@ -235,7 +253,7 @@ function EggAnimation.start()
 	end
 	backdrop.Activated:Connect(close)
 
-	-- (eggId, { { petId, shiny } }): one entry per opened egg.
+	-- (eggId, { { petId, shiny, autoDeleted } }): one entry per opened egg.
 	Net.event("EggOpened").OnClientEvent:Connect(function(eggId: string, list: { Hatched })
 		local hatchedPets: { Hatched } = {}
 		local petIds = {}
@@ -243,7 +261,10 @@ function EggAnimation.start()
 		for _, entry in if type(list) == "table" then list else {} do
 			if type(entry) == "table" and GameConfig.pets[entry.petId] then
 				local shiny = entry.shiny == true
-				table.insert(hatchedPets, { petId = entry.petId, shiny = shiny })
+				table.insert(
+					hatchedPets,
+					{ petId = entry.petId, shiny = shiny, autoDeleted = entry.autoDeleted == true }
+				)
 				table.insert(petIds, entry.petId)
 				anyShiny = anyShiny or shiny
 			end

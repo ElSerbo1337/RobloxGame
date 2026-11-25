@@ -45,6 +45,11 @@ local MESSAGE_KINDS = {
 	NoOrder = true,
 	PhoneCallsOff = true,
 	PhoneCallsOn = true,
+	-- Pet management (#91)
+	PetLocked = true,
+	EmptyTeam = true,
+	InvalidName = true,
+	FilterFailed = true,
 }
 
 local Hud = {}
@@ -304,6 +309,9 @@ function Hud.start(): GuiObject
 					or kind == "NotEnoughGems"
 					or kind == "WrongToppings"
 					or kind == "OrderExpired"
+					or kind == "PetLocked"
+					or kind == "InvalidName"
+					or kind == "FilterFailed"
 				then FULL
 				elseif kind == "WorldUnlocked" then COIN
 				else nil

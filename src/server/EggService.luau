@@ -265,7 +265,7 @@ function EggService.start(spots: { EggSpot })
 
 		local result = PlayerStates.rules.openEggs(state, eggId, eggCount, function()
 			return rng:NextNumber()
-		end)
+		end, os.time())
 		if not result.ok then
 			notify:FireClient(player, result.reason)
 			return
@@ -273,9 +273,12 @@ function EggService.start(spots: { EggSpot })
 		lastOpen[player] = now
 		PlayerStates.set(player, result.state)
 		local petIds, hatched = {}, {}
-		for _, pet in result.pets do
+		for i, pet in result.pets do
 			table.insert(petIds, pet.petId)
-			table.insert(hatched, { petId = pet.petId, shiny = pet.shiny == true })
+			table.insert(
+				hatched,
+				{ petId = pet.petId, shiny = pet.shiny == true, autoDeleted = result.autoDeleted[i] == true }
+			)
 		end
 		eggOpened:FireClient(player, eggId, hatched)
 		-- Secret pet (#81): announced on all servers.

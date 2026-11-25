@@ -569,6 +569,16 @@ describe("GameConfig pets and eggs", function()
 		expect(math.abs(rules.levelMultiplier(levels.maxLevel) - 1.18) < 1e-9).toBe(true)
 	end)
 
+	it("has 3 pet teams, 20-character names and never auto-deletes Secret pets (#91)", function()
+		local management = GameConfig.petManagement
+		expect(management.teams).toBe(3)
+		expect(management.nameMaxLength).toBe(20)
+		expect(management.noAutoDelete).toEqual({ "Secret" })
+		local rules = GameRules.new(GameConfig)
+		expect(rules.newPlayerState().petTeams).toEqual({ {}, {}, {} })
+		expect(rules.autoDeleteRarities()).toEqual({ "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic" })
+	end)
+
 	it("starts players with 3 pet slots", function()
 		local rules = GameRules.new(GameConfig)
 		expect(rules.petSlots(rules.newPlayerState())).toBe(3)

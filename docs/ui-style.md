@@ -192,6 +192,16 @@ Settings.volume("music")    -- 0..1 inkl. Stumm ("music" | "effects")
 - **Einstellungen:** Zusammenflug-Animation entfällt bei „Ei-Animation überspringen“, goldener Blitz (Verschmelzen und Shiny-Schlüpfen) nur bei `Settings.screenFlashes()`.
 - **Pet-Level (#90):** Badge „Lv. n“ oben rechts auf der Pet-Karte (dunkel; bei Max-Level gold „Lv. 10 MAX“), darunter ein dünner XP-Balken unter dem Bild (hellblau `120,200,255`, gold bei Max). Daten aus `level`/`xp`/`xpNeeded` im Attribut `Pets`; der angezeigte Bonus enthält das Level schon. Level-up = Toast über `Notify("PetLevelUp", level, petId)`.
 
+## Pet-Verwaltung (#91)
+
+- **Detailkarte** (`PetMenu`, Seite über der Pet-Liste, scrollt): links großes 3D-Pet im Kreis in Seltenheitsfarbe (Rahmen gold/rosa/hellgelb für Gold/Regenbogen/Shiny), rechts Name (eigener Name, darunter die Art), Seltenheit · Variante · Shiny, Bonus, Level, Welt, „Gefunden am …“ (`DateTime:FormatLocalTime("LL")`), „Du hast n× …“; darunter Umbenennen-Feld + „✏ Name“, unten drei große Knöpfe Ausrüsten / 🔒 Sperren / Löschen. Pet-Karte antippen öffnet sie (sobald `petDetails`, `petLock` oder `petRename` an ist).
+- **Schloss:** 🔒 links auf der Karte unter dem ✨, kein Merge-Knopf, im Auswahl-Modus „🔒 Gesperrt“ (nicht wählbar). Regeln: `GameRules.isPetLocked` (Löschen, Mehrfach-Löschen, Auto-Delete und Verschmelzen fragen nur das).
+- **Auswahl-Modus:** gewählte Karten weiße Hülle mit rotem ✓ und rotem Rahmen, Knopf „🗑 Löschen (n)“ (grau bei 0) an der Stelle von „Beste ausrüsten“, eine Sicherheitsfrage für alle.
+- **Teams:** Reihe unter den Aktions-Knöpfen, je 128 × 64: grün = genau dieses Team ist ausgerüstet, orange = gespeichert, grau „Team n +“ = leer (Tippen speichert), `COIN` „💾 Team n“ im Speichern-Modus.
+- **Auto-Delete im Ei-Panel:** die ganze Pet-Zeile ist der Knopf, rechts ein 30-px-Kästchen (rot mit 🗑 = an, Zeile blasser), Hinweis unter dem Titel. Beim Schlüpfen: Karte grau mit schrägem rotem Stempel „🗑 Auto-gelöscht“. #93 (Chancen-Anzeige) baut im selben Panel weiter; die Spalten Chance/Bonus sind bei `petAutoDelete` schmaler (0,47 / 0,68 / Kästchen).
+- **Namen:** eigene Namen nur über den Server (`RenamePet`, TextService `GetNonChatStringForBroadcastAsync`), im UI über `displayName(entry)` im PetMenu, auf dem Namensschild über `SignText` `sign.name`.
+- **Pet-Index (#95):** „jemals besessen“ steht in `state.petsOwnedEver` (Pet-Id → true, auch auto-gelöschte/gelöschte/verschmolzene), Abfrage `rules.hasOwnedPet(state, petId)`; jedes neue Pet läuft durch `addPet` (setzt auch `foundAt`).
+
 ## Quests (#97)
 
 Kachel 📜 „Quests“ (`quests`, order 70, `src/client/QuestMenu.luau`): scrollende Liste mit Tagesquests (Text, Fortschrittsbalken in `GREEN`, Belohnung, Knopf „Abholen“ grün / „🎲 Gratis“ bzw. „🎲 10 💎“ orange / ✓ grau), Bonus-Truhe mit Serie (🔥 x/7) und Wochenquests; Überschriften mit der Zeit bis zu neuen Quests. Fertige Zeilen werden hellgrün. Beschriftung der Kachel „x/3“, roter Punkt bei `readyCount > 0`.
