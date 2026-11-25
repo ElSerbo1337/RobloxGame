@@ -43,6 +43,7 @@ local function choiceText(param: Param, value: string): string
 		then GameConfig.pets[value]
 		elseif param.names == "potion" then GameConfig.potions[value]
 		elseif param.names == "upgrade" then GameConfig.upgrades[value]
+		elseif param.names == "topping" then GameConfig.toppings[value]
 		else nil
 	if entry then
 		return Lang.name(entry)

@@ -100,6 +100,11 @@ function Lang.shortNumber(value: number): string
 	return Texts.shortNumber(Lang.language, value)
 end
 
+-- 0.012 -> "1,2" / "1.2" (put the % sign in the text).
+function Lang.percent(share: number): string
+	return Texts.percent(Lang.language, share)
+end
+
 -- "1.234.567" / "1,234,567".
 function Lang.integer(value: number): string
 	return Texts.integer(Lang.language, value)

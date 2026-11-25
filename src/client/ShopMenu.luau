@@ -67,6 +67,8 @@ local function effectText(upgradeId: string, value: number): string
 		return Lang.t("shop.effectSpeed", { value = value })
 	elseif upgradeId == "TripleOpen" then
 		return if value >= 3 then Lang.t("shop.effectOn") else Lang.t("shop.effectOff")
+	elseif upgradeId == "GoldLuck" then
+		return Lang.t("shop.effectGoldChance", { value = Lang.percent(value) })
 	end
 	return tostring(value)
 end

@@ -1,6 +1,8 @@
 -- Client entry point (StarterPlayerScripts.Client)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Constants = require(ReplicatedStorage.Shared.Constants)
+local Features = require(ReplicatedStorage.Shared.Features)
+local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 
 local AdminPanel = require(script.AdminPanel)
 local Barriers = require(script.Barriers)
@@ -8,6 +10,7 @@ local DeliveryMenu = require(script.DeliveryMenu)
 local EggAnimation = require(script.EggAnimation)
 local EggPreview = require(script.EggPreview)
 local GiftMenu = require(script.GiftMenu)
+local GoldenGlitter = require(script.GoldenGlitter)
 local Hud = require(script.Hud)
 local Lang = require(script.Lang)
 local LoginCalendarMenu = require(script.LoginCalendarMenu)
@@ -46,6 +49,10 @@ task.spawn(EggPreview.start)
 task.spawn(PetFollow.start)
 task.spawn(SignCulling.start)
 task.spawn(Tutorial.start)
+-- Golden toppings (#94): glitter on toppings that are golden for this player.
+if Features.new(GameConfig.features).enabled("goldenToppings") then
+	GoldenGlitter.start()
+end
 -- Admin panel (#74): builds nothing unless this is an admin (GameConfig.admin.userIds).
 task.spawn(AdminPanel.start)
 

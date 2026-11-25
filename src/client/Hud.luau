@@ -267,7 +267,9 @@ function Hud.start(): GuiObject
 	updatePizza()
 	updateAutoCollect()
 
-	local function onNotify(kind: string, amount: number?, rewardKind: string?, potionId: string?)
+	-- `amount`: coins/gems; for "GoldenTopping" the topping id. `rewardKind`: for "Sold" the
+	-- number of golden toppings sold (#94), for "Delivered" the reward kind.
+	local function onNotify(kind: string, amount: any, rewardKind: any, potionId: string?)
 		if kind == "Delivered" and amount then
 			local potion = potionId and GameConfig.potions[potionId]
 			if rewardKind == "Gems" then
@@ -278,7 +280,13 @@ function Hud.start(): GuiObject
 				showToast(Lang.t("notify.deliveredCoins", { amount = formatNumber(amount) }), COIN)
 			end
 		elseif kind == "Sold" and amount then
-			showToast(Lang.t("notify.sold", { amount = formatNumber(amount) }), COIN)
+			if type(rewardKind) == "number" and rewardKind > 0 then
+				showToast(Lang.t("notify.soldGolden", { amount = formatNumber(amount), count = rewardKind }), COIN)
+			else
+				showToast(Lang.t("notify.sold", { amount = formatNumber(amount) }), COIN)
+			end
+		elseif kind == "GoldenTopping" and type(amount) == "string" and GameConfig.toppings[amount] then
+			showToast(Lang.t("notify.goldenTopping", { topping = Lang.name(GameConfig.toppings[amount]) }), COIN)
 		elseif kind == "Gems" and amount then
 			showToast(Lang.t("notify.gems", { amount = formatNumber(amount) }), GEM)
 		elseif MESSAGE_KINDS[kind] then

@@ -511,6 +511,13 @@ function Texts.integer(language: Language, value: number): string
 	return grouped
 end
 
+-- Share 0..1 as a percent number with at most one decimal (rounded), without the sign:
+-- 0.012 -> "1,2" / "1.2", 0.02 -> "2". The sign comes from the text ("{value} %").
+function Texts.percent(language: Language, share: number): string
+	local text = string.format("%.1f", math.round(share * 1000) / 10)
+	return (string.gsub(string.gsub(text, "%.0$", ""), "%.", SEPARATORS[language].decimal))
+end
+
 -- Short number for small labels: up to 999.999 as a whole number, then one decimal
 -- (cut, not rounded): German "1,5 Mio", "12 Mrd", "3,4 Bio"; English "1.5M", "12B", "3.4T".
 function Texts.shortNumber(language: Language, value: number): string

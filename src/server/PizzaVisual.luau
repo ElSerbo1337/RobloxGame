@@ -6,6 +6,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local GoldenLook = require(ReplicatedStorage.Shared.GoldenLook)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 
 local PlayerStates = require(script.Parent.PlayerStates)
@@ -93,7 +94,8 @@ local function showOrderTicket(handle: BasePart, isOrder: boolean)
 	billboard.Parent = handle
 end
 
-local function showToppings(player: Player, pizza: { string }, isOrder: boolean)
+-- `golden`: topping id -> golden ones of that id (GameRules.goldenOnPizza); they glitter (#94).
+local function showToppings(player: Player, pizza: { string }, golden: { [string]: number }, isOrder: boolean)
 	local character = player.Character
 	local tool = character and character:FindFirstChild("Pizza")
 	if tool == nil then
@@ -105,6 +107,7 @@ local function showToppings(player: Player, pizza: { string }, isOrder: boolean)
 	folder:ClearAllChildren()
 
 	local count = #pizza
+	local goldenLeft = table.clone(golden)
 	for index, toppingId in pizza do
 		local angle = 2 * math.pi * index / count
 		local radius = if count == 1 then 0 else TOPPING_RING_RADIUS
@@ -112,7 +115,15 @@ local function showToppings(player: Player, pizza: { string }, isOrder: boolean)
 		local disc = ToppingLook.createDisc(toppingId, TOPPING_DIAMETER, 0.15)
 		weldedDisc(handle, offset, disc, folder)
 		ModelLibrary.dressDisc(disc, toppingId)
+		if (goldenLeft[toppingId] or 0) > 0 then
+			goldenLeft[toppingId] -= 1
+			GoldenLook.apply(disc, 0.3)
+		end
 	end
+end
+
+local function show(player: Player, state: any)
+	showToppings(player, state.pizza, PlayerStates.rules.goldenOnPizza(state), state.delivery.order ~= nil)
 end
 
 function PizzaVisual.start()
@@ -123,7 +134,7 @@ function PizzaVisual.start()
 		humanoid:EquipTool(tool)
 		local state = PlayerStates.get(player)
 		if state then
-			showToppings(player, state.pizza, state.delivery.order ~= nil)
+			show(player, state)
 		end
 	end
 
@@ -141,9 +152,7 @@ function PizzaVisual.start()
 		task.spawn(onPlayerAdded, player)
 	end
 
-	PlayerStates.onChanged(function(player, state)
-		showToppings(player, state.pizza, state.delivery.order ~= nil)
-	end)
+	PlayerStates.onChanged(show)
 end
 
 return PizzaVisual

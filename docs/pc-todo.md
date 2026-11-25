@@ -1659,3 +1659,21 @@ Handy (**Test → Device** z. B. iPhone SE / iPhone 14 Landscape, und ein Tablet
 - [ ] Handy: zwei Spalten mit kleineren Kacheln direkt über dem Joystick; nichts überdeckt Sprung-Knopf, Auftragskarte oder Tränke. Auf sehr kleinen Handys stehen 3 Kacheln + „Mehr“ (⋯); „Mehr“ öffnet ein Fenster mit den übrigen Kacheln, die dort ihre Menüs öffnen; roter Punkt auf „Mehr“, solange eine versteckte Kachel (z. B. Kalender) Neues hat.
 - [ ] Tablet: eine Spalte über dem Joystick-Bereich, nichts im Joystick.
 - [ ] Auf dem Handy flüssig (die 3D-Icons schwenken mit 20 Bildern/s). Falls es ruckelt: `GameConfig.features.sideBar = false` → schlichte runde Knöpfe an denselben Plätzen (dann ohne rote Punkte) und mir Bescheid geben.
+
+## MEGA UPDATE – #94 Goldene Beläge und Gold-Glück-Upgrade
+
+Jeder normale Belag hat einen Gold-Wurf; er ist für dich golden, wenn deine Gold-Chance darüber liegt (1 %, mit Gem-Upgrade **Gold-Glück** bis 2 %). Goldene Beläge glitzern (nur für den Spieler, für den sie golden sind), geben beim Verkaufen den 10-fachen Wert und glitzern auch auf der Pizza in der Hand. Schalter: `GameConfig.features.goldenToppings`. Sound `GoldenTopping` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort) – bitte eine passende „Roblox“-ID eintragen.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/GoldenToppings.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Admin-Panel → **Gold-Chance testen** 100 → praktisch alle Beläge auf dem Feld glitzern gold (Funken + warmes Licht). Einen einsammeln → Toast „✨ Goldener Belag: …! 10-facher Wert“, Sound (sobald ID eingetragen), Belag glitzert auch auf der Pizza in der Hand.
+- [ ] Am Ofen verkaufen → Toast „+… Münzen (✨ N× golden)“; Betrag = 10× Wert der goldenen + normale (z. B. Welt 1 mit leerer Pizza vergleichen).
+- [ ] **Gold-Chance testen** 0 → Glitzern verschwindet sofort von allen Feld-Belägen (bis auf die ~1 %, die bei dir ohnehin golden sind).
+- [ ] **Goldene Beläge auf die Pizza** (Belag ◀ ▶, Anzahl 5) → Pizza in der Hand zeigt glitzernde Beläge (nur bis Pizza voll), Verkaufen gibt 10×.
+- [ ] Shop (Gem-Tresen) → **Gold-Glück**: Anzeige „1 % Gold-Chance“ → nach Kauf „1,2 %“ (englisch „1.2%“); Welt-1-Shop bis Stufe 2, Welt 4 bis 4, Welt 7 bis 5 (2 %). Texte mit `Language = en` prüfen.
+- [ ] **Rebirths**: mit Gold-Glück Stufe ≥ 1 einen Rebirth machen (Münzen geben) → Gold-Glück-Stufe bleibt.
+- [ ] Lieferauftrag mit goldenem Belag derselben Sorte: beim Verkaufen am Ofen wird zuerst der goldene verkauft, der normale bleibt für den Auftrag.
+- [ ] 2 Spieler (Test → 2 Players), einer mit Gold-Chance 100 (Admin), der andere ohne: nur beim Admin glitzert alles; was der andere einsammelt, ist für ihn normal.
+- [ ] `GameConfig.features.goldenToppings = false` → kein Glitzern, Gold-Glück nicht im Shop, Admin-Aktionen weg. Danach wieder `true`.

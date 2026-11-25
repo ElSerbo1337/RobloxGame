@@ -31,7 +31,8 @@ function OvenService.start(sellZone: BasePart)
 					local result = PlayerStates.rules.sellPizza(state)
 					if result.ok then
 						PlayerStates.set(player, result.state)
-						notify:FireClient(player, "Sold", result.coinsEarned)
+						-- Third value: golden toppings among the sold ones (#94), for the toast.
+						notify:FireClient(player, "Sold", result.coinsEarned, result.goldenSold)
 					end
 				end
 			end

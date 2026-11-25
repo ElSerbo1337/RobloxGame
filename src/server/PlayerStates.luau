@@ -27,6 +27,10 @@ local function replicate(player: Player, state: PlayerState)
 	player:SetAttribute("EggsPerOpen", PlayerStates.rules.eggsPerOpen(state))
 	player:SetAttribute("PizzaCount", #state.pizza)
 	player:SetAttribute("PizzaCapacity", PlayerStates.rules.pizzaCapacity(state))
+	-- Golden toppings (#94): the player's chance (client glitters field toppings whose
+	-- GoldRoll is below it) and how many golden toppings are on the pizza.
+	player:SetAttribute("GoldenChance", PlayerStates.rules.goldenChance(state))
+	player:SetAttribute("PizzaGolden", PlayerStates.rules.goldenCount(state))
 	player:SetAttribute("AutoCollect", state.autoCollect == true)
 	player:SetAttribute("UnlockedWorlds", table.concat(state.unlockedWorlds, ","))
 	player:SetAttribute("LastWorldId", state.lastWorldId)

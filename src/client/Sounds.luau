@@ -8,7 +8,8 @@
 -- and enters the asset IDs here, see docs/pc-todo.md (#23, done in A7).
 --
 -- Played automatically here: Collect (pizza count goes up), Sell ("Sold"),
--- Gem (gem topping / gem reward), Sell also for a delivered order. EggCrack is played by
+-- Gem (gem topping / gem reward), Sell also for a delivered order, GoldenTopping
+-- (golden topping collected, #94). EggCrack is played by
 -- EggAnimation; PhoneRing by DeliveryMenu while the delivery phone rings (#14).
 -- Music: `Sounds.playMusic(key)` (WorldAmbience picks the key per world).
 
@@ -32,6 +33,13 @@ local SOUNDS: { [string]: Entry } = {
 	EggCrack = { id = "9113959343", volume = 0.7, search = { "egg crack", "crack", "shell", "break" } },
 	-- Old phone ringing (delivery service).
 	PhoneRing = { id = "9117304246", volume = 0.6, search = { "phone ring", "telephone", "old phone", "ringing" } },
+	-- Golden topping collected (#94): bright magic shimmer, a bit "richer" than Gem.
+	-- ID still empty: the local session picks one (Creator Store, creator "Roblox").
+	GoldenTopping = {
+		id = "",
+		volume = 0.6,
+		search = { "magic shimmer", "golden sparkle", "treasure", "shine", "glitter chime" },
+	},
 	-- Short fanfare for the rebirth celebration (#35).
 	Rebirth = { id = "9114898444", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
 	-- Background music per world, looped (cheerful, light).
@@ -150,6 +158,8 @@ function Sounds.start()
 			Sounds.play("Sell")
 		elseif kind == "Gems" then
 			Sounds.play("Gem")
+		elseif kind == "GoldenTopping" then
+			Sounds.play("GoldenTopping")
 		end
 	end)
 end

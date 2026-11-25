@@ -109,6 +109,15 @@ describe("Texts.integer", function()
 	end)
 end)
 
+describe("Texts.percent (#94)", function()
+	it("writes a share as percent with one decimal per language", function()
+		expect(Texts.percent("de", 0.012)).toBe("1,2")
+		expect(Texts.percent("en", 0.012)).toBe("1.2")
+		expect(Texts.percent("de", 0.02)).toBe("2")
+		expect(Texts.percent("en", 0.01)).toBe("1")
+	end)
+end)
+
 describe("Texts.name (#68)", function()
 	it("picks the name and description in the chosen language", function()
 		local potion = {

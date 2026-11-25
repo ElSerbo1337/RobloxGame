@@ -3,9 +3,12 @@
 -- picks up toppings players walk over while auto-collect is on.
 -- Started once per world; each instance only answers requests for its own world.
 -- Rarely a slot holds a gem topping instead; it gives gems and never needs pizza space.
+-- Normal toppings carry a gold roll (#94): tagged parts with attribute GoldRoll, the client
+-- glitters those that are golden for its player; the rules decide on collect.
 -- Every request is validated by the game rules (range, pizza capacity) and the
 -- ToppingField (topping still there), so a topping can only be taken once.
 
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -17,6 +20,7 @@ local PlayerStates = require(script.Parent.PlayerStates)
 local MagnetPull = require(script.Parent.MagnetPull)
 local ToppingLook = require(script.Parent.ToppingLook)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
+local GoldenLook = require(ReplicatedStorage.Shared.GoldenLook)
 local DISC_DIAMETER = 3.5
 local DISC_THICKNESS = 0.6
 local RESPAWN_CHECK_SECONDS = 0.25
@@ -80,6 +84,10 @@ function ToppingService.start(worldId: string, layout: Layout)
 			disc.CFrame = CFrame.new(worldPosition(topping.x, topping.z)) * ToppingLook.FLAT
 			-- Imported Blender model if available (#15), otherwise the coloured disc stays.
 			ModelLibrary.dressDisc(disc, topping.toppingId)
+			if topping.goldRoll then
+				disc:SetAttribute("GoldRoll", topping.goldRoll)
+				CollectionService:AddTag(disc, GoldenLook.FIELD_TAG)
+			end
 		end
 		disc:SetAttribute("SlotId", slotId)
 		disc:SetAttribute("WorldId", worldId)
@@ -108,7 +116,7 @@ function ToppingService.start(worldId: string, layout: Layout)
 	local function tryCollect(
 		player: Player,
 		slotId: number,
-		rule: (PlayerState, string, number, number?) -> GameRules.GemResult,
+		rule: (PlayerState, string, number, number?, number?) -> GameRules.GemResult,
 		distanceTo: (BasePart, BasePart) -> number
 	): GameRules.GemResult?
 		local topping = field:get(slotId)
@@ -124,7 +132,7 @@ function ToppingService.start(worldId: string, layout: Layout)
 			return { ok = false, reason = "WorldLocked", state = state, gemsEarned = 0 }
 		end
 
-		local result = rule(state, topping.toppingId, distanceTo(root, parts[slotId]), topping.gems)
+		local result = rule(state, topping.toppingId, distanceTo(root, parts[slotId]), topping.gems, topping.goldRoll)
 		if result.ok then
 			if rule == PlayerStates.rules.autoCollectTopping then
 				MagnetPull.fly(parts[slotId], root)
@@ -135,6 +143,8 @@ function ToppingService.start(worldId: string, layout: Layout)
 			render(slotId)
 			if result.gemsEarned > 0 then
 				notify:FireClient(player, "Gems", result.gemsEarned)
+			elseif result.golden then
+				notify:FireClient(player, "GoldenTopping", topping.toppingId)
 			elseif PlayerStates.rules.isPizzaFull(result.state) then
 				notifyFull(player)
 			end
