@@ -59,7 +59,8 @@ def read_looks():
     """Egg id -> look dict, parsed from the `look = { ... }` lines in GameConfig.luau."""
     text = open(CONFIG, encoding="utf-8").read()
     looks = {}
-    for egg_id, body in re.findall(r"\n\t\t(\w+Egg) = \{\n\t\t\tdisplayName = \"[^\"]+\",\n\t\t\tlook = \{([^}]*)\}", text):
+    pattern = r"\n\t\t(\w+Egg) = \{\n\t\t\tdisplayName = \"[^\"]+\",\n(?:\t\t\tdisplayNameEn = \"[^\"]+\",\n)?\t\t\tlook = \{([^}]*)\}"
+    for egg_id, body in re.findall(pattern, text):
         look = {}
         for key, value in re.findall(r"(\w+) = (\"[^\"]*\"|true|false)", body):
             look[key] = value.strip('"') if value.startswith('"') else value == "true"
@@ -346,6 +347,24 @@ def pattern_stars(look):
     return objs
 
 
+def pattern_bubbles(look):
+    """Atlantis (#82): rising bubbles - rings of different sizes with a small dot inside."""
+    objs = []
+    bubbles = [(0.0, -0.3, 0.3), (1.2, 0.05, 0.24), (2.5, -0.45, 0.28), (-1.3, 0.2, 0.26), (-2.6, -0.1, 0.22),
+               (0.6, 0.45, 0.18), (-0.5, 0.6, 0.15), (1.9, 0.62, 0.13), (3.0, 0.3, 0.17), (-2.0, 0.55, 0.12),
+               (0.3, -0.75, 0.2), (-1.0, -0.65, 0.17)]
+    for i, (theta, u, r) in enumerate(bubbles):
+        bpy.ops.mesh.primitive_torus_add(major_radius=r, minor_radius=r * 0.18, major_segments=16, minor_segments=5)
+        o = bpy.context.active_object
+        objs.append(on_surface(o, theta, u, lift=0.0, spin=i))
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=r * 0.22)
+        dot = bpy.context.active_object
+        dot.scale = (1, 1, 0.4)
+        bpy.ops.object.transform_apply(scale=True)
+        objs.append(on_surface(dot, theta + r * 0.25, u + r * 0.2, lift=0.0, spin=0))
+    return objs
+
+
 PATTERNS = {
     "Spots": pattern_spots,
     "Stripes": pattern_stripes,
@@ -354,6 +373,7 @@ PATTERNS = {
     "Cracks": pattern_cracks,
     "Swirl": pattern_swirl,
     "Stars": pattern_stars,
+    "Bubbles": pattern_bubbles,
 }
 
 

@@ -352,6 +352,10 @@ VIEWS = {
     "Bridge_Basalt": ((40, 14, -810), (0, -2, -840), 28, (1600, 900)),
     "Bridge_Candy": ((40, 14, -1050), (0, -2, -1080), 28, (1600, 900)),
     "Bridge_Light": ((40, 14, -1290), (0, -2, -1320), 28, (1600, 900)),
+    # World 8 Atlantis (#82) at z = -1680: overview, temple and the deco from the main path.
+    "World8_Overview": ((150, 150, -1505), (0, -6, -1685), 32, (1600, 900)),
+    "World8_Landmark": ((10, 22, -1710), (-40, 12, -1766), 30, (1600, 900)),
+    "World8_Player": ((0, 14, -1560), (0, 2, -1660), 30, (1600, 900)),
     # The whole chain, spawn island (z = +202) to world 7 (z = -1440).
     "Islands_FullChain": ((980, 640, 420), (0, -20, -600), 27, (1920, 820)),
 }
