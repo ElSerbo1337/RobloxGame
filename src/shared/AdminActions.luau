@@ -386,6 +386,15 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Play time as XP for the equipped pets (#90), e.g. to get just below a level up.
+		id = "givePetXp",
+		feature = "petLevels",
+		params = { { name = "minutes", kind = "integer", min = 1, max = 600, default = 4 } },
+		run = function(env, state, args)
+			return env.rules.addPetXp(state, args[1] * 60)
+		end,
+	},
+	{
 		id = "resetProgress",
 		confirm = true,
 		params = {},

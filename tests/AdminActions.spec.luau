@@ -87,6 +87,7 @@ describe("admin registry", function()
 			"givePetVariant",
 			"setShinyChance",
 			"setPetLevel",
+			"givePetXp",
 			"resetProgress",
 		})
 	end)
@@ -611,6 +612,15 @@ describe("pet level admin action (#90)", function()
 		expect(all.state.pets[2].level).toBe(4)
 	end)
 
+	it("givePetXp credits minutes of play time as XP to the equipped pets", function()
+		local result = levelAdmin.run(ADMIN, withTwoPets(), "givePetXp", { 1 }, ctx)
+		expect(result.ok).toBe(true)
+		-- 0.5 + 60 XP with 1, 2, ..., 9 XP per level: 1+2+...+9 = 45 -> level 10.
+		expect(result.state.pets[1].level).toBe(10)
+		expect(result.state.pets[2].level).toBe(nil)
+		expect(levelAdmin.run(ADMIN, withTwoPets(), "givePetXp", { 601 }, ctx).reason).toBe("InvalidArgument")
+	end)
+
 	it("checks the level and the switch", function()
 		expect(levelAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 11, "no" }, ctx).reason).toBe("InvalidArgument")
 		expect(levelAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 0, "no" }, ctx).reason).toBe("InvalidArgument")
@@ -628,6 +638,7 @@ describe("pet level admin action (#90)", function()
 			})
 		)
 		expect(table.find(ids(offAdmin.list()), "setPetLevel")).toBe(nil)
+		expect(table.find(ids(offAdmin.list()), "givePetXp")).toBe(nil)
 		expect(offAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 3, "no" }, ctx).reason).toBe("FeatureOff")
 	end)
 end)

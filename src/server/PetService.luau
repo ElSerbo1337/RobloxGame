@@ -4,8 +4,9 @@
 -- sees them); each client moves all pet models locally for smooth following (PetFollow).
 --
 -- Replicated player attributes:
---   Pets            JSON list of { uid, petId, equipped, variant, shiny, locked, bonus }
---                   (variant "Normal"|"Gold"|"Rainbow", bonus = effective GameRules.petBonus, #80)
+--   Pets            JSON list of { uid, petId, equipped, variant, shiny, locked, bonus, level, xp, xpNeeded }
+--                   (variant "Normal"|"Gold"|"Rainbow", bonus = effective GameRules.petBonus, #80;
+--                   level 1-10, xp inside the level, xpNeeded = -1 at the max level, #90)
 --   PetSlots        how many pets can be equipped
 --   InventorySlots  how many pets can be owned (full inventory blocks opening eggs)
 --   CoinMultiplier  1 + sum of equipped pet bonuses
@@ -35,6 +36,8 @@ local MODEL_SIZE_PER_RARITY = 0.25
 local MODEL_LIFT = 1.2
 -- Merging (#80): at most one merge request per player in this many seconds.
 local MERGE_COOLDOWN = 0.4
+-- Pet levels (#90): play time is credited as XP to the equipped pets every this many seconds.
+local XP_TICK = 10
 -- Name tag / glow colours of the variants and the Shiny sparkles.
 local GOLD_COLOR = Color3.fromRGB(255, 200, 40)
 local RAINBOW_COLOR = Color3.fromRGB(255, 120, 220)
@@ -251,6 +254,9 @@ function PetService.start()
 				shiny = pet.shiny == true,
 				locked = rules.isPetLocked(pet),
 				bonus = rules.petBonus(pet),
+				level = rules.petLevel(pet),
+				xp = math.floor(rules.petXp(pet)),
+				xpNeeded = rules.petXpNeeded(rules.petLevel(pet)) or -1,
 			})
 		end
 		player:SetAttribute("Pets", HttpService:JSONEncode(list))
@@ -334,11 +340,51 @@ function PetService.start()
 				variant = rules.petVariant(pet),
 				shiny = pet.shiny == true,
 				bonus = rules.petBonus(pet),
+				level = rules.petLevel(pet),
 			}, result.consumed)
 		end))
 
+	-- Pet levels (#90): equipped pets gain XP from play time (like the play time gifts,
+	-- time while the state is still loading is not credited). A level up is announced
+	-- with Notify("PetLevelUp", level, petId).
+	local lastXp: { [Player]: number } = {}
+	local function trackXp(player: Player)
+		lastXp[player] = os.clock()
+	end
+	Players.PlayerAdded:Connect(trackXp)
+	for _, player in Players:GetPlayers() do
+		trackXp(player)
+	end
+	task.spawn(function()
+		while true do
+			task.wait(XP_TICK)
+			if not features.enabled("petLevels") then
+				continue
+			end
+			local now = os.clock()
+			for player, since in lastXp do
+				lastXp[player] = now
+				local state = PlayerStates.get(player)
+				if state == nil then
+					continue
+				end
+				local result = rules.addPetXp(state, now - since)
+				if not result.ok then
+					continue
+				end
+				if result.state ~= state then
+					PlayerStates.set(player, result.state)
+				end
+				for _, up in result.leveledUp do
+					notify:FireClient(player, "PetLevelUp", up.level, up.petId)
+				end
+			end
+		end
+	end)
+
 	Players.PlayerRemoving:Connect(function(player)
 		lastMerge[player] = nil
+		lastXp[player] = nil
 		local folder = petsFolder:FindFirstChild(tostring(player.UserId))
 		if folder then
 			folder:Destroy()

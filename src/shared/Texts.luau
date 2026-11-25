@@ -68,6 +68,10 @@ Texts.strings = {
 		en = "Test shiny chance (%, 0 = off)",
 	},
 	["admin.action.setPetLevel"] = { de = "Pet-Level setzen", en = "Set pet level" },
+	["admin.action.givePetXp"] = {
+		de = "Pet-XP geben (ausgerüstete, Minuten Spielzeit)",
+		en = "Give pet XP (equipped, minutes of play)",
+	},
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -81,6 +85,7 @@ Texts.strings = {
 	["admin.param.percent"] = { de = "Prozent", en = "Percent" },
 	["admin.param.variant"] = { de = "Variante", en = "Variant" },
 	["admin.param.shiny"] = { de = "Shiny", en = "Shiny" },
+	["admin.param.minutes"] = { de = "Minuten", en = "Minutes" },
 	["admin.param.petLevel"] = { de = "Pet-Level", en = "Pet level" },
 	["admin.param.allPets"] = { de = "Alle Pets (sonst ausgerüstete)", en = "All pets (else equipped)" },
 	["admin.choice.no"] = { de = "Nein", en = "No" },
@@ -243,6 +248,19 @@ Texts.strings = {
 	["pets.merged"] = { de = "{pet} entstanden! {bonus}", en = "{pet} created! {bonus}" },
 	["notify.NotEnoughPets"] = { de = "Dafür brauchst du mehr gleiche Pets!", en = "You need more equal pets!" },
 	["notify.MaxVariant"] = { de = "Stärker geht es nicht!", en = "It can't get any stronger!" },
+	-- Pet levels (#90): badge on the pet card, toast on a level up.
+	["pets.level"] = { de = "Lv. {level}", en = "Lv. {level}" },
+	["pets.levelMax"] = { de = "Lv. {level} MAX", en = "Lv. {level} MAX" },
+	["pets.mergedLevel"] = {
+		de = "{pet} entstanden! {bonus} · Lv. {level}",
+		en = "{pet} created! {bonus} · Lv. {level}",
+	},
+	["notify.petLevelUp"] = { de = "⬆ {pet} ist jetzt Level {level}!", en = "⬆ {pet} is now level {level}!" },
+	["notify.petLevelMax"] = {
+		de = "⭐ {pet} hat Level {level} erreicht – Maximum!",
+		en = "⭐ {pet} reached level {level} – the maximum!",
+	},
+	["notify.InvalidLevel"] = { de = "Dieses Level gibt es nicht.", en = "That level doesn't exist." },
 
 	-- Egg panel, egg animation and pet card (#69)
 	["egg.luck"] = { de = "{egg} 🍀 Glück!", en = "{egg} 🍀 Luck!" },

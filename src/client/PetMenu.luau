@@ -8,6 +8,8 @@
 -- "Regenbogen (n/5)"; at 5/5 it asks the server to merge (MergePets) and plays a short
 -- fly-together animation on PetMerged (skipped with "skip egg animation", flash only
 -- with screen flashes on). Red dot on the pet tile while any group is ready.
+-- Pet levels (#90): "Lv. n" badge in the card's top right corner and a thin XP bar
+-- under the icon (full and golden at the max level); the merge result shows the level.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -34,6 +36,10 @@ type PetEntry = {
 	shiny: boolean?,
 	locked: boolean?,
 	bonus: number?,
+	-- #90 (missing on old data / while petLevels is off: no badge).
+	level: number?,
+	xp: number?,
+	xpNeeded: number?,
 }
 
 local rules = GameRules.new(GameConfig)
@@ -41,6 +47,8 @@ local features = Features.new(GameConfig.features)
 
 local GOLD_COLOR = Color3.fromRGB(255, 200, 40)
 local SHINY_COLOR = Color3.fromRGB(255, 245, 170)
+local XP_COLOR = Color3.fromRGB(120, 200, 255)
+local SHOW_LEVELS = features.enabled("petLevels") and GameConfig.petLevels ~= nil
 -- Seconds the merge animation takes (fly together + result).
 local MERGE_FLY_SECONDS = 0.55
 
@@ -297,6 +305,38 @@ function PetMenu.start()
 		-- The 3D pet (imported model) replaces the dot.
 		dot.Visible = not PetIcon.show(icon, entry.petId, 1.2)
 
+		-- Level badge and XP bar (#90).
+		if SHOW_LEVELS and entry.level then
+			local maxed = (entry.xpNeeded or -1) < 0
+			local badge =
+				UiKit.label(button, Lang.t(if maxed then "pets.levelMax" else "pets.level", { level = entry.level }))
+			badge.Name = "Level"
+			badge.AnchorPoint = Vector2.new(1, 0)
+			badge.Position = UDim2.new(1, -4, 0, 4)
+			badge.Size = UDim2.fromOffset(if maxed then 74 else 50, 24)
+			badge.BackgroundTransparency = 0
+			badge.BackgroundColor3 = if maxed then GOLD_COLOR else UiKit.DARK
+			badge.TextColor3 = if maxed then UiKit.DARK else UiKit.CREAM
+			UiKit.corner(badge, 10)
+
+			local bar = Instance.new("Frame")
+			bar.Name = "XpBar"
+			bar.AnchorPoint = Vector2.new(0.5, 0)
+			bar.Position = UDim2.new(0.5, 0, 0, 74)
+			bar.Size = UDim2.new(0.7, 0, 0, 6)
+			bar.BackgroundColor3 = UiKit.DARK
+			bar.BorderSizePixel = 0
+			UiKit.corner(bar, 3)
+			bar.Parent = button
+			local share = if maxed then 1 else math.clamp((entry.xp or 0) / math.max(entry.xpNeeded or 1, 1), 0, 1)
+			local fill = Instance.new("Frame")
+			fill.Size = UDim2.fromScale(share, 1)
+			fill.BackgroundColor3 = if maxed then GOLD_COLOR else XP_COLOR
+			fill.BorderSizePixel = 0
+			UiKit.corner(fill, 3)
+			fill.Parent = bar
+		end
+
 		local name = UiKit.label(button, UiKit.petName(entry.petId, variant, entry.shiny))
 		name.Position = UDim2.fromOffset(6, 78)
 		name.Size = UDim2.new(1, -12, 0, 28)
@@ -457,7 +497,13 @@ function PetMenu.start()
 		end
 		Sounds.play("Merge")
 		local name = UiKit.petName(pet.petId, pet.variant, pet.shiny)
-		local message = Lang.t("pets.merged", { pet = name, bonus = UiKit.bonusText(tonumber(pet.bonus) or 0) })
+		local bonusText = UiKit.bonusText(tonumber(pet.bonus) or 0)
+		local level = tonumber(pet.level)
+		local message = if SHOW_LEVELS
+				and level
+				and level > 1
+			then Lang.t("pets.mergedLevel", { pet = name, bonus = bonusText, level = level })
+			else Lang.t("pets.merged", { pet = name, bonus = bonusText })
 		if not panel.Visible then
 			return
 		end

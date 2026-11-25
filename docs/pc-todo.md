@@ -1801,3 +1801,21 @@ Studio, Rojo verbinden, **Play** (als Admin; ggf. Admin „Upgrade-Stufe setzen�
 - [ ] Handy: Pet-Karten mit Knopf gut tippbar, Knopf-Text passt (auch Englisch „Make gold (5/5)“).
 - [ ] Rejoin → Gold/Regenbogen/Shiny bleiben erhalten.
 - [ ] `GameConfig.features.petMerge = false` → keine Knöpfe, kein roter Punkt, Server lehnt ab; vorhandene Gold-Pets behalten ihren Bonus. `shinyPets = false` → keine Shinys mehr, Admin-Shiny-Chance weg. Danach wieder `true`.
+
+## MEGA UPDATE – #90 Pet-Level
+
+Ausgerüstete Pets sammeln **1 XP pro Sekunde Spielzeit** (Server-Takt alle 10 s), Level 1–10, **+2 % Bonus pro Level über 1** (Lv. 10 = ×1,18 auf den effektiven Bonus, auch mit Gold/Regenbogen/Shiny). Bis Lv. 10 ca. 5,2 h (`GameConfig.petLevels.xpToNext`). Verschmelzen übernimmt das **höchste Level** (und dessen XP). Schalter: `petLevels`. Sound `PetLevelUp` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort).
+
+Vorher: `lune run test` → alle grün (u. a. `tests/PetLevels.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Pet ausrüsten, Pet-Menü öffnen → Karte zeigt oben rechts **„Lv. 1“** und unter dem Bild einen blauen XP-Balken, der alle ~10 s etwas wächst (nicht ausgerüstete Pets: Balken bleibt stehen).
+- [ ] Admin → **Pet-Level setzen** (Pet-Level 9, Alle Pets Nein) → ausgerüstete Pets zeigen „Lv. 9“, Bonus auf der Karte und „Bonus“ oben steigen um 16 %. Nicht ausgerüstete bleiben gleich.
+- [ ] Admin → Pet-Level setzen **10** → goldenes Badge **„Lv. 10 MAX“**, voller goldener Balken, Bonus = Grundbonus × 1,18.
+- [ ] Level-up live: Admin → Pet-Level setzen **1**, dann **Pet-XP geben** 4 Minuten → Balken fast voll (240/300); nach ~60 s Toast **„⬆ Katze ist jetzt Level 2!“** (Sound `PetLevelUp`, falls ID eingetragen). Pet-Level setzen **9** + Pet-XP geben **79** → nach ~60 s Toast „⭐ … hat Level 10 erreicht – Maximum!“. (Pet-XP geben selbst zeigt keinen Toast, nur der Spielzeit-Takt.)
+- [ ] **Beste ausrüsten** mit zwei gleichen Pets, eines auf Lv. 10 (Admin „Alle Pets Ja“ und dann das andere wieder neu geben) → das Lv.-10-Pet wird gewählt.
+- [ ] Verschmelzen: 5 gleiche geben, 1 davon ausrüsten, Pet-Level setzen 7 → „Vergolden (5/5)“ → Ergebnis-Karte „Gold-… entstanden! +… % · Lv. 7“, das Gold-Pet hat „Lv. 7“.
+- [ ] Handy: Badge überdeckt weder Name noch ✨ (Shiny-Pet mit Level ansehen), Englisch „Lv. 3“.
+- [ ] Rejoin → Level und XP-Balken bleiben erhalten.
+- [ ] `GameConfig.features.petLevels = false` → kein Badge/Balken, kein XP, Bonus ohne Level, Admin-Aktion weg. Danach wieder `true`.

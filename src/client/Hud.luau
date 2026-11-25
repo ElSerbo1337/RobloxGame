@@ -12,6 +12,7 @@ local TweenService = game:GetService("TweenService")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Lang = require(script.Parent.Lang)
+local Sounds = require(script.Parent.Sounds)
 local Texts = require(ReplicatedStorage.Shared.Texts)
 local UiKit = require(script.Parent.UiKit)
 
@@ -287,6 +288,11 @@ function Hud.start(): GuiObject
 			end
 		elseif kind == "GoldenTopping" and type(amount) == "string" and GameConfig.toppings[amount] then
 			showToast(Lang.t("notify.goldenTopping", { topping = Lang.name(GameConfig.toppings[amount]) }), COIN)
+		elseif kind == "PetLevelUp" and type(amount) == "number" and GameConfig.pets[rewardKind] then
+			-- Pet levels (#90): an equipped pet reached a new level.
+			local key = if amount >= GameConfig.petLevels.maxLevel then "notify.petLevelMax" else "notify.petLevelUp"
+			showToast(Lang.t(key, { pet = Lang.name(GameConfig.pets[rewardKind]), level = amount }), ON)
+			Sounds.play("PetLevelUp")
 		elseif kind == "Gems" and amount then
 			showToast(Lang.t("notify.gems", { amount = formatNumber(amount) }), GEM)
 		elseif MESSAGE_KINDS[kind] then

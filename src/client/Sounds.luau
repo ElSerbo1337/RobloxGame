@@ -62,6 +62,12 @@ local SOUNDS: { [string]: Entry } = {
 		volume = 0.7,
 		search = { "power up", "level up", "fusion", "magic whoosh", "upgrade" },
 	},
+	-- An equipped pet reached a new level (#90, toast in Hud). ID still empty.
+	PetLevelUp = {
+		id = "",
+		volume = 0.6,
+		search = { "level up", "ding", "achievement", "power up chime", "success" },
+	},
 	-- Short fanfare for the rebirth celebration (#35).
 	Rebirth = { id = "9114898444", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
 	-- Background music per world, looped (cheerful, light).
