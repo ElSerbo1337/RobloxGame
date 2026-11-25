@@ -1760,3 +1760,22 @@ Studio, Rojo verbinden, **Play** (Admin-Panel #74):
 - [ ] Handy (iPhone SE / iPhone 14 Landscape): Menü füllt fast den Bildschirm, Karten scrollen senkrecht bis Welt 7 (später 15), „Reisen“ gut mit dem Daumen drückbar, nichts abgeschnitten.
 - [ ] `GameConfig.features.worldMenu = false` → alte Liste mit einem Knopf pro Welt wie vorher. Danach wieder `true`.
 - [ ] Sobald die Welten 8–15 (#82–#89) in der Config sind: alle 15 Karten da, auch ohne importierte Modelle (Ersatzform).
+
+## MEGA UPDATE – #79 Kamerafahrt beim ersten Betreten einer Welt
+
+Neu: Beim ersten Betreten einer Welt (über die Brücke oder per Portal) fliegt die Kamera ca. 3,5 s im Bogen über die Insel und gleitet zurück hinter den Charakter. Dazu großer Welt-Name, „Neue Welt!“ und die in dieser Welt neuen Beläge (3D-Modell, ohne Modell farbiger Kreis mit Anfangsbuchstabe). Einmal pro Spieler und Welt (Feld `seenWorldIntros`, bleibt beim Rebirth). Nicht in der Start-Welt (Pizzeria-Garten, dort läuft das Tutorial). Dauer: `GameConfig.worldIntro.seconds`. Schalter: `GameConfig.features.worldIntro`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/WorldIntro.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (PC-Ansicht):
+
+- [ ] Admin-Panel: „Welten freischalten (bis)“ → Bauernhof, über die Brücke in den Bauernhof laufen: Schwarze Kino-Balken, weißer Blitz, Kamera fliegt um die Insel, „Neue Welt!“ + „Bauernhof“ groß, darunter „Neue Beläge“ mit Zwiebel, Paprika, Mais, Schinken (nacheinander aufploppend). Danach normale Kamera hinter dem Charakter, Laufen geht wieder. Output ohne rote Fehler.
+- [ ] Während der Fahrt kann man nicht laufen. Klick irgendwohin (oder eine Taste) → sofort zurück zur normalen Kamera. Unten steht „Klicken zum Überspringen“.
+- [ ] Zurück in den Pizzeria-Garten und wieder in den Bauernhof: **keine** zweite Fahrt. Stop, erneut Play (Rejoin): auch nach dem Respawn im Bauernhof keine Fahrt.
+- [ ] Portal: Admin-Panel → bis Strand freischalten, im Portal „Strand“ wählen: Fahrt startet nach dem Teleport über dem Strand und endet hinter dem Charakter am Ankunftspunkt (nicht an der alten Stelle).
+- [ ] Admin-Panel „Welt-Intros wieder zeigen“: die Fahrt der aktuellen Welt startet nach ~0,5 s erneut (zum Testen). Zweimal hintereinander → „NotSeen“.
+- [ ] Einstellungen: „Kamera-Wackeln“ AN → kurzes leichtes Rütteln am Anfang; AUS → ganz ruhige Fahrt. „Bildschirm-Blitze“ AUS → kein weißer Blitz am Anfang.
+- [ ] Welten 4–7 (Admin-Panel: Rebirths setzen 2, Welten freischalten bis Weltraum): jede Welt zeigt ihren Namen und die eigenen 3 neuen Beläge, die Kamera schaut auf die richtige Insel.
+- [ ] Sprache Englisch: „New world!“, „Farm“, „New toppings“ mit englischen Belag-Namen, „Click to skip“.
+- [ ] Handy-Ansicht (Device-Emulator): Tippen überspringt, Text „Tippen zum Überspringen“, Belag-Karten passen in eine Reihe, Welt-Name nicht abgeschnitten.
+- [ ] Schalter `features.worldIntro = false`: keine Fahrt, Admin-Aktion nicht im Panel.
