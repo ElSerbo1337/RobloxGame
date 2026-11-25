@@ -12,12 +12,15 @@
 -- (golden topping collected, #94). EggCrack is played by
 -- EggAnimation; PhoneRing by DeliveryMenu while the delivery phone rings (#14).
 -- Music: `Sounds.playMusic(key)` (WorldAmbience picks the key per world).
+-- Volume (#76): looped entries play in the SoundGroup "Music", all others in "Effects";
+-- their volume follows the player's settings (Settings.volume, slider + mute).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 
 local Net = require(ReplicatedStorage.Shared.Net)
+local Settings = require(script.Parent.Settings)
 
 -- `search`: Toolbox search terms (documentation only, not used at runtime).
 type Entry = { id: string, volume: number, looped: boolean?, search: { string } }
@@ -96,6 +99,31 @@ local Sounds = {}
 local instances: { [string]: Sound } = {}
 local currentMusic: Sound? = nil
 
+local function soundGroup(name: string): SoundGroup
+	local existing = SoundService:FindFirstChild(name)
+	if existing and existing:IsA("SoundGroup") then
+		return existing
+	end
+	local group = Instance.new("SoundGroup")
+	group.Name = name
+	group.Parent = SoundService
+	return group
+end
+
+local groups = { music = soundGroup("Music"), effects = soundGroup("Effects") }
+
+local function applyVolumes()
+	for name, group in groups do
+		group.Volume = Settings.volume(name)
+	end
+end
+applyVolumes()
+Settings.changed:Connect(function(key: string)
+	if string.find(key, "Volume$") or string.find(key, "Muted$") then
+		applyVolumes()
+	end
+end)
+
 local function soundFor(key: string): Sound?
 	local entry = SOUNDS[key]
 	if entry == nil or entry.id == "" then
@@ -108,6 +136,7 @@ local function soundFor(key: string): Sound?
 		newSound.SoundId = if string.match(entry.id, "^%d+$") then `rbxassetid://{entry.id}` else entry.id
 		newSound.Volume = entry.volume
 		newSound.Looped = entry.looped == true
+		newSound.SoundGroup = if entry.looped then groups.music else groups.effects
 		newSound.Parent = SoundService
 		instances[key] = newSound
 		sound = newSound

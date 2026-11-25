@@ -2,6 +2,8 @@
 -- Hatch animation after the server opened an egg: the egg wobbles, cracks, flashes,
 -- and the pet card jumps out (name, rarity color, bonus); with "3 öffnen" three cards
 -- side by side. Tap or wait to close.
+-- Settings (#76): "skip egg animation" shows the cards right away; "screen flashes off"
+-- drops the white flash.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12,6 +14,7 @@ local Net = require(ReplicatedStorage.Shared.Net)
 local Lang = require(script.Parent.Lang)
 local Sounds = require(script.Parent.Sounds)
 local PetIcon = require(script.Parent.PetIcon)
+local Settings = require(script.Parent.Settings)
 local UiKit = require(script.Parent.UiKit)
 
 local CARD_WIDTH = 300
@@ -180,20 +183,27 @@ function EggAnimation.start()
 		flash.BackgroundTransparency = 1
 		gui.Enabled = true
 
-		-- Wobble, getting stronger.
-		for _, angle in { 8, -8, 12, -12, 16, -16 } do
-			tween(egg, 0.12, { Rotation = angle }, Enum.EasingStyle.Sine).Completed:Wait()
-		end
-		tween(egg, 0.08, { Rotation = 0 })
-		crack.Visible = true
-		Sounds.play("EggCrack")
-		tween(egg, 0.25, { Size = UDim2.fromOffset(200, 250) }, Enum.EasingStyle.Back).Completed:Wait()
-		if myId ~= playId then
-			return
+		local skip = Settings.skipEggAnimation()
+		if skip then
+			Sounds.play("EggCrack")
+		else
+			-- Wobble, getting stronger.
+			for _, angle in { 8, -8, 12, -12, 16, -16 } do
+				tween(egg, 0.12, { Rotation = angle }, Enum.EasingStyle.Sine).Completed:Wait()
+			end
+			tween(egg, 0.08, { Rotation = 0 })
+			crack.Visible = true
+			Sounds.play("EggCrack")
+			tween(egg, 0.25, { Size = UDim2.fromOffset(200, 250) }, Enum.EasingStyle.Back).Completed:Wait()
+			if myId ~= playId then
+				return
+			end
 		end
 
 		-- Burst: flash, egg gone, pet card jumps out.
-		flash.BackgroundTransparency = 0
+		if not skip and Settings.screenFlashes() then
+			flash.BackgroundTransparency = 0
+		end
 		egg.Visible = false
 		for i, petId in petIds do
 			buildCard(petId, i).Parent = cards
