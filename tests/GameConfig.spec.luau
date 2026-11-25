@@ -117,7 +117,6 @@ describe("GameConfig", function()
 		function()
 			local space = GameConfig.worlds[7]
 
-			expect(#GameConfig.worlds).toBe(7)
 			expect(space.id).toBe("Space")
 			expect(space.displayName).toBe("Weltraum")
 			expect(space.unlockPrice).toBe(12000000)
@@ -125,8 +124,40 @@ describe("GameConfig", function()
 		end
 	)
 
-	it("asks no rebirths for worlds 1-7, so they stay reachable before the first rebirth", function()
-		for index = 1, 7 do
+	-- Planned order of the 15 worlds and their rebirth tiers (#72, #77). Worlds 8-15 come
+	-- with their own tickets (#82-#89); each is checked here as soon as it exists.
+	local WORLD_PLAN = {
+		{ "PizzeriaGarden", 0 },
+		{ "Farm", 0 },
+		{ "Beach", 0 },
+		{ "Icebergs", 0 },
+		{ "Volcano", 1 },
+		{ "CandyLand", 1 },
+		{ "Space", 2 },
+		{ "Atlantis", 2 },
+		{ "JungleTemple", 3 },
+		{ "DesertPyramids", 3 },
+		{ "HauntedCastle", 5 },
+		{ "DinoAge", 5 },
+		{ "CrystalCave", 7 },
+		{ "CloudCity", 7 },
+		{ "PizzaParadise", 10 },
+	}
+
+	it("keeps the worlds in the planned order with their rebirth tiers (#77)", function()
+		expect(#GameConfig.worlds <= #WORLD_PLAN).toBe(true)
+		for index, world in GameConfig.worlds do
+			local planned = WORLD_PLAN[index]
+			if world.id ~= planned[1] or (world.requiredRebirths or 0) ~= planned[2] then
+				error(
+					`world {index}: {world.id} with {world.requiredRebirths or 0} rebirths, planned {planned[1]} with {planned[2]}`
+				)
+			end
+		end
+	end)
+
+	it("asks no rebirths for worlds 1-4, so they stay reachable before the first rebirth", function()
+		for index = 1, 4 do
 			expect(GameConfig.worlds[index].requiredRebirths or 0).toBe(0)
 		end
 	end)
@@ -140,9 +171,10 @@ describe("GameConfig", function()
 		end
 	end)
 
-	it("lets a player unlock worlds 5-7 one after another and teleport to all of them", function()
+	it("lets a player with 2 rebirths unlock worlds 5-7 one after another and teleport to all of them", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
+		state.rebirths = 2
 		state.unlockedWorlds = { "Farm", "Beach", "Icebergs" }
 		state.coins = 0
 		for index = 5, 7 do
@@ -216,15 +248,33 @@ end)
 
 describe("GameConfig balancing", function()
 	-- Play times per world are checked in tests/BalanceSim.spec.luau (#57).
-	it("prices the first rebirth above the world 7 barrier", function()
-		expect(GameConfig.rebirth.startPrice > GameConfig.worlds[#GameConfig.worlds].unlockPrice).toBe(true)
+	-- Price of the next rebirth after `done` rebirths.
+	local function rebirthPrice(done: number): number
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+		state.rebirths = done
+		return rules.rebirthOffer(state).price
+	end
+
+	it("prices every rebirth above the barrier of the last world reachable before it (#77)", function()
+		for done = 0, 2 do
+			local lastPrice = 0
+			for _, world in GameConfig.worlds do
+				if (world.requiredRebirths or 0) <= done then
+					lastPrice = world.unlockPrice
+				end
+			end
+			expect(rebirthPrice(done) > lastPrice).toBe(true)
+		end
 	end)
 
 	it("makes every later rebirth cost more than the one before", function()
 		expect(GameConfig.rebirth.priceFactor > 1).toBe(true)
 	end)
 
-	it("prices the coin levels only shop 3 sells above shop 2 and below the first rebirth", function()
+	it("prices the coin levels only shop 3 sells above shop 2 and below the rebirth of its run", function()
+		-- Shop 3 stands in world 7, which needs 2 rebirths: the next rebirth there is the third.
+		local rebirthOfRun = rebirthPrice(GameConfig.worlds[7].requiredRebirths)
 		local shop2Max = {}
 		for _, offer in GameConfig.shops.World4Shop.offers do
 			shop2Max[offer.upgrade] = offer.maxLevel
@@ -236,7 +286,7 @@ describe("GameConfig balancing", function()
 				for level = shop2Max[offer.upgrade] + 1, offer.maxLevel do
 					local price = upgrade.levels[level].price
 					expect(price > upgrade.levels[shop2Max[offer.upgrade]].price).toBe(true)
-					expect(price < GameConfig.rebirth.startPrice).toBe(true)
+					expect(price < rebirthOfRun).toBe(true)
 					checked += 1
 				end
 			end

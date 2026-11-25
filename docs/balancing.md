@@ -1,5 +1,7 @@
 # Balancing: Spielzeit pro Welt (#41, neu eingestellt in #57)
 
+> **Stand #77 (MEGA UPDATE, vorläufig):** Welt 5–6 brauchen jetzt 1 Rebirth, Welt 7 braucht 2 (Rebirth-Stufen der 15 Welten: 1–4: 0, 5–6: 1, 7–8: 2, 9–10: 3, 11–12: 5, 13–14: 7, 15: 10). Damit Welt 1–7 spielbar bleiben, kostet der erste Rebirth vorläufig 150.000 (≈ 28 Min in Welt 4, erster Durchlauf ≈ 64 Min) und jeder weitere ×60 (zweiter Durchlauf Welt 1–6 ≈ 47 Min). Rebirth-Preise: 150.000 · 9 Mio · 540 Mio. Alles Weitere unten beschreibt den Stand vor #77; der Feinschliff für 15 Welten (~40 h) kommt in #108.
+
 Ziel aus Spec #56: Welt 1 ≈ 6, 2 ≈ 9, 3 ≈ 12, 4 ≈ 16, 5 ≈ 20, 6 ≈ 25 Minuten, Welt 7 bis zum ersten Rebirth ≈ 32 Minuten, zusammen ≈ 120 Minuten. Nach einem Rebirth soll Welt 1 etwa 3 Minuten dauern und der zweite Durchlauf bis zum nächsten Rebirth etwa 40–50 Minuten dauern (#58, vorher: etwa so lang wie der erste). Gesteuert wird über Freischalt-, Münz-Shop-, Ei- und Rebirth-Preise. Gem-Preise, Gem-Einkommen, Pet-Plätze und Belagwerte sind unverändert.
 
 ## Wie gerechnet wird

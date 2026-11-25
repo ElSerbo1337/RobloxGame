@@ -401,12 +401,12 @@ local GameConfig = {
 	-- Rebirth: pay coins to start over (coins, coin upgrades and worlds are reset) with a
 	-- permanently higher coin multiplier for selling and delivery coins (not gems).
 	rebirth = {
-		-- Price of the first rebirth: about 32 min of play in world 7 (#57, docs/balancing.md).
-		startPrice = 74000000,
-		-- Each further rebirth costs this many times the one before: the kept pets make
-		-- worlds 1-6 fast (about 20 min), so the second run up to the next rebirth takes
-		-- about 40-50 min (#58, docs/balancing.md).
-		priceFactor = 1.5,
+		-- Price of the first rebirth: about 28 min of play in world 4, the last world before
+		-- the first rebirth tier (#77; provisional, tuned for 15 worlds in #108).
+		startPrice = 150000,
+		-- Each further rebirth costs this many times the one before: the second run up to
+		-- the next rebirth (worlds 1-6) takes about 47 min (#77, provisional until #108).
+		priceFactor = 60,
 		-- Coin multiplier = 1 + multiplierPerRebirth x rebirths (1 rebirth = x1,5, 2 = x2, ...).
 		multiplierPerRebirth = 0.5,
 	},
@@ -1214,9 +1214,10 @@ local GameConfig = {
 	-- front of the world (0 = open from the start). `toppingSpawns` weights are relative chances.
 	-- Unlock, shop and rebirth prices are tuned with `lune run balance` (#41, docs/balancing.md)
 	-- to about 6/9/12/16/20/25 min of play in worlds 1-6 and 32 min in world 7 (#57).
-	-- Optional `requiredRebirths` (default 0, #43): rebirths needed besides the price. Worlds
-	-- 1-7 need none; later worlds follow the plan in docs/balancing.md (1 rebirth up to
-	-- world 10, 2 up to 12, 3 up to 14, then 2-3 new worlds per rebirth).
+	-- Optional `requiredRebirths` (default 0, #43): rebirths needed besides the price.
+	-- Rebirth tiers of the 15 worlds (#72, #77): worlds 1-4: 0, 5-6: 1, 7-8: 2, 9-10: 3,
+	-- 11-12: 5, 13-14: 7, 15: 10 (order and tiers checked in tests/GameConfig.spec.luau).
+	-- A new world = one entry here (+ toppings, eggs, pets, island theme); no new map code.
 	worlds = {
 		{
 			id = "PizzeriaGarden",
@@ -1275,6 +1276,7 @@ local GameConfig = {
 		},
 		{
 			id = "Volcano",
+			requiredRebirths = 1,
 			displayName = "Vulkan",
 			displayNameEn = "Volcano",
 			unlockPrice = 35000,
@@ -1288,6 +1290,7 @@ local GameConfig = {
 		},
 		{
 			id = "CandyLand",
+			requiredRebirths = 1,
 			displayName = "Süßigkeitenland",
 			displayNameEn = "Candy Land",
 			unlockPrice = 900000,
@@ -1301,6 +1304,7 @@ local GameConfig = {
 		},
 		{
 			id = "Space",
+			requiredRebirths = 2,
 			displayName = "Weltraum",
 			displayNameEn = "Space",
 			unlockPrice = 12000000,
