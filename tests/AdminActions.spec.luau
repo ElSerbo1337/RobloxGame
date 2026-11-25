@@ -334,15 +334,18 @@ describe("admin actions", function()
 		expect(result.state.loginShownDay).toBe(0)
 	end)
 
-	it("resetProgress starts the player over with a fresh state", function()
+	it("resetProgress starts the player over with a fresh state but keeps the settings", function()
 		local state = player()
 		state.coins = 999
 		state.rebirths = 3
+		state.settings = { musicVolume = 40, graphics = "Low" }
 
 		local result = admin.run(ADMIN, state, "resetProgress", {}, ctx)
 
 		expect(result.ok).toBe(true)
-		expect(result.state).toEqual(rules.newPlayerState())
+		local expected = rules.newPlayerState()
+		expected.settings = { musicVolume = 40, graphics = "Low" }
+		expect(result.state).toEqual(expected)
 	end)
 end)
 

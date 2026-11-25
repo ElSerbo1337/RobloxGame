@@ -343,8 +343,11 @@ AdminActions.BUILT_IN = {
 		id = "resetProgress",
 		confirm = true,
 		params = {},
-		run = function(env)
-			return { ok = true, state = env.rules.newPlayerState() }
+		run = function(env, state)
+			-- Progress only: the player's own settings (#76, volume, graphics) stay.
+			local newState = env.rules.newPlayerState()
+			newState.settings = table.clone(state.settings or {})
+			return { ok = true, state = newState }
 		end,
 	},
 } :: { Definition }
