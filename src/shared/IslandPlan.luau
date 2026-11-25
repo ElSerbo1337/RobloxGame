@@ -34,9 +34,10 @@ export type ModelSpec = { model: string, width: number, position: { number }, ya
 export type Station = { position: { number }, yaw: number }
 
 export type Island = {
-	-- "spawn" or "world"
+	-- "spawn", "world" or "event" (event island, #77)
 	kind: string,
 	worldIndex: number?,
+	eventIndex: number?,
 	center: { number },
 	-- Rim points { x, z } (world coordinates), counter-clockwise seen from above.
 	outline: { { number } },
@@ -494,13 +495,18 @@ export type Plan = {
 	worldIndexAt: (x: number, z: number) -> number?,
 	spawnIsland: () -> Island,
 	worldIsland: (index: number) -> Island,
+	eventCenter: (slot: number) -> { number },
+	eventIndexAt: (x: number, z: number) -> number?,
+	eventIsland: (slot: number) -> Island,
 	bridges: () -> { Bridge },
 	gate: (index: number) -> Gate,
 	hasFallen: (y: number) -> boolean,
 	isInsideOutline: (outline: { { number } }, x: number, z: number) -> boolean,
 }
 
-function IslandPlan.new(config: any, worlds: { any }): Plan
+-- `eventWorlds` (optional, #77): GameConfig.eventWorlds, built beside the spawn island.
+function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Plan
+	local eventWorlds: { any } = eventWorlds or {}
 	local groundY: number = config.groundY
 	local half: number = config.worldHalfSize
 	local spawnRadius: number = config.spawnRadius
@@ -1743,10 +1749,10 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 
 	-- ---------------------------------------------------------------- world islands
 
-	local function worldIsland(index: number, world: any): Island
-		local center = plan.worldCenter(index)
+	-- A world-style island at `center`. `index` seeds the irregular shapes (world index,
+	-- or 100 + slot for event islands); openBack/openFront = bridge openings on the rim.
+	local function buildIsland(center: V, index: number, world: any, openFront: boolean, openBack: boolean): Island
 		local island = newIsland("world", center)
-		island.worldIndex = index
 		local theme = themeOf(world.id)
 		local layout = config.layout
 		local openings
@@ -1756,12 +1762,14 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 			exponent = 4,
 			wobble = 0.09,
 			seed = index * 1.7,
-			openFront = true,
-			openBack = index < #worlds,
+			openFront = openFront,
+			openBack = openBack,
 			openingHalf = bridgeWidth / 2,
 		})
-		island.openings.front = v(center[1], groundY, center[3] + half)
-		if index < #worlds then
+		if openFront then
+			island.openings.front = v(center[1], groundY, center[3] + half)
+		end
+		if openBack then
 			island.openings.back = v(center[1], groundY, center[3] - half)
 		end
 
@@ -1980,8 +1988,42 @@ function IslandPlan.new(config: any, worlds: { any }): Plan
 		end
 		local world = worlds[index]
 		assert(world, `no world {index}`)
-		local island = worldIsland(index, world)
+		local island = buildIsland(plan.worldCenter(index), index, world, true, index < #worlds)
+		island.worldIndex = index
 		cache[index] = island
+		return island
+	end
+
+	-- Event islands (#77) float in a row beside the spawn island (towards +X), clear of
+	-- the world chain along -Z. No bridges: the portal brings players there. Same floor
+	-- plan and themes as the worlds (islands.themes[eventWorld.id]).
+	function plan.eventCenter(slot: number): { number }
+		-- One island spacing per slot to the side of the chain: a bridge length clear of world 1.
+		return v(spacing * slot, groundY, spawnCenter[3])
+	end
+
+	function plan.eventIndexAt(x: number, z: number): number?
+		for slot = 1, #eventWorlds do
+			local c = plan.eventCenter(slot)
+			if math.abs(x - c[1]) <= half and math.abs(z - c[3]) <= half then
+				return slot
+			end
+		end
+		return nil
+	end
+
+	local eventCache: { [number]: Island } = {}
+	function plan.eventIsland(slot: number): Island
+		local cached = eventCache[slot]
+		if cached then
+			return cached
+		end
+		local world = eventWorlds[slot]
+		assert(world, `no event island {slot}`)
+		local island = buildIsland(plan.eventCenter(slot), 100 + slot, world, false, false)
+		island.kind = "event"
+		island.eventIndex = slot
+		eventCache[slot] = island
 		return island
 	end
 

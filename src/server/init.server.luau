@@ -59,6 +59,8 @@ WorldMap.removeBaseplate()
 local spawnIsland = WorldMap.buildSpawnIsland()
 WorldMap.buildBridges()
 local worlds = WorldMap.buildAll()
+-- Event islands (#77): none in this update; the event update wires them to the services.
+WorldMap.buildEvents()
 local layout = worlds[1]
 local laterWorlds = {}
 for index = 2, #worlds do

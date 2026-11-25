@@ -1618,3 +1618,19 @@ Studio, Rojo verbinden, **Play** (eingeloggt als ElSerbo1337 / User 372358501):
 - [ ] Output: pro Aktion `[Admin] <Name>: <aktion> ok`, keine roten Fehler.
 - [ ] Fremde Spieler: **Test → Clients and Servers → 2 Players** → bei den Test-Spielern (negative User-Ids) kein 🛠️-Knopf. Optional in deren Client-Command-Bar: `game.ReplicatedStorage.Remotes.AdminRun:FireServer("addCoins", {1000})` → nichts passiert, Server-Output zeigt `[Admin] Abgelehnt: …`.
 - [ ] `GameConfig.features.adminPanel = false` → kein Knopf, Aktionen werden ignoriert. Danach wieder `true`.
+
+## MEGA UPDATE – #77 Welt-System: Rebirth-Stufen, Tränke bei Rebirth, Event-Inseln
+
+Rebirth-Stufen der 15 Welten in `GameConfig.worlds[].requiredRebirths`: Welt 1–4: 0, 5–6: 1, 7–8: 2, 9–10: 3, 11–12: 5, 13–14: 7, 15: 10 (vorhanden sind Welt 1–7, also **Vulkan und Süßigkeitenland brauchen jetzt 1 Rebirth, Weltraum 2**). Vorläufige Rebirth-Preise bis #108: 150.000 · 9 Mio · 540 Mio. Laufende Tränke bleiben beim Rebirth, es gibt keine Gems dafür. Event-Inseln (`GameConfig.eventWorlds`) sind nur vorbereitet, in diesem Update gibt es keine. Schalter: `rebirthPreview` (Welten-Zeile im Rebirth-Menü), `eventWorlds`.
+
+Vorher: `lune run test` → alle grün (u. a. `RebirthTiers`, `EventWorlds`, `IslandPlan15`, `Rebirth`).
+
+Studio, Rojo verbinden, **Play** (Admin-Panel #74):
+
+- [ ] Admin: **Münzen geben** 100000, Welt 2–4 kaufen. Barriere vor **Vulkan** zeigt „Ab 1 Rebirth“, Kauf geht nicht („Dafür brauchst du mehr Rebirths!“), Portal-Menü zeigt Vulkan/Süßigkeitenland/Weltraum gesperrt mit Rebirth-Bedingung.
+- [ ] Rebirth-Menü mit 0 Rebirths: Multiplikator „×1 → ×1,5“, Preis 150K, grüne Zeile **„🌍 Öffnet: Vulkan, Süßigkeitenland“**. Mit `Language = en` englische Namen („Opens: Volcano, Candy Land“). Text passt in die Zeile (auch Handy-Emulator).
+- [ ] Admin: **Tränke geben**, einen Münz-Trank trinken, **Münzen geben** 150000, Rebirth machen → Bestätigung nennt die Welten; danach läuft der Trank mit seiner Restzeit weiter (Trank-Anzeige unten), Gems unverändert.
+- [ ] Nach dem 1. Rebirth: Rebirth-Menü zeigt „🌍 Öffnet: Weltraum“; Vulkan-Barriere ist mit genug Münzen kaufbar.
+- [ ] Admin: **Rebirths setzen** 2 → Rebirth-Menü zeigt „🌍 Alle Welten sind erreichbar.“ (bis die neuen Welten 8–15 dazukommen; dann z. B. „Öffnet: Dschungel-Tempel, Wüsten-Pyramiden“ bzw. bei 3→4 „Öffnet keine neue Welt. Nächste ab 5 Rebirths: …“).
+- [ ] Welt 1–7 normal spielbar: Beläge sammeln, verkaufen, Shops, Eier, Lieferung in jeder Welt; Output ohne rote Fehler. Keine Event-Insel sichtbar (rechts neben der Spawn-Insel ist leerer Himmel).
+- [ ] `GameConfig.features.rebirthPreview = false` → Welten-Zeile im Rebirth-Menü und in der Bestätigung weg, Rest wie vorher. Danach wieder `true`.

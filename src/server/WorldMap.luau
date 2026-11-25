@@ -2,13 +2,16 @@
 -- Builds the flying islands (#27) from the island plan (ReplicatedStorage.Shared.IslandPlan):
 -- the spawn island, the bridges, and every world. Every world is an island in the shared
 -- floor plan with its theme (GameConfig.islands.themes: rim, landmark, bridge,
--- decoration). Adding a world = config entry (+ island theme), no new map code.
+-- decoration). Adding a world = config entry (+ island theme), no new map code; the plan
+-- is tested for all 15 worlds of the MEGA UPDATE (tests/IslandPlan15.spec.luau). Event
+-- islands (#77, GameConfig.eventWorlds) float beside the spawn island.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local EggService = require(script.Parent.EggService)
+local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GroundMarker = require(script.Parent.GroundMarker)
 local IslandBuilder = require(script.Parent.IslandBuilder)
@@ -43,7 +46,7 @@ local HALF = GameConfig.islands.worldHalfSize
 
 local WorldMap = {}
 
-local plan = IslandPlan.new(GameConfig.islands, GameConfig.worlds)
+local plan = IslandPlan.new(GameConfig.islands, GameConfig.worlds, GameConfig.eventWorlds)
 WorldMap.plan = plan
 
 local function part(props: { [string]: any }): Part
@@ -209,11 +212,11 @@ local function toppingsFolder(folder: Instance): Folder
 	return toppings
 end
 
--- World island, built from the shared floor plan.
-function WorldMap.build(world: any, index: number): Layout
-	local island = plan.worldIsland(index)
+-- World or event island, built from the shared floor plan. `index` = world index
+-- (event islands: 0, no gate).
+local function buildIsland(island: IslandPlan.Island, world: any, index: number, name: string): Layout
 	local center = IslandBuilder.vector(island.center)
-	local folder = IslandBuilder.island(island, `World{index}_{world.id}`, Workspace)
+	local folder = IslandBuilder.island(island, name, Workspace)
 	folder.Parent = nil
 
 	local ovenCf = IslandBuilder.station(island.stations.Oven)
@@ -253,6 +256,37 @@ function WorldMap.build(world: any, index: number): Layout
 		eggStands = eggStands,
 		shopSpot = IslandBuilder.station(island.stations.Shop),
 	}
+end
+
+-- World island `index` (1 = first world).
+function WorldMap.build(world: any, index: number): Layout
+	return buildIsland(plan.worldIsland(index), world, index, `World{index}_{world.id}`)
+end
+
+-- Event island `slot` (GameConfig.eventWorlds[slot], #77) beside the spawn island: same
+-- floor plan as a world, no bridge and no gate (the portal leads there while the event
+-- runs). Prepared only: the event update wires toppings, oven and portal to it.
+function WorldMap.buildEvent(world: any, slot: number): Layout
+	local layout = buildIsland(plan.eventIsland(slot), world, 0, `Event{slot}_{world.id}`)
+	layout.folder:SetAttribute("EventWorldId", world.id)
+	return layout
+end
+
+-- Builds every event island of the config (none in this update) when the feature
+-- "eventWorlds" is on.
+function WorldMap.buildEvents(): { Layout }
+	local layouts = {}
+	if Features.new(GameConfig.features).enabled("eventWorlds") then
+		for slot, world in GameConfig.eventWorlds do
+			table.insert(layouts, WorldMap.buildEvent(world, slot))
+		end
+	end
+	return layouts
+end
+
+-- Index of the event island containing the position, or nil (#77).
+function WorldMap.eventIndexAt(position: Vector3): number?
+	return plan.eventIndexAt(position.X, position.Z)
 end
 
 -- Builds every world from the config, in unlock order (world 1 first).
