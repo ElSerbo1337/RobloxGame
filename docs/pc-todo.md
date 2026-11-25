@@ -1701,3 +1701,22 @@ Handy (**Test → Device** z. B. iPhone 14 Landscape):
 - [ ] Als neuer Spieler steht Grafik auf „Niedrig“ (hervorgehoben). Auf „Hoch“ stellen → bleibt nach Rejoin „Hoch“.
 - [ ] Regler lassen sich mit dem Finger ziehen, ohne dass die Liste dabei scrollt; Menü scrollt auf kleinen Handys, alle Knöpfe ≥ Daumengröße.
 - [ ] Schalter `GameConfig.features.settings = false`: keine Kachel, alles auf Standard (Musik/Effekte 100 %); `codes = false`: Menü ohne Codes-Abschnitt.
+
+## MEGA UPDATE – #106 Spawn-Insel als Marktplatz, Update-Tafel und Weihnachts-Countdown
+
+Die Spawn-Insel hat jetzt Bänke um den Brunnen, 6 Laternen (Weg zur Brücke und neben dem Brunnen), Blumenbeete, eine Tafel „Neu im Update!“ links und ein Countdown-Schild „🎄 Weihnachts-Event startet in X Tagen“ rechts neben dem Spawn. Freigehalten (ohne Bäume/Deko) sind die Plätze für Glücksrad (#98), Händler-Stand (#107) und die zwei neuen Bestenlisten (#109): unsichtbare Anker `Workspace.SpawnIsland.Anchors.WheelAnchor`, `MerchantAnchor`, `Board4Anchor`, `Board5Anchor` (Attribut `ClearRadius`). Fenster „Was ist neu“ einmal pro Spieler. Schalter: `spawnMarketplace` (Tafel), `christmasCountdown`, `whatsNew`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/SpawnIsland.spec.luau`, `tests/SpawnMarket.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Spawn wie gewohnt auf dem gelben Spawn-Feld, Blick zum Brunnen; Tafel und Countdown stehen links/rechts schräg davor, nichts steht im Weg (zum Brunnen, zur Brücke, zum Portal laufen).
+- [ ] Tutorial-Pfeil führt weiter über die Brücke zu Welt 1; Portal auf der Spawn-Insel funktioniert (Reisen in eine freigeschaltete Welt und zurück).
+- [ ] Bänke stehen außerhalb des Brunnen-Rings, Laternen leuchten, Blumen ohne Kollision; die drei Bestenlisten zeigen weiter ihre Einträge.
+- [ ] Im Explorer: `SpawnIsland/Anchors` hat 4 Anker, rundherum (Radius `ClearRadius`) keine Bäume/Deko. Rad-Platz rechts hinten, Händler links hinten, Board4/Board5 links/rechts neben der mittleren Bestenliste – passt dir die Lage? Sonst `GameConfig.islands.spawnLayout.reserved` anpassen.
+- [ ] Tafel: Titel „Neu im Update!“, Liste mit 8 Zeilen lesbar. Mit `Language = en` englisch. Nah ran → Prompt „Lesen“ (E) → Fenster „Was ist neu“ öffnet sich.
+- [ ] Countdown zeigt heute die richtige Zahl (z. B. am 25.11. „in 23 Tagen“), englisch „Christmas event starts in 23 days“. Ab 18.12. ist das Schild weg (nur per Code-Test geprüft; am 17.12. steht „startet morgen!“).
+- [ ] Neuer Spieler (Admin-Panel → **Spielstand zurücksetzen**, Rejoin): Fenster „Was ist neu“ kommt erst nach dem Tutorial und nach dem Login-Kalender (nicht darüber). „Los geht's!“ schließt es; Rejoin → kommt nicht wieder.
+- [ ] Admin-Panel → **„Was ist neu“ wieder zeigen**, Rejoin → Fenster kommt nach ~3 s wieder.
+- [ ] Handy (Device-Emulation): Fenster passt auf den Bildschirm (scrollt notfalls), Knöpfe gut drückbar.
+- [ ] Schalter testen: `spawnMarketplace = false` → Tafel weg; `christmasCountdown = false` → Countdown-Schild weg; `whatsNew = false` → kein Fenster, kein Prompt. Danach wieder `true`.

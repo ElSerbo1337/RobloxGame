@@ -299,8 +299,9 @@ function WorldMap.buildAll(): { Layout }
 end
 
 -- Spawn island: SpawnLocation, pizza fountain, leaderboard boards (a SurfaceGui per
--- panel, filled by LeaderboardService), the trees and the rim. The portal gate is
--- built by PortalService.
+-- panel, filled by LeaderboardService), the marketplace deco (#106), anchors for the
+-- reserved spots, the trees and the rim. The portal gate is built by PortalService,
+-- the update board and countdown texts by SpawnMarketService.
 
 function WorldMap.buildSpawnIsland(): Folder
 	local island = plan.spawnIsland()
@@ -352,6 +353,33 @@ function WorldMap.buildSpawnIsland(): Folder
 			gui.Parent = panel
 		end
 	end
+
+	-- Reserved spots (#106) for the lucky wheel (#98), the merchant stand (#107) and the
+	-- leaderboards Board4/Board5 (#109): invisible anchor parts "<name>Anchor" on the
+	-- ground point (front = local -Z, facing the middle), attribute ClearRadius = studs
+	-- kept free of trees and deco, plus an Attachment "Ground".
+	local anchors = Instance.new("Folder")
+	anchors.Name = "Anchors"
+	for name, station in island.stations do
+		if station.clear then
+			local anchor = part({
+				Name = `{name}Anchor`,
+				Size = Vector3.one,
+				Transparency = 1,
+				CanCollide = false,
+				CanQuery = false,
+				CanTouch = false,
+				CastShadow = false,
+			})
+			anchor.CFrame = IslandBuilder.station(station)
+			anchor:SetAttribute("ClearRadius", station.clear)
+			local ground = Instance.new("Attachment")
+			ground.Name = "Ground"
+			ground.Parent = anchor
+			anchor.Parent = anchors
+		end
+	end
+	anchors.Parent = folder
 	return folder
 end
 

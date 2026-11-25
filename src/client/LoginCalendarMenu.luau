@@ -50,6 +50,15 @@ function LoginCalendarMenu.open()
 	openWindow()
 end
 
+-- Set by start(); true while the window is shown (the "What's new" window waits, #106).
+local isOpen: () -> boolean = function()
+	return false
+end
+
+function LoginCalendarMenu.isOpen(): boolean
+	return isOpen()
+end
+
 local function readCalendar(player: Player): Calendar
 	local json = player:GetAttribute("LoginCalendar")
 	local empty: Calendar = { today = 1, claimable = false, days = {} }
@@ -200,6 +209,9 @@ function LoginCalendarMenu.start()
 		panel.Visible = false
 	end
 	UiKit.registerMenu("calendar", close)
+	isOpen = function()
+		return panel.Visible
+	end
 
 	openWindow = function()
 		sync()

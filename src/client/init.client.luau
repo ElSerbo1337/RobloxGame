@@ -28,6 +28,7 @@ local ShopMenu = require(script.ShopMenu)
 local Sounds = require(script.Sounds)
 local ToppingInput = require(script.ToppingInput)
 local Tutorial = require(script.Tutorial)
+local WhatsNewMenu = require(script.WhatsNewMenu)
 local WorldAmbience = require(script.WorldAmbience)
 
 task.spawn(Lang.stopAutoTranslate)
@@ -44,6 +45,8 @@ PotionMenu.start()
 RebirthMenu.start()
 GiftMenu.start()
 LoginCalendarMenu.start()
+-- "What's new" window (#106): once per player, after the tutorial and the calendar.
+WhatsNewMenu.start()
 DeliveryMenu.start()
 -- Settings menu (#76): side bar tile; graphics Low = fewer particles, hidden decoration.
 SettingsMenu.start()

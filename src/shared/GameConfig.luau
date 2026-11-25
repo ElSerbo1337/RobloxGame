@@ -325,8 +325,21 @@ local GameConfig = {
 
 	-- New HUD buttons that pulse (with a short explanation) until the player opened them
 	-- once; remembered per player (GameRules.markHintSeen): play time gifts (#36) and the
-	-- rebirth button (#35, pulses the first time a rebirth is affordable).
-	hints = { "Gifts", "Rebirth" },
+	-- rebirth button (#35, pulses the first time a rebirth is affordable). Also one-time
+	-- windows: "WhatsNew1" = the "What's new" window of the MEGA UPDATE (#106).
+	hints = { "Gifts", "Rebirth", "WhatsNew1" },
+
+	-- Spawn island as a marketplace (#106): "Neu im Update!" board and "What's new"
+	-- window (shown once per player: the hint `whatsNewHint` is remembered when the
+	-- player closes it), and the Christmas countdown sign. The countdown counts German
+	-- calendar days until `countdownTo` (GameRules.christmasCountdown) and is hidden from
+	-- that day on (the event itself is a later update).
+	spawnMarket = {
+		whatsNewHint = "WhatsNew1",
+		countdownTo = { year = 2026, month = 12, day = 18 },
+		-- Seconds between countdown sign updates on the server.
+		countdownRefreshSeconds = 60,
+	},
 
 	-- Income estimate (GameRules.incomePerMinute): average topping value of the highest
 	-- unlocked world x pizza space x rounds per minute x coin multiplier (pets, rebirths).
@@ -1052,6 +1065,8 @@ local GameConfig = {
 		-- World islands are at most this far from their center (topping field unchanged).
 		worldHalfSize = 100,
 		spawnRadius = 62,
+		-- Most parts the spawn island may have (marketplace deco included, #106).
+		spawnPartBudget = 1000,
 		bridgeLength = 40,
 		bridgeWidth = 12,
 		-- Invisible collision wall around every island and along every bridge.
@@ -1077,12 +1092,31 @@ local GameConfig = {
 			terraces = { { -48, -86, 15, 4 }, { 50, -84, 13, 3 } },
 		},
 		-- Spawn island floor plan (bridge to world 1 leaves at -z).
+		-- Marketplace (#106): update board and Christmas countdown beside the spawn (facing
+		-- it), benches and lanterns around the fountain, and spots kept free for later
+		-- tickets (`reserved`: name -> { x, z, clear radius }; the server puts an invisible
+		-- anchor part "<name>Anchor" there): the lucky wheel (#98), the merchant stand
+		-- (#107) and the two new leaderboards Board4/Board5 (#109) beside the three boards.
 		spawnLayout = {
 			spawn = { 0, 26 },
 			fountain = { 0, 0 },
 			portal = { -34, -12 },
 			boards = { { -30, 20 }, { 0, 42 }, { 30, 20 } },
 			pond = { 38, -8 },
+			updateBoard = { -14, 20 },
+			countdown = { 14, 20 },
+			reserved = {
+				Wheel = { 28, -34, 11 },
+				Merchant = { -26, -38, 10 },
+				Board4 = { -17, 47, 8 },
+				Board5 = { 17, 47, 8 },
+			},
+			-- Benches around the fountain (angle in degrees, x = 0, z = 90) and lanterns
+			-- ({ x, z }, at most 6: each lamp has a light).
+			benchAngles = { 45, 135, 240, 300 },
+			benchRadius = 21.5,
+			lanterns = { { -8, -52 }, { 8, -52 }, { -8, -30 }, { 8, -26 }, { -21.5, 0 }, { 21.5, 0 } },
+			flowerBeds = { { -40, -36 }, { 44, -30 }, { -46, 6 }, { 48, 30 }, { -22, 32 }, { 22, 32 } },
 		},
 		-- Look of each island world (others use PizzeriaGarden). Colours are RGB 0-255.
 		-- Optional per world (defaults = world 1):

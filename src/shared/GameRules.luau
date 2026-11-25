@@ -378,6 +378,12 @@ function GameRules.dayNumber(unixSeconds: number): number
 	return (unixSeconds + offset) // DAY_SECONDS
 end
 
+-- Whole German calendar days from the day of `unixSeconds` (German time, see dayNumber)
+-- until the calendar date `date`: 1 on the day before, 0 on that day, negative after it.
+function GameRules.daysUntil(unixSeconds: number, date: { year: number, month: number, day: number }): number
+	return daysFromCivil(date.year, date.month, date.day) - GameRules.dayNumber(unixSeconds)
+end
+
 function GameRules.new(config: any)
 	local rules = {}
 
@@ -386,6 +392,17 @@ function GameRules.new(config: any)
 	end
 
 	rules.dayNumber = GameRules.dayNumber
+
+	-- Days shown on the Christmas countdown sign on the spawn island (#106): German days
+	-- until config.spawnMarket.countdownTo, or nil from that day on (sign hidden).
+	function rules.christmasCountdown(now: number): number?
+		local market = config.spawnMarket
+		if market == nil or market.countdownTo == nil then
+			return nil
+		end
+		local days = GameRules.daysUntil(now, market.countdownTo)
+		return if days > 0 then days else nil
+	end
 
 	-- MEGA UPDATE feature switch (config.features, #73); missing table or id = on.
 	-- Read directly from the config so the rules stay free of other modules.

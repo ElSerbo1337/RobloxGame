@@ -12,7 +12,7 @@
 --   color     { r, g, b } 0-255, material = Enum.Material name
 --   role      what the part is for: Ground, Cliff, Rim, Wall (invisible), Path, Field,
 --             Water, Waterfall, Terrace, Step, Bridge, Rope, Glow, Gate, Barrier, Landmark,
---             Fountain, Board, Deco
+--             Fountain, Board, Deco, UpdateBoard, Countdown (spawn marketplace signs, #106)
 -- Stations are ground points with a yaw: yaw 0 faces -Z (front = (-sin yaw, 0, -cos yaw)).
 -- Local floor-plan coordinates (GameConfig.islands.layout): x = right of the main path,
 -- z = towards the front, where the bridge arrives.
@@ -31,7 +31,9 @@ export type PartSpec = {
 
 export type ModelSpec = { model: string, width: number, position: { number }, yaw: number, collide: boolean }
 
-export type Station = { position: { number }, yaw: number }
+-- `clear` (spawn island, #106): radius kept free of trees and deco around a spot that a
+-- later ticket builds on (lucky wheel, merchant stand, new leaderboards).
+export type Station = { position: { number }, yaw: number, clear: number? }
 
 export type Island = {
 	-- "spawn", "world" or "event" (event island, #77)
@@ -1525,6 +1527,155 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		}
 	end
 
+	-- ---------------------------------------------------------------- spawn marketplace
+
+	-- Point `x` studs to the right and `z` studs to the back of a station (yaw 0 = -Z).
+	local function offset(p: V, yaw: number, x: number, y: number, z: number): V
+		local c, s = math.cos(yaw), math.sin(yaw)
+		return v(p[1] + c * x + s * z, p[2] + y, p[3] - s * x + c * z)
+	end
+
+	-- Sign on two posts (#106): a cream panel `PanelName` (the server puts the text on its
+	-- front, local -Z) and a coloured title strip `TitleName` on top. All parts carry
+	-- `role`, so the server can hide the whole sign (feature off, countdown over).
+	local function signStand(
+		island: Island,
+		station: Station,
+		prefix: string,
+		role: string,
+		size: { number },
+		stripColor: { number },
+		theme: any
+	)
+		local p, yaw = station.position, station.yaw
+		local width, height = size[1], size[2]
+		local bottom = 2.4
+		for _, side in { -1, 1 } do
+			table.insert(
+				island.parts,
+				disc(
+					offset(p, yaw, side * (width / 2 + 0.2), (bottom + height + 1.2) / 2, 0.2),
+					0.9,
+					bottom + height + 1.2,
+					{
+						name = `{prefix}Post`,
+						color = theme.wood,
+						role = role,
+					}
+				)
+			)
+		end
+		table.insert(
+			island.parts,
+			spec("Block", v(width, height, 0.6), yawed(offset(p, yaw, 0, bottom + height / 2, 0), yaw), {
+				name = `{prefix}Panel`,
+				color = { 255, 248, 230 },
+				role = role,
+			})
+		)
+		table.insert(
+			island.parts,
+			spec("Block", v(width + 1, 1.6, 0.9), yawed(offset(p, yaw, 0, bottom + height + 0.8, 0), yaw), {
+				name = `{prefix}Title`,
+				color = stripColor,
+				role = role,
+			})
+		)
+	end
+
+	-- Wooden bench facing the station's front (seat, backrest, two legs).
+	local function bench(island: Island, p: V, yaw: number, theme: any)
+		local wood = theme.wood
+		table.insert(
+			island.parts,
+			spec("Block", v(5, 0.4, 1.6), yawed(offset(p, yaw, 0, 1.4, 0), yaw), {
+				name = "BenchSeat",
+				color = wood,
+				role = "Deco",
+			})
+		)
+		table.insert(
+			island.parts,
+			spec("Block", v(5, 1.4, 0.3), yawed(offset(p, yaw, 0, 2.3, 0.75), yaw), {
+				name = "BenchBack",
+				color = wood,
+				role = "Deco",
+			})
+		)
+		for _, side in { -1, 1 } do
+			table.insert(
+				island.parts,
+				spec("Block", v(0.4, 1.2, 1.4), yawed(offset(p, yaw, side * 2.1, 0.6, 0), yaw), {
+					name = "BenchLeg",
+					color = theme.cliffDark,
+					role = "Deco",
+				})
+			)
+		end
+	end
+
+	-- Lantern: thin post, glowing lamp (role Glow: the server adds a small light), cap.
+	local function lantern(island: Island, p: V, theme: any)
+		table.insert(
+			island.parts,
+			disc(v(p[1], groundY + 3, p[3]), 0.6, 6, { name = "LanternPost", color = { 70, 60, 55 }, role = "Deco" })
+		)
+		table.insert(
+			island.parts,
+			ball(v(p[1], groundY + 6.6, p[3]), 1.4, {
+				name = "LanternLamp",
+				color = { 255, 214, 140 },
+				material = "Neon",
+				collide = false,
+				role = "Glow",
+			})
+		)
+		table.insert(
+			island.parts,
+			disc(v(p[1], groundY + 7.45, p[3]), 1.6, 0.3, {
+				name = "LanternCap",
+				color = { 70, 60, 55 },
+				collide = false,
+				role = "Deco",
+			})
+		)
+	end
+
+	-- Marketplace on the spawn island (#106): update board, countdown sign, benches around
+	-- the fountain, lanterns, paths to the reserved wheel and merchant spots.
+	local function marketplace(island: Island, layout: any, theme: any)
+		local stations = island.stations
+		local c = island.center
+		signStand(island, stations.UpdateBoard, "UpdateBoard", "UpdateBoard", { 9, 7 }, { 240, 130, 60 }, theme)
+		signStand(island, stations.Countdown, "Countdown", "Countdown", { 9, 3.5 }, { 60, 150, 70 }, theme)
+
+		local f = stations.Fountain.position
+		for _, degrees in layout.benchAngles do
+			local a = math.rad(degrees)
+			local p = v(f[1] + math.cos(a) * layout.benchRadius, groundY, f[3] + math.sin(a) * layout.benchRadius)
+			bench(island, p, facing(f[1] - p[1], f[3] - p[3]), theme)
+		end
+		for _, spot in layout.lanterns do
+			lantern(island, localToWorld(c, spot), theme)
+		end
+
+		-- Short paths from the main path to the wheel and the merchant spot.
+		for i, name in { "Wheel", "Merchant" } do
+			local station = stations[name]
+			local p = station.position
+			local side = if p[1] > c[1] then 1 else -1
+			local stop = (station.clear or 9) - 2
+			plates(
+				island.parts,
+				v(c[1] + side * pathWidth / 2, groundY, p[3]),
+				v(p[1] - side * stop, groundY, p[3]),
+				5.5,
+				theme,
+				60 + i * 10
+			)
+		end
+	end
+
 	-- ---------------------------------------------------------------- spawn island
 
 	function plan.spawnIsland(): Island
@@ -1550,6 +1701,17 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		stations.Fountain = { position = localToWorld(c, layout.fountain), yaw = 0 }
 		local portal = localToWorld(c, layout.portal)
 		stations.Portal = { position = portal, yaw = facing(c[1] - portal[1], c[3] - portal[3]) }
+		-- Update board and Christmas countdown face the spawn (#106); reserved spots face
+		-- the middle of the island.
+		local spawnAt = stations.Spawn.position
+		for name, spot in { UpdateBoard = layout.updateBoard, Countdown = layout.countdown } do
+			local p = localToWorld(c, spot)
+			stations[name] = { position = p, yaw = facing(spawnAt[1] - p[1], spawnAt[3] - p[3]) }
+		end
+		for name, spot in layout.reserved do
+			local p = localToWorld(c, spot)
+			stations[name] = { position = p, yaw = facing(c[1] - p[1], c[3] - p[3]), clear = spot[3] }
+		end
 		for i, spot in layout.boards do
 			local p = localToWorld(c, spot)
 			local yaw = facing(c[1] - p[1], c[3] - p[3])
@@ -1727,7 +1889,7 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 			end
 			for _, station in stations do
 				local p = station.position
-				if math.sqrt((x - p[1]) ^ 2 + (z - p[3]) ^ 2) < r + 9 then
+				if math.sqrt((x - p[1]) ^ 2 + (z - p[3]) ^ 2) < r + (station.clear or 9) then
 					return true
 				end
 			end
@@ -1740,8 +1902,9 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 			end
 			return false
 		end
+		marketplace(island, layout, theme)
 		scatterTrees(island, keepOut, 3, theme)
-		for i, spot in { { -20, -30 }, { 22, -32 }, { -46, 6 }, { 48, 30 }, { -18, 34 }, { 18, 36 } } do
+		for i, spot in layout.flowerBeds do
 			flowers(island, localToWorld(c, spot), 8, 6, theme, i * 11)
 		end
 		return island

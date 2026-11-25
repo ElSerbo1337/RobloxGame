@@ -43,6 +43,10 @@ Texts.strings = {
 	["admin.action.skipDays"] = { de = "Tage vorspulen (7 = Woche)", en = "Skip days (7 = week)" },
 	["admin.action.giveGoldenToppings"] = { de = "Goldene Beläge auf die Pizza", en = "Golden toppings on pizza" },
 	["admin.action.setGoldenChance"] = { de = "Gold-Chance testen (%, 0 = aus)", en = "Test gold chance (%, 0 = off)" },
+	["admin.action.resetWhatsNew"] = {
+		de = "„Was ist neu“ wieder zeigen (Rejoin)",
+		en = 'Show "What\'s new" again (rejoin)',
+	},
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -395,6 +399,25 @@ Texts.strings = {
 	["board.fallbackTitle"] = { de = "Bestenliste", en = "Leaderboard" },
 	["board.loading"] = { de = "Bestenliste lädt …", en = "Leaderboard loading …" },
 	["board.loadingTitled"] = { de = "{title}\nBestenliste lädt …", en = "{title}\nLeaderboard loading …" },
+	-- Spawn marketplace (#106): update board, "What's new" window, Christmas countdown.
+	["whatsNew.title"] = { de = "⭐ Neu im Update! ⭐", en = "⭐ New in this update! ⭐" },
+	["whatsNew.subtitle"] = { de = "MEGA UPDATE 🌊🌴☁️", en = "MEGA UPDATE 🌊🌴☁️" },
+	["whatsNew.list"] = {
+		de = "🌍 15 Welten mit Rebirth-Stufen\n✨ Gold-, Regenbogen- und Shiny-Pets\n📜 Tägliche und wöchentliche Quests\n🎡 Glücksrad mit Gratis-Drehs\n📅 30-Tage-Login-Kalender\n🛒 Reisender Händler\n🏆 Neue Bestenlisten, Abzeichen und Titel\n🌦️ Wetter und Tag-Nacht-Wechsel",
+		en = "🌍 15 worlds with rebirth tiers\n✨ Gold, Rainbow and Shiny pets\n📜 Daily and weekly quests\n🎡 Lucky wheel with free spins\n📅 30-day login calendar\n🛒 Travelling merchant\n🏆 New leaderboards, badges and titles\n🌦️ Weather and day-night cycle",
+	},
+	["whatsNew.ok"] = { de = "Los geht's!", en = "Let's go!" },
+	["whatsNew.prompt"] = { de = "Lesen", en = "Read" },
+	["whatsNew.board"] = { de = "Neu im Update!", en = "New in this update!" },
+	["countdown.title"] = { de = "Bald: Weihnachten 🎅", en = "Coming soon: Christmas 🎅" },
+	["countdown.days"] = {
+		de = "🎄 Weihnachts-Event startet in {days} Tagen",
+		en = "🎄 Christmas event starts in {days} days",
+	},
+	["countdown.tomorrow"] = {
+		de = "🎄 Weihnachts-Event startet morgen!",
+		en = "🎄 Christmas event starts tomorrow!",
+	},
 	["board.empty"] = { de = "Noch keine Einträge", en = "No entries yet" },
 	["board.number"] = { de = "{value}", en = "{value}" },
 	["board.minutes"] = { de = "{minutes} Min.", en = "{minutes} min" },

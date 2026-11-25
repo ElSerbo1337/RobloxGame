@@ -279,6 +279,22 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- "What's new" window (#106) opens again on the next join.
+		id = "resetWhatsNew",
+		feature = "whatsNew",
+		params = {},
+		run = function(env, state)
+			local index = table.find(state.seenHints, env.config.spawnMarket.whatsNewHint)
+			if index == nil then
+				return fail(state, "NotSeen")
+			end
+			local newState = table.clone(state)
+			newState.seenHints = table.clone(state.seenHints)
+			table.remove(newState.seenHints, index)
+			return { ok = true, state = newState }
+		end,
+	},
+	{
 		id = "resetProgress",
 		confirm = true,
 		params = {},

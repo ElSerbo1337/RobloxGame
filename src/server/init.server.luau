@@ -21,6 +21,7 @@ local PotionService = require(script.PotionService)
 local RebirthService = require(script.RebirthService)
 local SettingsService = require(script.SettingsService)
 local ShopService = require(script.ShopService)
+local SpawnMarketService = require(script.SpawnMarketService)
 local SpawnService = require(script.SpawnService)
 local ToppingService = require(script.ToppingService)
 local TutorialService = require(script.TutorialService)
@@ -73,6 +74,8 @@ end
 -- Global leaderboards (#38) on the spawn island's boards; before PlayerStates.start so
 -- every save (also an early leave) submits the scores.
 LeaderboardService.start(spawnIsland)
+-- Spawn marketplace (#106): update board and Christmas countdown texts.
+SpawnMarketService.start(spawnIsland)
 PlayerStates.start()
 PizzaVisual.start()
 for _, world in worlds do

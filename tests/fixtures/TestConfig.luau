@@ -117,7 +117,13 @@ return {
 	-- 0 here keeps the ToppingField draw order of other tests; GoldenToppings.spec sets its own chance.
 	goldenToppings = { chance = 0, valueMultiplier = 10 },
 	-- New HUD buttons that pulse until the player opened them once.
-	hints = { "Gifts", "Rebirth" },
+	hints = { "Gifts", "Rebirth", "WhatsNew1" },
+	-- Spawn marketplace (#106): one-time "What's new" window and the countdown target.
+	spawnMarket = {
+		whatsNewHint = "WhatsNew1",
+		countdownTo = { year = 2026, month = 12, day = 18 },
+		countdownRefreshSeconds = 60,
+	},
 	-- Income estimate: rounds (collect + sell a full pizza) per minute.
 	income = { roundsPerMinute = 2 },
 	-- Play time gifts: reached after `minutes` of play time on a (German) day.

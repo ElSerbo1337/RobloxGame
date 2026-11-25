@@ -9,7 +9,7 @@ local Texts = require("../src/shared/Texts")
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
 local rules = GameRules.new(TestConfig)
-local features = Features.new({ adminPanel = true, luckyWheel = false, goldenToppings = true })
+local features = Features.new({ adminPanel = true, luckyWheel = false, goldenToppings = true, whatsNew = true })
 local admin = AdminActions.new(rules, TestConfig, features)
 
 local NOW = 1_800_000_000
@@ -71,6 +71,7 @@ describe("admin registry", function()
 			"skipDays",
 			"giveGoldenToppings",
 			"setGoldenChance",
+			"resetWhatsNew",
 			"resetProgress",
 		})
 	end)
@@ -283,6 +284,18 @@ describe("admin actions", function()
 		expect(admin.run(ADMIN, result.state, "finishTutorial", {}, ctx).reason).toBe("TutorialDone")
 	end)
 
+	it("resetWhatsNew lets the What's new window open again; refuses when it was not seen (#106)", function()
+		local hint = TestConfig.spawnMarket.whatsNewHint
+		local seen = rules.markHintSeen(rules.newPlayerState(), hint).state
+
+		local result = admin.run(ADMIN, seen, "resetWhatsNew", {}, ctx)
+
+		expect(result.ok).toBe(true)
+		expect(rules.hasSeenHint(result.state, hint)).toBe(false)
+		expect(rules.hasSeenHint(seen, hint)).toBe(true)
+		expect(admin.run(ADMIN, result.state, "resetWhatsNew", {}, ctx).reason).toBe("NotSeen")
+	end)
+
 	it("skipDays makes today's daily things look like they happened days ago", function()
 		local today = rules.dayNumber(NOW)
 		local state = player()
@@ -369,8 +382,11 @@ describe("admin actions for golden toppings (#94)", function()
 	end)
 
 	it("hides both golden actions while the feature is off", function()
-		local offAdmin =
-			AdminActions.new(rules, TestConfig, Features.new({ adminPanel = true, goldenToppings = false }))
+		local offAdmin = AdminActions.new(
+			rules,
+			TestConfig,
+			Features.new({ adminPanel = true, goldenToppings = false, whatsNew = true })
+		)
 
 		expect(table.find(ids(offAdmin.list()), "setGoldenChance")).toBeNil()
 		expect(offAdmin.run(ADMIN, player(), "giveGoldenToppings", { "Salami", 1 }, ctx).reason).toBe("FeatureOff")
