@@ -1634,3 +1634,28 @@ Studio, Rojo verbinden, **Play** (Admin-Panel #74):
 - [ ] Admin: **Rebirths setzen** 2 → Rebirth-Menü zeigt „🌍 Alle Welten sind erreichbar.“ (bis die neuen Welten 8–15 dazukommen; dann z. B. „Öffnet: Dschungel-Tempel, Wüsten-Pyramiden“ bzw. bei 3→4 „Öffnet keine neue Welt. Nächste ab 5 Rebirths: …“).
 - [ ] Welt 1–7 normal spielbar: Beläge sammeln, verkaufen, Shops, Eier, Lieferung in jeder Welt; Output ohne rote Fehler. Keine Event-Insel sichtbar (rechts neben der Spawn-Insel ist leerer Himmel).
 - [ ] `GameConfig.features.rebirthPreview = false` → Welten-Zeile im Rebirth-Menü und in der Bestätigung weg, Rest wie vorher. Danach wieder `true`.
+
+## MEGA UPDATE – #75 Neues HUD: Seitenleiste, glänzende Kacheln, rote Punkte
+
+Neu: Seitenleiste links mit glänzenden Kacheln und Live-3D-Icons (Pets, Tränke, Geschenke, Kalender, Rebirth, Welten), rote Punkte für „hat Neues“, Pizza-Balken oben unter Münzen/Gems, Auto-Sammeln unten Mitte, laufende Tränke unten rechts über dem Sprung-Knopf, Auftrag (und später Boni) oben rechts. Schalter: `GameConfig.features.sideBar`. Stil und API: `docs/ui-style.md` → „Seitenleiste“.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/HudLayout.spec.luau`, `tests/SideBar.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (PC-Ansicht):
+
+- [ ] Links eine Spalte mit 6 Kacheln (Pets, Tränke, Geschenke, Kalender, Rebirth, Welten), senkrecht mittig, nicht unter dem offenen Roblox-Chat (oben links). Jede Kachel: Farbverlauf, dicker dunkler Rand, Glanz oben, leicht schräges 3D-Icon, das sanft hin- und herschwenkt, Beschriftung unten. Output ohne rote Fehler.
+- [ ] 3D-Icons: Pets zeigt den Teig-Hamster und Welten den Portalbogen, wenn die Modelle importiert sind (sonst Ersatzformen: Tierkopf bzw. Steinbogen). Tränke = Flasche, Geschenke = Paket, Kalender = Tischkalender, Rebirth = leuchtende Kugel mit Ring.
+- [ ] Jede Kachel öffnet ihr Menü wie vorher (zweites Tippen schließt es), Drücken federt, Maus darüber vergrößert leicht. Nur ein Menü gleichzeitig offen.
+- [ ] Geschenke-Kachel: Beschriftung zählt bis zum nächsten Geschenk herunter; wenn eins bereit ist („Abholen!“) roter Punkt oben rechts, nach dem Abholen weg. Der „Neu! Geschenke fürs Spielen“-Hinweis steht rechts neben der Kachel. (Zum Beschleunigen: Admin-Panel #74, falls schon da – sonst das erste Geschenk abwarten.)
+- [ ] Kalender-Kachel: als neuer Spieler (Tag 1 offen) roter Punkt; nach „Abholen“ im Kalender weg; Kalender öffnet sich weiter auch aus dem Geschenke-Menü.
+- [ ] Rebirth-Kachel: Rebirth-Zahl (gelb) oben links, sobald Rebirths > 0 (Admin-Panel: Rebirths setzen); „Neu! Mehr Münzen“-Hinweis daneben, wenn ein Rebirth leistbar ist.
+- [ ] Welten-Kachel irgendwo auf der Insel: Weltenliste mit „Zum Reisen in ein Portal stellen“, Knöpfe nicht drückbar. Im Portal: Liste wie gewohnt, Reisen geht. Portal-Menü mit X schließen, Kachel drücken → geht wieder auf und Reisen geht.
+- [ ] Oben Mitte: Münzen, Gems, direkt darunter der Pizza-Balken (kein Überlappen mit der Roblox-Leiste), Meldungen darunter. Unten Mitte Auto-Sammeln, rechts daneben ggf. der Freischalt-Knopf.
+- [ ] Trank trinken: Trank-Anzeige unten rechts (über der Sprung-Knopf-Stelle); Auftrag annehmen: Auftragskarte oben rechts. Beide gleichzeitig: keine Überlappung.
+- [ ] Ei-Vorschau öffnen: rechte Spalte (Tränke + Auftrag) blendet sich aus und kommt danach wieder.
+
+Handy (**Test → Device** z. B. iPhone SE / iPhone 14 Landscape, und ein Tablet):
+
+- [ ] Handy: zwei Spalten mit kleineren Kacheln direkt über dem Joystick; nichts überdeckt Sprung-Knopf, Auftragskarte oder Tränke. Auf sehr kleinen Handys stehen 3 Kacheln + „Mehr“ (⋯); „Mehr“ öffnet ein Fenster mit den übrigen Kacheln, die dort ihre Menüs öffnen; roter Punkt auf „Mehr“, solange eine versteckte Kachel (z. B. Kalender) Neues hat.
+- [ ] Tablet: eine Spalte über dem Joystick-Bereich, nichts im Joystick.
+- [ ] Auf dem Handy flüssig (die 3D-Icons schwenken mit 20 Bildern/s). Falls es ruckelt: `GameConfig.features.sideBar = false` → schlichte runde Knöpfe an denselben Plätzen (dann ohne rote Punkte) und mir Bescheid geben.

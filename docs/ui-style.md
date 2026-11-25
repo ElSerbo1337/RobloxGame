@@ -47,14 +47,14 @@ Jeder Spieler sieht das Spiel in seiner Sprache: Deutsch für deutschsprachige R
 
 ## Formen
 
-- Ecken: `UICorner` 18 px für Knöpfe, 14–24 px für Panels; Seiten-Knöpfe im HUD sind **Kreise** (`UiKit.roundButton`).
+- Ecken: `UICorner` 18 px für Knöpfe, 14–24 px für Panels; die Kacheln der Seitenleiste haben 24 % ihrer Größe als Rundung (siehe „Seitenleiste“).
 - Rand: `UIStroke` 3 px in `DARK` um jeden Knopf und jedes Panel.
-- Keine Bilder-Assets nötig: Icons sind Emojis oder einfache Kreise in Akzentfarbe.
+- Keine Bilder-Assets nötig: Icons sind Live-3D-Ansichten (`ViewportFrame`), Emojis oder einfache Kreise in Akzentfarbe.
 - Münze und Gem überall über `UiKit.coinIcon(parent, größe)` / `UiKit.gemIcon(parent, größe)` (#49): Goldmünze mit Rand und eingeprägter Pizza-Ecke, facettierter türkiser Diamant mit Glanzlicht – nur GUI-Elemente, keine eigenen Kreise/Quadrate mehr.
 
 ## Größen und Touch
 
-- Alles, was man drückt, ist mindestens **60 px** hoch (`UiKit.MIN_TOUCH`), Standard-Knopf 260 × 64, runde HUD-Knöpfe 96 px, Schließen-Knopf 72 × 72.
+- Alles, was man drückt, ist mindestens **60 px** hoch (`UiKit.MIN_TOUCH`), Standard-Knopf 260 × 64, Seitenleisten-Kacheln 60–84 px (Handy 64 px), Schließen-Knopf 72 × 72.
 - Knöpfe reagieren auf **`Activated`** (Maus und Touch), nie auf `MouseButton1Click`.
 - Jede ScreenGui bekommt `UiKit.autoScale` (skaliert 0,7–1,4 je nach Bildschirm).
 - Unten links liegt auf dem Handy der Joystick, unten rechts der Sprung-Knopf: dort keine Knöpfe (Zonen `joystick`/`jump` im HUD-Raster).
@@ -66,14 +66,15 @@ Wo etwas auf dem Bildschirm liegt, steht **an einer Stelle**: `src/shared/HudLay
 | Zone (`HudLayout.zones`) | Inhalt | Helfer |
 | --- | --- | --- |
 | `coins`, `gems` | oben Mitte: Münzen links, Gems rechts der Mitte (Höhe 12–72), knapp unter dem Bildschirmrand: eigene Ebene `Currency` mit `ScreenInsets = DeviceSafeInsets` (ignoriert den Platz der Roblox-Leiste, hält Notches frei) | `UiKit.place` |
-| `toast` | Meldungen direkt darunter (84–124), 380 breit | `UiKit.place` |
+| `pizzaBar` | Pizza-Balken direkt unter Münzen und Gems (80–128, 260 breit), in derselben Ebene `Currency` (#75) | `UiKit.place` |
+| `toast` | Meldungen darunter (136–176), 380 breit | `UiKit.place` |
 | `tutorialCard` | links oben unter dem Roblox-Menü, nie breiter als der Platz links der Münzen | `UiKit.place` |
-| `sideArea` | links: runde Knöpfe in festen Plätzen `pets`, `potions`, `gifts`, `rebirth` (je 96 px); ab halber Bildschirmhöhe (unter dem Roblox-Chat oben links) bis über den Joystick, mindestens eine Knopfreihe hoch; Spalte für Spalte von oben, bei Platzmangel weitere Spalten. Kleine Bildschirme (Handy): `sideAreaSmall`, kleinere Knöpfe (72 px) als 2 × 2-Block direkt über dem Joystick (`joystickSmall`, 180 hoch) | `UiKit.sideButton(slot, text, farbe)` |
-| `pizzaBar`, `autoCollect` | unten Mitte: Pizza-Balken, Auto-Sammeln darüber | `UiKit.place` |
-| `unlockButton` | Freischalt-Knopf rechts neben dem Pizza-Balken, endet vor dem Sprung-Knopf | `UiKit.place` |
-| `rightColumn` | rechts ab Höhe der Meldungen: aktive Tränke (`LayoutOrder` 1), darunter der Auftrag (2); versteckte Teile nehmen keinen Platz, zu hohe Stapel schrumpfen bis über den Sprung-Knopf | `UiKit.rightColumn()` |
+| `sideBar` | Seitenleiste links (#75, siehe „Seitenleiste“): ab 30 % der Höhe (unter dem Roblox-Chat oben links); mit Touch (Tablet) bis über den Joystick, ohne Touch (PC, `sideBarMouse`) bis zum unteren Rand. Kleine Bildschirme (Handy): `sideBarSmall` von unter der Tutorial-Karte bis direkt über den Joystick (`joystickSmall`, 180 hoch) | `SideBar.register{…}` |
+| `autoCollect` | unten Mitte: Auto-Sammeln | `UiKit.place` |
+| `unlockButton` | Freischalt-Knopf rechts neben Auto-Sammeln, endet vor dem Sprung-Knopf | `UiKit.place` |
+| `rightColumn` | rechts ab Höhe 84 bis über den Sprung-Knopf, zwei Stapel (#75): **oben** aktive Boni (`LayoutOrder` 1, z. B. Freunde, Wetter) und der Auftrag (2) über `UiKit.rightColumn()`; **unten** (über dem Sprung-Knopf, wächst nach oben) die laufenden Tränke über `UiKit.potionColumn()`. Versteckte Teile nehmen keinen Platz. Brauchen beide mehr Platz als da ist, schrumpfen sie (`HudLayout.fitStacks`): die Tränke behalten ihre Größe bis zur halben Spalte, der obere Stapel bekommt den Rest – sie überlappen sich nie | `UiKit.rightColumn()`, `UiKit.potionColumn()` |
 | `eggPreview` | Ei-Vorschau-Panel rechts an der Stelle der rechten Spalte (die solange ausgeblendet ist, `UiKit.setRightColumnHidden`): unter der Top-Leiste, nie unter dem Gem-Zähler, bis über den Sprung-Knopf, höchstens 360 breit; Pet-Liste scrollt | `UiKit.placePanel(gui, panel, "eggPreview", größe, minHöhe, Ausrichtung)` |
-| `menuArea` | Menüs: unter Währungen und Meldungen (ab 132), mit Abstand über dem Pizza-Balken | `UiKit.placeMenu(gui, panel, größe, minHöhe?)` |
+| `menuArea` | Menüs: unter Währungen, Pizza-Balken und Meldungen (ab 184), mit Abstand über Auto-Sammeln | `UiKit.placeMenu(gui, panel, größe, minHöhe?)` |
 | Kleiner Bildschirm | Kurze Seite des Viewports unter 500 px (`HudLayout.isSmallScreen`, #55): `menuArea` füllt fast den ganzen Bildschirm (8 px Rand, unter der Roblox-Top-Leiste); Menüs werden nie unter 0,85 skaliert (`MENU_MIN_SCALE`), was nicht passt, scrollt; der Shop zeigt mindestens einen Abschnittskopf plus eine ganze Karte; das Ei-Panel beginnt neben dem Gem-Zähler und ist 300 statt 360 breit | `UiKit.placeMenu`/`UiKit.placePanel` (automatisch) |
 | `joystick`, `jump` | Freihalte-Bereiche des Handys (unten links 260 × 220, unten rechts 180 × 220): dort keine Knöpfe | – |
 
@@ -81,11 +82,42 @@ Koordinaten sind virtuelle Pixel nach `UiKit.autoScale`, unterhalb der Roblox-Le
 
 **Menüs** werden für ihre Wunschgröße gebaut. `UiKit.placeMenu` setzt sie mittig in die Menü-Zone; ist dort zu wenig Platz, wird ein Menü mit Scroll-Liste zuerst niedriger (bis `minHöhe`, z. B. Kopf + eine Zeile) und erst danach verkleinert, alle anderen nur verkleinert (`HudLayout.fitMenu`). Danach füllt das Panel seinen Halter: weiter `panel.Visible` und `UiKit.pop(panel)` benutzen.
 
-**Nur ein Menü gleichzeitig (#53):** Jedes Menü meldet sich mit `UiKit.registerMenu(id, schließen)` an (`schließen` = derselbe Weg wie sein „X“, auch auf einem schon geschlossenen Menü harmlos) und ruft beim Öffnen `UiKit.menuOpened(id)` auf. Dann schließen sich alle anderen offenen Menüs, als hätte man sie selbst geschlossen (Logik: `src/shared/MenuSwitch.luau`, getestet). Angemeldet: `shop`, `portal`, `pets`, `potions`, `gifts`, `rebirth`, `calendar`, `phone`, `eggPreview`. Zonen-Menüs (Shop, Portal, Ei-Vorschau) gehen danach erst wieder auf, wenn man die Zone verlässt und neu betritt. Neue Menüs melden sich genauso an.
+**Nur ein Menü gleichzeitig (#53):** Jedes Menü meldet sich mit `UiKit.registerMenu(id, schließen)` an (`schließen` = derselbe Weg wie sein „X“, auch auf einem schon geschlossenen Menü harmlos) und ruft beim Öffnen `UiKit.menuOpened(id)` auf. Dann schließen sich alle anderen offenen Menüs, als hätte man sie selbst geschlossen (Logik: `src/shared/MenuSwitch.luau`, getestet). Angemeldet: `shop`, `portal`, `pets`, `potions`, `gifts`, `rebirth`, `calendar`, `phone`, `eggPreview`, `more` (Mehr-Fenster der Seitenleiste). Zonen-Menüs (Shop, Portal, Ei-Vorschau) gehen danach erst wieder auf, wenn man die Zone verlässt und neu betritt. Neue Menüs melden sich genauso an.
 
-**Neue HUD-Teile:** zuerst eine Zone (oder einen Platz in `SIDE_SLOTS`) in `HudLayout` ergänzen, den Test um das Teil erweitern, dann über UiKit platzieren.
+**Neue HUD-Teile:** zuerst eine Zone in `HudLayout` ergänzen, den Test um das Teil erweitern, dann über UiKit platzieren. Neue Menüs brauchen keine Zone: sie tragen sich in die Seitenleiste ein.
 
-Kein Shop- und kein Teleport-Knopf im HUD – Shops und Portale betritt man in der Welt.
+## Seitenleiste (#75)
+
+Alle Menüs öffnet man über glänzende Kacheln in der Seitenleiste links (`src/client/SideBar.luau`, Reihenfolge/Überlauf/rote Punkte rein in `src/shared/SideBarModel.luau`, Plätze in `HudLayout.sideBarGrid` – beides in Lune getestet).
+
+**Ein Menü eintragen (eine Zeile):**
+
+```lua
+local SideBar = require(script.Parent.SideBar)
+
+local button = SideBar.register({
+	id = "quests",                 -- eindeutig, nicht "more"
+	order = 70,                    -- Platz: kleiner = weiter oben/links
+	text = Lang.t("side.quests"),  -- Beschriftung unter dem Icon
+	color = UiKit.GREEN,           -- Kachelfarbe
+	icon = { model = "Pizza", shape = "quest" }, -- 3D-Modell, sonst Ersatzform
+	open = toggleQuestMenu,        -- beim Tippen (auch aus dem Mehr-Fenster)
+})
+SideBar.setBadge("quests", true)   -- roter Punkt an/aus („hat Neues“), geht auch vor register
+SideBar.setCaption("quests", "2/3") -- Beschriftung ändern, nil = wieder `text`
+```
+
+`open` schaltet das Menü um (offen → zu, zu → auf) und ruft beim Öffnen wie jedes Menü `UiKit.menuOpened(id)` auf. `register` liefert den Knopf der Kachel (z. B. für einen „Neu!“-Hinweis mit `UiKit.placeSideNote`). Vergeben (`order`): `pets` 10, `potions` 20, `gifts` 30, `calendar` 40, `rebirth` 50, `worlds` 60; neue Menüs nehmen freie Zahlen (Vorschlag: Quests 70, Glücksrad 80, Index 90, Profil 100, Einstellungen 200).
+
+**Rote Punkte:** Ein Menü meldet „hat Neues“ mit `SideBar.setBadge(id, true)` und nimmt ihn zurück, sobald es nichts mehr gibt (nicht beim bloßen Öffnen). Heute: Geschenk abholbereit, Kalender-Belohnung offen. Geplant: Quest fertig, Gratis-Dreh, Verschmelzen möglich. Liegt eine Kachel im Mehr-Fenster, bekommt „Mehr“ den Punkt.
+
+**Aussehen einer Kachel:** abgerundetes Quadrat (Rundung 24 %) in der Kachelfarbe (20 % aufgehellt), senkrechter Verlauf hell → 68 % dunkler, 4 px `DARK`-Rand, weicher weißer Glanz über der oberen Hälfte, darin ein leicht schräges (10°), sanft hin- und herschwenkendes **Live-3D-Icon** (`src/client/TileIcon.luau`: `ViewportFrame` mit dem Modell aus `ModelLibrary`, fehlt es, eine einfache Ersatzform aus Teilen – `pet`, `potion`, `gift`, `calendar`, `rebirth`, `portal`, `gear`, `wheel`, `quest`, `star`, `more`; neue Formen in `TileIcon.SHAPES`), unten die Beschriftung in `CREAM` mit dunklem Text-Rand. Drücken federt (0,88 → 1 mit Back-Easing), Maus darüber vergrößert leicht. Roter Punkt: Kreis oben rechts (30 % der Kachel), `RED` mit `DARK`-Rand und Glanzpunkt, pulsiert. Oben links ist Platz für eine Zahl (z. B. Rebirths in `COIN`).
+
+**Plätze:** PC und Tablet: eine Spalte, senkrecht mittig; Kacheln 84 px, bei vielen Menüs bis 60 px kleiner, erst dann weitere Spalten (höchstens 3). Handy: zwei Spalten mit 64-px-Kacheln, Zeile für Zeile, der Block sitzt direkt über dem Joystick. Passen nicht alle Kacheln, wird der letzte Platz zu **„Mehr“** (⋯) und öffnet ein Fenster mit den übrigen Kacheln (kleinstes Handy 950 × 450: 3 Kacheln + Mehr; übliches Handy 1100 × 520: alle 6).
+
+**Schalter:** `GameConfig.features.sideBar = false` → schlichte runde Knöpfe mit Text an denselben Plätzen, keine 3D-Icons, keine roten Punkte (falls die Viewports auf schwachen Handys ruckeln).
+
+Kein Shop- und kein Teleport-Knopf im HUD – Shops und Portale betritt man in der Welt. Die Kachel „Welten“ zeigt die Weltenliste nur zum Anschauen; reisen kann man weiter nur im Portal.
 
 ## Bewegung und Rückmeldung
 
