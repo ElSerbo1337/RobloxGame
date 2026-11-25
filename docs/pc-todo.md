@@ -1499,8 +1499,8 @@ Dein Spielstand war vorher gesichert (`backup_24nov_player_372358501`) und ist d
 
 Im veröffentlichten Spiel blieb alles Deutsch, obwohl im Roblox-Menü die Spielsprache auf Englisch (USA) stand: Das Spiel las nur die Sprache des Roblox-Kontos. Jetzt zählt zuerst die im Menü gewählte Spielsprache (`Player.LocaleId`). Beim Umstellen während des Spiels erscheint der Hinweis „Language changed – rejoin to apply it.“ (in der neuen Sprache); nach dem Neu-Beitreten ist alles in der neuen Sprache.
 
-- [ ] Veröffentlichtes Spiel: Spielsprache im Roblox-Menü auf Englisch → Hinweis erscheint → Spiel verlassen und neu beitreten → alles Englisch.
-- [ ] Zurück auf Deutsch → Hinweis auf Deutsch → neu beitreten → alles Deutsch.
+- [x] Veröffentlichtes Spiel: Spielsprache im Roblox-Menü auf Englisch → Hinweis erscheint → Spiel verlassen und neu beitreten → alles Englisch. _(25.11.: vom User getestet)_
+- [x] Zurück auf Deutsch → Hinweis auf Deutsch → neu beitreten → alles Deutsch. _(25.11.: vom User getestet)_
 
 ## #67 Englisch 2: Sprach-Baustein, HUD und Meldungen
 
