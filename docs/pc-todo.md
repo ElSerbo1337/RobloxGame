@@ -1912,3 +1912,29 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] `GameConfig.features.worldDeco = false` → Insel ohne Korallen/Säulen/Seetang/Blasen/Lampen (Tempel, Riff und Stationen bleiben), keine Fehler. Danach wieder `true`.
 - [ ] Nach Import: Pets/Ei/Beläge zeigen die Modelle (Ei-Vorschau-Bilder, Pet-Menü, Feld).
 - [ ] Musik: im Creator Store eine Unterwasser-Musik (Creator „Roblox“) wählen und die ID bei `Music_Atlantis` eintragen.
+
+## MEGA UPDATE – #83 Welt 9 Dschungel-Tempel
+
+Zweite neue Welt nach dem Atlantis-Muster: dunkelgrüne Dschungel-Insel mit bemoosten Steinblöcken als Rand, Lianen-Hängebrücke, **Stufentempel** hinten links (3 Stufen, Treppe zum Weg hin, Schrein mit leuchtendem Jade-Stein, Moos und Lianen), Dschungelbäume mit hängenden Lianen, Farne, bemooste Ruinen-Säulen, Stein-Götzenköpfe, Fackel-Lampen, **Glühwürmchen** und **Bodennebel** (alles per Skript, ~325 Teile, kein Import nötig). 3 Beläge (Mango, Kakaobohne, Drachenfrucht), Dschungel-Ei (Muster „Lianen“) mit 6 Pets (Kakao-Frosch, Mango-Tukan, Lianen-Faultier, Glühwürmchen-Chamäleon, Drachenfrucht-Jaguar, Jade-Tempelschlange), Geheim-Pet Goldener Affenkönig, Dschungel-Shop. Braucht **3 Rebirths** + 700 Mio Münzen (vorläufig, #108). Wetter „Tropenregen“ nur in der Config (#105). Musik `Music_JungleTemple` hat noch **keine ID**. **Platz für die geheime Truhe (#100):** unsichtbarer Anker `SecretChestAnchor` (im Ordner `Anchors` der Insel) auf der Tempel-Terrasse **hinter** dem Tempel. Vorschau: `assets/previews/worlds/JungleTemple.png`, Insel: `assets/previews/islands/World9_*.jpg`.
+
+Vorher: `lune run test` → alle grün (u. a. `WorldDeco.spec` „jungle temple deco (#83)“, `WorldModels.spec`).
+
+**Modelle importieren** (eine Datei für die ganze Welt):
+
+- [ ] **Home → Import 3D** → `assets/models/worlds/JungleTemple.fbx` → *Rig Type* = **No Rig** → **Import**, das Model `JungleTemple` nach `ReplicatedStorage → GameAssets → Models → Worlds` ziehen. Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.JungleTemple:GetChildren())` → **11** (`Mango`, `CocoaBean`, `DragonFruit`, `CocoaFrog`, `MangoToucan`, `VineSloth`, `FireflyChameleon`, `DragonFruitJaguar`, `JadeTempleSerpent`, `GoldenMonkeyKing`, `JungleEgg`).
+
+Ohne Import läuft alles mit Platzhaltern (Scheiben, Kugeln, Platzhalter-Ei).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Output ohne rote Fehler beim Start (Insel 9 wird gebaut, auch ohne Import).
+- [ ] Admin-Panel → **Rebirths setzen** 3 → **Welt freischalten** bis Atlantis → zum Tor des Dschungel-Tempels: Preisschild 700 Mio, mit **Münzen geben** kaufen → Tor offen. Mit 2 Rebirths: „Ab 3 Rebirths“.
+- [ ] Insel ansehen: bemooster Steinrand, Lianen-Brücke, Stufentempel mit Treppe (begehbar) und leuchtendem Jade-Stein, Bäume mit Lianen, Farne, Säulen, Götzenköpfe (zwei mit leuchtenden Augen), 3 orange Lampen, Glühwürmchen schweben, leichter Nebel am Boden (nicht zu dicht – sonst `Mist`-Rate in `IslandBuilder` senken). Nichts auf Weg/Feld/vor Stationen; man bleibt nur an Stämmen, Säulen, Götzen und Lampen hängen.
+- [ ] Hinter dem Tempel (vom Weg aus nicht sichtbar): im Explorer `Workspace → … JungleTemple → Anchors → SecretChestAnchor` auswählen – liegt auf der Terrasse, frei von Deko (Attribut `ClearRadius` = 6).
+- [ ] Beläge Mango/Kakaobohne/Drachenfrucht sammeln, verkaufen; Namen de/en.
+- [ ] Dschungel-Ei (ein Stand): 6 Pets + „??? (Geheim)“, öffnen; **Geheim-Pet geben** → Welt Dschungel-Tempel → Goldener Affenkönig.
+- [ ] Dschungel-Shop, Portal (Teleport), Telefon/Lieferwagen mit Dschungel-Belägen.
+- [ ] Grafik **Niedrig** → Lianen, Farn-Zusatzblätter, Götzen-Augen/-Moos, Lampen-Kugeln weg, weniger Glühwürmchen/Nebel; **Hoch** → alles wieder da.
+- [ ] Handy: Bildrate auf der Dschungel-Insel ok.
+- [ ] `GameConfig.features.worldDeco = false` → keine Bäume/Farne/Ruinen/Glühwürmchen/Nebel (Tempel, Rand, Stationen bleiben), keine Fehler; danach wieder `true`.
+- [ ] Musik: Dschungel-/Abenteuer-Musik (Creator „Roblox“) wählen, ID bei `Music_JungleTemple` eintragen.
