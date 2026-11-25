@@ -28,12 +28,26 @@ local function inside(inner: Rect, outer: Rect): boolean
 		and inner.y + inner.h <= outer.y + outer.h + 0.001
 end
 
-local function forEachScreen(fn: (layout: HudLayout.Layout, label: string, small: boolean) -> ())
+-- Every screen with touch (joystick and jump button kept free); normal screens also
+-- without touch (PC: the side bar reaches lower).
+local function forEachScreen(fn: (layout: HudLayout.Layout, label: string, small: boolean, touch: boolean) -> ())
 	for _, screen in SCREENS do
 		local small = screen[3] == true
-		fn(HudLayout.resolve(screen[1], screen[2], small), `{screen[1]}x{screen[2]}`, small)
+		fn(HudLayout.resolve(screen[1], screen[2], small, true), `{screen[1]}x{screen[2]}`, small, true)
+		if not small then
+			fn(HudLayout.resolve(screen[1], screen[2], small, false), `{screen[1]}x{screen[2]} (mouse)`, small, false)
+		end
 	end
 end
+
+-- Side bar tiles for `count` registered menus (the last place is "More" on overflow).
+local function sideTiles(layout: HudLayout.Layout, small: boolean, count: number): { Rect }
+	return HudLayout.sideBarGrid(layout.sideBar, count, small).places
+end
+
+-- Today's menus on the bar (pets, potions, gifts, calendar, rebirth, worlds) and room
+-- for the later MEGA UPDATE menus (quests, wheel, index, profile, settings, ...).
+local TILE_COUNTS = { 1, 4, 6, 8, 12 }
 
 local function fixedElements(layout: HudLayout.Layout): { [string]: Rect }
 	local elements = {
@@ -46,31 +60,39 @@ local function fixedElements(layout: HudLayout.Layout): { [string]: Rect }
 		unlockButton = layout.unlockButton,
 		rightColumn = layout.rightColumn,
 	}
-	for name, rect in layout.sideSlots do
-		elements["side:" .. name] = rect
+	return elements
+end
+
+local function withTiles(elements: { [string]: Rect }, layout: HudLayout.Layout, small: boolean, count: number)
+	for index, rect in sideTiles(layout, small, count) do
+		elements[`tile{index}`] = rect
 	end
 	return elements
 end
 
 describe("HUD layout", function()
 	it("keeps every HUD element on screen", function()
-		forEachScreen(function(layout, label)
+		forEachScreen(function(layout, label, small)
 			local screen = { x = 0, y = 0, w = layout.screen.w, h = layout.screen.h }
-			for name, rect in fixedElements(layout) do
-				if not inside(rect, screen) then
-					error(`{name} leaves the screen on {label}`)
+			for _, count in TILE_COUNTS do
+				for name, rect in withTiles(fixedElements(layout), layout, small, count) do
+					if not inside(rect, screen) then
+						error(`{name} leaves the screen on {label} with {count} tiles`)
+					end
 				end
 			end
 		end)
 	end)
 
 	it("never lets two HUD elements overlap", function()
-		forEachScreen(function(layout, label)
-			local elements = fixedElements(layout)
-			for nameA, a in elements do
-				for nameB, b in elements do
-					if nameA < nameB and overlaps(a, b) then
-						error(`{nameA} overlaps {nameB} on {label}`)
+		forEachScreen(function(layout, label, small)
+			for _, count in TILE_COUNTS do
+				local elements = withTiles(fixedElements(layout), layout, small, count)
+				for nameA, a in elements do
+					for nameB, b in elements do
+						if nameA < nameB and overlaps(a, b) then
+							error(`{nameA} overlaps {nameB} on {label} with {count} tiles`)
+						end
 					end
 				end
 			end
@@ -78,43 +100,69 @@ describe("HUD layout", function()
 	end)
 
 	it("puts no button into the phone joystick or jump button area", function()
-		forEachScreen(function(layout, label)
-			local buttons = { autoCollect = layout.autoCollect, unlockButton = layout.unlockButton }
-			for name, rect in layout.sideSlots do
-				buttons["side:" .. name] = rect
-			end
-			for name, rect in buttons do
-				if overlaps(rect, layout.joystick) or overlaps(rect, layout.jump) then
-					error(`{name} lies in the joystick/jump area on {label}`)
+		forEachScreen(function(layout, label, small, touch)
+			for _, count in TILE_COUNTS do
+				local buttons = withTiles(
+					{ autoCollect = layout.autoCollect, unlockButton = layout.unlockButton },
+					layout,
+					small,
+					count
+				)
+				for name, rect in buttons do
+					local inJoystick = touch and overlaps(rect, layout.joystick)
+					if inJoystick or overlaps(rect, layout.jump) then
+						error(`{name} lies in the joystick/jump area on {label} with {count} tiles`)
+					end
 				end
 			end
 		end)
 	end)
 
 	it("keeps buttons at least thumb sized", function()
-		forEachScreen(function(layout, label)
-			local buttons = { autoCollect = layout.autoCollect, unlockButton = layout.unlockButton }
-			for name, rect in layout.sideSlots do
-				buttons["side:" .. name] = rect
-			end
-			for name, rect in buttons do
-				if rect.w < HudLayout.MIN_TOUCH or rect.h < HudLayout.MIN_TOUCH then
-					error(`{name} is smaller than a thumb on {label}`)
+		forEachScreen(function(layout, label, small)
+			for _, count in TILE_COUNTS do
+				local buttons = withTiles(
+					{ autoCollect = layout.autoCollect, unlockButton = layout.unlockButton },
+					layout,
+					small,
+					count
+				)
+				for name, rect in buttons do
+					if rect.w < HudLayout.MIN_TOUCH or rect.h < HudLayout.MIN_TOUCH then
+						error(`{name} is smaller than a thumb on {label} with {count} tiles`)
+					end
 				end
 			end
 		end)
 	end)
 
-	it("places the unlock button right of the pizza bar, not on auto-collect", function()
+	it("puts coins, gems and the pizza bar together at the top centre", function()
 		forEachScreen(function(layout)
-			expect(layout.unlockButton.x >= layout.pizzaBar.x + layout.pizzaBar.w).toBe(true)
-			expect(overlaps(layout.unlockButton, layout.autoCollect)).toBe(false)
+			local middle = layout.screen.w / 2
+			expect(layout.pizzaBar.x + layout.pizzaBar.w / 2).toBe(middle)
+			expect(layout.pizzaBar.y >= layout.coins.y + layout.coins.h).toBe(true)
+			expect(layout.pizzaBar.y >= layout.gems.y + layout.gems.h).toBe(true)
+			expect(layout.toast.y >= layout.pizzaBar.y + layout.pizzaBar.h).toBe(true)
+		end)
+	end)
+
+	it("places the unlock button right of auto-collect at the bottom", function()
+		forEachScreen(function(layout)
+			expect(layout.unlockButton.x >= layout.autoCollect.x + layout.autoCollect.w).toBe(true)
+			expect(layout.autoCollect.y + layout.autoCollect.h).toBe(layout.screen.h - HudLayout.MARGIN)
 		end)
 	end)
 
 	it("keeps the potion pills and the order card above the jump button", function()
 		forEachScreen(function(layout)
 			expect(overlaps(layout.rightColumn, layout.jump)).toBe(false)
+		end)
+	end)
+
+	it("keeps the right column clear of the pizza bar and the gems counter", function()
+		forEachScreen(function(layout)
+			expect(overlaps(layout.rightColumn, layout.pizzaBar)).toBe(false)
+			expect(overlaps(layout.rightColumn, layout.gems)).toBe(false)
 		end)
 	end)
 
@@ -126,67 +174,77 @@ describe("HUD layout", function()
 		end)
 	end)
 
-	it("keeps the side buttons in slot order: pets, potions, gifts, rebirth", function()
-		forEachScreen(function(layout)
-			local slots = layout.sideSlots
-			-- Column-wise: the next slot is below, or starts a new column further right.
-			local order = { slots.pets, slots.potions, slots.gifts, slots.rebirth }
-			for i = 2, #order do
-				local before, after = order[i - 1], order[i]
-				expect(after.y > before.y or after.x > before.x).toBe(true)
-			end
-		end)
-	end)
-
-	it("puts the side buttons below the chat: from half height down to the joystick", function()
-		forEachScreen(function(layout, label, small)
+	it("starts the side bar below the Roblox chat on normal screens", function()
+		forEachScreen(function(layout, label, small, touch)
 			if small then
-				-- Phones: a 2 x 2 block right above the joystick (see the next test).
 				return
 			end
-			local area, h = layout.sideArea, layout.screen.h
-			-- Half height, unless that leaves no room for one row of buttons.
-			local top = math.min(h * 0.5, layout.joystick.y - HudLayout.SIDE_BUTTON)
-			if area.y < top - 0.001 then
-				error(`side area starts above half height on {label}`)
+			local area = layout.sideBar
+			expect(area.x).toBe(HudLayout.MARGIN)
+			if area.y < layout.screen.h * 0.3 - 0.001 then
+				error(`side bar starts too high on {label}`)
 			end
-			expect(area.y + area.h <= layout.joystick.y + 0.001).toBe(true)
 			expect(area.y >= layout.tutorialCard.y + layout.tutorialCard.h).toBe(true)
+			if touch then
+				expect(area.y + area.h <= layout.joystick.y + 0.001).toBe(true)
+			else
+				expect(area.y + area.h <= layout.screen.h - HudLayout.MARGIN + 0.001).toBe(true)
+			end
 		end)
 	end)
 
-	it("stacks the side buttons as a 2 x 2 block above the joystick on small screens", function()
+	it("shows today's six menus in one column on a PC", function()
+		for _, screen in { { 1157, 600 }, { 1371, 730 }, { 2743, 1500 } } do
+			local layout = HudLayout.resolve(screen[1], screen[2], false, false)
+			local grid = HudLayout.sideBarGrid(layout.sideBar, 6, false)
+			expect(grid.columns).toBe(1)
+			expect(grid.overflow).toBe(false)
+			expect(#grid.places).toBe(6)
+		end
+	end)
+
+	it("uses two columns right above the joystick on small screens", function()
 		forEachScreen(function(layout, label, small)
 			if not small then
 				return
 			end
-			local slots = layout.sideSlots
-			-- Column-wise: pets over potions, gifts over rebirth.
-			expect(slots.potions.x).toBe(slots.pets.x)
-			expect(slots.rebirth.x).toBe(slots.gifts.x)
-			expect(slots.gifts.y).toBe(slots.pets.y)
-			expect(slots.rebirth.y).toBe(slots.potions.y)
-			expect(slots.gifts.x > slots.pets.x).toBe(true)
-			expect(slots.potions.y > slots.pets.y).toBe(true)
-			local area = layout.sideArea
-			expect(area.y + area.h <= layout.joystick.y + 0.001).toBe(true)
+			local area = layout.sideBar
+			expect(area.y + area.h).toBe(layout.screen.h - HudLayout.JOYSTICK_SMALL_HEIGHT)
 			if area.y < layout.tutorialCard.y + layout.tutorialCard.h - 0.001 then
-				error(`side block reaches into the tutorial card on {label}`)
+				error(`side bar reaches into the tutorial card on {label}`)
 			end
+			local grid = HudLayout.sideBarGrid(area, 6, true)
+			expect(grid.columns).toBe(2)
+			local places = grid.places
+			-- Row by row: first tile left, second right of it, the third below the first.
+			expect(places[2].y).toBe(places[1].y)
+			expect(places[2].x > places[1].x).toBe(true)
+			expect(places[3].x).toBe(places[1].x)
+			expect(places[3].y > places[1].y).toBe(true)
+			-- The block ends right above the joystick.
+			local last = places[#places]
+			expect(last.y + last.h).toBe(area.y + area.h)
 		end)
 	end)
 
-	it("keeps all four side buttons inside the side area, wrapping into more columns", function()
-		forEachScreen(function(layout, label)
-			for _, name in HudLayout.SIDE_SLOTS do
-				local slot = layout.sideSlots[name]
-				if not inside(slot, layout.sideArea) then
-					error(`side:{name} leaves the side area on {label}`)
+	it("keeps every tile inside the side bar, and the bar clear of the bottom middle", function()
+		forEachScreen(function(layout, label, small)
+			for _, count in TILE_COUNTS do
+				for index, rect in sideTiles(layout, small, count) do
+					if not inside(rect, layout.sideBar) then
+						error(`tile {index} leaves the side bar on {label} with {count} tiles`)
+					end
 				end
 			end
+			expect(layout.sideBar.x + layout.sideBar.w < layout.autoCollect.x).toBe(true)
 		end)
-		local small = HudLayout.resolve(950, 450).sideSlots
-		expect(small.potions.x > small.pets.x).toBe(true)
+	end)
+
+	it("fits today's six menus without a More tile on phones that are not the smallest", function()
+		local layout = HudLayout.resolve(1100, 520, true)
+		local grid = HudLayout.sideBarGrid(layout.sideBar, 6, true)
+		expect(grid.overflow).toBe(false)
+		expect(#grid.places).toBe(6)
 	end)
 
 	it("puts the egg preview panel on the right, clear of the top bar and the jump button", function()
@@ -225,18 +283,18 @@ describe("HUD layout", function()
 		end)
 	end)
 
-	it("starts menus below the currencies and messages and ends them above the pizza bar", function()
+	it("starts menus below the top bar and ends them above auto-collect", function()
 		forEachScreen(function(layout, label, small)
 			if small then
 				return
 			end
-			for _, name in { "coins", "gems", "toast", "pizzaBar" } do
+			for _, name in { "coins", "gems", "toast", "pizzaBar", "autoCollect" } do
 				if overlaps(layout.menuArea, (layout :: any)[name]) then
 					error(`menu area overlaps {name} on {label}`)
 				end
 			end
 			expect(layout.menuArea.y >= layout.toast.y + layout.toast.h).toBe(true)
-			expect(layout.menuArea.y + layout.menuArea.h <= layout.pizzaBar.y).toBe(true)
+			expect(layout.menuArea.y + layout.menuArea.h <= layout.autoCollect.y).toBe(true)
 		end)
 	end)
 
@@ -350,5 +408,91 @@ describe("menu fit", function()
 		local fit = HudLayout.fitMenu(1000, 400, nil, 400, 100, 0.5)
 
 		expect(fit).toEqual({ scale = 0.4, height = 250, content = 400 })
+	end)
+end)
+
+describe("side bar grid", function()
+	local area = { x = 16, y = 100, w = 272, h = 500 }
+
+	it("puts few tiles in one centred column at full size", function()
+		local grid = HudLayout.sideBarGrid(area, 3, false)
+
+		expect(grid.columns).toBe(1)
+		expect(grid.tile).toBe(HudLayout.SIDE_BAR.tile)
+		expect(#grid.places).toBe(3)
+		local blockH = 3 * grid.tile + 2 * grid.gap
+		expect(grid.places[1].y).toBe(area.y + (area.h - blockH) / 2)
+		expect(grid.places[2].y).toBe(grid.places[1].y + grid.tile + grid.gap)
+	end)
+
+	it("shrinks the tiles before it starts a second column", function()
+		local grid = HudLayout.sideBarGrid(area, 6, false)
+
+		expect(grid.columns).toBe(1)
+		expect(grid.tile < HudLayout.SIDE_BAR.tile).toBe(true)
+		expect(grid.tile >= HudLayout.SIDE_BAR.minTile).toBe(true)
+	end)
+
+	it("starts more columns, filled top to bottom, when one column is too long", function()
+		local grid = HudLayout.sideBarGrid(area, 12, false)
+
+		expect(grid.columns).toBe(2)
+		expect(grid.rows).toBe(6)
+		expect(grid.places[7].x > grid.places[1].x).toBe(true)
+		expect(grid.places[7].y).toBe(grid.places[1].y)
+		expect(grid.overflow).toBe(false)
+	end)
+
+	it("hides the rest behind a More place when even the last column is full", function()
+		local short = { x = 16, y = 100, w = 272, h = 150 }
+		local grid = HudLayout.sideBarGrid(short, 12, false)
+
+		expect(grid.overflow).toBe(true)
+		expect(#grid.places).toBe(grid.capacity)
+		expect(grid.capacity < 12).toBe(true)
+	end)
+
+	it("fills phones row by row in two columns and overflows into More", function()
+		local phone = { x = 16, y = 124, w = 136, h = 146 }
+		local grid = HudLayout.sideBarGrid(phone, 6, true)
+
+		expect(grid.columns).toBe(2)
+		expect(grid.capacity).toBe(4)
+		expect(grid.overflow).toBe(true)
+		expect(#grid.places).toBe(4)
+		expect(grid.places[4].y + grid.places[4].h).toBe(phone.y + phone.h)
+	end)
+
+	it("keeps few phone tiles in one row right above the joystick", function()
+		local phone = { x = 16, y = 124, w = 136, h = 300 }
+		local grid = HudLayout.sideBarGrid(phone, 2, true)
+
+		expect(grid.rows).toBe(1)
+		expect(grid.places[1].y + grid.tile).toBe(phone.y + phone.h)
+	end)
+end)
+
+describe("right column stacks", function()
+	it("keeps both stacks at full size when they fit", function()
+		expect(HudLayout.fitStacks(150, 72, 300, 8)).toEqual({ top = 1, bottom = 1 })
+	end)
+
+	it("never lets the stacks overlap, keeping the potions up to half the room", function()
+		for _, case in { { 200, 64, 138 }, { 200, 208, 138 }, { 400, 400, 300 }, { 50, 300, 200 } } do
+			local fit = HudLayout.fitStacks(case[1], case[2], case[3], 8)
+			local used = case[1] * fit.top + case[2] * fit.bottom + 8
+			if used > case[3] + 0.001 then
+				error(`stacks {case[1]} + {case[2]} overlap in {case[3]}`)
+			end
+		end
+		-- One potion pill keeps its size on a small phone; the order card shrinks.
+		local fit = HudLayout.fitStacks(200, 64, 138, 8)
+		expect(fit.bottom).toBe(1)
+		expect(fit.top < 1).toBe(true)
+	end)
+
+	it("lets a lone stack use the whole column", function()
+		expect(HudLayout.fitStacks(0, 400, 200, 8)).toEqual({ top = 1, bottom = 0.5 })
+		expect(HudLayout.fitStacks(400, 0, 200, 8)).toEqual({ top = 0.5, bottom = 1 })
 	end)
 end)
