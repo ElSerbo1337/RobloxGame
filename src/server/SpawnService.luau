@@ -8,12 +8,16 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
 local WorldMap = require(script.Parent.WorldMap)
 
 local CHECK_SECONDS = 0.5
 
 local SpawnService = {}
+
+-- First visit of a world (#79): the rules mark the intro as seen, the client plays it.
+local worldIntro = Net.event("WorldIntro")
 
 local indexById: { [string]: number } = {}
 for index, world in GameConfig.worlds do
@@ -25,7 +29,9 @@ end
 local placed: { [Player]: Model } = {}
 
 -- Asks the rules to remember `worldId` as the player's respawn world (portals call this
--- right after teleporting). Locked or unknown worlds are refused by the rules.
+-- right after teleporting). Locked or unknown worlds are refused by the rules. On the
+-- first entry of a world the rules also mark its intro as seen (saved with the state)
+-- and the client is told to play it (#79).
 function SpawnService.enterWorld(player: Player, worldId: string)
 	local state = PlayerStates.get(player)
 	if state == nil then
@@ -34,6 +40,9 @@ function SpawnService.enterWorld(player: Player, worldId: string)
 	local result = PlayerStates.rules.enterWorld(state, worldId)
 	if result.ok and result.state ~= state then
 		PlayerStates.set(player, result.state)
+	end
+	if result.ok and result.intro then
+		worldIntro:FireClient(player, worldId)
 	end
 end
 

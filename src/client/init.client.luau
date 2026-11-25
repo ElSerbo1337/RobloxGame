@@ -31,6 +31,7 @@ local ToppingInput = require(script.ToppingInput)
 local Tutorial = require(script.Tutorial)
 local WhatsNewMenu = require(script.WhatsNewMenu)
 local WorldAmbience = require(script.WorldAmbience)
+local WorldIntro = require(script.WorldIntro)
 
 task.spawn(Lang.stopAutoTranslate)
 SignTexts.start()
@@ -58,6 +59,8 @@ task.spawn(EggPreview.start)
 task.spawn(PetFollow.start)
 task.spawn(SignCulling.start)
 task.spawn(Tutorial.start)
+-- Camera flight on the first visit of a world (#79).
+task.spawn(WorldIntro.start)
 -- Golden toppings (#94): glitter on toppings that are golden for this player.
 if Features.new(GameConfig.features).enabled("goldenToppings") then
 	GoldenGlitter.start()

@@ -55,6 +55,7 @@ for _, name in { "ClaimGift", "GiftResult", "HintSeen", "ClaimLoginReward", "Log
 end
 Net.event("AdminRun")
 Net.event("AdminResult")
+Net.event("WorldIntro")
 for _, name in { "SetSetting", "RedeemCode", "CodeResult" } do
 	Net.event(name)
 end

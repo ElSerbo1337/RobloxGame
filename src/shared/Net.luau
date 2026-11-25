@@ -55,6 +55,9 @@
 --                                    answer to RedeemCode (#99); reason is shown as `codes.<reason>`
 -- SecretAnnounce  server -> client  (playerName: string, petId: string)  someone (on any server) hatched
 --                                    a Secret pet (#81): show the banner
+-- WorldIntro      server -> client  (worldId: string)            first visit of this world (#79): play the
+--                                    camera flight with the world name and its new toppings (once per world,
+--                                    already marked as seen on the server)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -126,6 +129,7 @@ local EVENTS = {
 	RedeemCode = true,
 	CodeResult = true,
 	SecretAnnounce = true,
+	WorldIntro = true,
 }
 
 local Net = {}
