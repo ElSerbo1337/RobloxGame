@@ -406,6 +406,70 @@ local GameConfig = {
 		{ rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },
 	},
 
+	-- Daily and weekly quests (#97, GameRules "Quests"). Daily: `dailyCount` quests per German
+	-- day, each paying one of `dailyRewards` (drawn when the quest is made); all of them
+	-- done = bonus chest; `freeRerolls` rerolls a day, then `rerollGems` each. Bonus chests
+	-- on `streakDays` days in a row = streak chest. Weekly: `weeklyCount` bigger quests,
+	-- new ones on Monday 00:00 German time. Gem budget: ~3 x 8 x 1/2 + 20 + 100/7 = ~46 a day
+	-- from dailies, ~13 a day from weeklies.
+	-- `kinds`: the pool, drawn without repeats inside a set. Goal = base + perWorld x (index
+	-- of the highest unlocked world - 1); EarnCoins: `incomeMinutes` x the income per minute
+	-- (rules.incomePerMinute). `feature`: only drawn while that switch is on; `minWorld`:
+	-- only from that world index on. Kinds whose progress source does not exist yet
+	-- (SpinWheel #98, OpenChest #100) are only drawn once GameRules.QUEST_SOURCES lists them.
+	quests = {
+		dailyCount = 3,
+		weeklyCount = 3,
+		dailyRewards = {
+			{ kind = "Gems", amount = 8, weight = 1 },
+			{ kind = "Potion", amount = 1, weight = 1 },
+		},
+		weeklyRewards = {
+			{ kind = "Gems", amount = 30, weight = 1 },
+		},
+		bonusRewards = { { kind = "Gems", amount = 20 }, { kind = "Potion", amount = 1 } },
+		freeRerolls = 1,
+		rerollGems = 10,
+		streakDays = 7,
+		-- `potionId`: that potion (Mega, #new potions); a random one while it does not exist.
+		streakRewards = { { kind = "Gems", amount = 100 }, { kind = "Potion", amount = 1, potionId = "Mega" } },
+		kinds = {
+			{ id = "CollectToppings", daily = { base = 60, perWorld = 20 }, weekly = { base = 400, perWorld = 120 } },
+			{ id = "SellPizzas", daily = { base = 10, perWorld = 2 }, weekly = { base = 60, perWorld = 12 } },
+			{ id = "OpenEggs", daily = { base = 3, perWorld = 1 }, weekly = { base = 20, perWorld = 5 } },
+			{ id = "Deliveries", daily = { base = 2, perWorld = 0 }, weekly = { base = 10, perWorld = 1 } },
+			{ id = "EarnCoins", daily = { incomeMinutes = 10 }, weekly = { incomeMinutes = 60 } },
+			{ id = "PlayMinutes", daily = { base = 15, perWorld = 0 }, weekly = { base = 120, perWorld = 0 } },
+			{
+				id = "MergePets",
+				feature = "petMerge",
+				daily = { base = 1, perWorld = 0 },
+				weekly = { base = 3, perWorld = 0 },
+			},
+			{
+				id = "GoldenToppings",
+				feature = "goldenToppings",
+				daily = { base = 2, perWorld = 0 },
+				weekly = { base = 10, perWorld = 1 },
+			},
+			{
+				id = "SpinWheel",
+				feature = "luckyWheel",
+				daily = { base = 2, perWorld = 0 },
+				weekly = { base = 10, perWorld = 0 },
+			},
+			{
+				id = "OpenChest",
+				feature = "hiddenChests",
+				minWorld = 3,
+				daily = { base = 1, perWorld = 0 },
+				weekly = { base = 4, perWorld = 0 },
+			},
+			-- Daily only, and only while the next world is in reach (rebirths); see rules.
+			{ id = "UnlockWorld", daily = { base = 1, perWorld = 0 } },
+		},
+	},
+
 	-- Potions: bought with gems at a shop's gem counter, kept in the potion inventory and
 	-- drunk from there. Each runs `durationSeconds` of play time (it pauses while offline);
 	-- drinking the same kind again adds its duration to the time left.

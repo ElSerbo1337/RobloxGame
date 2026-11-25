@@ -86,7 +86,54 @@ export type PlayerState = {
 	wheelDay: number,
 	wheelFreeUsed: number,
 	wheelSpins: number,
+	-- Quests (#97). Daily: the German day the daily quests were made for (0 = never),
+	-- the quests, rerolls used on that day, whether the bonus chest was claimed. Streak:
+	-- bonus chests claimed on days in a row (`questStreak`, last one on `questStreakDay`).
+	-- Weekly: the German day the weekly quests were made on (their week runs from the
+	-- Monday before it) and the quests. All kept on rebirth.
+	questDay: number,
+	dailyQuests: { Quest },
+	questRerolls: number,
+	questBonusClaimed: boolean,
+	questStreak: number,
+	questStreakDay: number,
+	questWeekDay: number,
+	weeklyQuests: { Quest },
 }
+
+-- One quest (#97): kind (config.quests.kinds id), goal and progress (PlayMinutes counts
+-- minutes, may be fractional), the reward drawn when it was made, claimed or not.
+export type Quest = { kind: string, goal: number, progress: number, reward: Reward, claimed: boolean }
+
+-- A quest as shown in the quest menu: "Running" | "Ready" (done, not claimed) | "Claimed".
+export type QuestEntry = {
+	index: number,
+	kind: string,
+	goal: number,
+	progress: number,
+	reward: Reward,
+	status: string,
+}
+
+export type QuestStatus = {
+	daily: { QuestEntry },
+	weekly: { QuestEntry },
+	-- Gems the next reroll costs (0 = free).
+	rerollPrice: number,
+	-- "Waiting" (not all dailies done) | "Ready" | "Claimed"; with its rewards.
+	bonus: { status: string, rewards: { Reward } },
+	-- Bonus chests in a row (0..days), the days needed and the streak chest.
+	streak: { days: number, goal: number, rewards: { Reward } },
+	-- Quests done but not claimed, plus 1 for a ready bonus chest (red dot).
+	readyCount: number,
+	-- Seconds until the next daily / weekly quests (German midnight, Monday 00:00).
+	dailySecondsLeft: number,
+	weeklySecondsLeft: number,
+}
+
+-- Claiming the bonus chest: `streak` = bonus chests in a row now, `streakChest` = the
+-- streak chest was paid with it (its rewards are part of `rewards`).
+export type QuestBonusResult = RewardsResult & { streak: number, streakChest: boolean }
 
 export type Delivery = { call: Order?, order: Order?, nextCallAt: number? }
 
@@ -145,6 +192,8 @@ export type Result = {
 	-- | "LoginClaimed" | "CalendarShown"
 	-- | "UnknownSetting" | "InvalidValue"
 	-- | "FeatureOff" | "UnknownVariant" | "MaxVariant" | "NotEnoughPets"
+	-- | "UnknownQuest" | "UnknownQuestKind" | "QuestsExpired" | "QuestNotDone" | "QuestClaimed"
+	-- | "QuestDone" | "BonusNotReady" | "BonusClaimed" | "NoOtherQuest"
 	reason: string?,
 	state: PlayerState,
 }
@@ -465,6 +514,22 @@ function GameRules.daysUntil(unixSeconds: number, date: { year: number, month: n
 	return daysFromCivil(date.year, date.month, date.day) - GameRules.dayNumber(unixSeconds)
 end
 
+-- Quest kinds (#97) whose progress is reported somewhere in the rules; only these are
+-- drawn. Built in: addQuestProgress in the matching actions. A later feature (lucky
+-- wheel #98: "SpinWheel", hidden chests #100: "OpenChest") adds its kind here once its
+-- rule action calls rules.questProgress, so quests for missing features never appear.
+GameRules.QUEST_SOURCES = {
+	CollectToppings = true,
+	SellPizzas = true,
+	OpenEggs = true,
+	Deliveries = true,
+	EarnCoins = true,
+	PlayMinutes = true,
+	MergePets = true,
+	GoldenToppings = true,
+	UnlockWorld = true,
+} :: { [string]: boolean }
+
 function GameRules.new(config: any)
 	local rules = {}
 
@@ -496,6 +561,10 @@ function GameRules.new(config: any)
 		local upgrade = config.upgrades[upgradeId]
 		return upgrade ~= nil and featureOn(upgrade.feature)
 	end
+
+	-- Quest progress (#97), defined in the quest section below; changes `newState` (a copy
+	-- the calling action already made) in place.
+	local addQuestProgress: (newState: PlayerState, kind: string, amount: number) -> ()
 
 	function rules.newPlayerState(): PlayerState
 		return {
@@ -535,6 +604,14 @@ function GameRules.new(config: any)
 			wheelDay = 0,
 			wheelFreeUsed = 0,
 			wheelSpins = 0,
+			questDay = 0,
+			dailyQuests = {},
+			questRerolls = 0,
+			questBonusClaimed = false,
+			questStreak = 0,
+			questStreakDay = 0,
+			questWeekDay = 0,
+			weeklyQuests = {},
 		}
 	end
 
@@ -659,6 +736,7 @@ function GameRules.new(config: any)
 		newState.coins = state.coins - (world.unlockPrice or 0)
 		newState.unlockedWorlds = table.clone(state.unlockedWorlds)
 		table.insert(newState.unlockedWorlds, worldId)
+		addQuestProgress(newState, "UnlockWorld", 1)
 		return { ok = true, state = newState }
 	end
 
@@ -1027,6 +1105,10 @@ function GameRules.new(config: any)
 			newState.pizzaGolden[toppingId] = (newState.pizzaGolden[toppingId] or 0) + 1
 		end
 		advanceTutorial(newState, "CollectToppings")
+		addQuestProgress(newState, "CollectToppings", 1)
+		if golden then
+			addQuestProgress(newState, "GoldenToppings", 1)
+		end
 		return { ok = true, state = newState }
 	end
 
@@ -1090,6 +1172,7 @@ function GameRules.new(config: any)
 		end
 		newState.dailyPlaytimeSeconds += seconds
 		newState.totalPlaytimeSeconds = state.totalPlaytimeSeconds + seconds
+		addQuestProgress(newState, "PlayMinutes", seconds / 60)
 		return { ok = true, state = newState }
 	end
 
@@ -1367,6 +1450,10 @@ function GameRules.new(config: any)
 			end
 		end
 		advanceTutorial(newState, "SellPizza")
+		addQuestProgress(newState, "SellPizzas", 1)
+		if earned > 0 then
+			addQuestProgress(newState, "EarnCoins", earned)
+		end
 		return {
 			ok = true,
 			state = newState,
@@ -1643,6 +1730,7 @@ function GameRules.new(config: any)
 			table.insert(drawn, pet)
 		end
 		advanceTutorial(newState, "OpenEgg")
+		addQuestProgress(newState, "OpenEggs", count)
 		return { ok = true, state = newState, pets = drawn }
 	end
 
@@ -2265,6 +2353,10 @@ function GameRules.new(config: any)
 			newState.potions = table.clone(state.potions)
 			newState.potions[reward.potionId] = rules.potionCount(state, reward.potionId) + reward.amount
 		end
+		addQuestProgress(newState, "Deliveries", 1)
+		if reward.reward == "Coins" and reward.amount > 0 then
+			addQuestProgress(newState, "EarnCoins", reward.amount)
+		end
 		return { ok = true, state = newState, reward = reward }
 	end
 
@@ -2653,7 +2745,455 @@ function GameRules.new(config: any)
 				table.insert(newState.equipped, pet.uid)
 			end
 		end
+		addQuestProgress(newState, "MergePets", 1)
 		return { ok = true, state = newState, pet = pet, consumed = consumed }
+	end
+
+	-- Quests (#97) ------------------------------------------------------------------
+	-- Daily quests per German day (dayNumber), weekly quests per week from Monday 00:00
+	-- German time. Progress comes from the rule actions themselves (addQuestProgress in
+	-- addTopping, sellPizza, openEggs, deliverOrder, addPlayTime, mergePets, unlockWorld);
+	-- later features report theirs with rules.questProgress (see GameRules.QUEST_SOURCES).
+	-- New quests are made by refreshQuests (the server calls it on join and every few
+	-- seconds); until then progress may still land on yesterday's quests, which cannot be
+	-- claimed any more (QuestsExpired).
+
+	local questConfig = config.quests
+
+	local function questKindOf(kindId: string): any
+		if questConfig == nil then
+			return nil
+		end
+		for _, kind in questConfig.kinds do
+			if kind.id == kindId then
+				return kind
+			end
+		end
+		return nil
+	end
+
+	local function periodOn(period: string): boolean
+		return questConfig ~= nil and featureOn(if period == "Weekly" then "weeklyQuests" else "dailyQuests")
+	end
+
+	-- German day number of the Monday that starts the week of `day` (day 0 = Thursday).
+	local function mondayOf(day: number): number
+		return day - (day + 3) % 7
+	end
+
+	-- 2 significant digits (12345 -> 12000), at least 1.
+	local function roundGoal(value: number): number
+		if value < 100 then
+			return math.max(1, math.floor(value + 0.5))
+		end
+		local scale = 10 ^ (math.floor(math.log10(value)) - 1)
+		return math.floor(value / scale + 0.5) * scale
+	end
+
+	local function worldIndexOf(state: PlayerState): number
+		local index = 1
+		for i, world in config.worlds do
+			if rules.isWorldUnlocked(state, world.id) then
+				index = i
+			end
+		end
+		return index
+	end
+
+	local function questGoal(state: PlayerState, spec: any): number
+		if spec.incomeMinutes then
+			return roundGoal(math.max(50, rules.incomePerMinute(state) * spec.incomeMinutes))
+		end
+		return roundGoal(spec.base + (spec.perWorld or 0) * (worldIndexOf(state) - 1))
+	end
+
+	-- Whether the next world (after the highest unlocked one) exists and its rebirths are reached.
+	local function nextWorldInReach(state: PlayerState): boolean
+		local nextWorld = config.worlds[worldIndexOf(state) + 1]
+		return nextWorld ~= nil
+			and not rules.isWorldUnlocked(state, nextWorld.id)
+			and rules.hasRebirthsFor(state, nextWorld.id)
+	end
+
+	-- Kinds that may be drawn now for `period` ("Daily" | "Weekly"), in config order.
+	function rules.questPool(state: PlayerState, period: string): { string }
+		local pool = {}
+		if questConfig == nil then
+			return pool
+		end
+		local key = if period == "Weekly" then "weekly" else "daily"
+		for _, kind in questConfig.kinds do
+			local usable = kind[key] ~= nil
+				and GameRules.QUEST_SOURCES[kind.id] == true
+				and featureOn(kind.feature)
+				and worldIndexOf(state) >= (kind.minWorld or 1)
+				and (kind.id ~= "UnlockWorld" or nextWorldInReach(state))
+			if usable then
+				table.insert(pool, kind.id)
+			end
+		end
+		return pool
+	end
+
+	local function drawReward(options: { any }, random: () -> number): Reward
+		local option = if #options == 1 then options[1] else drawWeighted(options, random)
+		local reward: Reward = { kind = option.kind, amount = option.amount }
+		if option.kind == "Potion" then
+			reward.potionId = if option.potionId and config.potions[option.potionId]
+				then option.potionId
+				else randomPotionId(random)
+		end
+		return reward
+	end
+
+	local function newQuest(state: PlayerState, period: string, kindId: string, random: () -> number): Quest
+		local kind = questKindOf(kindId)
+		local weekly = period == "Weekly"
+		return {
+			kind = kindId,
+			goal = questGoal(state, if weekly then kind.weekly else kind.daily),
+			progress = 0,
+			reward = drawReward(if weekly then questConfig.weeklyRewards else questConfig.dailyRewards, random),
+			claimed = false,
+		}
+	end
+
+	-- `count` quests of different kinds from the pool (fewer if the pool is smaller).
+	local function drawQuests(state: PlayerState, period: string, count: number, random: () -> number): { Quest }
+		local pool = rules.questPool(state, period)
+		local quests = {}
+		for _ = 1, math.min(count, #pool) do
+			local pick = table.remove(pool, math.min(#pool, 1 + math.floor(random() * #pool))) :: string
+			table.insert(quests, newQuest(state, period, pick, random))
+		end
+		return quests
+	end
+
+	-- Makes new daily quests on a new German day and new weekly quests in a new week
+	-- (or both with `force`, admin "Quests neu würfeln"). Fails with "Unchanged" when the
+	-- current ones are still valid (or both quest features are off).
+	function rules.refreshQuests(state: PlayerState, now: number, random: () -> number, force: boolean?): Result
+		local today = rules.dayNumber(now)
+		local newState: PlayerState? = nil
+		if periodOn("Daily") and (force or state.questDay ~= today) then
+			newState = table.clone(state)
+			local fresh = newState :: PlayerState
+			fresh.questDay = today
+			fresh.questRerolls = 0
+			fresh.questBonusClaimed = false
+			fresh.dailyQuests = drawQuests(state, "Daily", questConfig.dailyCount, random)
+		end
+		local weekStale = state.questWeekDay == 0 or mondayOf(state.questWeekDay) ~= mondayOf(today)
+		if periodOn("Weekly") and (force or weekStale) then
+			local fresh = newState or table.clone(state)
+			fresh.questWeekDay = today
+			fresh.weeklyQuests = drawQuests(state, "Weekly", questConfig.weeklyCount, random)
+			newState = fresh
+		end
+		if newState == nil then
+			return fail(state, "Unchanged")
+		end
+		return { ok = true, state = newState }
+	end
+
+	local function questsField(period: string): string
+		return if period == "Weekly" then "weeklyQuests" else "dailyQuests"
+	end
+
+	local function questsValid(state: PlayerState, period: string, now: number): boolean
+		local today = rules.dayNumber(now)
+		if period == "Weekly" then
+			return state.questWeekDay ~= 0 and mondayOf(state.questWeekDay) == mondayOf(today)
+		end
+		return state.questDay == today
+	end
+
+	addQuestProgress = function(newState: PlayerState, kind: string, amount: number)
+		for _, field in { "dailyQuests", "weeklyQuests" } do
+			local quests: { Quest } = (newState :: any)[field]
+			if quests == nil then
+				continue
+			end
+			local changed: { Quest }? = nil
+			for index, quest in quests do
+				if quest.kind == kind and not quest.claimed and quest.progress < quest.goal then
+					changed = changed or table.clone(quests)
+					local updated = table.clone(quest)
+					updated.progress = math.min(quest.goal, quest.progress + amount);
+					(changed :: { Quest })[index] = updated
+				end
+			end
+			if changed then
+				(newState :: any)[field] = changed
+			end
+		end
+	end
+
+	-- Progress for a quest kind from outside the built-in actions (lucky wheel #98,
+	-- hidden chests #100: call it inside the rule action, e.g.
+	-- `newState = rules.questProgress(newState, "SpinWheel", 1).state`, and list the kind in
+	-- GameRules.QUEST_SOURCES). Always ok for a known kind and a positive amount; the state
+	-- only changes when a running quest of that kind exists.
+	function rules.questProgress(state: PlayerState, kind: string, amount: number): Result
+		if questKindOf(kind) == nil then
+			return fail(state, "UnknownQuestKind")
+		end
+		if type(amount) ~= "number" or not (amount > 0 and amount < math.huge) then
+			return fail(state, "InvalidAmount")
+		end
+		local newState = table.clone(state)
+		addQuestProgress(newState, kind, amount)
+		if newState.dailyQuests == state.dailyQuests and newState.weeklyQuests == state.weeklyQuests then
+			return { ok = true, state = state }
+		end
+		return { ok = true, state = newState }
+	end
+
+	local function questEntries(quests: { Quest }): { QuestEntry }
+		local entries = {}
+		for index, quest in quests do
+			table.insert(entries, {
+				index = index,
+				kind = quest.kind,
+				goal = quest.goal,
+				progress = quest.progress,
+				reward = table.clone(quest.reward),
+				status = if quest.claimed then "Claimed" elseif quest.progress >= quest.goal then "Ready" else "Running",
+			})
+		end
+		return entries
+	end
+
+	-- Bonus chests in a row as of `today`: a claim today or yesterday keeps the series
+	-- (a full series starts over the day after), anything older breaks it.
+	local function questStreakOn(state: PlayerState, today: number): number
+		if questConfig == nil then
+			return 0
+		end
+		if state.questStreakDay == today then
+			return state.questStreak
+		elseif state.questStreakDay == today - 1 then
+			return state.questStreak % questConfig.streakDays
+		end
+		return 0
+	end
+
+	local function allDailiesDone(state: PlayerState): boolean
+		if #state.dailyQuests == 0 then
+			return false
+		end
+		for _, quest in state.dailyQuests do
+			if quest.progress < quest.goal then
+				return false
+			end
+		end
+		return true
+	end
+
+	-- Seconds from `now` until the German day `day` begins (0:00 German time).
+	local function secondsUntilDay(now: number, day: number): number
+		-- Midnight German time is 23:00 or 22:00 UTC of the day before.
+		for _, offset in { 3600, 7200 } do
+			local start = day * DAY_SECONDS - offset
+			if rules.dayNumber(start) == day and rules.dayNumber(start - 1) == day - 1 then
+				return math.max(0, start - now)
+			end
+		end
+		return math.max(0, day * DAY_SECONDS - 3600 - now)
+	end
+
+	-- Everything the quest menu shows, for the German day of `now`. Outdated quests
+	-- (before refreshQuests ran) are left out.
+	function rules.questStatus(state: PlayerState, now: number): QuestStatus
+		local today = rules.dayNumber(now)
+		local daily = if periodOn("Daily") and questsValid(state, "Daily", now)
+			then questEntries(state.dailyQuests)
+			else {}
+		local weekly = if periodOn("Weekly") and questsValid(state, "Weekly", now)
+			then questEntries(state.weeklyQuests)
+			else {}
+		local readyCount = 0
+		for _, list in { daily, weekly } do
+			for _, entry in list do
+				if entry.status == "Ready" then
+					readyCount += 1
+				end
+			end
+		end
+		local bonusStatus = "Waiting"
+		if #daily > 0 and state.questBonusClaimed then
+			bonusStatus = "Claimed"
+		elseif #daily > 0 and allDailiesDone(state) then
+			bonusStatus = "Ready"
+			readyCount += 1
+		end
+		local free = questConfig ~= nil and state.questDay == today and state.questRerolls < questConfig.freeRerolls
+		return {
+			daily = daily,
+			weekly = weekly,
+			rerollPrice = if questConfig == nil or free or state.questDay ~= today then 0 else questConfig.rerollGems,
+			bonus = {
+				status = bonusStatus,
+				rewards = if questConfig then previewRewards(questConfig.bonusRewards) else {},
+			},
+			streak = {
+				days = questStreakOn(state, today),
+				goal = if questConfig then questConfig.streakDays else 0,
+				rewards = if questConfig then previewRewards(questConfig.streakRewards) else {},
+			},
+			readyCount = readyCount,
+			dailySecondsLeft = secondsUntilDay(now, today + 1),
+			weeklySecondsLeft = secondsUntilDay(now, mondayOf(today) + 7),
+		}
+	end
+
+	-- Pays drawn quest rewards (potion already chosen) into `newState` (a copy).
+	local function payQuestRewards(newState: PlayerState, rewards: { Reward })
+		newState.potions = table.clone(newState.potions)
+		for _, reward in rewards do
+			if reward.kind == "Gems" then
+				newState.gems += reward.amount
+			elseif reward.kind == "Potion" and reward.potionId then
+				newState.potions[reward.potionId] = (newState.potions[reward.potionId] or 0) + reward.amount
+			end
+		end
+	end
+
+	-- Claims the reward of a finished quest (`period` "Daily" | "Weekly", `index` 1..n).
+	function rules.claimQuest(state: PlayerState, period: string, index: number, now: number): RewardsResult
+		local function reject(reason: string): RewardsResult
+			return { ok = false, reason = reason, state = state, rewards = {} }
+		end
+		if period ~= "Daily" and period ~= "Weekly" then
+			return reject("UnknownQuest")
+		end
+		if not periodOn(period) then
+			return reject("FeatureOff")
+		end
+		local field = questsField(period)
+		local quests: { Quest } = (state :: any)[field]
+		local quest = if type(index) == "number" then quests[index] else nil
+		if quest == nil then
+			return reject("UnknownQuest")
+		end
+		if not questsValid(state, period, now) then
+			return reject("QuestsExpired")
+		end
+		if quest.claimed then
+			return reject("QuestClaimed")
+		end
+		if quest.progress < quest.goal then
+			return reject("QuestNotDone")
+		end
+		local newState = table.clone(state)
+		local updated = table.clone(quest)
+		updated.claimed = true
+		local list = table.clone(quests)
+		list[index] = updated;
+		(newState :: any)[field] = list
+		local rewards = { table.clone(quest.reward) }
+		payQuestRewards(newState, rewards)
+		return { ok = true, state = newState, rewards = rewards }
+	end
+
+	-- Replaces an unfinished daily quest by another kind (not one of today's): free
+	-- `freeRerolls` times a day, then `rerollGems` gems each.
+	function rules.rerollQuest(state: PlayerState, index: number, now: number, random: () -> number): Result
+		if not periodOn("Daily") then
+			return fail(state, "FeatureOff")
+		end
+		local quest = if type(index) == "number" then state.dailyQuests[index] else nil
+		if quest == nil then
+			return fail(state, "UnknownQuest")
+		end
+		if not questsValid(state, "Daily", now) then
+			return fail(state, "QuestsExpired")
+		end
+		if quest.claimed or quest.progress >= quest.goal then
+			return fail(state, "QuestDone")
+		end
+		local pool = {}
+		for _, kindId in rules.questPool(state, "Daily") do
+			local taken = false
+			for _, other in state.dailyQuests do
+				taken = taken or other.kind == kindId
+			end
+			if not taken then
+				table.insert(pool, kindId)
+			end
+		end
+		if #pool == 0 then
+			return fail(state, "NoOtherQuest")
+		end
+		local price = if state.questRerolls < questConfig.freeRerolls then 0 else questConfig.rerollGems
+		if state.gems < price then
+			return fail(state, "NotEnoughGems")
+		end
+		local pick = pool[math.min(#pool, 1 + math.floor(random() * #pool))]
+		local newState = table.clone(state)
+		newState.gems = state.gems - price
+		newState.questRerolls = state.questRerolls + 1
+		newState.dailyQuests = table.clone(state.dailyQuests)
+		newState.dailyQuests[index] = newQuest(state, "Daily", pick, random)
+		return { ok = true, state = newState }
+	end
+
+	-- Bonus chest once all daily quests of today are done (claimed or not), once a day.
+	-- Counts the streak; the `streakDays`-th chest in a row adds the streak chest.
+	function rules.claimQuestBonus(state: PlayerState, now: number, random: () -> number): QuestBonusResult
+		local function reject(reason: string): QuestBonusResult
+			return { ok = false, reason = reason, state = state, rewards = {}, streak = 0, streakChest = false }
+		end
+		if not periodOn("Daily") then
+			return reject("FeatureOff")
+		end
+		if not questsValid(state, "Daily", now) then
+			return reject("QuestsExpired")
+		end
+		if state.questBonusClaimed then
+			return reject("BonusClaimed")
+		end
+		if not allDailiesDone(state) then
+			return reject("BonusNotReady")
+		end
+		local today = rules.dayNumber(now)
+		local streak = questStreakOn(state, today) + 1
+		local rewards = {}
+		for _, spec in questConfig.bonusRewards do
+			table.insert(rewards, drawReward({ spec }, random))
+		end
+		local streakChest = streak >= questConfig.streakDays
+		if streakChest then
+			for _, spec in questConfig.streakRewards do
+				table.insert(rewards, drawReward({ spec }, random))
+			end
+		end
+		local newState = table.clone(state)
+		newState.questBonusClaimed = true
+		newState.questStreak = streak
+		newState.questStreakDay = today
+		payQuestRewards(newState, rewards)
+		return { ok = true, state = newState, rewards = rewards, streak = streak, streakChest = streakChest }
+	end
+
+	-- Admin panel: finishes a quest at once (progress = goal; claiming stays manual).
+	function rules.completeQuest(state: PlayerState, period: string, index: number): Result
+		local field = questsField(period)
+		local quests: { Quest } = (state :: any)[field]
+		local quest = if type(index) == "number" then quests[index] else nil
+		if quest == nil then
+			return fail(state, "UnknownQuest")
+		end
+		if quest.claimed or quest.progress >= quest.goal then
+			return fail(state, "QuestDone")
+		end
+		local newState = table.clone(state)
+		local list = table.clone(quests)
+		local updated = table.clone(quest)
+		updated.progress = quest.goal
+		list[index] = updated;
+		(newState :: any)[field] = list
+		return { ok = true, state = newState }
 	end
 
 	-- Adds `count` pets (admin panel, #74/#80) with an optional variant and shiny flag,

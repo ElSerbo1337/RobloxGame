@@ -169,6 +169,34 @@ return {
 			},
 		},
 	},
+	-- Quests (#97): small numbers so tests can finish them quickly.
+	quests = {
+		dailyCount = 3,
+		weeklyCount = 2,
+		dailyRewards = {
+			{ kind = "Gems", amount = 8, weight = 1 },
+			{ kind = "Potion", amount = 1, weight = 1 },
+		},
+		weeklyRewards = { { kind = "Gems", amount = 30, weight = 1 } },
+		bonusRewards = { { kind = "Gems", amount = 20 }, { kind = "Potion", amount = 1 } },
+		freeRerolls = 1,
+		rerollGems = 10,
+		streakDays = 3,
+		streakRewards = { { kind = "Gems", amount = 100 }, { kind = "Potion", amount = 1, potionId = "Speed" } },
+		kinds = {
+			{ id = "CollectToppings", daily = { base = 4, perWorld = 2 }, weekly = { base = 20, perWorld = 10 } },
+			{ id = "SellPizzas", daily = { base = 2, perWorld = 1 }, weekly = { base = 10, perWorld = 0 } },
+			{ id = "OpenEggs", daily = { base = 1, perWorld = 1 } },
+			{ id = "Deliveries", daily = { base = 1, perWorld = 0 } },
+			{ id = "EarnCoins", daily = { incomeMinutes = 10 } },
+			{ id = "PlayMinutes", daily = { base = 5, perWorld = 0 } },
+			{ id = "MergePets", feature = "petMerge", daily = { base = 1, perWorld = 0 } },
+			{ id = "GoldenToppings", feature = "goldenToppings", daily = { base = 2, perWorld = 0 } },
+			{ id = "SpinWheel", feature = "luckyWheel", daily = { base = 2, perWorld = 0 } },
+			{ id = "OpenChest", feature = "hiddenChests", minWorld = 2, daily = { base = 1, perWorld = 0 } },
+			{ id = "UnlockWorld", daily = { base = 1, perWorld = 0 } },
+		},
+	},
 	-- Potions: bought with gems, drunk from the potion inventory, active for `durationSeconds`.
 	potions = {
 		Coins = { displayName = "Münz-Trank", price = 20, durationSeconds = 600, coinMultiplier = 2 },

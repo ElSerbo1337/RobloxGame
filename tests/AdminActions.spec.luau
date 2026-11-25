@@ -18,6 +18,8 @@ local features = Features.new({
 	worldIntro = true,
 	shinyPets = true,
 	petLevels = true,
+	dailyQuests = true,
+	weeklyQuests = true,
 })
 local admin = AdminActions.new(rules, TestConfig, features)
 
@@ -88,6 +90,8 @@ describe("admin registry", function()
 			"setShinyChance",
 			"setPetLevel",
 			"givePetXp",
+			"completeQuest",
+			"rerollQuests",
 			"resetProgress",
 		})
 	end)
@@ -427,6 +431,7 @@ describe("admin actions for golden toppings (#94)", function()
 				secretPets = true,
 				worldIntro = true,
 				shinyPets = true,
+				dailyQuests = true,
 			})
 		)
 
@@ -506,6 +511,7 @@ describe("admin Secret pet actions (#81)", function()
 				secretPets = false,
 				worldIntro = true,
 				shinyPets = true,
+				dailyQuests = true,
 			})
 		)
 		local listed = ids(offAdmin.list())
@@ -584,6 +590,7 @@ describe("pet variant admin actions (#80)", function()
 				shinyPets = false,
 				worldIntro = true,
 				petLevels = true,
+				dailyQuests = true,
 			})
 		)
 		expect(table.find(ids(offAdmin.list()), "setShinyChance")).toBe(nil)
@@ -639,6 +646,7 @@ describe("pet level admin action (#90)", function()
 				shinyPets = true,
 				worldIntro = true,
 				petLevels = false,
+				dailyQuests = true,
 			})
 		)
 		expect(table.find(ids(offAdmin.list()), "setPetLevel")).toBe(nil)
@@ -660,6 +668,7 @@ describe("admin lucky wheel (#98)", function()
 			secretPets = true,
 			worldIntro = true,
 			shinyPets = true,
+			dailyQuests = true,
 		})
 	)
 
@@ -686,5 +695,48 @@ describe("admin lucky wheel (#98)", function()
 
 		expect(skipped.wheelDay).toBe(rules.dayNumber(NOW) - 1)
 		expect(rules.wheelStatus(skipped, NOW).freeSpins).toBe(1)
+	end)
+end)
+
+describe("admin actions: quests (#97)", function()
+	-- 15.01.2026 11:00 CET.
+	local QUEST_NOW = 1768431600 + 11 * 3600
+	local questCtx = { now = QUEST_NOW, random = TestKit.sequenceRandom({ 0 }) }
+
+	it("completeQuest makes today's quests if needed and finishes one", function()
+		local result = admin.run(ADMIN, player(), "completeQuest", { "Daily", 2 }, questCtx)
+
+		expect(result.ok).toBe(true)
+		local quest = result.state.dailyQuests[2]
+		expect(quest.progress).toBe(quest.goal)
+		expect(rules.claimQuest(result.state, "Daily", 2, QUEST_NOW).ok).toBe(true)
+		local weekly = admin.run(ADMIN, result.state, "completeQuest", { "Weekly", 1 }, questCtx)
+		expect(weekly.state.weeklyQuests[1].progress).toBe(weekly.state.weeklyQuests[1].goal)
+		expect(admin.run(ADMIN, result.state, "completeQuest", { "Daily", 2 }, questCtx).reason).toBe("QuestDone")
+		expect(admin.run(ADMIN, result.state, "completeQuest", { "Daily", 5 }, questCtx).reason).toBe("UnknownQuest")
+		expect(admin.run(ADMIN, player(), "completeQuest", { "Monthly", 1 }, questCtx).reason).toBe("InvalidArgument")
+	end)
+
+	it("rerollQuests makes new quests at once", function()
+		local state = rules.refreshQuests(player(), QUEST_NOW, TestKit.sequenceRandom({ 0 })).state
+		state.questRerolls = 2
+
+		local result = admin.run(ADMIN, state, "rerollQuests", {}, questCtx)
+
+		expect(result.ok).toBe(true)
+		expect(result.state.dailyQuests == state.dailyQuests).toBe(false)
+		expect(result.state.questRerolls).toBe(0)
+	end)
+
+	it("skipDays moves the quest days back too", function()
+		local state = rules.refreshQuests(player(), QUEST_NOW, TestKit.sequenceRandom({ 0 })).state
+		state.questStreakDay = state.questDay
+
+		local result = admin.run(ADMIN, state, "skipDays", { 1 }, questCtx)
+
+		expect(result.state.questDay).toBe(state.questDay - 1)
+		expect(result.state.questStreakDay).toBe(state.questDay - 1)
+		expect(result.state.questWeekDay).toBe(state.questWeekDay - 1)
+		expect(rules.refreshQuests(result.state, QUEST_NOW, TestKit.sequenceRandom({ 0 })).ok).toBe(true)
 	end)
 end)

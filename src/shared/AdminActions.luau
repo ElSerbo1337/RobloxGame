@@ -124,7 +124,15 @@ end
 -- Day fields of the PlayerState that hold a German day number (GameRules.dayNumber;
 -- 0 = never). skipDays moves them back so "today" looks like a later day.
 -- New daily/weekly mechanics (quests, wheel, chests, ...) add their day fields here.
-local DAY_FIELDS = { "playtimeDay", "loginClaimDay", "loginShownDay", "wheelDay" }
+local DAY_FIELDS = {
+	"playtimeDay",
+	"loginClaimDay",
+	"loginShownDay",
+	"wheelDay",
+	"questDay",
+	"questStreakDay",
+	"questWeekDay",
+}
 
 local AdminActions = {}
 
@@ -401,6 +409,29 @@ AdminActions.BUILT_IN = {
 		params = {},
 		run = function(env, state)
 			return env.rules.resetWheelSpins(state)
+		end,
+	},
+	{
+		-- Quests (#97): finishes a daily/weekly quest (claiming stays in the quest menu).
+		-- Makes today's quests first if there are none yet.
+		id = "completeQuest",
+		feature = "dailyQuests",
+		params = {
+			{ name = "period", kind = "choice", names = "yesNo", choices = { "Daily", "Weekly" } },
+			{ name = "quest", kind = "integer", min = 1, max = 5, default = 1 },
+		},
+		run = function(env, state, args, ctx)
+			local refreshed = env.rules.refreshQuests(state, ctx.now, ctx.random)
+			return env.rules.completeQuest(if refreshed.ok then refreshed.state else state, args[1], args[2])
+		end,
+	},
+	{
+		-- New daily and weekly quests at once (rerolls and bonus chest of today start over).
+		id = "rerollQuests",
+		feature = "dailyQuests",
+		params = {},
+		run = function(env, state, _args, ctx)
+			return env.rules.refreshQuests(state, ctx.now, ctx.random, true)
 		end,
 	},
 	{
