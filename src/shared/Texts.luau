@@ -20,6 +20,34 @@ Texts.strings = {
 	["hud.autoCollectOn"] = { de = "Auto-Sammeln: AN", en = "Auto-Collect: ON" },
 	["hud.autoCollectOff"] = { de = "Auto-Sammeln: AUS", en = "Auto-Collect: OFF" },
 
+	-- Admin panel (#74, only for GameConfig.admin.userIds). admin.action.<id> and
+	-- admin.param.<name> for every entry of AdminActions (tests check both exist).
+	["admin.title"] = { de = "🛠️ Admin-Panel", en = "🛠️ Admin Panel" },
+	["admin.open"] = { de = "🛠️", en = "🛠️" },
+	["admin.run"] = { de = "Los", en = "Run" },
+	["admin.confirm"] = { de = "Sicher?", en = "Sure?" },
+	["admin.hint"] = { de = "Nur für dich sichtbar. F2 öffnet/schließt.", en = "Only visible to you. F2 opens/closes." },
+	["admin.done"] = { de = "✓ {action}", en = "✓ {action}" },
+	["admin.failed"] = { de = "✗ {action}: {reason}", en = "✗ {action}: {reason}" },
+	["admin.action.addCoins"] = { de = "Münzen geben", en = "Give coins" },
+	["admin.action.addGems"] = { de = "Gems geben", en = "Give gems" },
+	["admin.action.givePet"] = { de = "Pet geben", en = "Give pet" },
+	["admin.action.givePotion"] = { de = "Tränke geben", en = "Give potions" },
+	["admin.action.setRebirths"] = { de = "Rebirths setzen", en = "Set rebirths" },
+	["admin.action.unlockWorld"] = { de = "Welten freischalten (bis)", en = "Unlock worlds (up to)" },
+	["admin.action.setUpgrade"] = { de = "Upgrade-Stufe setzen", en = "Set upgrade level" },
+	["admin.action.finishTutorial"] = { de = "Tutorial beenden", en = "Finish tutorial" },
+	["admin.action.skipDays"] = { de = "Tage vorspulen (7 = Woche)", en = "Skip days (7 = week)" },
+	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
+	["admin.param.amount"] = { de = "Menge", en = "Amount" },
+	["admin.param.count"] = { de = "Anzahl", en = "Count" },
+	["admin.param.pet"] = { de = "Pet", en = "Pet" },
+	["admin.param.potion"] = { de = "Trank", en = "Potion" },
+	["admin.param.world"] = { de = "Welt", en = "World" },
+	["admin.param.upgrade"] = { de = "Upgrade", en = "Upgrade" },
+	["admin.param.level"] = { de = "Stufe", en = "Level" },
+	["admin.param.days"] = { de = "Tage", en = "Days" },
+
 	-- Unlock button at a world barrier
 	["unlock.open"] = {
 		de = "🔓 {world} freischalten\n{price} Münzen",

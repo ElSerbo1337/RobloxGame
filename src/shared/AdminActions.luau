@@ -1,0 +1,340 @@
+--!strict
+-- Admin panel actions (#74): pure Luau without Roblox API, tested in Lune
+-- (tests/AdminActions.spec.luau). Like the game rules, every action works on a
+-- PlayerState and returns { ok, reason?, state } without changing the old state.
+-- Rules, config and feature switches are passed in, nothing is required here.
+--
+--   local admin = AdminActions.new(rules, GameConfig, Features.new(GameConfig.features))
+--   admin.isAdmin(player.UserId)              -- GameConfig.admin.userIds
+--   admin.list()                              -- actions for the panel (id, params, confirm)
+--   admin.run(userId, state, actionId, args, { now = os.time(), random = math.random })
+--
+-- `run` checks everything the client could fake: the user id, the action id, the
+-- action's feature switch and every argument (type, integer, bounds, choices).
+--
+-- NEW ACTION = ONE ENTRY in BUILT_IN below (later tickets add theirs there):
+--   {
+--     id = "spinWheel",               -- texts: admin.action.<id> (de + en in Texts)
+--     feature = "luckyWheel",         -- optional: hidden and refused while switched off
+--     confirm = true,                 -- optional: the panel asks once more before running
+--     params = {                      -- texts: admin.param.<name>
+--       { name = "count", kind = "integer", min = 1, max = 10, default = 1 },
+--       { name = "pet", kind = "choice", names = "pet", choices = function(config) ... end },
+--     },
+--     run = function(env, state, args, ctx) ... return { ok = true, state = newState } end,
+--   }
+-- `args` arrive already checked, in `params` order. `env` = { rules, config },
+-- `ctx` = { now, random }. Choice `names` tells the panel how to show a value:
+-- "pet" | "potion" | "upgrade" (config entry names) | "world" (world names); missing = id.
+-- Failure reasons: NotAdmin | UnknownAction | FeatureOff | InvalidArgument | rule reasons.
+
+export type Param = {
+	name: string,
+	kind: "integer" | "choice",
+	min: number?,
+	max: number?,
+	default: any?,
+	names: string?,
+	-- Definitions give a function of the config; `list` returns the resolved list.
+	choices: any?,
+}
+
+export type Context = { now: number, random: () -> number }
+
+export type Env = { rules: any, config: any }
+
+export type Result = { ok: boolean, reason: string?, state: any }
+
+export type Definition = {
+	id: string,
+	feature: string?,
+	confirm: boolean?,
+	params: { Param },
+	run: (env: Env, state: any, args: { any }, ctx: Context) -> Result,
+}
+
+export type ActionInfo = {
+	id: string,
+	confirm: boolean,
+	params: { Param },
+}
+
+export type Admin = {
+	isAdmin: (userId: number) -> boolean,
+	list: () -> { ActionInfo },
+	run: (userId: number, state: any, actionId: string, args: { any }, ctx: Context) -> Result,
+}
+
+local MAX_AMOUNT = 1e15
+
+local function fail(state: any, reason: string): Result
+	return { ok = false, reason = reason, state = state }
+end
+
+local function sortedKeys(map: { [string]: any }): { string }
+	local keys = {}
+	for key in map do
+		table.insert(keys, key)
+	end
+	table.sort(keys)
+	return keys
+end
+
+local function petIds(config: any): { string }
+	return sortedKeys(config.pets)
+end
+
+local function potionIds(config: any): { string }
+	return sortedKeys(config.potions)
+end
+
+local function upgradeIds(config: any): { string }
+	return sortedKeys(config.upgrades)
+end
+
+local function worldIds(config: any): { string }
+	local list = {}
+	for _, world in config.worlds do
+		table.insert(list, world.id)
+	end
+	return list
+end
+
+-- Day fields of the PlayerState that hold a German day number (GameRules.dayNumber;
+-- 0 = never). skipDays moves them back so "today" looks like a later day.
+-- New daily/weekly mechanics (quests, wheel, chests, ...) add their day fields here.
+local DAY_FIELDS = { "playtimeDay", "loginClaimDay", "loginShownDay" }
+
+local AdminActions = {}
+
+-- Built-in actions in panel order. Only for features that exist; later tickets
+-- (quests, weather, merchant, pet variants, ...) add their own entries here.
+AdminActions.BUILT_IN = {
+	{
+		id = "addCoins",
+		params = { { name = "amount", kind = "integer", min = -MAX_AMOUNT, max = MAX_AMOUNT, default = 1000000 } },
+		run = function(_env, state, args)
+			-- Not counted as earned (leaderboard "Münzen verdient" stays honest).
+			local newState = table.clone(state)
+			newState.coins = math.max(0, state.coins + args[1])
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "addGems",
+		params = { { name = "amount", kind = "integer", min = -MAX_AMOUNT, max = MAX_AMOUNT, default = 1000 } },
+		run = function(_env, state, args)
+			local newState = table.clone(state)
+			newState.gems = math.max(0, state.gems + args[1])
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "givePet",
+		params = {
+			{ name = "pet", kind = "choice", names = "pet", choices = petIds },
+			{ name = "count", kind = "integer", min = 1, max = 100, default = 1 },
+		},
+		run = function(env, state, args)
+			local petId, count = args[1], args[2]
+			-- Same inventory limit as hatching (raise it with setUpgrade InventorySpace).
+			if #state.pets + count > env.rules.inventorySlots(state) then
+				return fail(state, "InventoryFull")
+			end
+			local newState = table.clone(state)
+			newState.pets = table.clone(state.pets)
+			for i = 1, count do
+				table.insert(newState.pets, { uid = state.nextPetUid + i - 1, petId = petId })
+			end
+			newState.nextPetUid = state.nextPetUid + count
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "givePotion",
+		params = {
+			{ name = "potion", kind = "choice", names = "potion", choices = potionIds },
+			{ name = "count", kind = "integer", min = 1, max = 999, default = 5 },
+		},
+		run = function(_env, state, args)
+			local newState = table.clone(state)
+			newState.potions = table.clone(state.potions)
+			newState.potions[args[1]] = (state.potions[args[1]] or 0) + args[2]
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "setRebirths",
+		params = { { name = "count", kind = "integer", min = 0, max = 1000, default = 1 } },
+		run = function(_env, state, args)
+			local newState = table.clone(state)
+			newState.rebirths = args[1]
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "unlockWorld",
+		params = { { name = "world", kind = "choice", names = "world", choices = worldIds } },
+		run = function(env, state, args)
+			-- Unlocks the world and every world before it; price and rebirths are skipped.
+			local newState = table.clone(state)
+			newState.unlockedWorlds = table.clone(state.unlockedWorlds)
+			local added = false
+			for _, world in env.config.worlds do
+				if not env.rules.isWorldUnlocked(newState, world.id) then
+					table.insert(newState.unlockedWorlds, world.id)
+					added = true
+				end
+				if world.id == args[1] then
+					break
+				end
+			end
+			if not added then
+				return fail(state, "AlreadyUnlocked")
+			end
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "setUpgrade",
+		params = {
+			{ name = "upgrade", kind = "choice", names = "upgrade", choices = upgradeIds },
+			{ name = "level", kind = "integer", min = 0, max = 100, default = 1 },
+		},
+		run = function(env, state, args)
+			local upgradeId, level = args[1], args[2]
+			if level > #env.config.upgrades[upgradeId].levels then
+				return fail(state, "InvalidArgument")
+			end
+			local newState = table.clone(state)
+			newState.upgrades = table.clone(state.upgrades)
+			newState.upgrades[upgradeId] = if level > 0 then level else nil
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "finishTutorial",
+		params = {},
+		run = function(env, state)
+			local tutorial = env.rules.tutorial(state)
+			if tutorial == nil then
+				return fail(state, "TutorialDone")
+			end
+			local newState = table.clone(state)
+			newState.tutorialStep = tutorial.total + 1
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "skipDays",
+		params = { { name = "days", kind = "integer", min = 1, max = 30, default = 1 } },
+		run = function(_env, state, args)
+			local newState = table.clone(state)
+			for _, field in DAY_FIELDS do
+				if (state[field] or 0) > 0 then
+					newState[field] = state[field] - args[1]
+				end
+			end
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "resetProgress",
+		confirm = true,
+		params = {},
+		run = function(env)
+			return { ok = true, state = env.rules.newPlayerState() }
+		end,
+	},
+} :: { Definition }
+
+local function validArgument(param: Param, value: any): boolean
+	if param.kind == "integer" then
+		return type(value) == "number"
+			and value == value
+			and math.floor(value) == value
+			and value >= (param.min or -math.huge)
+			and value <= (param.max or math.huge)
+	elseif param.kind == "choice" then
+		return type(value) == "string" and table.find(param.choices :: { string }, value) ~= nil
+	end
+	return false
+end
+
+-- `definitions` defaults to AdminActions.BUILT_IN (tests pass their own).
+function AdminActions.new(rules: any, config: any, features: any, definitions: { Definition }?): Admin
+	local env: Env = { rules = rules, config = config }
+	local admins: { number } = config.admin.userIds
+
+	-- Resolve choices once; also checks every feature id (unknown ids raise an error).
+	local actions: { { definition: Definition, info: ActionInfo } } = {}
+	local byId: { [string]: { definition: Definition, info: ActionInfo } } = {}
+	for _, definition in definitions or AdminActions.BUILT_IN do
+		if definition.feature then
+			features.enabled(definition.feature)
+		end
+		local params = {}
+		for _, param in definition.params do
+			local resolved = table.clone(param)
+			if type(param.choices) == "function" then
+				resolved.choices = param.choices(config)
+			end
+			if resolved.kind == "choice" and resolved.default == nil then
+				resolved.default = (resolved.choices :: { string })[1]
+			end
+			table.insert(params, resolved)
+		end
+		local entry = {
+			definition = definition,
+			info = { id = definition.id, confirm = definition.confirm == true, params = params },
+		}
+		table.insert(actions, entry)
+		byId[definition.id] = entry
+	end
+
+	local function isOn(definition: Definition): boolean
+		return definition.feature == nil or features.enabled(definition.feature)
+	end
+
+	local function isAdmin(userId: number): boolean
+		return table.find(admins, userId) ~= nil
+	end
+
+	local function list(): { ActionInfo }
+		local out = {}
+		for _, entry in actions do
+			if isOn(entry.definition) then
+				table.insert(out, entry.info)
+			end
+		end
+		return out
+	end
+
+	local function run(userId: number, state: any, actionId: string, args: { any }, ctx: Context): Result
+		if not isAdmin(userId) then
+			return fail(state, "NotAdmin")
+		end
+		local entry = if type(actionId) == "string" then byId[actionId] else nil
+		if entry == nil then
+			return fail(state, "UnknownAction")
+		end
+		if not isOn(entry.definition) then
+			return fail(state, "FeatureOff")
+		end
+		if type(args) ~= "table" then
+			return fail(state, "InvalidArgument")
+		end
+		local checked = {}
+		for index, param in entry.info.params do
+			if not validArgument(param, args[index]) then
+				return fail(state, "InvalidArgument")
+			end
+			checked[index] = args[index]
+		end
+		return entry.definition.run(env, state, checked, ctx)
+	end
+
+	return { isAdmin = isAdmin, list = list, run = run }
+end
+
+return AdminActions

@@ -1,5 +1,6 @@
 -- Small, stable game config for tests, so balancing changes in GameConfig don't break them.
 return {
+	admin = { userIds = { 42 } },
 	pizza = { startCapacity = 2 },
 	collect = { range = 10, autoRadius = 3 },
 	toppingField = { count = 4, respawnSeconds = 5 },

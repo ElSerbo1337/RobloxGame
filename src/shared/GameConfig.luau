@@ -63,6 +63,12 @@ local GameConfig = {
 		featureHints = true,
 	},
 
+	-- Admin panel (#74): only these Roblox user ids see it and may run its actions
+	-- (checked on the server for every action, in Studio and live).
+	admin = {
+		userIds = { 372358501 },
+	},
+
 	save = {
 		-- DataStore of all player states. MEGA UPDATE (#73): fresh start for everybody
 		-- in a new store; the old "PlayerState" store is left untouched (no migration).
