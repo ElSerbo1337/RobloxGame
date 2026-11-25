@@ -383,6 +383,11 @@ Texts.strings = {
 	["wheel.Busy"] = { de = "Das Rad dreht noch.", en = "The wheel is still spinning." },
 	["sign.wheel"] = { de = "🎡 Glücksrad", en = "🎡 Lucky wheel" },
 	["sign.wheelPrompt"] = { de = "Drehen", en = "Spin" },
+	["sign.wheelCoins"] = { de = "🪙 {minutes} Min", en = "🪙 {minutes} min" },
+	["sign.wheelGems"] = { de = "💎 {amount}", en = "💎 {amount}" },
+	["sign.wheelPotions"] = { de = "🧪 {amount}", en = "🧪 {amount}" },
+	["sign.wheelJackpot"] = { de = "⭐ JACKPOT", en = "⭐ JACKPOT" },
+	["reward.coins"] = { de = "{amount} Münzen", en = "{amount} coins" },
 
 	-- Login calendar
 	["calendar.title"] = { de = "Login-Kalender", en = "Login calendar" },

@@ -459,6 +459,8 @@ end
 function UiKit.rewardText(reward: { kind: string, amount: number, potionId: string? }): string
 	if reward.kind == "Gems" then
 		return Lang.t("reward.gems", { amount = UiKit.shortNumber(reward.amount) })
+	elseif reward.kind == "Coins" then
+		return Lang.t("reward.coins", { amount = UiKit.shortNumber(reward.amount) })
 	end
 	local potion = reward.potionId and GameConfig.potions[reward.potionId]
 	if potion then

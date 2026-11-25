@@ -61,6 +61,12 @@
 -- WorldIntro      server -> client  (worldId: string)            first visit of this world (#79): play the
 --                                    camera flight with the world name and its new toppings (once per world,
 --                                    already marked as seen on the server)
+-- SpinWheel       client -> server  (expectFree: boolean)        "spin the lucky wheel" (#98); expectFree = the
+--                                    client showed a free spin: refused (NoFreeSpin) instead of paying gems
+-- WheelResult     server -> client  (ok: boolean, fieldOrReason: number | string, rewards: { GameRules.Reward },
+--                                    free: boolean)  field = index into GameConfig.luckyWheel.fields (the
+--                                    server drew it and already paid the rewards); reasons: NoFreeSpin,
+--                                    NotEnoughGems, Busy (spun again too fast)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -77,6 +83,9 @@
 -- Notify kinds of the delivery: PhoneRinging, OrderAccepted, OrderDeclined, OrderExpired, WrongToppings,
 -- PhoneCallsOff, PhoneCallsOn,
 -- NoOrder, Delivered (amount, rewardKind "Coins" | "Gems" | "Potion", potionId?).
+-- Lucky wheel (see WheelService, #98): Wheel (JSON { free = free spins left today, freeTotal, bonusSeconds =
+-- play time until the bonus free spin (-1 = reached), price = gems per paid spin, fields = { { id, jackpot,
+-- chance, rewards } } with the coins for this player's income }).
 -- Gifts (see GiftService): Gifts (JSON { ready = gifts ready to claim, nextSeconds = play time until the
 --   next gift (-1 = none left today), gifts = { { minutes, status "Claimed" | "Ready" | "Waiting",
 --   secondsLeft, rewards = { { kind, amount } } } } }; the client counts the seconds down until the
@@ -135,6 +144,8 @@ local EVENTS = {
 	CodeResult = true,
 	SecretAnnounce = true,
 	WorldIntro = true,
+	SpinWheel = true,
+	WheelResult = true,
 }
 
 local Net = {}

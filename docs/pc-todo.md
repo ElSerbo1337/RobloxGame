@@ -1819,3 +1819,25 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Handy: Badge überdeckt weder Name noch ✨ (Shiny-Pet mit Level ansehen), Englisch „Lv. 3“.
 - [ ] Rejoin → Level und XP-Balken bleiben erhalten.
 - [ ] `GameConfig.features.petLevels = false` → kein Badge/Balken, kein XP, Bonus ohne Level, Admin-Aktion weg. Danach wieder `true`.
+
+## MEGA UPDATE – #98 Glücksrad
+
+Neu: 3D-Glücksrad auf dem freien Platz rechts hinten auf der Spawn-Insel (`SpawnIsland/LuckyWheel` am `WheelAnchor`): Holzständer, Goldrand mit 16 blinkenden Lichtern, 8 farbige Felder mit Beschriftung, roter Zeiger oben, Schild „🎡 Glücksrad“. Kachel 🎡 „Glücksrad“ in der Seitenleiste öffnet dasselbe Menü von überall. 1 Gratis-Drehung pro deutschem Tag + 1 nach 30 min Tages-Spielzeit, sonst 25 Gems. Felder: 5/15 min Einkommen als Münzen, 5/10/25 Gems, 1/2 Tränke, Jackpot 100 Gems + 3 Tränke (2 %). Der Server würfelt, Gewinne sind sofort gutgeschrieben. Sounds `WheelTick`/`WheelWin` in `src/client/Sounds.luau` haben noch **keine ID** (Suchbegriffe stehen dort). Schalter: `luckyWheel`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/LuckyWheel.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Rad steht auf dem Platz rechts hinten, zur Inselmitte gedreht, nicht in Bäumen/Wegen; Felder sitzen sauber als Kreis (keine verdrehten Keile, keine Lücken), Beschriftungen lesbar (außen = oben), Lichter blinken abwechselnd. Output ohne rote Fehler.
+- [ ] Seitenleiste: Kachel „Glücksrad“ mit rotem Punkt und „Gratis!“. Tippen → Menü: links das Rad in 3D (gleiche Farben, Beschriftungen auf den Feldern), rechts 8 Zeilen mit Farbe, Gewinn (Münzen = Zahl passend zum Einkommen) und Chance (24 %, …, Jackpot 2 %), darunter „Gratis-Drehungen heute: 1/1“ und grüner Knopf „Gratis drehen!“.
+- [ ] Am Rad: Prompt „Drehen“ (E) bzw. Klick auf das Rad → Menü geht auf.
+- [ ] „Gratis drehen!“ → Rad im Menü **und** das große Rad drehen sich ~4,5 s mit Ticks (sobald die ID gesetzt ist), Lichter laufen schnell, Zeiger landet im Gewinnfeld, Text „Gewonnen: +…“, Gems/Münzen/Tränke stimmen. Roter Punkt weg, Knopf jetzt orange „Drehen: 25“ + Gem-Symbol, Status „Noch 29:xx spielen: 1 Gratis-Drehung mehr“ (zählt runter).
+- [ ] Ohne 25 Gems: Knopf grau, Drücken → „Nicht genug Gems!“. Admin **Gems geben** 100 → Knopf orange, Drehen kostet 25 Gems.
+- [ ] Nach 30 min Spielzeit heute (oder Admin **Tage vorspulen** 1 und dann 30 min spielen): roter Punkt kommt wieder, eine Gratis-Drehung mehr.
+- [ ] Admin-Panel → **Gratis-Drehungen zurücksetzen** → roter Punkt und „Gratis drehen!“ sofort wieder da. Admin **Tage vorspulen** 1 → ebenfalls neue Gratis-Drehung.
+- [ ] Jackpot sehen: mehrmals per Admin zurücksetzen und drehen (2 %) – oder einfach glauben; bei Jackpot „JACKPOT!“ groß + goldener Blitz. ⚙️ → Bildschirm-Blitze **aus** → kein Blitz.
+- [ ] Zweiter Spieler (Test → 2 Players): dreht Spieler A, bleibt das Rad bei Spieler B stehen.
+- [ ] Mit `Language = en`: „Lucky wheel“, „Spin for free!“, „Spin: 25“, Feld-Beschriftungen „🪙 5 min“, Englische Gewinne.
+- [ ] Handy (Device-Emulation): Menü passt (schrumpft), Knopf gut drückbar; Kachel liegt ggf. im „Mehr“-Fenster, dann hat „Mehr“ den roten Punkt.
+- [ ] Rejoin → verbrauchte Gratis-Drehung bleibt verbraucht; nächster Tag (nach Mitternacht deutscher Zeit) → wieder gratis.
+- [ ] `GameConfig.features.luckyWheel = false` → kein Rad auf der Insel, keine Kachel, Admin-Aktion weg. Danach wieder `true`.

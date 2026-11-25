@@ -68,6 +68,18 @@ local SOUNDS: { [string]: Entry } = {
 		volume = 0.6,
 		search = { "level up", "ding", "achievement", "power up chime", "success" },
 	},
+	-- Lucky wheel (#98): short click each time a field passes the pointer, and a win jingle
+	-- when it stops. IDs still empty: the local session picks them (Creator Store, creator "Roblox").
+	WheelTick = {
+		id = "",
+		volume = 0.4,
+		search = { "click", "tick", "wheel tick", "ratchet", "clack" },
+	},
+	WheelWin = {
+		id = "",
+		volume = 0.7,
+		search = { "win", "prize", "reward jingle", "success", "slot win" },
+	},
 	-- Short fanfare for the rebirth celebration (#35).
 	Rebirth = { id = "9114898444", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
 	-- Background music per world, looped (cheerful, light).

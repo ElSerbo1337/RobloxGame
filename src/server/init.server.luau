@@ -28,6 +28,7 @@ local ToppingService = require(script.ToppingService)
 local TutorialService = require(script.TutorialService)
 local IslandBuilder = require(script.IslandBuilder)
 local LeaderboardService = require(script.LeaderboardService)
+local WheelService = require(script.WheelService)
 local WorldMap = require(script.WorldMap)
 
 -- Create remotes before any client asks for them.
@@ -59,6 +60,8 @@ Net.event("WorldIntro")
 for _, name in { "SetSetting", "RedeemCode", "CodeResult" } do
 	Net.event(name)
 end
+Net.event("SpinWheel")
+Net.event("WheelResult")
 
 CameraService.start()
 -- Flying islands (#27): spawn island -> bridge -> world 1 -> bridge -> world 2 ...
@@ -133,6 +136,8 @@ GemService.start()
 GiftService.start()
 -- Login calendar: opens once per German day on join, one reward per day.
 LoginCalendarService.start()
+-- Lucky wheel (#98): 3D wheel on the reserved spot of the spawn island, spins drawn here.
+WheelService.start(spawnIsland)
 PotionService.start()
 -- Delivery service: a phone and a delivery van in every world (same spot in each world).
 DeliveryService.start(DeliveryService.buildAll())
