@@ -20,6 +20,7 @@ local UiKit = require(script.Parent.UiKit)
 local SHOW_SECONDS = 6
 local MAX_QUEUE = 3
 local WIDTH = 560
+local MIN_WIDTH = 340
 local HEIGHT = 64
 
 local SecretBanner = {}
@@ -37,12 +38,15 @@ function SecretBanner.start()
 	local banner = Instance.new("Frame")
 	banner.AnchorPoint = Vector2.new(0.5, 0)
 	banner.Position = UDim2.new(0.5, 0, 0, -HEIGHT - 20)
-	banner.Size = UDim2.new(1, -32, 0, HEIGHT)
+	-- Between the side bar and the right column (bonuses, order), so on phones the
+	-- banner never covers them; never narrower than MIN_WIDTH.
+	banner.Size = UDim2.new(1, -2 * (HudLayout.RIGHT_COLUMN_WIDTH + HudLayout.MARGIN + 8), 0, HEIGHT)
 	banner.BackgroundColor3 = UiKit.rarityColor("Secret")
 	banner.Visible = false
 	UiKit.corner(banner, HEIGHT / 2)
 	UiKit.stroke(banner, 4)
 	local constraint = Instance.new("UISizeConstraint")
+	constraint.MinSize = Vector2.new(MIN_WIDTH, HEIGHT)
 	constraint.MaxSize = Vector2.new(WIDTH, HEIGHT)
 	constraint.Parent = banner
 	local gradient = Instance.new("UIGradient")
