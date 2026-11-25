@@ -145,6 +145,30 @@ return {
 		{ rewards = { { kind = "Potion", amount = 2 } } },
 		{ rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },
 	},
+	-- Lucky wheel (#98): free spins per German day (+1 after bonusSpinMinutes of play time
+	-- that day), more for spinPrice gems. Fields drawn by weight; "Coins" pays `minutes` of
+	-- income (incomePerMinute, at least minCoins).
+	luckyWheel = {
+		spinPrice = 25,
+		freeSpinsPerDay = 1,
+		bonusSpinMinutes = 30,
+		minCoins = 10,
+		fields = {
+			{ id = "Coins5", weight = 30, rewards = { { kind = "Coins", minutes = 5 } } },
+			{ id = "Gems5", weight = 20, rewards = { { kind = "Gems", amount = 5 } } },
+			{ id = "Potion1", weight = 15, rewards = { { kind = "Potion", amount = 1 } } },
+			{ id = "Gems10", weight = 10, rewards = { { kind = "Gems", amount = 10 } } },
+			{ id = "Coins15", weight = 10, rewards = { { kind = "Coins", minutes = 15 } } },
+			{ id = "Potion2", weight = 8, rewards = { { kind = "Potion", amount = 2 } } },
+			{ id = "Gems25", weight = 5, rewards = { { kind = "Gems", amount = 25 } } },
+			{
+				id = "Jackpot",
+				weight = 2,
+				jackpot = true,
+				rewards = { { kind = "Gems", amount = 100 }, { kind = "Potion", amount = 3 } },
+			},
+		},
+	},
 	-- Potions: bought with gems, drunk from the potion inventory, active for `durationSeconds`.
 	potions = {
 		Coins = { displayName = "Münz-Trank", price = 20, durationSeconds = 600, coinMultiplier = 2 },

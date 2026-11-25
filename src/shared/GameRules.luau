@@ -81,6 +81,11 @@ export type PlayerState = {
 	-- Settings menu (#76): setting key (GameRules.SETTINGS) -> value the player chose.
 	-- Sparse: a missing key means "default" (resolveSettings). Kept on rebirth.
 	settings: { [string]: any },
+	-- Lucky wheel (#98): free spins used on German day `wheelDay` (0 = never) and spins in
+	-- total (free and paid, for stats).
+	wheelDay: number,
+	wheelFreeUsed: number,
+	wheelSpins: number,
 }
 
 export type Delivery = { call: Order?, order: Order?, nextCallAt: number? }
@@ -333,6 +338,24 @@ export type LoginCalendar = {
 -- `day` = the calendar day that was claimed (0 when refused).
 export type LoginClaimResult = RewardsResult & { day: number }
 
+-- One field of the lucky wheel (#98) as shown: rewards with the coin amount for this
+-- player (potions not drawn yet), and the chance to land on it (0-1).
+export type WheelField = { id: string, jackpot: boolean, chance: number, rewards: { Reward } }
+
+export type WheelStatus = {
+	-- Free spins left today, and today's free spins in total (incl. the play time bonus once reached).
+	freeSpins: number,
+	freeTotal: number,
+	-- Play time today until the bonus free spin (nil = reached).
+	bonusSecondsLeft: number?,
+	-- Gems per spin once the free spins are used.
+	price: number,
+	fields: { WheelField },
+}
+
+-- `field` = index into the wheel fields (0 when refused), `free` = a free spin was used.
+export type WheelSpinResult = RewardsResult & { field: number, free: boolean }
+
 -- Bump together with a migration step in SaveData when a field changes shape.
 local STATE_VERSION = 5
 
@@ -509,6 +532,9 @@ function GameRules.new(config: any)
 			lastWorldId = "",
 			seenWorldIntros = {},
 			settings = {},
+			wheelDay = 0,
+			wheelFreeUsed = 0,
+			wheelSpins = 0,
 		}
 	end
 
@@ -1945,6 +1971,131 @@ function GameRules.new(config: any)
 	end
 
 	-- The order the ringing phone offers (nil = phone is quiet).
+	-- Lucky wheel (#98) ------------------------------------------------------------
+
+	-- Free spins already used on the German day of `now` (a later day = clock of another
+	-- server ahead: counts as used, so spins cannot be taken twice).
+	local function wheelUsedToday(state: PlayerState, now: number): number
+		return if state.wheelDay >= rules.dayNumber(now) then state.wheelFreeUsed else 0
+	end
+
+	local function wheelFreeTotal(state: PlayerState, now: number): number
+		local wheel = config.luckyWheel
+		local bonus = if rules.dailyPlaytime(state, now) >= wheel.bonusSpinMinutes * 60 then 1 else 0
+		return wheel.freeSpinsPerDay + bonus
+	end
+
+	-- Coins for `minutes` of this player's income (at least luckyWheel.minCoins).
+	local function wheelCoins(state: PlayerState, minutes: number): number
+		return math.max(config.luckyWheel.minCoins or 0, math.floor(rules.incomePerMinute(state) * minutes + 1e-6))
+	end
+
+	-- A field's rewards with fixed amounts (coin fields resolved to coins).
+	local function wheelSpecs(state: PlayerState, field: any): { RewardSpec }
+		local specs = {}
+		for _, spec in field.rewards do
+			if spec.kind == "Coins" then
+				table.insert(specs, { kind = "Coins", amount = wheelCoins(state, spec.minutes) })
+			else
+				table.insert(specs, { kind = spec.kind, amount = spec.amount })
+			end
+		end
+		return specs
+	end
+
+	function rules.wheelStatus(state: PlayerState, now: number): WheelStatus
+		local wheel = config.luckyWheel
+		local totalWeight = 0
+		for _, field in wheel.fields do
+			totalWeight += field.weight
+		end
+		local fields = {}
+		for _, field in wheel.fields do
+			table.insert(fields, {
+				id = field.id,
+				jackpot = field.jackpot == true,
+				chance = if totalWeight > 0 then field.weight / totalWeight else 0,
+				rewards = previewRewards(wheelSpecs(state, field)),
+			})
+		end
+		local freeTotal = wheelFreeTotal(state, now)
+		local bonusLeft = wheel.bonusSpinMinutes * 60 - rules.dailyPlaytime(state, now)
+		return {
+			freeSpins = math.max(0, freeTotal - wheelUsedToday(state, now)),
+			freeTotal = freeTotal,
+			bonusSecondsLeft = if bonusLeft > 0 then bonusLeft else nil,
+			price = wheel.spinPrice,
+			fields = fields,
+		}
+	end
+
+	-- Spins the wheel: a free spin if one is left today, otherwise for luckyWheel.spinPrice
+	-- gems. `expectFree` = true (the client showed "free"): refused with NoFreeSpin instead of
+	-- paying gems when none is left. The field is drawn by weight with `random`.
+	function rules.spinWheel(
+		state: PlayerState,
+		now: number,
+		random: () -> number,
+		expectFree: boolean?
+	): WheelSpinResult
+		local wheel = config.luckyWheel
+		local function reject(reason: string): WheelSpinResult
+			return { ok = false, reason = reason, state = state, rewards = {}, field = 0, free = false }
+		end
+		local used = wheelUsedToday(state, now)
+		local free = used < wheelFreeTotal(state, now)
+		if not free and expectFree == true then
+			return reject("NoFreeSpin")
+		end
+		if not free and state.gems < wheel.spinPrice then
+			return reject("NotEnoughGems")
+		end
+		local totalWeight = 0
+		for _, field in wheel.fields do
+			totalWeight += field.weight
+		end
+		local roll = random() * totalWeight
+		local fieldIndex = #wheel.fields
+		for index, field in wheel.fields do
+			roll -= field.weight
+			if roll < 0 then
+				fieldIndex = index
+				break
+			end
+		end
+		local specs = wheelSpecs(state, wheel.fields[fieldIndex])
+		local others, coins = {}, 0
+		for _, spec in specs do
+			if spec.kind == "Coins" then
+				coins += spec.amount
+			else
+				table.insert(others, spec)
+			end
+		end
+		local base = table.clone(state)
+		if free then
+			base.wheelDay = math.max(state.wheelDay, rules.dayNumber(now))
+			base.wheelFreeUsed = used + 1
+		else
+			base.gems = state.gems - wheel.spinPrice
+		end
+		local newState, paid = payRewards(base, others, random)
+		if coins > 0 then
+			newState.coins = state.coins + coins
+			newState.totalCoinsEarned = state.totalCoinsEarned + coins
+			table.insert(paid, 1, { kind = "Coins", amount = coins })
+		end
+		newState.wheelSpins = state.wheelSpins + 1
+		return { ok = true, state = newState, rewards = paid, field = fieldIndex, free = free }
+	end
+
+	-- Admin panel: today's free spins are available again.
+	function rules.resetWheelSpins(state: PlayerState): Result
+		local newState = table.clone(state)
+		newState.wheelFreeUsed = 0
+		return { ok = true, state = newState }
+	end
+
 	function rules.deliveryCall(state: PlayerState): Order?
 		return state.delivery.call
 	end

@@ -1338,3 +1338,46 @@ describe("GameConfig golden toppings (#94)", function()
 		expect((field:get(1) :: any).goldRoll).toBe(0.5)
 	end)
 end)
+
+describe("GameConfig lucky wheel (#98)", function()
+	local wheel = GameConfig.luckyWheel
+
+	it("has 1 free spin a day, 1 more after 30 minutes, then 25 gems", function()
+		expect(wheel.freeSpinsPerDay).toBe(1)
+		expect(wheel.bonusSpinMinutes).toBe(30)
+		expect(wheel.spinPrice).toBe(25)
+	end)
+
+	it("has the 8 fields of the spec with a ~2 % jackpot", function()
+		local byId, total = {}, 0
+		for _, field in wheel.fields do
+			byId[field.id] = field
+			total += field.weight
+			expect(type(field.color)).toBe("table")
+		end
+		expect(#wheel.fields).toBe(8)
+		expect(byId.Coins5.rewards).toEqual({ { kind = "Coins", minutes = 5 } })
+		expect(byId.Coins15.rewards).toEqual({ { kind = "Coins", minutes = 15 } })
+		expect(byId.Gems5.rewards).toEqual({ { kind = "Gems", amount = 5 } })
+		expect(byId.Gems10.rewards).toEqual({ { kind = "Gems", amount = 10 } })
+		expect(byId.Gems25.rewards).toEqual({ { kind = "Gems", amount = 25 } })
+		expect(byId.Potion1.rewards).toEqual({ { kind = "Potion", amount = 1 } })
+		expect(byId.Potion2.rewards).toEqual({ { kind = "Potion", amount = 2 } })
+		expect(byId.Jackpot.rewards).toEqual({ { kind = "Gems", amount = 100 }, { kind = "Potion", amount = 3 } })
+		expect(byId.Jackpot.jackpot).toBe(true)
+		expect(byId.Jackpot.weight / total).toBe(0.02)
+	end)
+
+	it("a paid spin returns fewer gems than it costs on average", function()
+		local total, gems = 0, 0
+		for _, field in wheel.fields do
+			total += field.weight
+			for _, reward in field.rewards do
+				if reward.kind == "Gems" then
+					gems += field.weight * reward.amount
+				end
+			end
+		end
+		expect(gems / total < wheel.spinPrice).toBe(true)
+	end)
+end)

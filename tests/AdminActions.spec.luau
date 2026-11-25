@@ -421,6 +421,7 @@ describe("admin actions for golden toppings (#94)", function()
 			Features.new({
 				adminPanel = true,
 				petLevels = true,
+				luckyWheel = true,
 				goldenToppings = false,
 				whatsNew = true,
 				secretPets = true,
@@ -499,6 +500,7 @@ describe("admin Secret pet actions (#81)", function()
 			Features.new({
 				adminPanel = true,
 				petLevels = true,
+				luckyWheel = true,
 				goldenToppings = true,
 				whatsNew = true,
 				secretPets = false,
@@ -575,6 +577,7 @@ describe("pet variant admin actions (#80)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				luckyWheel = true,
 				goldenToppings = true,
 				whatsNew = true,
 				secretPets = true,
@@ -629,6 +632,7 @@ describe("pet level admin action (#90)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				luckyWheel = true,
 				goldenToppings = true,
 				whatsNew = true,
 				secretPets = true,
@@ -640,5 +644,47 @@ describe("pet level admin action (#90)", function()
 		expect(table.find(ids(offAdmin.list()), "setPetLevel")).toBe(nil)
 		expect(table.find(ids(offAdmin.list()), "givePetXp")).toBe(nil)
 		expect(offAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 3, "no" }, ctx).reason).toBe("FeatureOff")
+	end)
+end)
+
+describe("admin lucky wheel (#98)", function()
+	local wheelAdmin = AdminActions.new(
+		rules,
+		TestConfig,
+		Features.new({
+			adminPanel = true,
+			petLevels = true,
+			luckyWheel = true,
+			goldenToppings = true,
+			whatsNew = true,
+			secretPets = true,
+			worldIntro = true,
+			shinyPets = true,
+		})
+	)
+
+	it("resetWheelSpins gives today's free spins back", function()
+		local state = rules.spinWheel(player(), NOW, TestKit.sequenceRandom({ 0.3 })).state
+		expect(rules.wheelStatus(state, NOW).freeSpins).toBe(0)
+
+		local result = wheelAdmin.run(ADMIN, state, "resetWheelSpins", {}, ctx)
+
+		expect(result.ok).toBe(true)
+		expect(rules.wheelStatus(result.state, NOW).freeSpins).toBe(1)
+		expect(state.wheelFreeUsed).toBe(1)
+	end)
+
+	it("is hidden and refused while the lucky wheel is switched off", function()
+		expect(table.find(ids(admin.list()), "resetWheelSpins")).toBe(nil)
+		expect(admin.run(ADMIN, player(), "resetWheelSpins", {}, ctx).reason).toBe("FeatureOff")
+		expect(table.find(ids(wheelAdmin.list()), "resetWheelSpins") ~= nil).toBe(true)
+	end)
+
+	it("skipDays moves the wheel day back, so the free spins come back", function()
+		local state = rules.spinWheel(player(), NOW, TestKit.sequenceRandom({ 0.3 })).state
+		local skipped = wheelAdmin.run(ADMIN, state, "skipDays", { 1 }, ctx).state
+
+		expect(skipped.wheelDay).toBe(rules.dayNumber(NOW) - 1)
+		expect(rules.wheelStatus(skipped, NOW).freeSpins).toBe(1)
 	end)
 end)

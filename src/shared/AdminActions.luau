@@ -124,7 +124,7 @@ end
 -- Day fields of the PlayerState that hold a German day number (GameRules.dayNumber;
 -- 0 = never). skipDays moves them back so "today" looks like a later day.
 -- New daily/weekly mechanics (quests, wheel, chests, ...) add their day fields here.
-local DAY_FIELDS = { "playtimeDay", "loginClaimDay", "loginShownDay" }
+local DAY_FIELDS = { "playtimeDay", "loginClaimDay", "loginShownDay", "wheelDay" }
 
 local AdminActions = {}
 
@@ -392,6 +392,15 @@ AdminActions.BUILT_IN = {
 		params = { { name = "minutes", kind = "integer", min = 1, max = 600, default = 4 } },
 		run = function(env, state, args)
 			return env.rules.addPetXp(state, args[1] * 60)
+		end,
+	},
+	{
+		-- Lucky wheel (#98): today's free spins (daily + play time bonus) are available again.
+		id = "resetWheelSpins",
+		feature = "luckyWheel",
+		params = {},
+		run = function(env, state)
+			return env.rules.resetWheelSpins(state)
 		end,
 	},
 	{

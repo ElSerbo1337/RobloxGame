@@ -72,6 +72,10 @@ Texts.strings = {
 		de = "Pet-XP geben (ausgerüstete, Minuten Spielzeit)",
 		en = "Give pet XP (equipped, minutes of play)",
 	},
+	["admin.action.resetWheelSpins"] = {
+		de = "Gratis-Drehungen zurücksetzen",
+		en = "Reset free spins",
+	},
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -352,6 +356,33 @@ Texts.strings = {
 		en = "You already claimed this gift today.",
 	},
 	["gifts.UnknownGift"] = { de = "Dieses Geschenk gibt es nicht.", en = "This gift does not exist." },
+
+	-- Lucky wheel (#98)
+	["side.wheel"] = { de = "Glücksrad", en = "Lucky wheel" },
+	["side.wheelFree"] = { de = "Gratis!", en = "Free!" },
+	["wheel.title"] = { de = "🎡 Glücksrad", en = "🎡 Lucky wheel" },
+	["wheel.spinFree"] = { de = "Gratis drehen!", en = "Spin for free!" },
+	["wheel.spinFreeCount"] = { de = "Gratis drehen! ({count})", en = "Spin for free! ({count})" },
+	["wheel.spinPaid"] = { de = "Drehen: {price}", en = "Spin: {price}" },
+	["wheel.spinning"] = { de = "Dreht…", en = "Spinning…" },
+	["wheel.bonusIn"] = {
+		de = "Noch {time} spielen: 1 Gratis-Drehung mehr",
+		en = "Play {time} more: 1 more free spin",
+	},
+	["wheel.freeLeft"] = { de = "Gratis-Drehungen heute: {left}/{total}", en = "Free spins today: {left}/{total}" },
+	["wheel.noFreeLeft"] = { de = "Morgen gibt's wieder eine gratis.", en = "Another free spin tomorrow." },
+	["wheel.jackpot"] = { de = "JACKPOT!", en = "JACKPOT!" },
+	["wheel.won"] = { de = "Gewonnen: +{rewards}", en = "You won: +{rewards}" },
+	["wheel.chance"] = { de = "{percent} %", en = "{percent}%" },
+	["wheel.coinsMinutes"] = { de = "{minutes} Min Münzen", en = "{minutes} min of coins" },
+	["wheel.NoFreeSpin"] = {
+		de = "Keine Gratis-Drehung mehr – nochmal für Gems?",
+		en = "No free spin left – spin again for gems?",
+	},
+	["wheel.NotEnoughGems"] = { de = "Nicht genug Gems!", en = "Not enough gems!" },
+	["wheel.Busy"] = { de = "Das Rad dreht noch.", en = "The wheel is still spinning." },
+	["sign.wheel"] = { de = "🎡 Glücksrad", en = "🎡 Lucky wheel" },
+	["sign.wheelPrompt"] = { de = "Drehen", en = "Spin" },
 
 	-- Login calendar
 	["calendar.title"] = { de = "Login-Kalender", en = "Login calendar" },

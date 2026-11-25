@@ -348,6 +348,36 @@ local GameConfig = {
 		roundsPerMinute = 2,
 	},
 
+	-- Lucky wheel (#98, feature "luckyWheel"): 1 free spin per German day + 1 more after
+	-- bonusSpinMinutes of play time that day, further spins for spinPrice gems. The server
+	-- draws the field by weight (sum 100 = percent). "Coins" pays `minutes` of the player's
+	-- income (rules.incomePerMinute, at least minCoins); potions are random ones like gifts.
+	-- Average per spin: ~5.5 gems + 0.4 potions + ~3 minutes of income, so a paid spin
+	-- (25 gems) is a gamble, the two free spins add ~11 gems a day.
+	luckyWheel = {
+		spinPrice = 25,
+		freeSpinsPerDay = 1,
+		bonusSpinMinutes = 30,
+		minCoins = 50,
+		-- Wheel order (clockwise from the top); `color` = field colour on wheel and menu.
+		fields = {
+			{ id = "Coins5", weight = 24, color = { 255, 200, 40 }, rewards = { { kind = "Coins", minutes = 5 } } },
+			{ id = "Gems5", weight = 20, color = { 60, 230, 255 }, rewards = { { kind = "Gems", amount = 5 } } },
+			{ id = "Potion1", weight = 15, color = { 170, 110, 230 }, rewards = { { kind = "Potion", amount = 1 } } },
+			{ id = "Gems10", weight = 12, color = { 40, 170, 230 }, rewards = { { kind = "Gems", amount = 10 } } },
+			{ id = "Coins15", weight = 14, color = { 240, 150, 30 }, rewards = { { kind = "Coins", minutes = 15 } } },
+			{ id = "Potion2", weight = 8, color = { 130, 70, 200 }, rewards = { { kind = "Potion", amount = 2 } } },
+			{ id = "Gems25", weight = 5, color = { 30, 110, 210 }, rewards = { { kind = "Gems", amount = 25 } } },
+			{
+				id = "Jackpot",
+				weight = 2,
+				jackpot = true,
+				color = { 230, 70, 50 },
+				rewards = { { kind = "Gems", amount = 100 }, { kind = "Potion", amount = 3 } },
+			},
+		},
+	},
+
 	-- Play time gifts: reached after `minutes` of play time on a German day (the day's
 	-- play time starts over at midnight German time), each claimable once per day.
 	-- Fixed rewards, independent of progress: Gems / Potion (`amount`; a potion is a random
