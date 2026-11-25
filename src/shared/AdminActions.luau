@@ -25,7 +25,8 @@
 --   }
 -- `args` arrive already checked, in `params` order. `env` = { rules, config },
 -- `ctx` = { now, random }. Choice `names` tells the panel how to show a value:
--- "pet" | "potion" | "upgrade" | "topping" (config entry names) | "world" (world names); missing = id.
+-- "pet" | "potion" | "upgrade" | "topping" (config entry names) | "world" (world names)
+-- | "variant" (Texts pets.variant.<id>) | "yesNo" (Texts admin.choice.<id>); missing = id.
 -- Failure reasons: NotAdmin | UnknownAction | FeatureOff | InvalidArgument | rule reasons.
 
 export type Param = {
@@ -107,6 +108,11 @@ local function secretWorldIds(config: any): { string }
 	return list
 end
 
+-- Pet variants (#80) in merge order ("Normal" only without the config).
+local function variantIds(config: any): { string }
+	return if config.petVariants then table.clone(config.petVariants.order) else { "Normal" }
+end
+
 local function worldIds(config: any): { string }
 	local list = {}
 	for _, world in config.worlds do
@@ -151,18 +157,8 @@ AdminActions.BUILT_IN = {
 			{ name = "count", kind = "integer", min = 1, max = 100, default = 1 },
 		},
 		run = function(env, state, args)
-			local petId, count = args[1], args[2]
 			-- Same inventory limit as hatching (raise it with setUpgrade InventorySpace).
-			if #state.pets + count > env.rules.inventorySlots(state) then
-				return fail(state, "InventoryFull")
-			end
-			local newState = table.clone(state)
-			newState.pets = table.clone(state.pets)
-			for i = 1, count do
-				table.insert(newState.pets, { uid = state.nextPetUid + i - 1, petId = petId })
-			end
-			newState.nextPetUid = state.nextPetUid + count
-			return { ok = true, state = newState }
+			return env.rules.givePets(state, args[1], args[2])
 		end,
 	},
 	{
@@ -350,6 +346,30 @@ AdminActions.BUILT_IN = {
 			end
 			local newState = table.clone(state)
 			newState.seenWorldIntros = {}
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		-- A pet with variant (Normal/Gold/Rainbow) and Shiny flag (#80), within the inventory limit.
+		id = "givePetVariant",
+		params = {
+			{ name = "pet", kind = "choice", names = "pet", choices = petIds },
+			{ name = "variant", kind = "choice", names = "variant", choices = variantIds },
+			{ name = "shiny", kind = "choice", names = "yesNo", choices = { "no", "yes" } },
+			{ name = "count", kind = "integer", min = 1, max = 100, default = 5 },
+		},
+		run = function(env, state, args)
+			return env.rules.givePets(state, args[1], args[4], args[2], args[3] == "yes")
+		end,
+	},
+	{
+		-- Test chance for the Shiny roll per hatched pet (#80); 0 = normal chance again.
+		id = "setShinyChance",
+		feature = "shinyPets",
+		params = { { name = "percent", kind = "integer", min = 0, max = 100, default = 100 } },
+		run = function(_env, state, args)
+			local newState = table.clone(state)
+			newState.adminShinyChance = args[1] / 100
 			return { ok = true, state = newState }
 		end,
 	},

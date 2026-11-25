@@ -2,6 +2,7 @@ local TestKit = require("./TestKit")
 local GameConfig = require("../src/shared/GameConfig")
 local GameRules = require("../src/shared/GameRules")
 local ToppingField = require("../src/shared/ToppingField")
+local Texts = require("../src/shared/Texts")
 
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
@@ -507,6 +508,30 @@ describe("GameConfig pets and eggs", function()
 		expect(rules.secretChance(state, "GardenEgg")).toBe(1 / 20000)
 		state.activePotions = { Luck = 600 }
 		expect(rules.secretChance(state, "StoneOvenEgg")).toBe(2 / 20000)
+	end)
+
+	it("merges 5 equal pets into Gold (x2.5) and 5 Gold into Rainbow (x6) (#80)", function()
+		local variants = GameConfig.petVariants
+		expect(variants.order).toEqual({ "Normal", "Gold", "Rainbow" })
+		expect(variants.Gold.count).toBe(5)
+		expect(variants.Gold.from).toBe("Normal")
+		expect(variants.Gold.bonusMultiplier).toBe(2.5)
+		expect(variants.Rainbow.count).toBe(5)
+		expect(variants.Rainbow.from).toBe("Gold")
+		expect(variants.Rainbow.bonusMultiplier).toBe(6)
+		for _, id in variants.order do
+			expect(Texts.strings[`pets.variant.{id}`] ~= nil).toBe(true)
+		end
+	end)
+
+	it("hatches Shiny pets 1 in 200 (+50 %), twice as often with the luck potion (#80)", function()
+		expect(GameConfig.shinyPets.chance).toBe(1 / 200)
+		expect(GameConfig.shinyPets.bonusMultiplier).toBe(1.5)
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+		expect(rules.shinyChance(state)).toBe(1 / 200)
+		state.activePotions = { Luck = 600 }
+		expect(rules.shinyChance(state)).toBe(2 / 200)
 	end)
 
 	it("starts players with 3 pet slots", function()

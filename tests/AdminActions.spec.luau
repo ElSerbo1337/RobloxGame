@@ -16,6 +16,7 @@ local features = Features.new({
 	whatsNew = true,
 	secretPets = true,
 	worldIntro = true,
+	shinyPets = true,
 })
 local admin = AdminActions.new(rules, TestConfig, features)
 
@@ -82,6 +83,8 @@ describe("admin registry", function()
 			"giveSecretPet",
 			"setSecretChance",
 			"resetWorldIntros",
+			"givePetVariant",
+			"setShinyChance",
 			"resetProgress",
 		})
 	end)
@@ -418,6 +421,7 @@ describe("admin actions for golden toppings (#94)", function()
 				whatsNew = true,
 				secretPets = true,
 				worldIntro = true,
+				shinyPets = true,
 			})
 		)
 
@@ -494,10 +498,86 @@ describe("admin Secret pet actions (#81)", function()
 				whatsNew = true,
 				secretPets = false,
 				worldIntro = true,
+				shinyPets = true,
 			})
 		)
 		local listed = ids(offAdmin.list())
 		expect(table.find(listed, "giveSecretPet")).toBe(nil)
 		expect(offAdmin.run(ADMIN, fresh(), "setSecretChance", { 5 }, ctx).reason).toBe("FeatureOff")
+	end)
+end)
+
+describe("pet variant admin actions (#80)", function()
+	local config = table.clone(TestConfig)
+	config.petVariants = {
+		order = { "Normal", "Gold", "Rainbow" },
+		Normal = { bonusMultiplier = 1 },
+		Gold = { from = "Normal", count = 5, bonusMultiplier = 2.5 },
+		Rainbow = { from = "Gold", count = 5, bonusMultiplier = 6 },
+	}
+	config.shinyPets = { chance = 1 / 200, bonusMultiplier = 1.5 }
+	local variantRules = GameRules.new(config)
+	local variantAdmin = AdminActions.new(variantRules, config, features)
+
+	local function fresh()
+		local state = variantRules.newPlayerState()
+		state.upgrades = { InventorySpace = 2 }
+		return state
+	end
+
+	it("offers the variants in merge order and yes/no for Shiny", function()
+		for _, info in variantAdmin.list() do
+			if info.id == "givePetVariant" then
+				expect(info.params[2].choices).toEqual({ "Normal", "Gold", "Rainbow" })
+				expect(info.params[2].names).toBe("variant")
+				expect(info.params[3].choices).toEqual({ "no", "yes" })
+				expect(info.params[3].names).toBe("yesNo")
+			end
+		end
+	end)
+
+	it("givePetVariant adds Gold/Rainbow/Shiny pets within the inventory limit", function()
+		local state = fresh()
+		local result = variantAdmin.run(ADMIN, state, "givePetVariant", { "Cat", "Rainbow", "yes", 2 }, ctx)
+		expect(result.ok).toBe(true)
+		expect(result.state.pets).toEqual({
+			{ uid = 1, petId = "Cat", variant = "Rainbow", shiny = true },
+			{ uid = 2, petId = "Cat", variant = "Rainbow", shiny = true },
+		})
+		local gold = variantAdmin.run(ADMIN, state, "givePetVariant", { "Cat", "Gold", "no", 5 }, ctx)
+		expect(gold.state.pets[5]).toEqual({ uid = 5, petId = "Cat", variant = "Gold" })
+		expect(variantAdmin.run(ADMIN, state, "givePetVariant", { "Cat", "Gold", "no", 11 }, ctx).reason).toBe(
+			"InventoryFull"
+		)
+		expect(variantAdmin.run(ADMIN, state, "givePetVariant", { "Cat", "Silver", "no", 1 }, ctx).reason).toBe(
+			"InvalidArgument"
+		)
+		expect(variantAdmin.run(ADMIN, state, "givePetVariant", { "Cat", "Gold", "maybe", 1 }, ctx).reason).toBe(
+			"InvalidArgument"
+		)
+		expect(variantAdmin.run(43, state, "givePetVariant", { "Cat", "Gold", "no", 1 }, ctx).reason).toBe("NotAdmin")
+	end)
+
+	it("setShinyChance sets the test chance and is hidden while shinyPets is off", function()
+		local result = variantAdmin.run(ADMIN, fresh(), "setShinyChance", { 100 }, ctx)
+		expect(result.ok).toBe(true)
+		expect(variantRules.shinyChance(result.state)).toBe(1)
+		local back = variantAdmin.run(ADMIN, result.state, "setShinyChance", { 0 }, ctx)
+		expect(variantRules.shinyChance(back.state)).toBe(1 / 200)
+
+		local offAdmin = AdminActions.new(
+			variantRules,
+			config,
+			Features.new({
+				adminPanel = true,
+				goldenToppings = true,
+				whatsNew = true,
+				secretPets = true,
+				shinyPets = false,
+				worldIntro = true,
+			})
+		)
+		expect(table.find(ids(offAdmin.list()), "setShinyChance")).toBe(nil)
+		expect(offAdmin.run(ADMIN, fresh(), "setShinyChance", { 5 }, ctx).reason).toBe("FeatureOff")
 	end)
 end)

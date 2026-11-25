@@ -407,6 +407,8 @@ local GameConfig = {
 				-- Secret pets (#81): not in the chance table, a separate roll (secretPets.chance x 2).
 				Secret = 2,
 			},
+			-- Shiny chance (#80) x2 while it runs (1 in 200 -> 1 in 100).
+			shinyChanceMultiplier = 2,
 		},
 		Speed = {
 			displayName = "Speed-Trank",
@@ -489,6 +491,23 @@ local GameConfig = {
 		-- per server (MessagingService allows ~150 + 60 x players publishes per minute).
 		announceMax = 5,
 		announceWindowSeconds = 60,
+	},
+
+	-- Pet variants (#80): `count` equal pets of the `from` variant merge into one of this
+	-- variant (always succeeds). `bonusMultiplier` scales the pet's config bonus
+	-- (GameRules.petBonus). Names: Texts "pets.variant.<id>".
+	petVariants = {
+		order = { "Normal", "Gold", "Rainbow" },
+		Normal = { bonusMultiplier = 1 },
+		Gold = { from = "Normal", count = 5, bonusMultiplier = 2.5 },
+		Rainbow = { from = "Gold", count = 5, bonusMultiplier = 6 },
+	},
+
+	-- Shiny pets (#80): every hatched pet rolls this chance (x the `shinyChanceMultiplier`
+	-- of running potions); Shiny adds +50 % on top of the variant (also Gold/Rainbow).
+	shinyPets = {
+		chance = 1 / 200,
+		bonusMultiplier = 1.5,
 	},
 
 	-- Pet id -> display name, rarity and coin bonus (0.1 = +10 % sell value; bonuses add up).

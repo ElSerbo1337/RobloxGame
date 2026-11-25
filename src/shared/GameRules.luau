@@ -19,6 +19,8 @@ export type PlayerState = {
 	adminGoldenChance: number,
 	-- Admin test chance (0-1) for the Secret roll per egg (#81); 0 = off.
 	adminSecretChance: number,
+	-- Admin test chance (0-1) for the Shiny roll per hatched pet (#80); 0 = off.
+	adminShinyChance: number,
 	-- HUD switch: collect toppings by walking over them. Free from the start.
 	autoCollect: boolean,
 	-- Rebirths done so far; each adds config.rebirth.multiplierPerRebirth to the coin
@@ -97,7 +99,29 @@ export type Order = {
 	expiresAt: number?,
 }
 
-export type OwnedPet = { uid: number, petId: string }
+-- One owned pet (#80 defines the shape; later tickets add optional fields).
+-- Optional fields are sparse: missing = default, so old saves and plain pets stay valid.
+--   uid      unique per player, never reused
+--   petId    key of config.pets
+--   variant  "Gold" | "Rainbow" (config.petVariants); nil = "Normal"
+--   shiny    true for Shiny pets (config.shinyPets); nil = not shiny
+-- Reserved for later tickets (read through the helpers below, so only they change):
+--   level, xp  pet levels (#90): fold the level factor into rules.petBonus and keep the
+--              highest level in mergedPet
+--   locked     lock (#91): true = never merged/deleted (rules.isPetLocked already checks it)
+--   name       custom name (#91), foundAt (#91 detail card)
+-- Index stars (#95): every new pet goes through addPet in GameRules (hatch, merge, admin).
+export type OwnedPet = {
+	uid: number,
+	petId: string,
+	variant: string?,
+	shiny: boolean?,
+	level: number?,
+	xp: number?,
+	locked: boolean?,
+	name: string?,
+	foundAt: number?,
+}
 
 export type LeaderboardScores = { Playtime: number, CoinsEarned: number, Rebirths: number }
 
@@ -115,6 +139,7 @@ export type Result = {
 	-- | "UnknownGift" | "GiftNotReady" | "GiftClaimed" | "UnknownHint" | "HintSeen"
 	-- | "LoginClaimed" | "CalendarShown"
 	-- | "UnknownSetting" | "InvalidValue"
+	-- | "FeatureOff" | "UnknownVariant" | "MaxVariant" | "NotEnoughPets"
 	reason: string?,
 	state: PlayerState,
 }
@@ -196,6 +221,19 @@ export type DeliveryReward = { reward: string, amount: number, potionId: string?
 export type DeliveryResult = Result & { reward: DeliveryReward? }
 
 export type OpenEggResult = Result & { pet: OwnedPet? }
+
+-- Merging pets (#80): the new pet and the uids of the pets used up (empty on failure).
+export type MergeResult = Result & { pet: OwnedPet?, consumed: { number } }
+
+-- A group of equal pets (same petId and variant) and how far it is from merging.
+export type MergeGroup = {
+	petId: string,
+	variant: string,
+	-- Variant the merge creates; `have` = usable pets (not locked), `need` = config count.
+	target: string,
+	have: number,
+	need: number,
+}
 
 -- Opening several eggs at once: the drawn pets in order (empty on failure).
 export type OpenEggsResult = Result & { pets: { OwnedPet } }
@@ -441,6 +479,7 @@ function GameRules.new(config: any)
 			pizzaGolden = {},
 			adminGoldenChance = 0,
 			adminSecretChance = 0,
+			adminShinyChance = 0,
 			autoCollect = false,
 			rebirths = 0,
 			upgrades = {},
@@ -1059,12 +1098,42 @@ function GameRules.new(config: any)
 		return 1 + config.rebirth.multiplierPerRebirth * state.rebirths
 	end
 
-	-- 1 + sum of the coin bonuses of all equipped pets (bonuses are additive).
+	-- Pet variants (#80): Normal -> Gold -> Rainbow (config.petVariants.order).
+	local VARIANTS = if config.petVariants then config.petVariants.order else { "Normal" }
+
+	-- The pet's variant id ("Normal" when the field is missing).
+	function rules.petVariant(pet: OwnedPet): string
+		return pet.variant or "Normal"
+	end
+
+	-- Locked pets (#91) are never merged. #91 only has to set `pet.locked = true`.
+	function rules.isPetLocked(pet: OwnedPet): boolean
+		return pet.locked == true
+	end
+
+	-- Bonus factor of a variant (Normal = 1, Gold = 2.5, Rainbow = 6 in the real config).
+	function rules.variantMultiplier(variant: string): number
+		local entry = config.petVariants and config.petVariants[variant]
+		return if entry then entry.bonusMultiplier else 1
+	end
+
+	-- Effective coin bonus of one owned pet: config bonus x variant x shiny (+50 %).
+	-- Equip best, the coin multiplier and the pet menu all use this.
+	-- #90 multiplies the level factor in here.
+	function rules.petBonus(pet: OwnedPet): number
+		local bonus = config.pets[pet.petId].bonus * rules.variantMultiplier(rules.petVariant(pet))
+		if pet.shiny and config.shinyPets then
+			bonus *= config.shinyPets.bonusMultiplier
+		end
+		return math.round(bonus * 1e6) / 1e6
+	end
+
+	-- 1 + sum of the effective coin bonuses of all equipped pets (bonuses are additive).
 	function rules.petMultiplier(state: PlayerState): number
 		local bonus = 0
 		for _, pet in state.pets do
 			if table.find(state.equipped, pet.uid) then
-				bonus += config.pets[pet.petId].bonus
+				bonus += rules.petBonus(pet)
 			end
 		end
 		-- Round to 6 decimals so 0.2 + 0.2 + 0.2 reads as 0.6 in the HUD and tests.
@@ -1325,6 +1394,36 @@ function GameRules.new(config: any)
 		return egg.pets[#egg.pets].pet
 	end
 
+	-- Chance (0-1) that one hatched pet is Shiny (#80): config.shinyPets.chance times the
+	-- `shinyChanceMultiplier` of every running potion (luck potion; the shiny potion of #96
+	-- only needs that field), at most 1. The admin test chance wins when higher.
+	-- 0 without the config or while features.shinyPets is off.
+	function rules.shinyChance(state: PlayerState?): number
+		if config.shinyPets == nil or not featureOn("shinyPets") then
+			return 0
+		end
+		local chance = config.shinyPets.chance
+		if state then
+			for potionId, seconds in state.activePotions do
+				local potion = config.potions and config.potions[potionId]
+				if potion and seconds > 0 and potion.shinyChanceMultiplier then
+					chance *= potion.shinyChanceMultiplier
+				end
+			end
+			if state.adminShinyChance then
+				chance = math.max(chance, state.adminShinyChance)
+			end
+		end
+		return math.min(chance, 1)
+	end
+
+	-- The one place where pets enter the inventory (hatch, merge, admin), so the pet
+	-- index (#95) can record discoveries here. Mutates `newState` (already cloned).
+	local function addPet(newState: PlayerState, pet: OwnedPet)
+		table.insert(newState.pets, pet)
+		newState.nextPetUid = math.max(newState.nextPetUid, pet.uid + 1)
+	end
+
 	local function percent(share: number): number
 		return math.round(share * 100 * 1e4) / 1e4
 	end
@@ -1395,12 +1494,16 @@ function GameRules.new(config: any)
 		newState.coins = state.coins - egg.price * count
 		newState.pets = table.clone(state.pets)
 		local drawn = {}
-		for i = 1, count do
-			local pet: OwnedPet = { uid = state.nextPetUid + i - 1, petId = drawPet(state, eggId, egg, random) }
-			table.insert(newState.pets, pet)
+		local shinyChance = rules.shinyChance(state)
+		for _ = 1, count do
+			local pet: OwnedPet = { uid = newState.nextPetUid, petId = drawPet(state, eggId, egg, random) }
+			-- Shiny roll per pet after its draw (only when shiny pets exist, #80).
+			if shinyChance > 0 and random() < shinyChance then
+				pet.shiny = true
+			end
+			addPet(newState, pet)
 			table.insert(drawn, pet)
 		end
-		newState.nextPetUid = state.nextPetUid + count
 		advanceTutorial(newState, "OpenEgg")
 		return { ok = true, state = newState, pets = drawn }
 	end
@@ -2085,7 +2188,7 @@ function GameRules.new(config: any)
 		return { ok = true, state = newState }
 	end
 
-	-- Equips the pets with the highest coin bonus, filling all pet slots. On equal bonus,
+	-- Equips the pets with the highest effective coin bonus (rules.petBonus), filling all pet slots. On equal bonus,
 	-- pets that are already equipped stay, then older pets (lower uid) win.
 	-- `equipped` ends up ordered from best to weakest.
 	function rules.equipBest(state: PlayerState): Result
@@ -2095,7 +2198,7 @@ function GameRules.new(config: any)
 
 		local ranked = table.clone(state.pets)
 		table.sort(ranked, function(a, b)
-			local bonusA, bonusB = config.pets[a.petId].bonus, config.pets[b.petId].bonus
+			local bonusA, bonusB = rules.petBonus(a), rules.petBonus(b)
 			if bonusA ~= bonusB then
 				return bonusA > bonusB
 			end
@@ -2111,6 +2214,199 @@ function GameRules.new(config: any)
 		newState.equipped = {}
 		for i = 1, math.min(rules.petSlots(state), #ranked) do
 			table.insert(newState.equipped, ranked[i].uid)
+		end
+		return { ok = true, state = newState }
+	end
+
+	-- Variant a merge of `variant` pets creates (Normal -> Gold -> Rainbow), or nil.
+	function rules.mergeTarget(variant: string): string?
+		local index = table.find(VARIANTS, variant)
+		if index == nil then
+			return nil
+		end
+		return VARIANTS[index + 1]
+	end
+
+	-- How many equal pets one merge into `target` uses up.
+	local function mergeCount(target: string): number
+		return config.petVariants[target].count
+	end
+
+	-- Pets of `pets` that a merge of petId/variant may use (never locked ones).
+	local function mergeCandidates(pets: { OwnedPet }, petId: string, variant: string): { OwnedPet }
+		local list = {}
+		for _, pet in pets do
+			if pet.petId == petId and rules.petVariant(pet) == variant and not rules.isPetLocked(pet) then
+				table.insert(list, pet)
+			end
+		end
+		return list
+	end
+
+	-- Every group of equal pets (petId + variant) that can still be merged further, with
+	-- how many usable pets it has. Works on a pet list only, so the client can call it on
+	-- the replicated pets (merge buttons, red dot). Sorted by petId, then variant order.
+	function rules.mergeGroups(pets: { OwnedPet }): { MergeGroup }
+		if config.petVariants == nil or not featureOn("petMerge") then
+			return {}
+		end
+		local counts: { [string]: MergeGroup } = {}
+		local groups = {}
+		for _, pet in pets do
+			local variant = rules.petVariant(pet)
+			local target = rules.mergeTarget(variant)
+			if target == nil or rules.isPetLocked(pet) or config.pets[pet.petId] == nil then
+				continue
+			end
+			local key = `{pet.petId}|{variant}`
+			local group = counts[key]
+			if group == nil then
+				group = { petId = pet.petId, variant = variant, target = target, have = 0, need = mergeCount(target) }
+				counts[key] = group
+				table.insert(groups, group)
+			end
+			group.have += 1
+		end
+		table.sort(groups, function(a, b)
+			if a.petId ~= b.petId then
+				return a.petId < b.petId
+			end
+			return (table.find(VARIANTS, a.variant) :: number) < (table.find(VARIANTS, b.variant) :: number)
+		end)
+		return groups
+	end
+
+	-- Whether any group is ready to merge (red dot on the pet tile).
+	function rules.canMergeAny(pets: { OwnedPet }): boolean
+		for _, group in rules.mergeGroups(pets) do
+			if group.have >= group.need then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- The pet a merge creates from `consumed`. #90 keeps the highest level here.
+	local function mergedPet(uid: number, petId: string, target: string, consumed: { OwnedPet }): OwnedPet
+		local pet: OwnedPet = { uid = uid, petId = petId, variant = target }
+		for _, old in consumed do
+			if old.shiny then
+				pet.shiny = true
+			end
+		end
+		return pet
+	end
+
+	-- Merges `need` equal pets (petId + variant, see config.petVariants) into one pet of
+	-- the next variant: 5 Normal -> 1 Gold, 5 Gold -> 1 Rainbow. Always succeeds when
+	-- enough usable pets exist; locked pets are never used. Picks unequipped pets first,
+	-- then older ones; at most one Shiny unless needed - the new pet is Shiny when any
+	-- used pet was. Used pets that were equipped are put away first and the new pet takes
+	-- the first freed slot (it is stronger than each of them).
+	function rules.mergePets(state: PlayerState, petId: string, variant: string): MergeResult
+		local function reject(reason: string): MergeResult
+			return { ok = false, reason = reason, state = state, consumed = {} }
+		end
+		if config.petVariants == nil or not featureOn("petMerge") then
+			return reject("FeatureOff")
+		end
+		if type(petId) ~= "string" or config.pets[petId] == nil then
+			return reject("UnknownPet")
+		end
+		if type(variant) ~= "string" or table.find(VARIANTS, variant) == nil then
+			return reject("UnknownVariant")
+		end
+		local target = rules.mergeTarget(variant)
+		if target == nil then
+			return reject("MaxVariant")
+		end
+		local need = mergeCount(target)
+		local candidates = mergeCandidates(state.pets, petId, variant)
+		if #candidates < need then
+			return reject("NotEnoughPets")
+		end
+
+		-- Unequipped before equipped, then older (lower uid) first.
+		local function before(a: OwnedPet, b: OwnedPet): boolean
+			local equippedA = table.find(state.equipped, a.uid) ~= nil
+			local equippedB = table.find(state.equipped, b.uid) ~= nil
+			if equippedA ~= equippedB then
+				return not equippedA
+			end
+			return a.uid < b.uid
+		end
+		local plain, shinies = {}, {}
+		for _, pet in candidates do
+			table.insert(if pet.shiny then shinies else plain, pet)
+		end
+		table.sort(plain, before)
+		table.sort(shinies, before)
+		local chosen = {}
+		if #shinies > 0 then
+			table.insert(chosen, table.remove(shinies, 1))
+		end
+		for _, pet in plain do
+			if #chosen < need then
+				table.insert(chosen, pet)
+			end
+		end
+		for _, pet in shinies do
+			if #chosen < need then
+				table.insert(chosen, pet)
+			end
+		end
+
+		local used: { [number]: boolean } = {}
+		local consumed = {}
+		for _, pet in chosen do
+			used[pet.uid] = true
+			table.insert(consumed, pet.uid)
+		end
+		local newState = table.clone(state)
+		newState.pets = {}
+		for _, pet in state.pets do
+			if not used[pet.uid] then
+				table.insert(newState.pets, pet)
+			end
+		end
+		local pet = mergedPet(state.nextPetUid, petId, target, chosen)
+		addPet(newState, pet)
+		newState.equipped = {}
+		local slotTaken = false
+		for _, uid in state.equipped do
+			if not used[uid] then
+				table.insert(newState.equipped, uid)
+			elseif not slotTaken then
+				slotTaken = true
+				table.insert(newState.equipped, pet.uid)
+			end
+		end
+		return { ok = true, state = newState, pet = pet, consumed = consumed }
+	end
+
+	-- Adds `count` pets (admin panel, #74/#80) with an optional variant and shiny flag,
+	-- within the inventory limit like hatching.
+	function rules.givePets(state: PlayerState, petId: string, count: number, variant: string?, shiny: boolean?): Result
+		if config.pets[petId] == nil then
+			return fail(state, "UnknownPet")
+		end
+		if variant ~= nil and table.find(VARIANTS, variant) == nil then
+			return fail(state, "UnknownVariant")
+		end
+		if #state.pets + count > rules.inventorySlots(state) then
+			return fail(state, "InventoryFull")
+		end
+		local newState = table.clone(state)
+		newState.pets = table.clone(state.pets)
+		for _ = 1, count do
+			local pet: OwnedPet = { uid = newState.nextPetUid, petId = petId }
+			if variant ~= nil and variant ~= "Normal" then
+				pet.variant = variant
+			end
+			if shiny then
+				pet.shiny = true
+			end
+			addPet(newState, pet)
 		end
 		return { ok = true, state = newState }
 	end

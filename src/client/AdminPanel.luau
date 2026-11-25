@@ -49,6 +49,10 @@ local function choiceText(param: Param, value: string): string
 		return Lang.name(entry)
 	elseif param.names == "world" then
 		return Lang.worldName(value)
+	elseif param.names == "variant" then
+		return Lang.t(`pets.variant.{value}`)
+	elseif param.names == "yesNo" then
+		return Lang.t(`admin.choice.{value}`)
 	end
 	return value
 end

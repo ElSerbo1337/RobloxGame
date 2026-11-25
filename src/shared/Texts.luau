@@ -62,6 +62,11 @@ Texts.strings = {
 		de = "Welt-Intros wieder zeigen",
 		en = "Show world intros again",
 	},
+	["admin.action.givePetVariant"] = { de = "Pet mit Variante geben", en = "Give pet with variant" },
+	["admin.action.setShinyChance"] = {
+		de = "Shiny-Chance testen (%, 0 = aus)",
+		en = "Test shiny chance (%, 0 = off)",
+	},
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -73,6 +78,10 @@ Texts.strings = {
 	["admin.param.days"] = { de = "Tage", en = "Days" },
 	["admin.param.topping"] = { de = "Belag", en = "Topping" },
 	["admin.param.percent"] = { de = "Prozent", en = "Percent" },
+	["admin.param.variant"] = { de = "Variante", en = "Variant" },
+	["admin.param.shiny"] = { de = "Shiny", en = "Shiny" },
+	["admin.choice.no"] = { de = "Nein", en = "No" },
+	["admin.choice.yes"] = { de = "Ja", en = "Yes" },
 
 	-- Unlock button at a world barrier
 	["unlock.open"] = {
@@ -216,6 +225,25 @@ Texts.strings = {
 		de = "Alle Pet-Plätze belegt – erst ein Pet ablegen!",
 		en = "All pet slots taken – unequip a pet first!",
 	},
+	-- Pet variants and Shiny (#80). pets.variant.<id> for GameConfig.petVariants.order.
+	["pets.variant.Normal"] = { de = "Normal", en = "Normal" },
+	["pets.variant.Gold"] = { de = "Gold", en = "Gold" },
+	["pets.variant.Rainbow"] = { de = "Regenbogen", en = "Rainbow" },
+	-- Pet names with variant/shiny: {pet} = the pet's name.
+	["pets.name.Gold"] = { de = "Gold-{pet}", en = "Golden {pet}" },
+	["pets.name.Rainbow"] = { de = "Regenbogen-{pet}", en = "Rainbow {pet}" },
+	["pets.name.shiny"] = { de = "✨ {pet}", en = "✨ {pet}" },
+	["pets.shiny"] = { de = "✨ Shiny", en = "✨ Shiny" },
+	-- Merge button on the pet card: pets.merge.<target variant>.
+	["pets.merge.Gold"] = { de = "Vergolden ({have}/{need})", en = "Make gold ({have}/{need})" },
+	["pets.merge.Rainbow"] = { de = "Regenbogen ({have}/{need})", en = "Rainbow ({have}/{need})" },
+	["pets.mergeHint"] = {
+		de = "Verschmelzen: {need} gleiche Pets → 1 stärkeres",
+		en = "Merge: {need} equal pets → 1 stronger pet",
+	},
+	["pets.merged"] = { de = "{pet} entstanden! {bonus}", en = "{pet} created! {bonus}" },
+	["notify.NotEnoughPets"] = { de = "Dafür brauchst du mehr gleiche Pets!", en = "You need more equal pets!" },
+	["notify.MaxVariant"] = { de = "Stärker geht es nicht!", en = "It can't get any stronger!" },
 
 	-- Egg panel, egg animation and pet card (#69)
 	["egg.luck"] = { de = "{egg} 🍀 Glück!", en = "{egg} 🍀 Luck!" },
@@ -223,6 +251,9 @@ Texts.strings = {
 	["egg.secretName"] = { de = "??? (Geheim)", en = "??? (Secret)" },
 	["egg.secretOdds"] = { de = "1 : {odds}", en = "1 in {odds}" },
 	["egg.secretHatched"] = { de = "🤫 GEHEIM!", en = "🤫 SECRET!" },
+	-- Shiny pets (#80): hatch card title and the egg preview row.
+	["egg.shinyHatched"] = { de = "✨ SHINY!", en = "✨ SHINY!" },
+	["egg.shinyOdds"] = { de = "✨ Shiny-Chance 1 : {odds}", en = "✨ Shiny chance 1 in {odds}" },
 	["announce.secret"] = {
 		de = "🌟 {player} hat {pet} geschlüpft! (Geheim)",
 		en = "🌟 {player} hatched {pet}! (Secret)",
