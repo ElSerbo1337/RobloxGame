@@ -1354,6 +1354,10 @@ local GameConfig = {
 	-- Event currency id -> { displayName, displayNameEn }; kept through rebirths.
 	eventCurrencies = {},
 
+	-- First visit of a world (#79, switch features.worldIntro): length of the camera flight
+	-- over the island in seconds (3-4 s, skippable by a tap). The start world has none.
+	worldIntro = { seconds = 3.5 },
+
 	-- Worlds in unlock order. `unlockPrice` is paid once per player at the barrier in
 	-- front of the world (0 = open from the start). `toppingSpawns` weights are relative chances.
 	-- Unlock, shop and rebirth prices are tuned with `lune run balance` (#41, docs/balancing.md)

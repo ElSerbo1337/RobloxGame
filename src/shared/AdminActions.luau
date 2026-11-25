@@ -340,6 +340,20 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- World intros (#79) play again: right away in the current world, else on entering.
+		id = "resetWorldIntros",
+		feature = "worldIntro",
+		params = {},
+		run = function(_env, state)
+			if #state.seenWorldIntros == 0 then
+				return fail(state, "NotSeen")
+			end
+			local newState = table.clone(state)
+			newState.seenWorldIntros = {}
+			return { ok = true, state = newState }
+		end,
+	},
+	{
 		id = "resetProgress",
 		confirm = true,
 		params = {},

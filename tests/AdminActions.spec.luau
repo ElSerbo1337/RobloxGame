@@ -9,8 +9,14 @@ local Texts = require("../src/shared/Texts")
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
 local rules = GameRules.new(TestConfig)
-local features =
-	Features.new({ adminPanel = true, luckyWheel = false, goldenToppings = true, whatsNew = true, secretPets = true })
+local features = Features.new({
+	adminPanel = true,
+	luckyWheel = false,
+	goldenToppings = true,
+	whatsNew = true,
+	secretPets = true,
+	worldIntro = true,
+})
 local admin = AdminActions.new(rules, TestConfig, features)
 
 local NOW = 1_800_000_000
@@ -75,6 +81,7 @@ describe("admin registry", function()
 			"resetWhatsNew",
 			"giveSecretPet",
 			"setSecretChance",
+			"resetWorldIntros",
 			"resetProgress",
 		})
 	end)
@@ -299,6 +306,20 @@ describe("admin actions", function()
 		expect(admin.run(ADMIN, result.state, "resetWhatsNew", {}, ctx).reason).toBe("NotSeen")
 	end)
 
+	it("resetWorldIntros lets every world intro play again; refuses when none was seen (#79)", function()
+		local state = player()
+		state.unlockedWorlds = { "Farm" }
+		local seen = rules.enterWorld(state, "Farm").state
+
+		local result = admin.run(ADMIN, seen, "resetWorldIntros", {}, ctx)
+
+		expect(result.ok).toBe(true)
+		expect(result.state.seenWorldIntros).toEqual({})
+		expect(rules.enterWorld(result.state, "Farm").intro).toBe(true)
+		expect(seen.seenWorldIntros).toEqual({ "Farm" })
+		expect(admin.run(ADMIN, result.state, "resetWorldIntros", {}, ctx).reason).toBe("NotSeen")
+	end)
+
 	it("skipDays makes today's daily things look like they happened days ago", function()
 		local today = rules.dayNumber(NOW)
 		local state = player()
@@ -391,7 +412,13 @@ describe("admin actions for golden toppings (#94)", function()
 		local offAdmin = AdminActions.new(
 			rules,
 			TestConfig,
-			Features.new({ adminPanel = true, goldenToppings = false, whatsNew = true, secretPets = true })
+			Features.new({
+				adminPanel = true,
+				goldenToppings = false,
+				whatsNew = true,
+				secretPets = true,
+				worldIntro = true,
+			})
 		)
 
 		expect(table.find(ids(offAdmin.list()), "setGoldenChance")).toBeNil()
@@ -461,7 +488,13 @@ describe("admin Secret pet actions (#81)", function()
 		local offAdmin = AdminActions.new(
 			secretRules,
 			config,
-			Features.new({ adminPanel = true, goldenToppings = true, whatsNew = true, secretPets = false })
+			Features.new({
+				adminPanel = true,
+				goldenToppings = true,
+				whatsNew = true,
+				secretPets = false,
+				worldIntro = true,
+			})
 		)
 		local listed = ids(offAdmin.list())
 		expect(table.find(listed, "giveSecretPet")).toBe(nil)

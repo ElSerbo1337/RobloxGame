@@ -20,6 +20,12 @@ Texts.strings = {
 	["hud.autoCollectOn"] = { de = "Auto-Sammeln: AN", en = "Auto-Collect: ON" },
 	["hud.autoCollectOff"] = { de = "Auto-Sammeln: AUS", en = "Auto-Collect: OFF" },
 
+	-- World intro (#79): camera flight on the first visit of a world.
+	["intro.newWorld"] = { de = "Neue Welt!", en = "New world!" },
+	["intro.newToppings"] = { de = "Neue Beläge", en = "New toppings" },
+	["intro.skipTouch"] = { de = "Tippen zum Überspringen", en = "Tap to skip" },
+	["intro.skipMouse"] = { de = "Klicken zum Überspringen", en = "Click to skip" },
+
 	-- Admin panel (#74, only for GameConfig.admin.userIds). admin.action.<id> and
 	-- admin.param.<name> for every entry of AdminActions (tests check both exist).
 	["admin.title"] = { de = "🛠️ Admin-Panel", en = "🛠️ Admin Panel" },
@@ -51,6 +57,10 @@ Texts.strings = {
 	["admin.action.setSecretChance"] = {
 		de = "Geheim-Chance testen (%, 0 = aus)",
 		en = "Test Secret chance (%, 0 = off)",
+	},
+	["admin.action.resetWorldIntros"] = {
+		de = "Welt-Intros wieder zeigen",
+		en = "Show world intros again",
 	},
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },

@@ -73,6 +73,9 @@ export type PlayerState = {
 	-- World the player was last in (walked into or teleported to); "" = none yet.
 	-- Deaths and rejoins spawn there while it is unlocked (see spawnWorld).
 	lastWorldId: string,
+	-- World ids whose first-visit intro (#79) already played, in the order they played.
+	-- Kept on rebirth, so a world's intro plays once per player.
+	seenWorldIntros: { string },
 	-- Settings menu (#76): setting key (GameRules.SETTINGS) -> value the player chose.
 	-- Sparse: a missing key means "default" (resolveSettings). Kept on rebirth.
 	settings: { [string]: any },
@@ -115,6 +118,9 @@ export type Result = {
 	reason: string?,
 	state: PlayerState,
 }
+
+-- `intro`: true on the first entry of a world whose intro (#79) has not played yet.
+export type EnterWorldResult = Result & { intro: boolean? }
 
 -- `currencyEarned`: event currency id -> amount for event toppings (#77), {} otherwise.
 -- `goldenSold`: how many of the sold toppings were golden (#94).
@@ -459,6 +465,7 @@ function GameRules.new(config: any)
 			delivery = {},
 			phoneCalls = true,
 			lastWorldId = "",
+			seenWorldIntros = {},
 			settings = {},
 		}
 	end
@@ -598,20 +605,65 @@ function GameRules.new(config: any)
 		return { ok = true, state = state }
 	end
 
+	-- Toppings shown in a world's first-visit intro (#79): the world's toppings (spawn
+	-- order) that no earlier world spawns. Empty for unknown worlds.
+	function rules.newToppingsOf(worldId: string): { string }
+		local world, index = findWorld(worldId)
+		local list = {}
+		if world == nil then
+			return list
+		end
+		local earlier: { [string]: boolean } = {}
+		for i = 1, index - 1 do
+			for _, spawn in config.worlds[i].toppingSpawns do
+				earlier[spawn.topping] = true
+			end
+		end
+		for _, spawn in world.toppingSpawns do
+			if not earlier[spawn.topping] and not table.find(list, spawn.topping) then
+				table.insert(list, spawn.topping)
+			end
+		end
+		return list
+	end
+
+	-- Whether a world has a first-visit intro (#79): every known world except the ones
+	-- open from the start (no price, no rebirths: the tutorial runs there). Off with the
+	-- worldIntro switch.
+	function rules.hasWorldIntro(worldId: string): boolean
+		local world = findWorld(worldId)
+		if world == nil or not featureOn("worldIntro") then
+			return false
+		end
+		return (world.unlockPrice or 0) > 0 or (world.requiredRebirths or 0) > 0
+	end
+
+	function rules.hasSeenWorldIntro(state: PlayerState, worldId: string): boolean
+		return table.find(state.seenWorldIntros, worldId) ~= nil
+	end
+
 	-- The player walked or teleported into a world: remember it as the respawn world.
 	-- Only unlocked worlds count; entering the current world again keeps the same state.
-	function rules.enterWorld(state: PlayerState, worldId: string): Result
+	-- The first entry of a world with an intro (#79) also marks the intro as seen and
+	-- returns `intro = true` (the server then tells the client to play it).
+	function rules.enterWorld(state: PlayerState, worldId: string): EnterWorldResult
 		if findWorld(worldId) == nil then
 			return fail(state, "UnknownWorld")
 		end
 		if not rules.isWorldUnlocked(state, worldId) then
 			return fail(state, "WorldLocked")
 		end
-		if state.lastWorldId == worldId then
+		local intro = rules.hasWorldIntro(worldId) and not rules.hasSeenWorldIntro(state, worldId)
+		if state.lastWorldId == worldId and not intro then
 			return { ok = true, state = state }
 		end
 		local newState = table.clone(state)
 		newState.lastWorldId = worldId
+		if intro then
+			newState.seenWorldIntros = table.clone(state.seenWorldIntros)
+			table.insert(newState.seenWorldIntros, worldId)
+			return { ok = true, state = newState, intro = true }
+		end
 		return { ok = true, state = newState }
 	end
 
