@@ -236,7 +236,10 @@ describe("admin actions", function()
 		local result = admin.run(ADMIN, state, "givePet", { "Dragon", 2 }, ctx)
 
 		expect(result.ok).toBe(true)
-		expect(result.state.pets).toEqual({ { uid = 1, petId = "Dragon" }, { uid = 2, petId = "Dragon" } })
+		expect(result.state.pets).toEqual({
+			{ uid = 1, petId = "Dragon", foundAt = NOW },
+			{ uid = 2, petId = "Dragon", foundAt = NOW },
+		})
 		expect(result.state.nextPetUid).toBe(3)
 		expect(#state.pets).toBe(0)
 
@@ -554,11 +557,11 @@ describe("pet variant admin actions (#80)", function()
 		local result = variantAdmin.run(ADMIN, state, "givePetVariant", { "Cat", "Rainbow", "yes", 2 }, ctx)
 		expect(result.ok).toBe(true)
 		expect(result.state.pets).toEqual({
-			{ uid = 1, petId = "Cat", variant = "Rainbow", shiny = true },
-			{ uid = 2, petId = "Cat", variant = "Rainbow", shiny = true },
+			{ uid = 1, petId = "Cat", variant = "Rainbow", shiny = true, foundAt = NOW },
+			{ uid = 2, petId = "Cat", variant = "Rainbow", shiny = true, foundAt = NOW },
 		})
 		local gold = variantAdmin.run(ADMIN, state, "givePetVariant", { "Cat", "Gold", "no", 5 }, ctx)
-		expect(gold.state.pets[5]).toEqual({ uid = 5, petId = "Cat", variant = "Gold" })
+		expect(gold.state.pets[5]).toEqual({ uid = 5, petId = "Cat", variant = "Gold", foundAt = NOW })
 		expect(variantAdmin.run(ADMIN, state, "givePetVariant", { "Cat", "Gold", "no", 11 }, ctx).reason).toBe(
 			"InventoryFull"
 		)

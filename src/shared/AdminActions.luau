@@ -164,9 +164,9 @@ AdminActions.BUILT_IN = {
 			{ name = "pet", kind = "choice", names = "pet", choices = petIds },
 			{ name = "count", kind = "integer", min = 1, max = 100, default = 1 },
 		},
-		run = function(env, state, args)
+		run = function(env, state, args, ctx)
 			-- Same inventory limit as hatching (raise it with setUpgrade InventorySpace).
-			return env.rules.givePets(state, args[1], args[2])
+			return env.rules.givePets(state, args[1], args[2], nil, nil, ctx.now)
 		end,
 	},
 	{
@@ -366,8 +366,8 @@ AdminActions.BUILT_IN = {
 			{ name = "shiny", kind = "choice", names = "yesNo", choices = { "no", "yes" } },
 			{ name = "count", kind = "integer", min = 1, max = 100, default = 5 },
 		},
-		run = function(env, state, args)
-			return env.rules.givePets(state, args[1], args[4], args[2], args[3] == "yes")
+		run = function(env, state, args, ctx)
+			return env.rules.givePets(state, args[1], args[4], args[2], args[3] == "yes", ctx.now)
 		end,
 	},
 	{

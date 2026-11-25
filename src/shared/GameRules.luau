@@ -99,6 +99,15 @@ export type PlayerState = {
 	questStreakDay: number,
 	questWeekDay: number,
 	weeklyQuests: { Quest },
+	-- Pet management (#91). `autoDelete`: rarity id -> true for rarities that are deleted
+	-- right when they hatch (sparse; see setAutoDelete). `petsOwnedEver`: pet id -> true for
+	-- every pet id the player ever got (hatched, also auto-deleted, merged, given), so the
+	-- pet index (#95) counts deleted pets too. `petTeams`: one list of pet uids per team
+	-- (config.petManagement.teams, saved from the equipped pets; see saveTeam/equipTeam).
+	-- All kept on rebirth.
+	autoDelete: { [string]: boolean },
+	petsOwnedEver: { [string]: boolean },
+	petTeams: { { number } },
 }
 
 -- One quest (#97): kind (config.quests.kinds id), goal and progress (PlayMinutes counts
@@ -157,12 +166,12 @@ export type Order = {
 --   petId    key of config.pets
 --   variant  "Gold" | "Rainbow" (config.petVariants); nil = "Normal"
 --   shiny    true for Shiny pets (config.shinyPets); nil = not shiny
--- Reserved for later tickets (read through the helpers below, so only they change):
---   level, xp  pet levels (#90): fold the level factor into rules.petBonus and keep the
---              highest level in mergedPet
---   locked     lock (#91): true = never merged/deleted (rules.isPetLocked already checks it)
---   name       custom name (#91), foundAt (#91 detail card)
--- Index stars (#95): every new pet goes through addPet in GameRules (hatch, merge, admin).
+--   level, xp  pet levels (#90), see rules.petLevel / rules.petXp
+--   locked     lock (#91): true = never merged, deleted or auto-deleted (rules.isPetLocked)
+--   name       custom name (#91, filtered by TextService on the server; nil = config name)
+--   foundAt    Unix time the pet was hatched/made/given (#91 detail card; nil on old pets)
+-- Index stars (#95): every new pet goes through addPet in GameRules (hatch, merge, admin);
+-- auto-deleted pets only reach recordOwned (state.petsOwnedEver).
 export type OwnedPet = {
 	uid: number,
 	petId: string,
@@ -194,6 +203,7 @@ export type Result = {
 	-- | "FeatureOff" | "UnknownVariant" | "MaxVariant" | "NotEnoughPets"
 	-- | "UnknownQuest" | "UnknownQuestKind" | "QuestsExpired" | "QuestNotDone" | "QuestClaimed"
 	-- | "QuestDone" | "BonusNotReady" | "BonusClaimed" | "NoOtherQuest"
+	-- | "PetLocked" | "UnknownRarity" | "AutoDeleteBlocked" | "UnknownTeam" | "EmptyTeam" | "InvalidName"
 	reason: string?,
 	state: PlayerState,
 }
@@ -292,8 +302,12 @@ export type MergeGroup = {
 	need: number,
 }
 
--- Opening several eggs at once: the drawn pets in order (empty on failure).
-export type OpenEggsResult = Result & { pets: { OwnedPet } }
+-- Opening several eggs at once: the drawn pets in order (empty on failure);
+-- `autoDeleted[i]` = pets[i] was deleted right away (#91, not in the inventory).
+export type OpenEggsResult = Result & { pets: { OwnedPet }, autoDeleted: { boolean } }
+
+-- Deleting several pets at once (#91): how many were deleted.
+export type DeleteResult = Result & { deleted: number }
 
 -- The tutorial step a player is on, for the arrow and text on the client.
 export type TutorialInfo = {
@@ -568,6 +582,20 @@ function GameRules.new(config: any)
 	-- the calling action already made) in place.
 	local addQuestProgress: (newState: PlayerState, kind: string, amount: number) -> ()
 
+	-- Pet management numbers (#91); defaults when the config has no petManagement table.
+	local MANAGEMENT = config.petManagement or {}
+	local TEAM_COUNT: number = MANAGEMENT.teams or 3
+	local NAME_MAX_LENGTH: number = MANAGEMENT.nameMaxLength or 20
+	local NO_AUTO_DELETE: { string } = MANAGEMENT.noAutoDelete or { "Secret" }
+
+	local function emptyTeams(): { { number } }
+		local teams = {}
+		for i = 1, TEAM_COUNT do
+			teams[i] = {}
+		end
+		return teams
+	end
+
 	function rules.newPlayerState(): PlayerState
 		return {
 			version = STATE_VERSION,
@@ -614,6 +642,9 @@ function GameRules.new(config: any)
 			questStreakDay = 0,
 			questWeekDay = 0,
 			weeklyQuests = {},
+			autoDelete = {},
+			petsOwnedEver = {},
+			petTeams = emptyTeams(),
 		}
 	end
 
@@ -1220,9 +1251,10 @@ function GameRules.new(config: any)
 		return pet.variant or "Normal"
 	end
 
-	-- Locked pets (#91) are never merged. #91 only has to set `pet.locked = true`.
+	-- Locked pets (#91) are never merged, deleted or auto-deleted. While the petLock
+	-- switch is off, saved locks are ignored (they count again once it is on).
 	function rules.isPetLocked(pet: OwnedPet): boolean
-		return pet.locked == true
+		return pet.locked == true and featureOn("petLock")
 	end
 
 	-- Bonus factor of a variant (Normal = 1, Gold = 2.5, Rainbow = 6 in the real config).
@@ -1646,9 +1678,49 @@ function GameRules.new(config: any)
 
 	-- The one place where pets enter the inventory (hatch, merge, admin), so the pet
 	-- index (#95) can record discoveries here. Mutates `newState` (already cloned).
-	local function addPet(newState: PlayerState, pet: OwnedPet)
+	-- Marks `petId` as "ever owned" (#91, for the pet index #95). Mutates `newState`.
+	local function recordOwned(newState: PlayerState, petId: string)
+		local owned = newState.petsOwnedEver or {}
+		if owned[petId] then
+			return
+		end
+		owned = table.clone(owned)
+		owned[petId] = true
+		newState.petsOwnedEver = owned
+	end
+
+	-- `now` (optional) becomes the pet's foundAt (#91 detail card).
+	local function addPet(newState: PlayerState, pet: OwnedPet, now: number?)
+		if now ~= nil and pet.foundAt == nil then
+			pet.foundAt = now
+		end
 		table.insert(newState.pets, pet)
 		newState.nextPetUid = math.max(newState.nextPetUid, pet.uid + 1)
+		recordOwned(newState, pet.petId)
+	end
+
+	-- Whether the player ever had a pet of this id (#91): also deleted, auto-deleted and
+	-- merged ones. Pets in the inventory always count (saves from before #91).
+	function rules.hasOwnedPet(state: PlayerState, petId: string): boolean
+		if state.petsOwnedEver and state.petsOwnedEver[petId] then
+			return true
+		end
+		for _, pet in state.pets do
+			if pet.petId == petId then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- Whether a freshly hatched pet is deleted at once (#91): its rarity is ticked in
+	-- state.autoDelete, it is not Shiny, and the rarity may be auto-deleted at all.
+	local function autoDeletes(state: PlayerState, pet: OwnedPet): boolean
+		if not featureOn("petAutoDelete") or pet.shiny or state.autoDelete == nil then
+			return false
+		end
+		local rarity = config.pets[pet.petId].rarity
+		return state.autoDelete[rarity] == true and table.find(NO_AUTO_DELETE, rarity) == nil
 	end
 
 	local function percent(share: number): number
@@ -1695,10 +1767,19 @@ function GameRules.new(config: any)
 	end
 
 	-- Opens `count` eggs at once (1, or 3 after the "TripleOpen" gem upgrade): pays
-	-- count x price and adds count randomly drawn pets. All or nothing.
-	function rules.openEggs(state: PlayerState, eggId: string, count: number, random: () -> number): OpenEggsResult
+	-- count x price and adds count randomly drawn pets. All or nothing. `now` (optional)
+	-- is stored as the pets' foundAt. Auto-delete (#91): drawn pets of a ticked rarity are
+	-- not added (still "ever owned"); `autoDeleted[i]` is true for those. The free space
+	-- check stays count pets, so a result never depends on the roll.
+	function rules.openEggs(
+		state: PlayerState,
+		eggId: string,
+		count: number,
+		random: () -> number,
+		now: number?
+	): OpenEggsResult
 		local function reject(reason: string): OpenEggsResult
-			return { ok = false, reason = reason, state = state, pets = {} }
+			return { ok = false, reason = reason, state = state, pets = {}, autoDeleted = {} }
 		end
 		local egg = config.eggs[eggId]
 		if egg == nil then
@@ -1720,25 +1801,33 @@ function GameRules.new(config: any)
 		local newState = table.clone(state)
 		newState.coins = state.coins - egg.price * count
 		newState.pets = table.clone(state.pets)
-		local drawn = {}
+		local drawn, autoDeleted = {}, {}
 		local shinyChance = rules.shinyChance(state)
-		for _ = 1, count do
+		for i = 1, count do
 			local pet: OwnedPet = { uid = newState.nextPetUid, petId = drawPet(state, eggId, egg, random) }
 			-- Shiny roll per pet after its draw (only when shiny pets exist, #80).
 			if shinyChance > 0 and random() < shinyChance then
 				pet.shiny = true
 			end
-			addPet(newState, pet)
+			if autoDeletes(state, pet) then
+				-- The uid is used up anyway, so uids stay unique per hatch.
+				newState.nextPetUid += 1
+				recordOwned(newState, pet.petId)
+				autoDeleted[i] = true
+			else
+				addPet(newState, pet, now)
+				autoDeleted[i] = false
+			end
 			table.insert(drawn, pet)
 		end
 		advanceTutorial(newState, "OpenEgg")
 		addQuestProgress(newState, "OpenEggs", count)
-		return { ok = true, state = newState, pets = drawn }
+		return { ok = true, state = newState, pets = drawn, autoDeleted = autoDeleted }
 	end
 
 	-- Pays the egg price and adds a randomly drawn pet to the inventory.
-	function rules.openEgg(state: PlayerState, eggId: string, random: () -> number): OpenEggResult
-		local result = rules.openEggs(state, eggId, 1, random)
+	function rules.openEgg(state: PlayerState, eggId: string, random: () -> number, now: number?): OpenEggResult
+		local result = rules.openEggs(state, eggId, 1, random, now)
 		return { ok = result.ok, reason = result.reason, state = result.state, pet = result.pets[1] }
 	end
 
@@ -2527,23 +2616,266 @@ function GameRules.new(config: any)
 		return { ok = true, state = newState }
 	end
 
-	-- Removes a pet for good; an equipped pet is put away first. Its uid is never reused.
-	function rules.deletePet(state: PlayerState, uid: number): Result
-		if not ownsPet(state, uid) then
-			return fail(state, "UnknownPet")
+	local function findPet(state: PlayerState, uid: number): OwnedPet?
+		for _, pet in state.pets do
+			if pet.uid == uid then
+				return pet
+			end
 		end
+		return nil
+	end
 
+	-- Teams follow removed pets (#91): each team drops the `removed` uids; with
+	-- `replacement` (merge) the first removed uid of a team becomes that uid instead.
+	-- Mutates `newState` (already cloned).
+	local function updateTeams(newState: PlayerState, removed: { [number]: boolean }, replacement: number?)
+		local teams = {}
+		for i = 1, TEAM_COUNT do
+			local old = (newState.petTeams and newState.petTeams[i]) or {}
+			local team, replaced = {}, false
+			for _, uid in old do
+				if not removed[uid] then
+					table.insert(team, uid)
+				elseif replacement ~= nil and not replaced then
+					replaced = true
+					table.insert(team, replacement)
+				end
+			end
+			teams[i] = team
+		end
+		newState.petTeams = teams
+	end
+
+	-- Removes the pets with these uids (no checks); equipped ones are put away first and
+	-- teams drop them. Uids are never reused.
+	local function removePets(state: PlayerState, removed: { [number]: boolean }): PlayerState
 		local newState = table.clone(state)
 		newState.pets = {}
 		for _, pet in state.pets do
-			if pet.uid ~= uid then
+			if not removed[pet.uid] then
 				table.insert(newState.pets, pet)
 			end
 		end
-		newState.equipped = table.clone(state.equipped)
-		local index = table.find(newState.equipped, uid)
-		if index then
-			table.remove(newState.equipped, index)
+		newState.equipped = {}
+		for _, uid in state.equipped do
+			if not removed[uid] then
+				table.insert(newState.equipped, uid)
+			end
+		end
+		updateTeams(newState, removed, nil)
+		return newState
+	end
+
+	-- Removes a pet for good; an equipped pet is put away first. Its uid is never reused.
+	-- Locked pets (#91) cannot be deleted.
+	function rules.deletePet(state: PlayerState, uid: number): Result
+		local pet = findPet(state, uid)
+		if pet == nil then
+			return fail(state, "UnknownPet")
+		end
+		if rules.isPetLocked(pet) then
+			return fail(state, "PetLocked")
+		end
+		return { ok = true, state = removePets(state, { [uid] = true }) }
+	end
+
+	-- Deletes several pets at once (#91, selection mode). All or nothing: every uid must
+	-- be an owned, unlocked pet (duplicates count once).
+	function rules.deletePets(state: PlayerState, uids: { number }): DeleteResult
+		local function reject(reason: string): DeleteResult
+			return { ok = false, reason = reason, state = state, deleted = 0 }
+		end
+		if not featureOn("petMultiDelete") then
+			return reject("FeatureOff")
+		end
+		if type(uids) ~= "table" or #uids == 0 or #uids > #state.pets then
+			return reject("InvalidCount")
+		end
+		local removed: { [number]: boolean } = {}
+		local count = 0
+		for _, uid in uids do
+			if type(uid) ~= "number" then
+				return reject("UnknownPet")
+			end
+			local pet = findPet(state, uid)
+			if pet == nil then
+				return reject("UnknownPet")
+			end
+			if rules.isPetLocked(pet) then
+				return reject("PetLocked")
+			end
+			if not removed[uid] then
+				removed[uid] = true
+				count += 1
+			end
+		end
+		return { ok = true, state = removePets(state, removed), deleted = count }
+	end
+
+	-- Locks or unlocks a pet (#91). Stored sparsely (`locked = true` or missing).
+	function rules.setPetLocked(state: PlayerState, uid: number, locked: boolean): Result
+		if not featureOn("petLock") then
+			return fail(state, "FeatureOff")
+		end
+		if type(locked) ~= "boolean" then
+			return fail(state, "InvalidValue")
+		end
+		local found = findPet(state, uid)
+		if found == nil then
+			return fail(state, "UnknownPet")
+		end
+		if (found.locked == true) == locked then
+			return fail(state, "Unchanged")
+		end
+		local newState = table.clone(state)
+		newState.pets = {}
+		for _, pet in state.pets do
+			if pet.uid == uid then
+				pet = table.clone(pet)
+				pet.locked = if locked then true else nil
+			end
+			table.insert(newState.pets, pet)
+		end
+		return { ok = true, state = newState }
+	end
+
+	-- Rarities that may be ticked for auto-delete (#91), from common to rare (not Secret).
+	function rules.autoDeleteRarities(): { string }
+		local list = {}
+		for rarityId in config.rarities do
+			if table.find(NO_AUTO_DELETE, rarityId) == nil then
+				table.insert(list, rarityId)
+			end
+		end
+		table.sort(list, function(a, b)
+			return config.rarities[a].order < config.rarities[b].order
+		end)
+		return list
+	end
+
+	-- Ticks or unticks a rarity for auto-delete when hatching (#91). Shiny and locked
+	-- pets are never auto-deleted; Secret cannot be ticked.
+	function rules.setAutoDelete(state: PlayerState, rarity: string, enabled: boolean): Result
+		if not featureOn("petAutoDelete") then
+			return fail(state, "FeatureOff")
+		end
+		if type(rarity) ~= "string" or config.rarities[rarity] == nil then
+			return fail(state, "UnknownRarity")
+		end
+		if type(enabled) ~= "boolean" then
+			return fail(state, "InvalidValue")
+		end
+		if table.find(NO_AUTO_DELETE, rarity) then
+			return fail(state, "AutoDeleteBlocked")
+		end
+		local current = state.autoDelete or {}
+		if (current[rarity] == true) == enabled then
+			return fail(state, "Unchanged")
+		end
+		local newState = table.clone(state)
+		newState.autoDelete = table.clone(current)
+		newState.autoDelete[rarity] = if enabled then true else nil
+		return { ok = true, state = newState }
+	end
+
+	-- Pet teams (#91): TEAM_COUNT saved sets of pets to switch between.
+	function rules.teamCount(): number
+		return TEAM_COUNT
+	end
+
+	-- The uids saved in team `index` that the player still owns ({} for an unknown index).
+	function rules.petTeam(state: PlayerState, index: number): { number }
+		local team = state.petTeams and state.petTeams[index]
+		local list = {}
+		for _, uid in team or {} do
+			if ownsPet(state, uid) then
+				table.insert(list, uid)
+			end
+		end
+		return list
+	end
+
+	local function validTeam(index: any): boolean
+		return type(index) == "number" and index % 1 == 0 and index >= 1 and index <= TEAM_COUNT
+	end
+
+	-- Saves the equipped pets (in their order) as team `index`.
+	function rules.saveTeam(state: PlayerState, index: number): Result
+		if not featureOn("petTeams") then
+			return fail(state, "FeatureOff")
+		end
+		if not validTeam(index) then
+			return fail(state, "UnknownTeam")
+		end
+		if #state.equipped == 0 then
+			return fail(state, "NoPets")
+		end
+		local newState = table.clone(state)
+		local teams = emptyTeams()
+		for i = 1, TEAM_COUNT do
+			teams[i] = table.clone((state.petTeams and state.petTeams[i]) or {})
+		end
+		teams[index] = table.clone(state.equipped)
+		newState.petTeams = teams
+		return { ok = true, state = newState }
+	end
+
+	-- Equips team `index`: exactly its pets that still exist, in the saved order, at most
+	-- as many as there are pet slots.
+	function rules.equipTeam(state: PlayerState, index: number): Result
+		if not featureOn("petTeams") then
+			return fail(state, "FeatureOff")
+		end
+		if not validTeam(index) then
+			return fail(state, "UnknownTeam")
+		end
+		local team = rules.petTeam(state, index)
+		if #team == 0 then
+			return fail(state, "EmptyTeam")
+		end
+		local newState = table.clone(state)
+		newState.equipped = {}
+		for i = 1, math.min(#team, rules.petSlots(state)) do
+			table.insert(newState.equipped, team[i])
+		end
+		return { ok = true, state = newState }
+	end
+
+	-- Longest custom pet name (characters).
+	function rules.petNameMaxLength(): number
+		return NAME_MAX_LENGTH
+	end
+
+	-- Renames a pet (#91). The server passes the name already filtered by TextService;
+	-- the rules trim it and check length and characters. "" = back to the config name.
+	function rules.renamePet(state: PlayerState, uid: number, name: string): Result
+		if not featureOn("petRename") then
+			return fail(state, "FeatureOff")
+		end
+		if type(name) ~= "string" then
+			return fail(state, "InvalidName")
+		end
+		local found = findPet(state, uid)
+		if found == nil then
+			return fail(state, "UnknownPet")
+		end
+		local trimmed = string.match(name, "^%s*(.-)%s*$") :: string
+		local length = utf8.len(trimmed)
+		if length == nil or length > NAME_MAX_LENGTH or string.find(trimmed, "%c") then
+			return fail(state, "InvalidName")
+		end
+		local newName = if trimmed == "" then nil else trimmed
+		if found.name == newName then
+			return fail(state, "Unchanged")
+		end
+		local newState = table.clone(state)
+		newState.pets = {}
+		for _, pet in state.pets do
+			if pet.uid == uid then
+				pet = table.clone(pet)
+				pet.name = newName
+			end
+			table.insert(newState.pets, pet)
 		end
 		return { ok = true, state = newState }
 	end
@@ -2672,7 +3004,7 @@ function GameRules.new(config: any)
 	-- then older ones; at most one Shiny unless needed - the new pet is Shiny when any
 	-- used pet was. Used pets that were equipped are put away first and the new pet takes
 	-- the first freed slot (it is stronger than each of them).
-	function rules.mergePets(state: PlayerState, petId: string, variant: string): MergeResult
+	function rules.mergePets(state: PlayerState, petId: string, variant: string, now: number?): MergeResult
 		local function reject(reason: string): MergeResult
 			return { ok = false, reason = reason, state = state, consumed = {} }
 		end
@@ -2739,7 +3071,9 @@ function GameRules.new(config: any)
 			end
 		end
 		local pet = mergedPet(state.nextPetUid, petId, target, chosen)
-		addPet(newState, pet)
+		addPet(newState, pet, now)
+		-- Teams (#91): the new pet takes the place of the first used pet in each team.
+		updateTeams(newState, used, pet.uid)
 		newState.equipped = {}
 		local slotTaken = false
 		for _, uid in state.equipped do
@@ -3202,8 +3536,15 @@ function GameRules.new(config: any)
 	end
 
 	-- Adds `count` pets (admin panel, #74/#80) with an optional variant and shiny flag,
-	-- within the inventory limit like hatching.
-	function rules.givePets(state: PlayerState, petId: string, count: number, variant: string?, shiny: boolean?): Result
+	-- within the inventory limit like hatching. `now` (optional) = their foundAt.
+	function rules.givePets(
+		state: PlayerState,
+		petId: string,
+		count: number,
+		variant: string?,
+		shiny: boolean?,
+		now: number?
+	): Result
 		if config.pets[petId] == nil then
 			return fail(state, "UnknownPet")
 		end
@@ -3223,7 +3564,7 @@ function GameRules.new(config: any)
 			if shiny then
 				pet.shiny = true
 			end
-			addPet(newState, pet)
+			addPet(newState, pet, now)
 		end
 		return { ok = true, state = newState }
 	end

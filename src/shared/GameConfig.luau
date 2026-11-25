@@ -621,6 +621,14 @@ local GameConfig = {
 		xpToNext = { 300, 600, 900, 1200, 1800, 2400, 3000, 3600, 4800 },
 	},
 
+	-- Pet management (#91): saved pet teams, longest custom pet name (characters, filtered
+	-- by TextService on the server) and rarities that can never be auto-deleted.
+	petManagement = {
+		teams = 3,
+		nameMaxLength = 20,
+		noAutoDelete = { "Secret" },
+	},
+
 	-- Pet id -> display name, rarity and coin bonus (0.1 = +10 % sell value; bonuses add up).
 	-- Flat curve (#57): the best pet of a world (both eggs) gives +75/110/160/230/320/400/500 %
 	-- in worlds 1-7; the other pets of a world are scaled in the same proportion.
