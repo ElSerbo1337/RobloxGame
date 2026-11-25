@@ -517,7 +517,8 @@ end
 -- Quest kinds (#97) whose progress is reported somewhere in the rules; only these are
 -- drawn. Built in: addQuestProgress in the matching actions. A later feature (lucky
 -- wheel #98: "SpinWheel", hidden chests #100: "OpenChest") adds its kind here once its
--- rule action calls rules.questProgress, so quests for missing features never appear.
+-- rule action calls rules.questProgress (or addQuestProgress), so quests for missing
+-- features never appear.
 GameRules.QUEST_SOURCES = {
 	CollectToppings = true,
 	SellPizzas = true,
@@ -528,6 +529,7 @@ GameRules.QUEST_SOURCES = {
 	MergePets = true,
 	GoldenToppings = true,
 	UnlockWorld = true,
+	SpinWheel = true, -- lucky wheel (#98): rules.spinWheel
 } :: { [string]: boolean }
 
 function GameRules.new(config: any)
@@ -2174,6 +2176,7 @@ function GameRules.new(config: any)
 			table.insert(paid, 1, { kind = "Coins", amount = coins })
 		end
 		newState.wheelSpins = state.wheelSpins + 1
+		addQuestProgress(newState, "SpinWheel", 1)
 		return { ok = true, state = newState, rewards = paid, field = fieldIndex, free = free }
 	end
 

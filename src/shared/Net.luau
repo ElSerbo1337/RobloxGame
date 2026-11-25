@@ -58,6 +58,11 @@
 --                                    answer to RedeemCode (#99); reason is shown as `codes.<reason>`
 -- SecretAnnounce  server -> client  (playerName: string, petId: string)  someone (on any server) hatched
 --                                    a Secret pet (#81): show the banner
+-- ClaimQuest      client -> server  (period: "Daily" | "Weekly", index: number)  "pay out this finished quest" (#97)
+-- RerollQuest     client -> server  (index: number)            "swap this daily quest" (free once a day, then gems)
+-- ClaimQuestBonus client -> server  ()                           "open the bonus chest" (all daily quests done)
+-- QuestResult     server -> client  (ok: boolean, action: "Claim" | "Reroll" | "Bonus", reasonOrRewards: string | { GameRules.Reward },
+--                                    streakChest: boolean?)  answer to the three quest wishes
 -- WorldIntro      server -> client  (worldId: string)            first visit of this world (#79): play the
 --                                    camera flight with the world name and its new toppings (once per world,
 --                                    already marked as seen on the server)
@@ -96,6 +101,8 @@
 --   days = { { day, status "Claimed" | "Ready" | "Waiting", rewards = { { kind, amount } } } } }),
 --   LoginCalendarAutoOpen (German day number: set on the first join of a day; the client opens the
 --   calendar window once per value).
+-- Quests (see QuestService, #97): Quests (JSON GameRules.QuestStatus, the seconds left are counted
+--   down locally until the next update).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -146,6 +153,10 @@ local EVENTS = {
 	WorldIntro = true,
 	SpinWheel = true,
 	WheelResult = true,
+	ClaimQuest = true,
+	RerollQuest = true,
+	ClaimQuestBonus = true,
+	QuestResult = true,
 }
 
 local Net = {}

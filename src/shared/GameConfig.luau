@@ -416,7 +416,7 @@ local GameConfig = {
 	-- of the highest unlocked world - 1); EarnCoins: `incomeMinutes` x the income per minute
 	-- (rules.incomePerMinute). `feature`: only drawn while that switch is on; `minWorld`:
 	-- only from that world index on. Kinds whose progress source does not exist yet
-	-- (SpinWheel #98, OpenChest #100) are only drawn once GameRules.QUEST_SOURCES lists them.
+	-- (OpenChest #100) are only drawn once GameRules.QUEST_SOURCES lists them.
 	quests = {
 		dailyCount = 3,
 		weeklyCount = 3,

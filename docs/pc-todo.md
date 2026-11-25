@@ -1841,3 +1841,25 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Handy (Device-Emulation): Menü passt (schrumpft), Knopf gut drückbar; Kachel liegt ggf. im „Mehr“-Fenster, dann hat „Mehr“ den roten Punkt.
 - [ ] Rejoin → verbrauchte Gratis-Drehung bleibt verbraucht; nächster Tag (nach Mitternacht deutscher Zeit) → wieder gratis.
 - [ ] `GameConfig.features.luckyWheel = false` → kein Rad auf der Insel, keine Kachel, Admin-Aktion weg. Danach wieder `true`.
+
+## MEGA UPDATE – #97 Tägliche und wöchentliche Quests
+
+Neu: Kachel 📜 „Quests“ in der Seitenleiste (nach Rebirth/Welten) mit rotem Punkt, sobald eine Quest oder die Bonus-Truhe abholbereit ist, und Beschriftung „x/3“. Täglich 3 Quests (neu um 0 Uhr deutsche Zeit), Bonus-Truhe (20 Gems + 1 Trank) für alle 3, 1 Gratis-Neuwürfeln pro Tag (dann 10 Gems), 7 Bonus-Truhen am Stück = Serien-Truhe (100 Gems + Mega-Trank; solange es den Mega-Trank nicht gibt, ein zufälliger Trank). Wöchentlich 3 größere Quests (30 Gems, neu Montag 0 Uhr). Schalter: `GameConfig.features.dailyQuests` / `weeklyQuests`. Glücksrad-Quests („Drehe 2× am Glücksrad“) zählen jede Drehung (#98); Truhen-Quests erscheinen erst, wenn #100 seine Fortschritts-Quelle eingetragen hat. Sound `QuestDone` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort) – bitte eine passende „Roblox“-ID eintragen.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Quests.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Kachel „Quests“ öffnen → 3 Tagesquests mit Fortschrittsbalken, Belohnung (8 Gems oder 1 Trank), Knopf „🎲 Gratis“; darunter Bonus-Truhe (🔒), „🔥 Serie 0/7 Tage“, 3 Wochenquests; Überschriften zeigen „neu in … h … min“ bzw. „… T … h“.
+- [ ] Eine Quest spielen (z. B. Beläge sammeln / Pizza verkaufen / Ei öffnen) → Balken und „x/y“ steigen live mit.
+- [ ] „🎲 Gratis“ bei einer Quest → andere Quest-Art, Knopf zeigt danach „🎲 10 💎“; erneut würfeln zieht 10 Gems ab (ohne Gems: „Nicht genug Gems.“).
+- [ ] Admin-Panel → **Quest abschließen** (Art Täglich, Quest 1) → Sound (sobald ID eingetragen), Kachel hüpft, roter Punkt, Beschriftung „1/3“; im Menü „Abholen“ → Gems/Trank kommen an, Punkt verschwindet.
+- [ ] Quest 2 und 3 abschließen und abholen → Bonus-Truhe „Öffnen“ → 20 Gems + 1 Trank, Serie 1/7.
+- [ ] Serie testen: **Tage vorspulen** 1 → neue Tagesquests (Wochenquests bleiben, außer der Montag wird überschritten); alle 3 abschließen + Truhe → Serie 2/7. Das bis 7/7 wiederholen → Toast „Serien-Truhe! +100 Gems + …“. **Tage vorspulen** 2 ohne Truhe → Serie 0/7.
+- [ ] **Tage vorspulen** 7 → neue Wochenquests. **Quest abschließen** (Wöchentlich, 1) → „Abholen“ gibt 30 Gems.
+- [ ] **Quests neu würfeln** → sofort neue Tages- und Wochenquests, Gratis-Würfeln wieder da.
+- [ ] Rebirth machen → Quests und Fortschritt bleiben; neue Quests danach haben Mengen für Welt 1.
+- [ ] Welt freischalten, während „Schalte eine neue Welt frei“ aktiv ist → Quest fertig. Liefer-, Verschmelzen- und Goldbelag-Quests ebenso prüfen, wenn sie gezogen werden (sonst neu würfeln).
+- [ ] Rejoin → Quests und Fortschritt sind gespeichert. Mit `Language = en` die englischen Texte ansehen.
+- [ ] Handy-Ansicht (Device-Emulator): Menü scrollt, Knöpfe ≥ 60 px, nichts abgeschnitten.
+- [ ] `GameConfig.features.dailyQuests = false` → keine Kachel, Admin-Aktionen weg. Danach wieder `true`.

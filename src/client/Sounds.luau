@@ -80,6 +80,13 @@ local SOUNDS: { [string]: Entry } = {
 		volume = 0.7,
 		search = { "win", "prize", "reward jingle", "success", "slot win" },
 	},
+	-- A quest got done (#97). ID still empty: the local session picks one (Creator Store,
+	-- creator "Roblox").
+	QuestDone = {
+		id = "",
+		volume = 0.6,
+		search = { "quest complete", "success", "achievement", "level complete", "ding" },
+	},
 	-- Short fanfare for the rebirth celebration (#35).
 	Rebirth = { id = "9114898444", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
 	-- Background music per world, looped (cheerful, light).

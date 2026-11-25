@@ -19,6 +19,7 @@ local PetFollow = require(script.PetFollow)
 local PetMenu = require(script.PetMenu)
 local PortalMenu = require(script.PortalMenu)
 local PotionMenu = require(script.PotionMenu)
+local QuestMenu = require(script.QuestMenu)
 local RebirthMenu = require(script.RebirthMenu)
 local SecretBanner = require(script.SecretBanner)
 local SellAnimation = require(script.SellAnimation)
@@ -50,6 +51,8 @@ GiftMenu.start()
 LoginCalendarMenu.start()
 -- Lucky wheel (#98): side bar tile, menu and the spin animation of the 3D wheel.
 WheelMenu.start()
+-- Daily and weekly quests (#97): side bar tile with a red dot when a quest is done.
+QuestMenu.start()
 -- "What's new" window (#106): once per player, after the tutorial and the calendar.
 WhatsNewMenu.start()
 DeliveryMenu.start()

@@ -199,27 +199,28 @@ describe("quest pool and feature switches", function()
 		expect(table.find(pool, "SellPizzas") ~= nil).toBe(true)
 	end)
 
-	it("draws the lucky wheel and hidden chests only once their progress source is registered", function()
+	it("draws hidden chests only once their progress source is registered", function()
 		local farm = rules.newPlayerState()
 		farm.unlockedWorlds = { "Farm" }
 
-		local pool = rules.questPool(farm, "Daily")
-		expect(table.find(pool, "SpinWheel")).toBeNil()
-		expect(table.find(pool, "OpenChest")).toBeNil()
+		expect(table.find(rules.questPool(farm, "Daily"), "OpenChest")).toBeNil()
 
-		GameRules.QUEST_SOURCES.SpinWheel = true
 		GameRules.QUEST_SOURCES.OpenChest = true
 		local registered = rules.questPool(farm, "Daily")
-		local wheelOff = rulesWith(nil, { luckyWheel = false }).questPool(farm, "Daily")
+		local chestsOff = rulesWith(nil, { hiddenChests = false }).questPool(farm, "Daily")
 		local world1 = rules.questPool(rules.newPlayerState(), "Daily")
-		GameRules.QUEST_SOURCES.SpinWheel = nil
 		GameRules.QUEST_SOURCES.OpenChest = nil
 
-		expect(table.find(registered, "SpinWheel") ~= nil).toBe(true)
 		expect(table.find(registered, "OpenChest") ~= nil).toBe(true)
-		expect(table.find(wheelOff, "SpinWheel")).toBeNil()
+		expect(table.find(chestsOff, "OpenChest")).toBeNil()
 		-- Chests only from their world on (minWorld).
 		expect(table.find(world1, "OpenChest")).toBeNil()
+	end)
+
+	it("draws lucky wheel quests (#98) only while the wheel is switched on", function()
+		expect(table.find(rules.questPool(rules.newPlayerState(), "Daily"), "SpinWheel") ~= nil).toBe(true)
+		local off = rulesWith(nil, { luckyWheel = false })
+		expect(table.find(off.questPool(off.newPlayerState(), "Daily"), "SpinWheel")).toBeNil()
 	end)
 
 	it("draws 'unlock a world' only while the next world is in reach", function()
@@ -343,6 +344,15 @@ describe("quest progress", function()
 		expect(result.state.dailyQuests[1].progress).toBe(1)
 	end)
 
+	it("a lucky wheel spin counts", function()
+		local r = rulesWith({ "SpinWheel" })
+
+		local result = r.spinWheel(withQuests(r), NOW, sequenceRandom({ 0.3 }))
+
+		expect(result.ok).toBe(true)
+		expect(result.state.dailyQuests[1].progress).toBe(1)
+	end)
+
 	it("never goes past the goal and counts weekly quests too", function()
 		local r = rulesWith({ "SellPizzas" })
 		local state = withQuests(r)
@@ -357,8 +367,8 @@ describe("quest progress", function()
 	it("later features report progress through questProgress", function()
 		local state = withQuests(rulesWith({ "SellPizzas" }))
 
-		expect(rules.questProgress(state, "SpinWheel", 1).ok).toBe(true)
-		expect(rules.questProgress(state, "SpinWheel", 1).state).toBe(state) -- no wheel quest
+		expect(rules.questProgress(state, "OpenChest", 1).ok).toBe(true)
+		expect(rules.questProgress(state, "OpenChest", 1).state).toBe(state) -- no chest quest
 		expect(rules.questProgress(state, "Dance", 1).reason).toBe("UnknownQuestKind")
 		for _, amount in { 0, -1, 0 / 0, math.huge } do
 			expect(rules.questProgress(state, "SellPizzas", amount).reason).toBe("InvalidAmount")
@@ -592,5 +602,30 @@ describe("quests and saving", function()
 		expect(loaded.ok).toBe(true)
 		expect(loaded.state.questDay).toBe(0)
 		expect(#loaded.state.dailyQuests).toBe(0)
+	end)
+end)
+
+describe("quests in the real config", function()
+	local GameConfig = require("../src/shared/GameConfig")
+	local Texts = require("../src/shared/Texts")
+
+	it("every quest kind has a text in both languages and a known feature switch", function()
+		for _, kind in GameConfig.quests.kinds do
+			local text = Texts.strings[`quests.kind.{kind.id}`]
+			expect(text ~= nil and text.de ~= nil and text.en ~= nil).toBe(true)
+			if kind.feature then
+				expect(GameConfig.features[kind.feature] ~= nil).toBe(true)
+			end
+			expect(kind.daily ~= nil or kind.weekly ~= nil).toBe(true)
+		end
+	end)
+
+	it("a new player gets 3 daily and 3 weekly quests from the real config", function()
+		local real = GameRules.new(GameConfig)
+
+		local state = real.refreshQuests(real.newPlayerState(), NOW, sequenceRandom({ 0.3, 0.6, 0.9, 0.1 })).state
+
+		expect(#state.dailyQuests).toBe(3)
+		expect(#state.weeklyQuests).toBe(3)
 	end)
 end)
