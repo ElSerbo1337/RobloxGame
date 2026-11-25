@@ -119,6 +119,14 @@ local function buildPanel(playerGui: Instance): Panel
 	-- Chance label per pet id, updated when the luck potion starts or ends.
 	local chanceLabels: { [string]: TextLabel } = {}
 
+	-- Tiny Secret chances as odds ("1 : 20.000"), all others in percent.
+	local function chanceText(entry: { rarity: string, chancePercent: number }): string
+		if entry.rarity == "Secret" and entry.chancePercent > 0 then
+			return Lang.t("egg.secretOdds", { odds = Lang.integer(math.round(100 / entry.chancePercent)) })
+		end
+		return UiKit.chanceText(entry.chancePercent)
+	end
+
 	local function updateLuck()
 		local current = eggId
 		if current == nil then
@@ -131,10 +139,14 @@ local function buildPanel(playerGui: Instance): Panel
 		local lucky = rules.eggPreview(current, { activePotions = activePotions } :: any)
 		local hasLuck = (activePotions.Luck or 0) > 0
 		title.Text = if hasLuck then Lang.t("egg.luck", { egg = Lang.name(egg) }) else Lang.name(egg)
-		for _, entry in lucky.pets do
+		local entries = table.clone(lucky.pets)
+		if lucky.secret then
+			table.insert(entries, lucky.secret)
+		end
+		for _, entry in entries do
 			local chance = chanceLabels[entry.petId]
 			if chance then
-				chance.Text = UiKit.chanceText(entry.chancePercent)
+				chance.Text = chanceText(entry)
 				chance.TextColor3 = if hasLuck then Color3.fromRGB(40, 130, 40) else UiKit.DARK
 			end
 		end
@@ -174,8 +186,14 @@ local function buildPanel(playerGui: Instance): Panel
 		end
 		table.clear(chanceLabels)
 
-		for i, entry in preview.pets do
+		-- The Secret pet of the egg's world (#81) as last row: "???" and odds like "1 : 20.000".
+		local entries = table.clone(preview.pets)
+		if preview.secret then
+			table.insert(entries, preview.secret)
+		end
+		for i, entry in entries do
 			local pet = GameConfig.pets[entry.petId]
+			local hidden = entry.rarity == "Secret"
 			local color = UiKit.rarityColor(entry.rarity)
 			local row = Instance.new("Frame")
 			row.LayoutOrder = i
@@ -193,11 +211,16 @@ local function buildPanel(playerGui: Instance): Panel
 			UiKit.corner(icon, 16)
 			UiKit.stroke(icon, 2)
 			icon.Parent = row
-			if PetIcon.show(icon, entry.petId, 1.35) then
+			if hidden then
+				local mark = UiKit.label(icon, "?")
+				mark.Size = UDim2.fromScale(1, 1)
+				mark.TextColor3 = Color3.new(1, 1, 1)
+				icon.BackgroundColor3 = UiKit.DARK
+			elseif PetIcon.show(icon, entry.petId, 1.35) then
 				icon.BackgroundColor3 = UiKit.CREAM
 			end
 
-			local name = UiKit.label(row, Lang.name(pet))
+			local name = UiKit.label(row, if hidden then Lang.t("egg.secretName") else Lang.name(pet))
 			name.Position = UDim2.fromOffset(46, 2)
 			name.Size = UDim2.new(0.5, -46, 0, 22)
 			name.TextXAlignment = Enum.TextXAlignment.Left
@@ -210,7 +233,7 @@ local function buildPanel(playerGui: Instance): Panel
 			rarity.TextStrokeColor3 = UiKit.DARK
 			rarity.TextStrokeTransparency = 0.3
 
-			local chance = UiKit.label(row, UiKit.chanceText(entry.chancePercent))
+			local chance = UiKit.label(row, chanceText(entry))
 			chance.Position = UDim2.new(0.5, 0, 0, 6)
 			chance.Size = UDim2.new(0.25, 0, 0, 28)
 			chanceLabels[entry.petId] = chance
@@ -224,7 +247,7 @@ local function buildPanel(playerGui: Instance): Panel
 		-- Tall enough for all rows; on short screens it gets shorter and the list scrolls.
 		-- Narrower on small screens, so it stays readable (HudLayout.eggPreviewSize).
 		local width = UiKit.Layout.eggPreviewSize(UiKit.isSmallScreen()).w
-		resize(Vector2.new(width, HEADER + #preview.pets * ROW_HEIGHT + FOOTER), HEADER + ROW_HEIGHT + FOOTER)
+		resize(Vector2.new(width, HEADER + #entries * ROW_HEIGHT + FOOTER), HEADER + ROW_HEIGHT + FOOTER)
 		updateLuck()
 		updateTriple()
 	end

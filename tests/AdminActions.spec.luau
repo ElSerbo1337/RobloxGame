@@ -9,7 +9,8 @@ local Texts = require("../src/shared/Texts")
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
 local rules = GameRules.new(TestConfig)
-local features = Features.new({ adminPanel = true, luckyWheel = false, goldenToppings = true, whatsNew = true })
+local features =
+	Features.new({ adminPanel = true, luckyWheel = false, goldenToppings = true, whatsNew = true, secretPets = true })
 local admin = AdminActions.new(rules, TestConfig, features)
 
 local NOW = 1_800_000_000
@@ -72,6 +73,8 @@ describe("admin registry", function()
 			"giveGoldenToppings",
 			"setGoldenChance",
 			"resetWhatsNew",
+			"giveSecretPet",
+			"setSecretChance",
 			"resetProgress",
 		})
 	end)
@@ -385,10 +388,80 @@ describe("admin actions for golden toppings (#94)", function()
 		local offAdmin = AdminActions.new(
 			rules,
 			TestConfig,
-			Features.new({ adminPanel = true, goldenToppings = false, whatsNew = true })
+			Features.new({ adminPanel = true, goldenToppings = false, whatsNew = true, secretPets = true })
 		)
 
 		expect(table.find(ids(offAdmin.list()), "setGoldenChance")).toBeNil()
 		expect(offAdmin.run(ADMIN, player(), "giveGoldenToppings", { "Salami", 1 }, ctx).reason).toBe("FeatureOff")
+	end)
+end)
+
+describe("admin Secret pet actions (#81)", function()
+	-- TestConfig with a Secret pet in world 1 only.
+	local config = table.clone(TestConfig)
+	config.secretPets = { chance = 1 / 20000 }
+	config.pets = table.clone(TestConfig.pets)
+	config.pets.GhostPet = { displayName = "Geist", rarity = "Secret", bonus = 5 }
+	config.worlds = table.clone(TestConfig.worlds)
+	config.worlds[1] = table.clone(TestConfig.worlds[1])
+	config.worlds[1].secretPet = "GhostPet"
+	local secretRules = GameRules.new(config)
+	local secretAdmin = AdminActions.new(secretRules, config, features)
+
+	local function fresh()
+		local state = secretRules.newPlayerState()
+		state.tutorialStep = 1000
+		return state
+	end
+
+	it("offers only worlds with a Secret pet", function()
+		for _, info in secretAdmin.list() do
+			if info.id == "giveSecretPet" then
+				expect(info.params[1].choices).toEqual({ "PizzeriaGarden" })
+				expect(info.params[1].names).toBe("world")
+			end
+		end
+	end)
+
+	it("giveSecretPet adds the world's Secret pet to the inventory", function()
+		local state = fresh()
+		local result = secretAdmin.run(ADMIN, state, "giveSecretPet", { "PizzeriaGarden" }, ctx)
+
+		expect(result.ok).toBe(true)
+		expect(result.state.pets[#result.state.pets].petId).toBe("GhostPet")
+		expect(result.state.nextPetUid).toBe(state.nextPetUid + 1)
+		expect(#state.pets).toBe(0)
+		expect(secretAdmin.run(ADMIN, state, "giveSecretPet", { "Farm" }, ctx).reason).toBe("InvalidArgument")
+	end)
+
+	it("giveSecretPet respects the inventory limit", function()
+		local state = fresh()
+		for i = 1, secretRules.inventorySlots(state) do
+			table.insert(state.pets, { uid = i, petId = "Hamster" })
+		end
+		expect(secretAdmin.run(ADMIN, state, "giveSecretPet", { "PizzeriaGarden" }, ctx).reason).toBe("InventoryFull")
+	end)
+
+	it("setSecretChance makes the next egg hatch the Secret pet (0 = off again)", function()
+		local state = fresh()
+		state.coins = 1000
+		local on = secretAdmin.run(ADMIN, state, "setSecretChance", { 100 }, ctx).state
+		expect(on.adminSecretChance).toBe(1)
+		expect(secretRules.openEgg(on, "TestEgg", TestKit.sequenceRandom({ 0.99, 0 })).pet.petId).toBe("GhostPet")
+
+		local off = secretAdmin.run(ADMIN, on, "setSecretChance", { 0 }, ctx).state
+		expect(off.adminSecretChance).toBe(0)
+		expect(secretRules.openEgg(off, "TestEgg", TestKit.sequenceRandom({ 0.99, 0 })).pet.petId).toBe("Hamster")
+	end)
+
+	it("hides both Secret actions while the feature is off", function()
+		local offAdmin = AdminActions.new(
+			secretRules,
+			config,
+			Features.new({ adminPanel = true, goldenToppings = true, whatsNew = true, secretPets = false })
+		)
+		local listed = ids(offAdmin.list())
+		expect(table.find(listed, "giveSecretPet")).toBe(nil)
+		expect(offAdmin.run(ADMIN, fresh(), "setSecretChance", { 5 }, ctx).reason).toBe("FeatureOff")
 	end)
 end)

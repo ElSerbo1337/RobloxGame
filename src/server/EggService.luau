@@ -12,6 +12,7 @@ local Workspace = game:GetService("Workspace")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
+local AnnounceService = require(script.Parent.AnnounceService)
 local PlayerStates = require(script.Parent.PlayerStates)
 local SignText = require(script.Parent.SignText)
 local Texts = require(ReplicatedStorage.Shared.Texts)
@@ -276,6 +277,12 @@ function EggService.start(spots: { EggSpot })
 			table.insert(petIds, pet.petId)
 		end
 		eggOpened:FireClient(player, eggId, table.unpack(petIds))
+		-- Secret pet (#81): announced on all servers.
+		for _, petId in petIds do
+			if GameConfig.pets[petId].rarity == "Secret" then
+				AnnounceService.secretHatched(player, petId)
+			end
+		end
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)

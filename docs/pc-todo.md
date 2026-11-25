@@ -1720,3 +1720,24 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Admin-Panel → **„Was ist neu“ wieder zeigen**, Rejoin → Fenster kommt nach ~3 s wieder.
 - [ ] Handy (Device-Emulation): Fenster passt auf den Bildschirm (scrollt notfalls), Knöpfe gut drückbar.
 - [ ] Schalter testen: `spawnMarketplace = false` → Tafel weg; `christmasCountdown = false` → Countdown-Schild weg; `whatsNew = false` → kein Fenster, kein Prompt. Danach wieder `true`.
+
+## MEGA UPDATE – #81 Seltenheit „Geheim“, Geheim-Pets und globale Nachricht
+
+Neue Seltenheit **Geheim** (türkis) über Mythisch: je Welt 1–7 ein Geheim-Pet (Mozzarella-Geist, Vogelscheuchen-Rabe, Schatz-Oktopus, Polarlicht-Wolf, Obsidian-Drache, Lebkuchen-Golem, Schwarzloch-Katze), eigener Wurf 1 : 20.000 pro Ei, mit Glücks-Trank 1 : 10.000. Beim Schlüpfen: Nachricht auf **allen** Servern (MessagingService, pro Server max. 5 pro Minute). Ab Legendär: Bildschirm-Färbung + Lichtstrahlen; Geheim: lange, dunkle Spannungs-Animation, „🤫 GEHEIM!“. Schalter: `secretPets` (Wurf, Admin-Aktionen), `secretAnnouncement` (Banner/Nachricht). Sound `Secret` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort).
+
+Vorher: `lune run test` → alle grün (u. a. `tests/SecretPets.spec.luau`, `tests/SecretAnnounce.spec.luau`).
+
+**Modelle importieren** (einmalig): `assets/models/pets/` → MozzarellaGhost, ScarecrowRaven, TreasureOctopus, AuroraWolf, ObsidianDragon, GingerbreadGolem, BlackHoleCat (`.fbx`) wie die übrigen Pets nach `ReplicatedStorage.GameAssets.Models.Pets` (Vorschau aller 7: `assets/previews/pets/SecretPets.png`). Ohne Import: türkiser Platzhalter-Ball.
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Ei-Vorschau (Welt 1, beide Eier): letzte Zeile „??? (Geheim)“ mit schwarzem „?“-Bild und „1 : 20.000“; Glücks-Trank trinken → „1 : 10.000“. Englisch: „1 in 20,000“.
+- [ ] Admin-Panel → **Geheim-Pet geben** (Welt ◀ ▶) → Pet im Inventar, türkis, Bonus doppelt so hoch wie das beste Pet der Welt; ausrüsten → 3D-Modell folgt (nach Import).
+- [ ] Admin-Panel → **Geheim-Chance testen** 100 → Ei öffnen: Bildschirm wird dunkel, Ei färbt sich türkis und wackelt ~3 s länger, türkiser Blitz, Lichtstrahlen drehen sich, „🤫 GEHEIM!“ über der Karte, Karte bleibt 7 s. Danach **0** → wieder normale Eier.
+- [ ] „3 öffnen“ mit Geheim-Chance 100 → 3 Geheim-Karten, Effekte einmal.
+- [ ] Legendär/Mythisch schlüpfen (Glücks-Trank, Admin „Pet geben“ zählt nicht – echtes Ei nötig, ggf. viele Münzen geben): Färbung in Orange/Pink + Lichtstrahlen, normale Länge. Gewöhnlich–Episch: wie bisher.
+- [ ] Banner oben unter den Meldungen: „🌟 Name hat Mozzarella-Geist geschlüpft! (Geheim)“ mit Pet-Bild, läuft nach 6 s raus; nichts überdeckt Münzen/Pizza-Balken.
+- [ ] **2 Server** (Test-Experience, veröffentlicht; in Studio geht MessagingService nur eingeschränkt): auf Server A mit Geheim-Chance 100 ein Ei öffnen → Banner erscheint auf Server B (Handy/zweites Konto). Im Output keine „publish failed“-Warnung.
+- [ ] Drossel: auf Server A schnell 6× schlüpfen (Geheim-Chance 100) → auf A alle 6 Banner nacheinander (max. 3 in der Warteschlange), auf B höchstens 5 pro Minute; Output „throttled“ beim 6.
+- [ ] ⚙️ → Bildschirm-Blitze **aus** → bei Geheim/Legendär kein Blitz, keine Färbung, keine Strahlen; die lange Geheim-Animation und „GEHEIM!“ bleiben. ⚙️ → Ei-Animation überspringen **an** → Karten sofort (auch bei Geheim keine Spannungs-Phase), Färbung/Strahlen/„GEHEIM!“ (bei Blitzen an) trotzdem.
+- [ ] `GameConfig.features.secretAnnouncement = false` → kein Banner, Schlüpfen geht. `secretPets = false` → keine Geheim-Zeile in der Vorschau, Admin-Aktionen weg, kein Geheim-Wurf. Danach wieder `true`.

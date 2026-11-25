@@ -4,6 +4,7 @@ local Constants = require(ReplicatedStorage.Shared.Constants)
 local Net = require(ReplicatedStorage.Shared.Net)
 
 local AdminService = require(script.AdminService)
+local AnnounceService = require(script.AnnounceService)
 local BarrierService = require(script.BarrierService)
 local CameraService = require(script.CameraService)
 local DeliveryService = require(script.DeliveryService)
@@ -114,6 +115,8 @@ for _, world in worlds do
 		end
 	end
 end
+-- Global announcement of Secret pets (#81), before eggs can be opened.
+AnnounceService.start()
 EggService.start(eggSpots)
 -- New-player tutorial: starts on the spawn island; the arrow leads over the bridge
 -- (waypoint at the bridge head of world 1), then to toppings, oven, shop and egg.

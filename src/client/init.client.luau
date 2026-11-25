@@ -20,6 +20,7 @@ local PetMenu = require(script.PetMenu)
 local PortalMenu = require(script.PortalMenu)
 local PotionMenu = require(script.PotionMenu)
 local RebirthMenu = require(script.RebirthMenu)
+local SecretBanner = require(script.SecretBanner)
 local SellAnimation = require(script.SellAnimation)
 local SettingsMenu = require(script.SettingsMenu)
 local SignCulling = require(script.SignCulling)
@@ -60,6 +61,10 @@ task.spawn(Tutorial.start)
 -- Golden toppings (#94): glitter on toppings that are golden for this player.
 if Features.new(GameConfig.features).enabled("goldenToppings") then
 	GoldenGlitter.start()
+end
+-- Secret pets (#81): banner when anyone on any server hatches one.
+if Features.new(GameConfig.features).enabled("secretAnnouncement") then
+	task.spawn(SecretBanner.start)
 end
 -- Admin panel (#74): builds nothing unless this is an admin (GameConfig.admin.userIds).
 task.spawn(AdminPanel.start)

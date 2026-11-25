@@ -47,6 +47,11 @@ Texts.strings = {
 		de = "„Was ist neu“ wieder zeigen (Rejoin)",
 		en = 'Show "What\'s new" again (rejoin)',
 	},
+	["admin.action.giveSecretPet"] = { de = "Geheim-Pet geben", en = "Give Secret pet" },
+	["admin.action.setSecretChance"] = {
+		de = "Geheim-Chance testen (%, 0 = aus)",
+		en = "Test Secret chance (%, 0 = off)",
+	},
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -204,6 +209,14 @@ Texts.strings = {
 
 	-- Egg panel, egg animation and pet card (#69)
 	["egg.luck"] = { de = "{egg} 🍀 Glück!", en = "{egg} 🍀 Luck!" },
+	-- Secret pets (#81): hidden row in the egg preview, hatch card and global banner.
+	["egg.secretName"] = { de = "??? (Geheim)", en = "??? (Secret)" },
+	["egg.secretOdds"] = { de = "1 : {odds}", en = "1 in {odds}" },
+	["egg.secretHatched"] = { de = "🤫 GEHEIM!", en = "🤫 SECRET!" },
+	["announce.secret"] = {
+		de = "🌟 {player} hat {pet} geschlüpft! (Geheim)",
+		en = "🌟 {player} hatched {pet}! (Secret)",
+	},
 	["egg.openOne"] = { de = "1 öffnen – {price}", en = "Open 1 – {price}" },
 	["egg.openOneCoins"] = { de = "1 öffnen – {price} Münzen", en = "Open 1 – {price} coins" },
 	["egg.openThree"] = { de = "3 öffnen – {price}", en = "Open 3 – {price}" },

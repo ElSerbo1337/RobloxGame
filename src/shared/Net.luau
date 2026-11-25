@@ -52,6 +52,8 @@
 --                                    the code rules and the server handler come with #99)
 -- CodeResult      server -> client  (ok: boolean, reason: string?, rewards: { GameRules.Reward }?)
 --                                    answer to RedeemCode (#99); reason is shown as `codes.<reason>`
+-- SecretAnnounce  server -> client  (playerName: string, petId: string)  someone (on any server) hatched
+--                                    a Secret pet (#81): show the banner
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -122,6 +124,7 @@ local EVENTS = {
 	SetSetting = true,
 	RedeemCode = true,
 	CodeResult = true,
+	SecretAnnounce = true,
 }
 
 local Net = {}

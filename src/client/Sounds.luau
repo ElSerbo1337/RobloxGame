@@ -43,6 +43,13 @@ local SOUNDS: { [string]: Entry } = {
 		volume = 0.6,
 		search = { "magic shimmer", "golden sparkle", "treasure", "shine", "glitter chime" },
 	},
+	-- Secret pet hatched (#81): long magical reveal (hatch animation and global banner).
+	-- ID still empty: the local session picks one (Creator Store, creator "Roblox").
+	Secret = {
+		id = "",
+		volume = 0.8,
+		search = { "magic reveal", "mystery", "epic reveal", "choir", "legendary" },
+	},
 	-- Short fanfare for the rebirth celebration (#35).
 	Rebirth = { id = "9114898444", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
 	-- Background music per world, looped (cheerful, light).

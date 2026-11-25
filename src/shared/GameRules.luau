@@ -17,6 +17,8 @@ export type PlayerState = {
 	pizzaGolden: { [string]: number },
 	-- Admin panel test chance for golden toppings (0 = off; see goldenChance).
 	adminGoldenChance: number,
+	-- Admin test chance (0-1) for the Secret roll per egg (#81); 0 = off.
+	adminSecretChance: number,
 	-- HUD switch: collect toppings by walking over them. Free from the start.
 	autoCollect: boolean,
 	-- Rebirths done so far; each adds config.rebirth.multiplierPerRebirth to the coin
@@ -423,6 +425,7 @@ function GameRules.new(config: any)
 			pizza = {},
 			pizzaGolden = {},
 			adminGoldenChance = 0,
+			adminSecretChance = 0,
 			autoCollect = false,
 			rebirths = 0,
 			upgrades = {},
@@ -1206,7 +1209,12 @@ function GameRules.new(config: any)
 		end
 		local rarityWeights = if state then potionEffect(state, "Luck", "rarityWeights", nil) else nil
 		local factor = rarityWeights and rarityWeights.Secret or 1
-		return math.min(config.secretPets.chance * factor, 1)
+		local chance = config.secretPets.chance * factor
+		-- The admin test chance wins when higher.
+		if state and state.adminSecretChance then
+			chance = math.max(chance, state.adminSecretChance)
+		end
+		return math.min(chance, 1)
 	end
 
 	-- Picks a pet id for one egg. `random` returns a number in [0, 1). With a Secret pet in

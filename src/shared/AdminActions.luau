@@ -96,6 +96,17 @@ local function toppingIds(config: any): { string }
 	return sortedKeys(config.toppings)
 end
 
+-- Worlds with a Secret pet (#81), in world order.
+local function secretWorldIds(config: any): { string }
+	local list = {}
+	for _, world in config.worlds do
+		if world.secretPet and config.pets[world.secretPet] then
+			table.insert(list, world.id)
+		end
+	end
+	return list
+end
+
 local function worldIds(config: any): { string }
 	local list = {}
 	for _, world in config.worlds do
@@ -291,6 +302,40 @@ AdminActions.BUILT_IN = {
 			local newState = table.clone(state)
 			newState.seenHints = table.clone(state.seenHints)
 			table.remove(newState.seenHints, index)
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		-- The Secret pet of a world (#81) straight into the inventory (no hatch, no announcement).
+		id = "giveSecretPet",
+		feature = "secretPets",
+		params = { { name = "world", kind = "choice", names = "world", choices = secretWorldIds } },
+		run = function(env, state, args)
+			if #state.pets + 1 > env.rules.inventorySlots(state) then
+				return fail(state, "InventoryFull")
+			end
+			local petId
+			for _, world in env.config.worlds do
+				if world.id == args[1] then
+					petId = world.secretPet
+				end
+			end
+			local newState = table.clone(state)
+			newState.pets = table.clone(state.pets)
+			table.insert(newState.pets, { uid = state.nextPetUid, petId = petId })
+			newState.nextPetUid = state.nextPetUid + 1
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		-- Test chance for the Secret roll per egg (#81): real hatch incl. animation and
+		-- the announcement on all servers. 0 = normal chance again.
+		id = "setSecretChance",
+		feature = "secretPets",
+		params = { { name = "percent", kind = "integer", min = 0, max = 100, default = 100 } },
+		run = function(_env, state, args)
+			local newState = table.clone(state)
+			newState.adminSecretChance = args[1] / 100
 			return { ok = true, state = newState }
 		end,
 	},

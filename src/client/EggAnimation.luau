@@ -4,6 +4,10 @@
 -- side by side. Tap or wait to close.
 -- Settings (#76): "skip egg animation" shows the cards right away; "screen flashes off"
 -- drops the white flash.
+-- Rare hatches (#81): from Legendary on the screen is tinted in the rarity colour and
+-- light rays turn behind the cards; a Secret pet gets a much longer, darker build-up,
+-- a "GEHEIM!" title and stays longer. Tint, rays and flashes only with
+-- Settings.screenFlashes(); skipping the animation also skips the Secret build-up.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -19,6 +23,14 @@ local UiKit = require(script.Parent.UiKit)
 
 local CARD_WIDTH = 300
 local CARD_GAP = 16
+-- Rarity order (GameConfig.rarities) from which rare-hatch effects play (Legendary).
+local RARE_ORDER = GameConfig.rarities.Legendary.order
+local RAY_COUNT = 12
+-- Seconds until the cards close by themselves (normal / Secret).
+local CLOSE_SECONDS = 3
+local SECRET_CLOSE_SECONDS = 7
+local BACKDROP_COLOR = Color3.new(0, 0, 0)
+local BACKDROP_TRANSPARENCY = 0.45
 
 local EggAnimation = {}
 
@@ -44,9 +56,60 @@ function EggAnimation.start()
 	backdrop.Text = ""
 	backdrop.AutoButtonColor = false
 	backdrop.Size = UDim2.fromScale(1, 1)
-	backdrop.BackgroundColor3 = Color3.new(0, 0, 0)
-	backdrop.BackgroundTransparency = 0.45
+	backdrop.BackgroundColor3 = BACKDROP_COLOR
+	backdrop.BackgroundTransparency = BACKDROP_TRANSPARENCY
 	backdrop.Parent = gui
+
+	-- Light rays behind the cards (rare hatches): thin beams fading out to their ends,
+	-- the whole star turns slowly.
+	local rays = Instance.new("Frame")
+	rays.Name = "Rays"
+	rays.AnchorPoint = Vector2.new(0.5, 0.5)
+	rays.Position = UDim2.fromScale(0.5, 0.5)
+	rays.Size = UDim2.fromOffset(1400, 1400)
+	rays.BackgroundTransparency = 1
+	rays.ZIndex = 2
+	rays.Visible = false
+	rays.Parent = gui
+	local rayFade = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.42, 0.35),
+		NumberSequenceKeypoint.new(0.5, 0.1),
+		NumberSequenceKeypoint.new(0.58, 0.35),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	local rayParts: { Frame } = {}
+	for i = 1, RAY_COUNT do
+		local ray = Instance.new("Frame")
+		ray.AnchorPoint = Vector2.new(0.5, 0.5)
+		ray.Position = UDim2.fromScale(0.5, 0.5)
+		ray.Size = UDim2.new(0, 70, 1, 0)
+		ray.Rotation = (i - 1) * 180 / RAY_COUNT
+		ray.BorderSizePixel = 0
+		ray.ZIndex = 2
+		local gradient = Instance.new("UIGradient")
+		gradient.Rotation = 90
+		gradient.Transparency = rayFade
+		gradient.Parent = ray
+		ray.Parent = rays
+		table.insert(rayParts, ray)
+	end
+	local raySpin = TweenService:Create(
+		rays,
+		TweenInfo.new(10, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1),
+		{ Rotation = 360 }
+	)
+
+	-- "GEHEIM!" above the cards for Secret pets.
+	local secretTitle = UiKit.label(gui, "")
+	secretTitle.AnchorPoint = Vector2.new(0.5, 1)
+	secretTitle.Position = UDim2.new(0.5, 0, 0.5, -190)
+	secretTitle.Size = UDim2.fromOffset(700, 80)
+	secretTitle.TextColor3 = UiKit.rarityColor("Secret")
+	secretTitle.TextStrokeColor3 = UiKit.DARK
+	secretTitle.TextStrokeTransparency = 0
+	secretTitle.ZIndex = 8
+	secretTitle.Visible = false
 
 	local egg = Instance.new("Frame")
 	egg.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -146,6 +209,9 @@ function EggAnimation.start()
 	local function close()
 		if closable then
 			gui.Enabled = false
+			raySpin:Cancel()
+			rays.Visible = false
+			secretTitle.Visible = false
 		end
 	end
 	backdrop.Activated:Connect(close)
@@ -172,6 +238,20 @@ function EggAnimation.start()
 		end
 		cards.Visible = false
 
+		-- Rarest pet decides the effects (#81).
+		local topRarity = GameConfig.rarities[GameConfig.pets[petIds[1]].rarity]
+		local topRarityId = GameConfig.pets[petIds[1]].rarity
+		for _, petId in petIds do
+			local rarityId = GameConfig.pets[petId].rarity
+			if GameConfig.rarities[rarityId].order > topRarity.order then
+				topRarity = GameConfig.rarities[rarityId]
+				topRarityId = rarityId
+			end
+		end
+		local secret = topRarityId == "Secret"
+		local effects = Settings.screenFlashes()
+		local rareColor = UiKit.rarityColor(topRarityId)
+
 		-- The cracking egg wears the colour of the opened egg (GameConfig look, #29).
 		local eggConfig = GameConfig.eggs[eggId]
 		local look = eggConfig and eggConfig.look
@@ -181,6 +261,11 @@ function EggAnimation.start()
 		egg.Size = UDim2.fromOffset(180, 230)
 		crack.Visible = false
 		flash.BackgroundTransparency = 1
+		backdrop.BackgroundColor3 = BACKDROP_COLOR
+		backdrop.BackgroundTransparency = BACKDROP_TRANSPARENCY
+		raySpin:Cancel()
+		rays.Visible = false
+		secretTitle.Visible = false
 		gui.Enabled = true
 
 		local skip = Settings.skipEggAnimation()
@@ -190,6 +275,18 @@ function EggAnimation.start()
 			-- Wobble, getting stronger.
 			for _, angle in { 8, -8, 12, -12, 16, -16 } do
 				tween(egg, 0.12, { Rotation = angle }, Enum.EasingStyle.Sine).Completed:Wait()
+			end
+			-- Secret: the screen goes dark, the egg glows in the Secret colour and shakes
+			-- much longer before it bursts (extra ~3 s of suspense).
+			if secret then
+				tween(backdrop, 1.2, { BackgroundTransparency = 0.1 })
+				tween(egg, 2.6, { BackgroundColor3 = rareColor })
+				for i, angle in { 6, -6, 10, -10, 14, -14, 18, -18, 22, -22, 26, -26 } do
+					tween(egg, 0.2 - i * 0.008, { Rotation = angle }, Enum.EasingStyle.Sine).Completed:Wait()
+				end
+				if myId ~= playId then
+					return
+				end
 			end
 			tween(egg, 0.08, { Rotation = 0 })
 			crack.Visible = true
@@ -201,7 +298,8 @@ function EggAnimation.start()
 		end
 
 		-- Burst: flash, egg gone, pet card jumps out.
-		if not skip and Settings.screenFlashes() then
+		if not skip and effects then
+			flash.BackgroundColor3 = if secret then rareColor else Color3.new(1, 1, 1)
 			flash.BackgroundTransparency = 0
 		end
 		egg.Visible = false
@@ -210,10 +308,27 @@ function EggAnimation.start()
 		end
 		cards.Visible = true
 		UiKit.pop(cards, 0.2)
-		tween(flash, 0.5, { BackgroundTransparency = 1 })
+		tween(flash, if secret then 1.2 else 0.5, { BackgroundTransparency = 1 })
+		-- Legendary and rarer: tint the screen and turn light rays behind the cards.
+		if effects and topRarity.order >= RARE_ORDER then
+			backdrop.BackgroundColor3 = rareColor:Lerp(BACKDROP_COLOR, 0.35)
+			tween(backdrop, 0.4, { BackgroundTransparency = if secret then 0.15 else 0.3 })
+			for _, ray in rayParts do
+				ray.BackgroundColor3 = rareColor:Lerp(Color3.new(1, 1, 1), 0.45)
+			end
+			rays.Rotation = 0
+			rays.Visible = true
+			raySpin:Play()
+		end
+		if secret then
+			secretTitle.Text = Lang.t("egg.secretHatched")
+			secretTitle.Visible = true
+			UiKit.pop(secretTitle, 0.3)
+			Sounds.play("Secret")
+		end
 		closable = true
 
-		task.delay(3, function()
+		task.delay(if secret then SECRET_CLOSE_SECONDS else CLOSE_SECONDS, function()
 			if myId == playId then
 				close()
 			end
