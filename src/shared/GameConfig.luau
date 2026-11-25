@@ -384,7 +384,16 @@ local GameConfig = {
 			price = 30,
 			durationSeconds = 600,
 			-- Egg chances are multiplied per rarity, then scaled back to 100 %.
-			rarityWeights = { Common = 1, Uncommon = 1.2, Rare = 1.5, Epic = 2, Legendary = 2.5, Mythic = 3 },
+			rarityWeights = {
+				Common = 1,
+				Uncommon = 1.2,
+				Rare = 1.5,
+				Epic = 2,
+				Legendary = 2.5,
+				Mythic = 3,
+				-- Secret pets (#81): not in the chance table, a separate roll (secretPets.chance x 2).
+				Secret = 2,
+			},
 		},
 		Speed = {
 			displayName = "Speed-Trank",
@@ -454,6 +463,19 @@ local GameConfig = {
 		Epic = { displayName = "Episch", displayNameEn = "Epic", order = 4, color = { 170, 80, 240 } },
 		Legendary = { displayName = "Legendär", displayNameEn = "Legendary", order = 5, color = { 255, 170, 30 } },
 		Mythic = { displayName = "Mythisch", displayNameEn = "Mythic", order = 6, color = { 255, 60, 120 } },
+		-- One pet per world, never in an egg's chance table (#81, see `secretPets`).
+		Secret = { displayName = "Geheim", displayNameEn = "Secret", order = 7, color = { 20, 235, 210 } },
+	},
+
+	-- Secret pets (#81): every egg of a world with a `secretPet` first rolls this chance
+	-- (per egg, x the luck potion's rarityWeights.Secret); a hit hatches that pet instead
+	-- of one from the chance table. A hit is announced on all servers (MessagingService).
+	secretPets = {
+		chance = 1 / 20000,
+		-- Server side throttle of the global announcement: at most this many per window
+		-- per server (MessagingService allows ~150 + 60 x players publishes per minute).
+		announceMax = 5,
+		announceWindowSeconds = 60,
 	},
 
 	-- Pet id -> display name, rarity and coin bonus (0.1 = +10 % sell value; bonuses add up).
@@ -720,6 +742,50 @@ local GameConfig = {
 			displayNameEn = "Galaxy Pizza Leviathan",
 			rarity = "Mythic",
 			bonus = 5,
+		},
+		-- Secret pets (#81): one per world, twice the bonus of the world's best pet.
+		-- Models: tools/blender/build_secret_pets.py.
+		MozzarellaGhost = {
+			displayName = "Mozzarella-Geist",
+			displayNameEn = "Mozzarella Ghost",
+			rarity = "Secret",
+			bonus = 1.5,
+		},
+		ScarecrowRaven = {
+			displayName = "Vogelscheuchen-Rabe",
+			displayNameEn = "Scarecrow Raven",
+			rarity = "Secret",
+			bonus = 2.2,
+		},
+		TreasureOctopus = {
+			displayName = "Schatz-Oktopus",
+			displayNameEn = "Treasure Octopus",
+			rarity = "Secret",
+			bonus = 3.2,
+		},
+		AuroraWolf = {
+			displayName = "Polarlicht-Wolf",
+			displayNameEn = "Aurora Wolf",
+			rarity = "Secret",
+			bonus = 4.6,
+		},
+		ObsidianDragon = {
+			displayName = "Obsidian-Drache",
+			displayNameEn = "Obsidian Dragon",
+			rarity = "Secret",
+			bonus = 6.4,
+		},
+		GingerbreadGolem = {
+			displayName = "Lebkuchen-Golem",
+			displayNameEn = "Gingerbread Golem",
+			rarity = "Secret",
+			bonus = 8,
+		},
+		BlackHoleCat = {
+			displayName = "Schwarzloch-Katze",
+			displayNameEn = "Black Hole Cat",
+			rarity = "Secret",
+			bonus = 10,
 		},
 	},
 
@@ -1277,6 +1343,8 @@ local GameConfig = {
 			},
 			-- Eggs standing in this world: first egg, then the pricier second egg (#39).
 			eggs = { "GardenEgg", "StoneOvenEgg" },
+			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
+			secretPet = "MozzarellaGhost",
 		},
 		{
 			id = "Farm",
@@ -1291,6 +1359,8 @@ local GameConfig = {
 				{ topping = "Ham", weight = 8 },
 			},
 			eggs = { "FarmEgg", "BarnEgg" },
+			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
+			secretPet = "ScarecrowRaven",
 		},
 		{
 			id = "Beach",
@@ -1304,6 +1374,8 @@ local GameConfig = {
 				{ topping = "Pineapple", weight = 15 },
 			},
 			eggs = { "BeachEgg", "ShellEgg" },
+			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
+			secretPet = "TreasureOctopus",
 		},
 		{
 			id = "Icebergs",
@@ -1317,6 +1389,8 @@ local GameConfig = {
 				{ topping = "IcebergLettuce", weight = 15 },
 			},
 			eggs = { "IceEgg", "GlacierEgg" },
+			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
+			secretPet = "AuroraWolf",
 		},
 		{
 			id = "Volcano",
@@ -1331,6 +1405,8 @@ local GameConfig = {
 				{ topping = "Jalapeno", weight = 15 },
 			},
 			eggs = { "VolcanoEgg", "MagmaEgg" },
+			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
+			secretPet = "ObsidianDragon",
 		},
 		{
 			id = "CandyLand",
@@ -1345,6 +1421,8 @@ local GameConfig = {
 				{ topping = "Marshmallow", weight = 15 },
 			},
 			eggs = { "CandyEgg", "BonbonEgg" },
+			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
+			secretPet = "GingerbreadGolem",
 		},
 		{
 			id = "Space",
@@ -1359,6 +1437,8 @@ local GameConfig = {
 				{ topping = "AlienMushroom", weight = 15 },
 			},
 			eggs = { "SpaceEgg", "NebulaEgg" },
+			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
+			secretPet = "BlackHoleCat",
 		},
 	},
 }

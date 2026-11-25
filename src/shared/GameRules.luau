@@ -140,6 +140,8 @@ export type EggPreview = {
 	price: number,
 	-- Sorted from most common to rarest.
 	pets: { { petId: string, rarity: string, chancePercent: number, bonus: number } },
+	-- The Secret pet of the egg's world (#81), with its chance (nil: none or feature off).
+	secret: { petId: string, rarity: string, chancePercent: number, bonus: number }?,
 }
 
 -- One world as shown in the portal menu; locked worlds are greyed out with their price.
@@ -1095,8 +1097,46 @@ function GameRules.new(config: any)
 		return weights, total
 	end
 
-	-- Picks a pet id from the egg's chance table. `random` returns a number in [0, 1).
-	local function drawPet(state: PlayerState, egg: any, random: () -> number): string
+	-- World each egg stands in (first world listing it), for the Secret pet (#81).
+	local eggWorld: { [string]: any } = {}
+	for _, world in config.worlds do
+		for _, eggId in world.eggs or {} do
+			if eggWorld[eggId] == nil then
+				eggWorld[eggId] = world
+			end
+		end
+	end
+
+	-- The Secret pet that can hatch from this egg (the one of the egg's world), or nil.
+	function rules.secretPetOf(eggId: string): string?
+		local world = eggWorld[eggId]
+		local petId = world and world.secretPet
+		if petId == nil or config.pets[petId] == nil then
+			return nil
+		end
+		return petId
+	end
+
+	-- Chance (0-1) that one egg hatches its world's Secret pet: config.secretPets.chance,
+	-- times the luck potion's `rarityWeights.Secret` while it runs. 0 without a Secret
+	-- pet, without the config or while features.secretPets is off.
+	function rules.secretChance(state: PlayerState?, eggId: string): number
+		if config.secretPets == nil or not featureOn("secretPets") or rules.secretPetOf(eggId) == nil then
+			return 0
+		end
+		local rarityWeights = if state then potionEffect(state, "Luck", "rarityWeights", nil) else nil
+		local factor = rarityWeights and rarityWeights.Secret or 1
+		return math.min(config.secretPets.chance * factor, 1)
+	end
+
+	-- Picks a pet id for one egg. `random` returns a number in [0, 1). With a Secret pet in
+	-- the egg's world, a first roll decides "Secret or not"; the chance table is only
+	-- rolled when it misses.
+	local function drawPet(state: PlayerState, eggId: string, egg: any, random: () -> number): string
+		local secretChance = rules.secretChance(state, eggId)
+		if secretChance > 0 and random() < secretChance then
+			return rules.secretPetOf(eggId) :: string
+		end
 		local weights, total = eggWeights(egg, state)
 		local roll = random() * total
 		for i, entry in egg.pets do
@@ -1108,25 +1148,37 @@ function GameRules.new(config: any)
 		return egg.pets[#egg.pets].pet
 	end
 
+	local function percent(share: number): number
+		return math.round(share * 100 * 1e4) / 1e4
+	end
+
 	-- What the egg can contain, for the floating preview above the egg. With a state,
-	-- the chances include that player's luck potion.
+	-- the chances include that player's luck potion. With a Secret pet, its chance is
+	-- listed apart (`secret`) and the other chances shrink by it, so all add up to 100 %.
 	function rules.eggPreview(eggId: string, state: PlayerState?): EggPreview
 		local egg = config.eggs[eggId]
 		local weights, total = eggWeights(egg, state)
+		local secretChance = rules.secretChance(state, eggId)
 		local pets = {}
 		for i, entry in egg.pets do
 			local pet = config.pets[entry.pet]
 			table.insert(pets, {
 				petId = entry.pet,
 				rarity = pet.rarity,
-				chancePercent = math.round(weights[i] / total * 100 * 1e4) / 1e4,
+				chancePercent = percent(weights[i] / total * (1 - secretChance)),
 				bonus = pet.bonus,
 			})
 		end
 		table.sort(pets, function(a, b)
 			return a.chancePercent > b.chancePercent
 		end)
-		return { price = egg.price, pets = pets }
+		local secret = nil
+		if secretChance > 0 then
+			local petId = rules.secretPetOf(eggId) :: string
+			local pet = config.pets[petId]
+			secret = { petId = petId, rarity = pet.rarity, chancePercent = percent(secretChance), bonus = pet.bonus }
+		end
+		return { price = egg.price, pets = pets, secret = secret }
 	end
 
 	-- Whether `count` eggs per press is a size the multi-open upgrade can unlock at all.
@@ -1167,7 +1219,7 @@ function GameRules.new(config: any)
 		newState.pets = table.clone(state.pets)
 		local drawn = {}
 		for i = 1, count do
-			local pet: OwnedPet = { uid = state.nextPetUid + i - 1, petId = drawPet(state, egg, random) }
+			local pet: OwnedPet = { uid = state.nextPetUid + i - 1, petId = drawPet(state, eggId, egg, random) }
 			table.insert(newState.pets, pet)
 			table.insert(drawn, pet)
 		end

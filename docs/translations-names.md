@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (70)
+## Pets (77)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -113,6 +113,20 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | StardustLion | Sternenstaub-Löwe | Stardust Lion | Nebula-Ei | Legendär | |
 | GalaxyPizzaLeviathan | Galaxie-Pizza-Leviathan | Galaxy Pizza Leviathan | Nebula-Ei | Mythisch | lang, aber genauso lang wie das Deutsche |
 
+### Geheim-Pets (#81)
+
+Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro Ei).
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| MozzarellaGhost | Mozzarella-Geist | Mozzarella Ghost | Welt 1 (beide Eier) | Geheim | |
+| ScarecrowRaven | Vogelscheuchen-Rabe | Scarecrow Raven | Welt 2 (beide Eier) | Geheim | |
+| TreasureOctopus | Schatz-Oktopus | Treasure Octopus | Welt 3 (beide Eier) | Geheim | |
+| AuroraWolf | Polarlicht-Wolf | Aurora Wolf | Welt 4 (beide Eier) | Geheim | |
+| ObsidianDragon | Obsidian-Drache | Obsidian Dragon | Welt 5 (beide Eier) | Geheim | |
+| GingerbreadGolem | Lebkuchen-Golem | Gingerbread Golem | Welt 6 (beide Eier) | Geheim | |
+| BlackHoleCat | Schwarzloch-Katze | Black Hole Cat | Welt 7 (beide Eier) | Geheim | |
+
 ## Beläge (22)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
@@ -200,7 +214,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | World4Shop | Großer Pizza-Shop | Big Pizza Shop | Eisberge | |
 | World7Shop | Riesiger Pizza-Shop | Giant Pizza Shop | Weltraum | |
 
-## Sonstige: Seltenheiten (6)
+## Sonstige: Seltenheiten (7)
 
 | Id | Deutsch | Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- |
@@ -210,3 +224,4 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | Epic | Episch | Epic | |
 | Legendary | Legendär | Legendary | |
 | Mythic | Mythisch | Mythic | |
+| Secret | Geheim | Secret | #81 |

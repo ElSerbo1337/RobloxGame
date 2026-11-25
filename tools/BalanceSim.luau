@@ -59,6 +59,12 @@ end
 
 function BalanceSim.run(config: any, options: Options?): Result
 	local opts: Options = options or {}
+	-- Secret pets (#81) are a 1 in 20,000 jackpot, not part of the expected curve: left out,
+	-- so their extra roll per egg does not shift the simulated luck.
+	if config.secretPets then
+		config = table.clone(config)
+		config.secretPets = nil
+	end
 	local rules = GameRules.new(config)
 	local random = lcg(opts.seed or 1)
 	local tick = opts.tickSeconds or 5

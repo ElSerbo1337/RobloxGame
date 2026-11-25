@@ -450,9 +450,9 @@ describe("GameConfig shops", function()
 end)
 
 describe("GameConfig pets and eggs", function()
-	local RARITIES = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic" }
+	local RARITIES = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret" }
 
-	it("has the 6 rarities from Gewöhnlich to Mythisch, each with its own color", function()
+	it("has the 7 rarities from Gewöhnlich to Geheim, each with its own color", function()
 		for order, rarityId in RARITIES do
 			local rarity = GameConfig.rarities[rarityId]
 			expect(rarity ~= nil).toBe(true)
@@ -461,6 +461,52 @@ describe("GameConfig pets and eggs", function()
 		end
 		expect(GameConfig.rarities.Common.displayName).toBe("Gewöhnlich")
 		expect(GameConfig.rarities.Mythic.displayName).toBe("Mythisch")
+		expect(GameConfig.rarities.Secret.displayName).toBe("Geheim")
+		local colors = {}
+		for _, rarityId in RARITIES do
+			local key = table.concat(GameConfig.rarities[rarityId].color, ",")
+			expect(colors[key]).toBe(nil)
+			colors[key] = true
+		end
+	end)
+
+	it("gives every world one Secret pet (#81) that is in no egg's chance table", function()
+		local inEggs = {}
+		for _, egg in GameConfig.eggs do
+			for _, entry in egg.pets do
+				inEggs[entry.pet] = true
+			end
+		end
+		local seen = {}
+		for _, world in GameConfig.worlds do
+			local pet = GameConfig.pets[world.secretPet]
+			expect(pet ~= nil).toBe(true)
+			expect(pet.rarity).toBe("Secret")
+			expect(inEggs[world.secretPet]).toBe(nil)
+			expect(seen[world.secretPet]).toBe(nil)
+			seen[world.secretPet] = true
+			-- Stronger than every pet of the world's eggs.
+			for _, eggId in world.eggs do
+				for _, entry in GameConfig.eggs[eggId].pets do
+					expect(pet.bonus > GameConfig.pets[entry.pet].bonus).toBe(true)
+				end
+			end
+		end
+		for petId, pet in GameConfig.pets do
+			if pet.rarity == "Secret" then
+				expect(seen[petId]).toBe(true)
+			end
+		end
+	end)
+
+	it("hatches Secret pets 1 in 20,000 per egg, twice as often with the luck potion", function()
+		expect(GameConfig.secretPets.chance).toBe(1 / 20000)
+		expect(GameConfig.potions.Luck.rarityWeights.Secret).toBe(2)
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+		expect(rules.secretChance(state, "GardenEgg")).toBe(1 / 20000)
+		state.activePotions = { Luck = 600 }
+		expect(rules.secretChance(state, "StoneOvenEgg")).toBe(2 / 20000)
 	end)
 
 	it("starts players with 3 pet slots", function()
