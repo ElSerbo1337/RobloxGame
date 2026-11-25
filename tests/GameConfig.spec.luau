@@ -1160,3 +1160,40 @@ describe("GameConfig leaderboards", function()
 		expect(ids).toEqual(expected)
 	end)
 end)
+
+describe("GameConfig event islands (#77)", function()
+	-- Prepared only: this update has no event islands; the checks hold for later ones.
+	it("has the (empty) lists for event islands and their currencies", function()
+		expect(type(GameConfig.eventWorlds)).toBe("table")
+		expect(type(GameConfig.eventCurrencies)).toBe("table")
+	end)
+
+	it("gives every event island names, a known currency, a time window and own toppings", function()
+		local worldIds = {}
+		for _, world in GameConfig.worlds do
+			worldIds[world.id] = true
+		end
+		for _, event in GameConfig.eventWorlds do
+			expect(worldIds[event.id]).toBe(nil)
+			expect(type(event.displayName)).toBe("string")
+			expect(type(event.displayNameEn)).toBe("string")
+			expect(GameConfig.eventCurrencies[event.currency] ~= nil).toBe(true)
+			expect(event.startsAt < event.endsAt).toBe(true)
+			for _, spawn in event.toppingSpawns do
+				expect(GameConfig.toppings[spawn.topping].currency).toBe(event.currency)
+			end
+		end
+		for _, currency in GameConfig.eventCurrencies do
+			expect(type(currency.displayName)).toBe("string")
+			expect(type(currency.displayNameEn)).toBe("string")
+		end
+	end)
+
+	it("lets no normal world spawn event toppings", function()
+		for _, world in GameConfig.worlds do
+			for _, spawn in world.toppingSpawns do
+				expect(GameConfig.toppings[spawn.topping].currency).toBe(nil)
+			end
+		end
+	end)
+end)

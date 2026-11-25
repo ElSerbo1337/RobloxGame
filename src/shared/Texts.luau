@@ -88,6 +88,12 @@ Texts.strings = {
 		en = "Unlock the previous world first!",
 	},
 	["notify.NotEnoughRebirths"] = { de = "Dafür brauchst du mehr Rebirths!", en = "You need more rebirths for that!" },
+	-- Event islands (#77, prepared for event updates)
+	["notify.EventClosed"] = { de = "Dieses Event läuft gerade nicht!", en = "This event is not running right now!" },
+	["notify.NotEnoughEventCurrency"] = {
+		de = "Nicht genug Event-Währung!",
+		en = "Not enough event currency!",
+	},
 	["notify.WorldUnlocked"] = { de = "Neue Welt freigeschaltet!", en = "New world unlocked!" },
 	["notify.InventoryFull"] = {
 		de = "Pet-Inventar voll! Lösche erst ein Pet.",
@@ -279,13 +285,16 @@ Texts.strings = {
 	["rebirth.price"] = { de = "Preis: {price} Münzen", en = "Price: {price} coins" },
 	["rebirth.progress"] = { de = "{percent} %", en = "{percent}%" },
 	["rebirth.info"] = {
-		de = "Weg: Münzen, Münz-Upgrades, Welten, Pizza, Auftrag.\nBleibt: Pets, Gems, Gem-Upgrades, Tränke im Inventar.",
-		en = "Lost: coins, coin upgrades, worlds, pizza, order.\nKept: pets, gems, gem upgrades, potions in inventory.",
+		de = "Weg: Münzen, Münz-Upgrades, Welten, Pizza, Auftrag.\nBleibt: Pets, Gems, Gem-Upgrades, Tränke (auch laufende).",
+		en = "Lost: coins, coin upgrades, worlds, pizza, order.\nKept: pets, gems, gem upgrades, potions (running ones too).",
 	},
-	["rebirth.potionWarning"] = {
-		de = "Achtung: Dein laufender Trank endet beim Rebirth!",
-		en = "Careful: your active potion ends on rebirth!",
+	-- Worlds the next rebirth opens (#77); {worlds} = world names, comma-separated.
+	["rebirth.opensWorlds"] = { de = "🌍 Öffnet: {worlds}", en = "🌍 Opens: {worlds}" },
+	["rebirth.nextTier"] = {
+		de = "Öffnet keine neue Welt. Nächste ab {count} Rebirths: {worlds}",
+		en = "Opens no new world. Next from {count} rebirths: {worlds}",
 	},
+	["rebirth.allWorlds"] = { de = "🌍 Alle Welten sind erreichbar.", en = "🌍 Every world is within reach." },
 	["rebirth.button"] = { de = "Rebirth!", en = "Rebirth!" },
 	["rebirth.yes"] = { de = "Ja, Rebirth!", en = "Yes, rebirth!" },
 	["rebirth.no"] = { de = "Nein", en = "No" },
@@ -293,7 +302,6 @@ Texts.strings = {
 		de = "Rebirth {number} für {price} Münzen?\nDanach: Münzen {multiplier}, Start in Welt 1.",
 		en = "Rebirth {number} for {price} coins?\nAfter that: coins {multiplier}, start in world 1.",
 	},
-	["rebirth.confirmPotion"] = { de = "Dein laufender Trank endet!", en = "Your active potion ends!" },
 	["rebirth.celebration"] = {
 		de = "Rebirth {number}! {multiplier} Münzen",
 		en = "Rebirth {number}! {multiplier} coins",

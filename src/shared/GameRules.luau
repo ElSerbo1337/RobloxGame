@@ -54,6 +54,8 @@ export type PlayerState = {
 	-- Potion id -> seconds of effect left for potions that are running (missing = not active).
 	-- Counts down only while the player is online (see tickPotions).
 	activePotions: { [string]: number },
+	-- Event currency id -> amount (#77): earned on event islands, kept through rebirths.
+	eventCurrencies: { [string]: number },
 	-- Delivery service (phone -> order -> delivery van). All fields optional:
 	-- `call` = order offered by the ringing phone, `order` = accepted order being delivered,
 	-- `nextCallAt` = earliest time (server clock, seconds) the phone rings again.
@@ -93,6 +95,7 @@ export type Result = {
 	-- | "UnknownEgg" | "UnknownPet" | "AlreadyEquipped" | "PetSlotsFull" | "NotEquipped"
 	-- | "InventoryFull" | "NoPets" | "NotEnoughGems" | "InvalidTime" | "MultiOpenLocked" | "InvalidCount"
 	-- | "UnknownPotion" | "NoPotion" | "OrderToppingsOnly"
+	-- | "EventClosed" | "UnknownCurrency" | "InvalidAmount" | "NotEnoughEventCurrency"
 	-- | "TutorialRunning" | "PhoneCallsOff" | "Unchanged" | "CallWaiting" | "OrderActive" | "PhoneNotReady" | "NoCall" | "NoOrder"
 	-- | "OrderExpired" | "WrongToppings" | "NotExpired"
 	-- | "UnknownGift" | "GiftNotReady" | "GiftClaimed" | "UnknownHint" | "HintSeen"
@@ -101,7 +104,8 @@ export type Result = {
 	state: PlayerState,
 }
 
-export type SellResult = Result & { coinsEarned: number }
+-- `currencyEarned`: event currency id -> amount for event toppings (#77), {} otherwise.
+export type SellResult = Result & { coinsEarned: number, currencyEarned: { [string]: number } }
 
 -- Collecting a gem topping can earn gems (0 otherwise).
 export type GemResult = Result & { gemsEarned: number }
@@ -188,8 +192,24 @@ export type RebirthOffer = {
 	-- Coins / price, at most 1.
 	progress: number,
 	affordable: boolean,
-	-- A potion is running: it would end with the rebirth.
-	potionWarning: boolean,
+	-- Worlds (ids, in world order) the next rebirth opens (#77): their rebirth tier is
+	-- reached with it. Empty if it opens none.
+	opensWorlds: { string },
+	-- When the next rebirth opens no world: the next tier that does (rebirths needed and
+	-- its worlds). nil while the next rebirth opens worlds or every world is in reach.
+	nextTier: { rebirths: number, worlds: { string } }?,
+}
+
+-- An event island as shown in the portal menu (#77).
+export type EventWorldEntry = {
+	worldId: string,
+	displayName: string,
+	-- Event currency of the island and how much of it the player has.
+	currency: string,
+	amount: number,
+	open: boolean,
+	startsAt: number,
+	endsAt: number,
 }
 
 -- A reward as configured for gifts (and the login calendar): a fixed `amount` of gems or
@@ -320,6 +340,7 @@ function GameRules.new(config: any)
 			tutorialStep = 1,
 			potions = {},
 			activePotions = {},
+			eventCurrencies = {},
 			delivery = {},
 			phoneCalls = true,
 			lastWorldId = "",
@@ -502,6 +523,76 @@ function GameRules.new(config: any)
 			})
 		end
 		return entries
+	end
+
+	-- ---------------------------------------------------------------- event islands (#77)
+	-- Event islands (config.eventWorlds) stand outside the normal world order: they are
+	-- reached through the portal while their event runs (startsAt <= now < endsAt) and
+	-- their toppings pay the island's own currency (see sellPizza). No coin price, no
+	-- rebirth tier, never a respawn world.
+
+	local function findEventWorld(worldId: string): any
+		for _, world in config.eventWorlds or {} do
+			if world.id == worldId then
+				return world
+			end
+		end
+		return nil
+	end
+
+	function rules.isEventWorldOpen(worldId: string, now: number): boolean
+		local world = findEventWorld(worldId)
+		return world ~= nil and now >= world.startsAt and now < world.endsAt
+	end
+
+	-- How much of an event currency the player has.
+	function rules.eventCurrency(state: PlayerState, currencyId: string): number
+		return state.eventCurrencies[currencyId] or 0
+	end
+
+	-- Whether a portal may send the player to an event island now. State unchanged.
+	function rules.eventTeleport(state: PlayerState, worldId: string, now: number): Result
+		if findEventWorld(worldId) == nil then
+			return fail(state, "UnknownWorld")
+		end
+		if not rules.isEventWorldOpen(worldId, now) then
+			return fail(state, "EventClosed")
+		end
+		return { ok = true, state = state }
+	end
+
+	-- Every event island in config order, as shown in the portal menu.
+	function rules.eventWorldMenu(state: PlayerState, now: number): { EventWorldEntry }
+		local entries = {}
+		for _, world in config.eventWorlds or {} do
+			table.insert(entries, {
+				worldId = world.id,
+				displayName = world.displayName,
+				currency = world.currency,
+				amount = rules.eventCurrency(state, world.currency),
+				open = rules.isEventWorldOpen(world.id, now),
+				startsAt = world.startsAt,
+				endsAt = world.endsAt,
+			})
+		end
+		return entries
+	end
+
+	-- Pays `amount` of an event currency (e.g. at a future event shop).
+	function rules.spendEventCurrency(state: PlayerState, currencyId: string, amount: number): Result
+		if config.eventCurrencies == nil or config.eventCurrencies[currencyId] == nil then
+			return fail(state, "UnknownCurrency")
+		end
+		if amount < 0 or amount ~= math.floor(amount) then
+			return fail(state, "InvalidAmount")
+		end
+		if rules.eventCurrency(state, currencyId) < amount then
+			return fail(state, "NotEnoughEventCurrency")
+		end
+		local newState = table.clone(state)
+		newState.eventCurrencies = table.clone(state.eventCurrencies)
+		newState.eventCurrencies[currencyId] = rules.eventCurrency(state, currencyId) - amount
+		return { ok = true, state = newState }
 	end
 
 	function rules.upgradeLevel(state: PlayerState, upgradeId: string): number
@@ -726,16 +817,23 @@ function GameRules.new(config: any)
 	-- potion (rounded down).
 	function rules.sellPizza(state: PlayerState): SellResult
 		if #state.pizza == 0 then
-			return { ok = false, reason = "PizzaEmpty", state = state, coinsEarned = 0 }
+			return { ok = false, reason = "PizzaEmpty", state = state, coinsEarned = 0, currencyEarned = {} }
 		end
 		local kept, sold = splitForOrder(state)
 		if #sold == 0 then
-			return { ok = false, reason = "OrderToppingsOnly", state = state, coinsEarned = 0 }
+			return { ok = false, reason = "OrderToppingsOnly", state = state, coinsEarned = 0, currencyEarned = {} }
 		end
 
+		-- Event toppings (`currency` set, #77) pay their plain value in that currency.
 		local toppingValue = 0
+		local currencyEarned: { [string]: number } = {}
 		for _, toppingId in sold do
-			toppingValue += config.toppings[toppingId].value
+			local topping = config.toppings[toppingId]
+			if topping.currency then
+				currencyEarned[topping.currency] = (currencyEarned[topping.currency] or 0) + topping.value
+			else
+				toppingValue += topping.value
+			end
 		end
 		-- Rounded down; the epsilon guards against float noise like 7 * 1.6 = 11.19999.
 		local earned = math.floor(toppingValue * rules.coinMultiplier(state) * rules.potionCoinMultiplier(state) + 1e-6)
@@ -744,8 +842,14 @@ function GameRules.new(config: any)
 		newState.pizza = kept
 		newState.coins = state.coins + earned
 		newState.totalCoinsEarned = state.totalCoinsEarned + earned
+		if next(currencyEarned) ~= nil then
+			newState.eventCurrencies = table.clone(state.eventCurrencies)
+			for currency, amount in currencyEarned do
+				newState.eventCurrencies[currency] = (state.eventCurrencies[currency] or 0) + amount
+			end
+		end
 		advanceTutorial(newState, "SellPizza")
-		return { ok = true, state = newState, coinsEarned = earned }
+		return { ok = true, state = newState, coinsEarned = earned, currencyEarned = currencyEarned }
 	end
 
 	-- Highest level of an upgrade the given shop sells (0 = not offered there).
@@ -1435,10 +1539,41 @@ function GameRules.new(config: any)
 		return math.floor(rebirth.startPrice * rebirth.priceFactor ^ state.rebirths + 0.5)
 	end
 
+	-- Worlds (in world order) whose rebirth tier is exactly `rebirths`.
+	local function worldsOfTier(rebirths: number): { string }
+		local ids = {}
+		for _, world in config.worlds do
+			if (world.requiredRebirths or 0) == rebirths then
+				table.insert(ids, world.id)
+			end
+		end
+		return ids
+	end
+
+	-- Lowest rebirth tier above `rebirths`, or nil when no world needs more.
+	local function nextTierAbove(rebirths: number): number?
+		local lowest: number? = nil
+		for _, world in config.worlds do
+			local needed = world.requiredRebirths or 0
+			if needed > rebirths and (lowest == nil or needed < lowest) then
+				lowest = needed
+			end
+		end
+		return lowest
+	end
+
 	function rules.rebirthOffer(state: PlayerState): RebirthOffer
 		local price = rebirthPrice(state)
 		local after = table.clone(state)
 		after.rebirths = state.rebirths + 1
+		local opensWorlds = worldsOfTier(after.rebirths)
+		local nextTier = nil
+		if #opensWorlds == 0 then
+			local tier = nextTierAbove(after.rebirths)
+			if tier then
+				nextTier = { rebirths = tier, worlds = worldsOfTier(tier) }
+			end
+		end
 		return {
 			rebirths = state.rebirths,
 			price = price,
@@ -1446,14 +1581,16 @@ function GameRules.new(config: any)
 			nextMultiplier = rules.rebirthMultiplier(after),
 			progress = math.min(1, state.coins / price),
 			affordable = state.coins >= price,
-			potionWarning = next(state.activePotions) ~= nil,
+			opensWorlds = opensWorlds,
+			nextTier = nextTier,
 		}
 	end
 
 	-- Pays the price and starts over with a higher coin multiplier. Reset: coins, coin
 	-- upgrades, bought worlds, pizza, last world, call and order (the phone rings again
-	-- after a call interval from `now`); running potions end. Everything else stays
-	-- (pets, gems, gem upgrades, potion inventory, tutorial, lifetime totals, ...).
+	-- after a call interval from `now`). Everything else stays (pets, gems, gem upgrades,
+	-- potion inventory, running potions (#77), event currencies, tutorial, lifetime
+	-- totals, ...). A rebirth pays no gems.
 	function rules.rebirth(state: PlayerState, now: number): Result
 		if state.coins < rebirthPrice(state) then
 			return fail(state, "NotEnoughCoins")
@@ -1471,7 +1608,6 @@ function GameRules.new(config: any)
 		newState.unlockedWorlds = {}
 		newState.pizza = {}
 		newState.lastWorldId = ""
-		newState.activePotions = {}
 		return { ok = true, state = newState }
 	end
 

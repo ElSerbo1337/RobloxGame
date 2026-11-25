@@ -75,9 +75,14 @@ function Lang.name(entry: Texts.Named): string
 	return Texts.name(Lang.language, entry)
 end
 
--- Name of the world with this id (the id itself if there is none).
+-- Name of the world or event island with this id (the id itself if there is none).
 function Lang.worldName(worldId: string): string
 	for _, world in GameConfig.worlds do
+		if world.id == worldId then
+			return Lang.name(world)
+		end
+	end
+	for _, world in GameConfig.eventWorlds do
 		if world.id == worldId then
 			return Lang.name(world)
 		end

@@ -5,7 +5,8 @@
 --   until the menu is opened once (hint "Rebirth", remembered on the server like the
 --   gifts button, so it does not pulse again in the next session).
 -- * Menu: rebirths, coin multiplier now -> next, price and progress, what is reset and what
---   stays, a warning while a potion runs, and a "Rebirth!" button that asks to confirm.
+--   stays (running potions too, #77), which worlds the rebirth opens (or the next tier
+--   that does; feature "rebirthPreview"), and a "Rebirth!" button that asks to confirm.
 -- * Celebration "Rebirth 2! ×2 Münzen" when the server answers Rebirthed.
 -- Reads the attributes Rebirths, RebirthOffer (JSON, see Net / RebirthService) and
 -- SeenHints (GiftService). Only sends the wishes Rebirth and HintSeen; the server decides.
@@ -15,6 +16,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
+local Features = require(ReplicatedStorage.Shared.Features)
+local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
 local Lang = require(script.Parent.Lang)
@@ -32,8 +35,11 @@ type Offer = {
 	nextMultiplier: number,
 	progress: number,
 	affordable: boolean,
-	potionWarning: boolean,
+	opensWorlds: { string }?,
+	nextTier: { rebirths: number, worlds: { string } }?,
 }
+
+local features = Features.new(GameConfig.features)
 
 local RebirthMenu = {}
 
@@ -47,6 +53,28 @@ local function readOffer(player: Player): Offer?
 		return nil
 	end
 	return value :: Offer
+end
+
+-- "Vulkan, Süßigkeitenland" in the player's language.
+local function worldNames(ids: { string }): string
+	local names = {}
+	for _, id in ids do
+		table.insert(names, Lang.worldName(id))
+	end
+	return table.concat(names, ", ")
+end
+
+-- Line about the worlds the rebirth opens (#77).
+local function worldsText(offer: Offer): string
+	local opens = offer.opensWorlds or {}
+	if #opens > 0 then
+		return Lang.t("rebirth.opensWorlds", { worlds = worldNames(opens) })
+	end
+	local tier = offer.nextTier
+	if tier then
+		return Lang.t("rebirth.nextTier", { count = Lang.integer(tier.rebirths), worlds = worldNames(tier.worlds) })
+	end
+	return Lang.t("rebirth.allWorlds")
 end
 
 -- "×1,5" / "×1.5" / "×2" from a multiplier.
@@ -157,11 +185,17 @@ function RebirthMenu.start()
 	info.Size = UDim2.new(1, -48, 0, 56)
 	info.TextColor3 = SOFT
 
-	local warning = UiKit.label(panel, Lang.t("rebirth.potionWarning"))
-	warning.Position = UDim2.fromOffset(24, 314)
-	warning.Size = UDim2.new(1, -48, 0, 30)
-	warning.TextColor3 = UiKit.RED
-	warning.Visible = false
+	-- Worlds the rebirth opens (#77).
+	local worlds = UiKit.label(panel, "")
+	worlds.Name = "Worlds"
+	worlds.Position = UDim2.fromOffset(24, 314)
+	worlds.Size = UDim2.new(1, -48, 0, 60)
+	worlds.BackgroundTransparency = 0
+	worlds.BackgroundColor3 = Color3.fromRGB(220, 245, 220)
+	worlds.TextColor3 = UiKit.DARK
+	worlds.Visible = features.enabled("rebirthPreview")
+	UiKit.corner(worlds, 16)
+	UiKit.stroke(worlds, 2)
 
 	local rebirthButton = UiKit.button(panel, Lang.t("rebirth.button"), UiKit.GREEN)
 	rebirthButton.Name = "DoRebirth"
@@ -280,14 +314,14 @@ function RebirthMenu.start()
 		fill.Size = UDim2.fromScale(math.clamp(offer.progress, 0, 1), 1)
 		fill.Visible = offer.progress > 0
 		barText.Text = Lang.t("rebirth.progress", { percent = math.floor(offer.progress * 100) })
-		warning.Visible = offer.potionWarning
+		worlds.Text = worldsText(offer)
 		rebirthButton.BackgroundColor3 = if offer.affordable then UiKit.GREEN else UiKit.GREY
 		rebirthButton.AutoButtonColor = offer.affordable
 		confirmText.Text = Lang.t("rebirth.confirm", {
 			number = offer.rebirths + 1,
 			price = UiKit.shortNumber(offer.price),
 			multiplier = multiplierText(offer.nextMultiplier),
-		}) .. (if offer.potionWarning then "\n" .. Lang.t("rebirth.confirmPotion") else "")
+		}) .. (if features.enabled("rebirthPreview") then "\n" .. worldsText(offer) else "")
 		-- First time a rebirth is possible: draw attention until the menu is opened.
 		setPulsing(not opened and not seen() and offer.rebirths == 0 and offer.affordable)
 	end

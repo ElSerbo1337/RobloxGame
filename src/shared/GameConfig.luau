@@ -1210,6 +1210,18 @@ local GameConfig = {
 		},
 	},
 
+	-- Event islands (#77), prepared for event updates (e.g. Christmas); none in this update.
+	-- They stand outside the world order: no coin price, no rebirth tier. The portal sends
+	-- players there while the event runs (startsAt <= now < endsAt, Unix seconds); toppings
+	-- with a `currency` (in `toppings`) pay that event currency instead of coins, at their
+	-- plain value (no pet/rebirth/potion multiplier). The island sits beside the spawn
+	-- island (IslandPlan.eventCenter) and uses `islands.themes[id]` like a world.
+	-- Entry: { id, displayName, displayNameEn, currency, startsAt, endsAt, color,
+	--          toppingSpawns = { { topping, weight } }, eggs = { ... }? }
+	eventWorlds = {},
+	-- Event currency id -> { displayName, displayNameEn }; kept through rebirths.
+	eventCurrencies = {},
+
 	-- Worlds in unlock order. `unlockPrice` is paid once per player at the barrier in
 	-- front of the world (0 = open from the start). `toppingSpawns` weights are relative chances.
 	-- Unlock, shop and rebirth prices are tuned with `lune run balance` (#41, docs/balancing.md)

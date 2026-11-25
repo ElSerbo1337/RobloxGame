@@ -29,7 +29,6 @@ describe("rebirth offer", function()
 		expect(offer.nextMultiplier).toBe(1.5)
 		expect(offer.progress).toBe(0.25)
 		expect(offer.affordable).toBe(false)
-		expect(offer.potionWarning).toBe(false)
 	end)
 
 	it("is affordable with enough coins; progress never goes past 1", function()
@@ -37,13 +36,6 @@ describe("rebirth offer", function()
 
 		expect(offer.affordable).toBe(true)
 		expect(offer.progress).toBe(1)
-	end)
-
-	it("warns while a potion is running", function()
-		local state = player(0)
-		state.activePotions = { Coins = 120 }
-
-		expect(rules.rebirthOffer(state).potionWarning).toBe(true)
 	end)
 
 	it("gets more expensive with every rebirth", function()
@@ -109,16 +101,24 @@ describe("doing a rebirth", function()
 		expect(after.autoCollect).toBe(true)
 	end)
 
-	it("ends running potions but keeps the potions in the inventory", function()
+	it("keeps running potions with their time left and the potion inventory (#77)", function()
 		local state = player(1000)
 		state.activePotions = { Coins = 300, Speed = 20 }
 		state.potions = { Coins = 1 }
 
 		local after = rules.rebirth(state, 0).state
 
-		expect(after.activePotions).toEqual({})
-		expect(rules.potionCoinMultiplier(after)).toBe(1)
+		expect(after.activePotions).toEqual({ Coins = 300, Speed = 20 })
+		expect(rules.potionTimeLeft(after, "Coins")).toBe(300)
+		expect(rules.potionCoinMultiplier(after)).toBe(2)
 		expect(after.potions).toEqual({ Coins = 1 })
+	end)
+
+	it("pays no gems for a rebirth (#77)", function()
+		local state = player(1000)
+		state.gems = 5
+
+		expect(rules.rebirth(state, 0).state.gems).toBe(5)
 	end)
 
 	it("cancels a ringing call and a running order; the phone rings again after a call interval", function()
