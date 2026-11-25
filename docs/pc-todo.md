@@ -1826,7 +1826,7 @@ Neu im Pet-Menü und im Ei-Panel: **Detailkarte** (Pet antippen: großes 3D-Pet,
 
 Vorher: `lune run test` → alle grün (u. a. `tests/PetManagement.spec.luau`).
 
-Studio, Rojo verbinden, **Play** (als Admin), zuerst Admin **Upgrade setzen** InventorySpace auf Max und **Pet geben** Katze 6 + Hamster 3:
+Studio, Rojo verbinden, **Play** (als Admin), zuerst Admin **Upgrade setzen** InventorySpace auf Max und **Pet geben** ein Welt-1-Pet 6× und ein anderes gewöhnliches 3× (unten „Katze“/„Hamster“ genannt):
 
 - [ ] Pet-Menü: Pet antippen → **Detailkarte** statt sofort ausrüsten: 3D-Pet groß, Name, Seltenheit in Farbe, Bonus, „Lv. 1 · 0/300 XP“, „Welt: Pizzeria-Garten“ (bzw. die richtige Welt), „Gefunden am 25. November 2026“ (heutiges Datum), „Du hast 6× Katze“. „Ausrüsten“ → Pet folgt, Knopf wird „Ablegen“. X schließt die Karte. Output ohne rote Fehler.
 - [ ] **🔒 Sperren** → Knopf wird gold „🔓 Entsperren“, Name „🔒 Katze“, im Menü 🔒 auf der Karte, kein „Vergolden“-Knopf auf dieser Karte, Vergolden zählt nur noch 5/5 statt 6/5. „Löschen“ auf der Detailkarte → grau, Hinweis „Gesperrte Pets kann man nicht löschen!“.
