@@ -82,7 +82,7 @@ Koordinaten sind virtuelle Pixel nach `UiKit.autoScale`, unterhalb der Roblox-Le
 
 **Menüs** werden für ihre Wunschgröße gebaut. `UiKit.placeMenu` setzt sie mittig in die Menü-Zone; ist dort zu wenig Platz, wird ein Menü mit Scroll-Liste zuerst niedriger (bis `minHöhe`, z. B. Kopf + eine Zeile) und erst danach verkleinert, alle anderen nur verkleinert (`HudLayout.fitMenu`). Danach füllt das Panel seinen Halter: weiter `panel.Visible` und `UiKit.pop(panel)` benutzen.
 
-**Nur ein Menü gleichzeitig (#53):** Jedes Menü meldet sich mit `UiKit.registerMenu(id, schließen)` an (`schließen` = derselbe Weg wie sein „X“, auch auf einem schon geschlossenen Menü harmlos) und ruft beim Öffnen `UiKit.menuOpened(id)` auf. Dann schließen sich alle anderen offenen Menüs, als hätte man sie selbst geschlossen (Logik: `src/shared/MenuSwitch.luau`, getestet). Angemeldet: `shop`, `portal`, `pets`, `potions`, `gifts`, `rebirth`, `calendar`, `phone`, `eggPreview`, `more` (Mehr-Fenster der Seitenleiste). Zonen-Menüs (Shop, Portal, Ei-Vorschau) gehen danach erst wieder auf, wenn man die Zone verlässt und neu betritt. Neue Menüs melden sich genauso an.
+**Nur ein Menü gleichzeitig (#53):** Jedes Menü meldet sich mit `UiKit.registerMenu(id, schließen)` an (`schließen` = derselbe Weg wie sein „X“, auch auf einem schon geschlossenen Menü harmlos) und ruft beim Öffnen `UiKit.menuOpened(id)` auf. Dann schließen sich alle anderen offenen Menüs, als hätte man sie selbst geschlossen (Logik: `src/shared/MenuSwitch.luau`, getestet). Angemeldet: `shop`, `portal`, `pets`, `potions`, `gifts`, `rebirth`, `calendar`, `phone`, `eggPreview`, `more` (Mehr-Fenster der Seitenleiste), `settings`. Zonen-Menüs (Shop, Portal, Ei-Vorschau) gehen danach erst wieder auf, wenn man die Zone verlässt und neu betritt. Neue Menüs melden sich genauso an.
 
 **Neue HUD-Teile:** zuerst eine Zone in `HudLayout` ergänzen, den Test um das Teil erweitern, dann über UiKit platzieren. Neue Menüs brauchen keine Zone: sie tragen sich in die Seitenleiste ein.
 
@@ -107,7 +107,7 @@ SideBar.setBadge("quests", true)   -- roter Punkt an/aus („hat Neues“), geht
 SideBar.setCaption("quests", "2/3") -- Beschriftung ändern, nil = wieder `text`
 ```
 
-`open` schaltet das Menü um (offen → zu, zu → auf) und ruft beim Öffnen wie jedes Menü `UiKit.menuOpened(id)` auf. `register` liefert den Knopf der Kachel (z. B. für einen „Neu!“-Hinweis mit `UiKit.placeSideNote`). Vergeben (`order`): `pets` 10, `potions` 20, `gifts` 30, `calendar` 40, `rebirth` 50, `worlds` 60; neue Menüs nehmen freie Zahlen (Vorschlag: Quests 70, Glücksrad 80, Index 90, Profil 100, Einstellungen 200).
+`open` schaltet das Menü um (offen → zu, zu → auf) und ruft beim Öffnen wie jedes Menü `UiKit.menuOpened(id)` auf. `register` liefert den Knopf der Kachel (z. B. für einen „Neu!“-Hinweis mit `UiKit.placeSideNote`). Vergeben (`order`): `pets` 10, `potions` 20, `gifts` 30, `calendar` 40, `rebirth` 50, `worlds` 60, `settings` 200 (#76); neue Menüs nehmen freie Zahlen (Vorschlag: Quests 70, Glücksrad 80, Index 90, Profil 100, Einstellungen 200).
 
 **Rote Punkte:** Ein Menü meldet „hat Neues“ mit `SideBar.setBadge(id, true)` und nimmt ihn zurück, sobald es nichts mehr gibt (nicht beim bloßen Öffnen). Heute: Geschenk abholbereit, Kalender-Belohnung offen. Geplant: Quest fertig, Gratis-Dreh, Verschmelzen möglich. Liegt eine Kachel im Mehr-Fenster, bekommt „Mehr“ den Punkt.
 
@@ -119,11 +119,39 @@ SideBar.setCaption("quests", "2/3") -- Beschriftung ändern, nil = wieder `text`
 
 Kein Shop- und kein Teleport-Knopf im HUD – Shops und Portale betritt man in der Welt. Die Kachel „Welten“ zeigt die Weltenliste nur zum Anschauen; reisen kann man weiter nur im Portal.
 
+## Einstellungen (#76)
+
+Kachel ⚙️ „Optionen“ (`settings`, order 200) öffnet `src/client/SettingsMenu.luau`: Musik und Effekte (Regler 0–100 % + 🔊/🔇), Grafik Hoch/Niedrig, Kamera-Wackeln, Bildschirm-Blitze, Ei-Animation überspringen, Codes-Feld (nur bei `features.codes`). Schalter: `features.settings` (aus = keine Kachel, alles auf Standard).
+
+- **Welche Einstellungen es gibt:** `GameRules.SETTINGS` (rein, getestet in `tests/Settings.spec.luau`): `musicVolume`, `effectsVolume` (ganze Zahl 0–100), `musicMuted`, `effectsMuted`, `cameraShake`, `screenFlashes`, `skipEggAnimation` (Boolean), `graphics` (`"High"`/`"Low"`, Touch-Geräte ohne Tastatur starten auf `"Low"`). Gespeichert wird nur, was der Spieler geändert hat (`state.settings`, bleibt beim Rebirth); der Server prüft jeden Wert (`rules.setSetting`, RemoteEvent `SetSetting`, Attribut `Settings`).
+- **Client-API** (`src/client/Settings.luau`) – jedes Modul fragt nur hier:
+
+```lua
+local Settings = require(script.Parent.Settings)
+
+Settings.get("musicVolume")          -- aktueller Wert (mit Standard), unbekannter Schlüssel wirft
+Settings.set("graphics", "Low")      -- nur das Menü: sofort lokal, kurz danach an den Server
+Settings.changed:Connect(function(key, value) end) -- nach jeder Änderung (auch vom Server)
+Settings.observe("graphics", function(value) end)   -- sofort und nach jeder Änderung dieses Schlüssels
+Settings.lowGraphics()      -- true bei „Niedrig“
+Settings.cameraShake()      -- false: nie die Kamera wackeln lassen
+Settings.screenFlashes()    -- false: keine weißen/farbigen Vollbild-Blitze
+Settings.skipEggAnimation() -- true: geschlüpfte Pets sofort zeigen
+Settings.volume("music")    -- 0..1 inkl. Stumm ("music" | "effects")
+```
+
+- **Pflicht für spätere Tickets:** Kamera-Wackeln (Juice, Mythic/Secret) nur bei `Settings.cameraShake()`, Bildschirm-Tönung/Blitze/Lichtstrahlen bei seltenen Pets nur bei `Settings.screenFlashes()`, längere Ei-Animationen (Secret) überspringen bei `Settings.skipEggAnimation()`.
+- **Grafik Niedrig** (`src/client/GraphicsQuality.luau`, automatisch, nur lokal): jeder `ParticleEmitter` im Workspace (auch später erzeugte) bekommt 30 % seiner `Rate` (`GraphicsQuality.PARTICLE_FACTOR`), `Sparkles`/`Fire`/`Smoke` gehen aus. Verzichtbare Deko mit dem CollectionService-Tag **`GraphicsDetail`** (`GraphicsQuality.DETAIL_TAG`) markieren: auf „Niedrig“ unsichtbar (Teile `LocalTransparencyModifier = 1`, Effekte und Lichter darin aus). Eigene Mengen (z. B. Glitzer-Teilchen, Glühwürmchen) mit `GraphicsQuality.particleFactor()` multiplizieren und mit `Settings.observe("graphics", …)` nachziehen.
+- **Lautstärke:** `src/client/Sounds.luau` legt jeden Sound in die SoundGroup `Music` (geloopte Einträge) oder `Effects`; deren Lautstärke folgt den Einstellungen. Neue Sounds einfach in `SOUNDS` eintragen.
+- **Codes-Feld:** sendet nur `RedeemCode(code)` (getrimmt, höchstens 32 Zeichen). #99 baut die Regeln und antwortet mit `CodeResult(ok, reason?, rewards?)`; das Feld zeigt dann `codes.redeemed` bzw. `codes.<reason>` (fehlt der Text: „Geht gerade nicht.“). Kommt 5 s keine Antwort, steht dort „Codes gibt es bald!“.
+- **Neue Einstellung:** Eintrag in `GameRules.SETTINGS` + Test, Text `settings.<key>` (de+en), Zeile in `SettingsMenu` (`switchRow(key)` für AN/AUS), dann überall `Settings.get(key)`.
+
 ## Bewegung und Rückmeldung
 
 - Änderung einer Zahl oder Tipp auf einen Knopf: kurzes „Hüpfen“ mit `UiKit.pop` (Back-Easing, 0,25 s).
 - Menüs öffnen mit Pop, schließen sofort.
 - Meldungen (Toast) oben unter den Währungen, ca. 2 s sichtbar, Fehler in `RED`, Belohnungen in `COIN`/`GEM`.
+- Kamera-Wackeln und Vollbild-Blitze nur, wenn die Einstellungen es erlauben (`Settings.cameraShake()`, `Settings.screenFlashes()`, siehe „Einstellungen“).
 - Jede wichtige Aktion hat einen Sound (siehe `src/client/Sounds.luau`): Sammeln, Verkaufen, Gem, Ei knacken, Telefon.
 
 ## 3D-Look (Welten und Modelle)

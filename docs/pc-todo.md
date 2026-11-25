@@ -1677,3 +1677,27 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Lieferauftrag mit goldenem Belag derselben Sorte: beim Verkaufen am Ofen wird zuerst der goldene verkauft, der normale bleibt für den Auftrag.
 - [ ] 2 Spieler (Test → 2 Players), einer mit Gold-Chance 100 (Admin), der andere ohne: nur beim Admin glitzert alles; was der andere einsammelt, ist für ihn normal.
 - [ ] `GameConfig.features.goldenToppings = false` → kein Glitzern, Gold-Glück nicht im Shop, Admin-Aktionen weg. Danach wieder `true`.
+
+## MEGA UPDATE – #76 Einstellungs-Menü (Lautstärke, Grafik, Kamera, Ei-Animation, Codes-Feld)
+
+Neu: Kachel ⚙️ „Optionen“ in der Seitenleiste (ganz unten/hinten) öffnet das Einstellungs-Menü. Gespeichert pro Spieler im Spielstand (Feld `settings`). Schalter: `GameConfig.features.settings` (Codes-Feld zusätzlich `codes`). Client-API für spätere Tickets: `docs/ui-style.md` → „Einstellungen“.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Settings.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (PC-Ansicht):
+
+- [ ] Seitenleiste: Kachel „Optionen“ mit Zahnrad-Icon; Tippen öffnet das Menü „⚙️ Einstellungen“, zweites Tippen/X schließt es; andere Menüs schließen sich dabei. Output ohne rote Fehler.
+- [ ] Musik-Regler ziehen: Musik wird sofort leiser/lauter, Prozentzahl läuft mit. 🔊-Knopf → 🔇: Musik ganz aus, Regler wird grau; Regler wieder ziehen schaltet den Ton wieder ein.
+- [ ] Effekte-Regler: beim Loslassen kommt ein „Plopp“ in der neuen Lautstärke; Belag sammeln/verkaufen klingt entsprechend leiser. Stumm-Knopf schaltet alle Effekte (nicht die Musik) aus.
+- [ ] Grafik „Niedrig“: Nebel/Rauch/Gischt an den Inseln und Portal-Funken deutlich weniger, Gem-Glitzer (Sparkles) aus. „Hoch“: alles wie vorher.
+- [ ] „Ei-Animation überspringen“ AN, Ei öffnen (Admin-Panel: Gems/Münzen geben): Pet-Karten erscheinen sofort, ohne Wackeln und ohne weißen Blitz. AUS: Animation wie gewohnt.
+- [ ] „Bildschirm-Blitze“ AUS, Ei öffnen (Überspringen AUS): Animation ohne den weißen Blitz. „Kamera-Wackeln“ ist bisher nur ein Schalter (das Wackeln kommt mit Juice/Mythic-Ticket).
+- [ ] Codes-Feld: Code eintippen, „Einlösen“ (oder Enter) → „Wird geprüft …“, nach ~5 s „Codes gibt es bald!“ (die echte Code-Logik kommt mit #99). Leeres Feld → „Bitte einen Code eingeben.“
+- [ ] **Speichern:** ein paar Einstellungen ändern, Play beenden, neu starten → alles wie eingestellt (Studio braucht dafür „Enable Studio Access to API Services“). Admin-Panel „Spielstand zurücksetzen“ setzt auch die Einstellungen zurück.
+- [ ] Englisch (Attribut `Language` = `en` am Workspace): Menü komplett englisch („Settings“, „Music“, „Skip egg animation“ …).
+
+Handy (**Test → Device** z. B. iPhone 14 Landscape):
+
+- [ ] Als neuer Spieler steht Grafik auf „Niedrig“ (hervorgehoben). Auf „Hoch“ stellen → bleibt nach Rejoin „Hoch“.
+- [ ] Regler lassen sich mit dem Finger ziehen, ohne dass die Liste dabei scrollt; Menü scrollt auf kleinen Handys, alle Knöpfe ≥ Daumengröße.
+- [ ] Schalter `GameConfig.features.settings = false`: keine Kachel, alles auf Standard (Musik/Effekte 100 %); `codes = false`: Menü ohne Codes-Abschnitt.
