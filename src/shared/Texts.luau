@@ -67,6 +67,7 @@ Texts.strings = {
 		de = "Shiny-Chance testen (%, 0 = aus)",
 		en = "Test shiny chance (%, 0 = off)",
 	},
+	["admin.action.setPetLevel"] = { de = "Pet-Level setzen", en = "Set pet level" },
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -80,6 +81,8 @@ Texts.strings = {
 	["admin.param.percent"] = { de = "Prozent", en = "Percent" },
 	["admin.param.variant"] = { de = "Variante", en = "Variant" },
 	["admin.param.shiny"] = { de = "Shiny", en = "Shiny" },
+	["admin.param.petLevel"] = { de = "Pet-Level", en = "Pet level" },
+	["admin.param.allPets"] = { de = "Alle Pets (sonst ausgerüstete)", en = "All pets (else equipped)" },
 	["admin.choice.no"] = { de = "Nein", en = "No" },
 	["admin.choice.yes"] = { de = "Ja", en = "Yes" },
 

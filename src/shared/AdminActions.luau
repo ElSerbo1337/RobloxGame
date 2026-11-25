@@ -374,6 +374,18 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Level of the equipped pets (or all pets) for testing pet levels (#90), XP 0.
+		id = "setPetLevel",
+		feature = "petLevels",
+		params = {
+			{ name = "petLevel", kind = "integer", min = 1, max = 10, default = 10 },
+			{ name = "allPets", kind = "choice", names = "yesNo", choices = { "no", "yes" } },
+		},
+		run = function(env, state, args)
+			return env.rules.setPetLevels(state, args[1], args[2] == "yes")
+		end,
+	},
+	{
 		id = "resetProgress",
 		confirm = true,
 		params = {},

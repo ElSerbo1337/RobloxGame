@@ -510,6 +510,18 @@ local GameConfig = {
 		bonusMultiplier = 1.5,
 	},
 
+	-- Pet levels (#90): equipped pets gain `xpPerSecond` XP per second of play time.
+	-- `xpToNext[n]` = XP from level n to n + 1 (here: seconds of play time, ~5.2 h to
+	-- level 10 in total). Every level above 1 adds `bonusPerLevel` to the pet's effective
+	-- bonus (x1.02 per level, x1.18 at level 10; GameRules.petBonus). Merging keeps the
+	-- highest level of the used pets.
+	petLevels = {
+		maxLevel = 10,
+		bonusPerLevel = 0.02,
+		xpPerSecond = 1,
+		xpToNext = { 300, 600, 900, 1200, 1800, 2400, 3000, 3600, 4800 },
+	},
+
 	-- Pet id -> display name, rarity and coin bonus (0.1 = +10 % sell value; bonuses add up).
 	-- Flat curve (#57): the best pet of a world (both eggs) gives +75/110/160/230/320/400/500 %
 	-- in worlds 1-7; the other pets of a world are scaled in the same proportion.

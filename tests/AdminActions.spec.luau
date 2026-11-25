@@ -17,6 +17,7 @@ local features = Features.new({
 	secretPets = true,
 	worldIntro = true,
 	shinyPets = true,
+	petLevels = true,
 })
 local admin = AdminActions.new(rules, TestConfig, features)
 
@@ -85,6 +86,7 @@ describe("admin registry", function()
 			"resetWorldIntros",
 			"givePetVariant",
 			"setShinyChance",
+			"setPetLevel",
 			"resetProgress",
 		})
 	end)
@@ -417,6 +419,7 @@ describe("admin actions for golden toppings (#94)", function()
 			TestConfig,
 			Features.new({
 				adminPanel = true,
+				petLevels = true,
 				goldenToppings = false,
 				whatsNew = true,
 				secretPets = true,
@@ -494,6 +497,7 @@ describe("admin Secret pet actions (#81)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				petLevels = true,
 				goldenToppings = true,
 				whatsNew = true,
 				secretPets = false,
@@ -575,9 +579,55 @@ describe("pet variant admin actions (#80)", function()
 				secretPets = true,
 				shinyPets = false,
 				worldIntro = true,
+				petLevels = true,
 			})
 		)
 		expect(table.find(ids(offAdmin.list()), "setShinyChance")).toBe(nil)
 		expect(offAdmin.run(ADMIN, fresh(), "setShinyChance", { 5 }, ctx).reason).toBe("FeatureOff")
+	end)
+end)
+
+describe("pet level admin action (#90)", function()
+	local config = table.clone(TestConfig)
+	config.petLevels =
+		{ maxLevel = 10, bonusPerLevel = 0.02, xpPerSecond = 1, xpToNext = { 1, 2, 3, 4, 5, 6, 7, 8, 9 } }
+	local levelRules = GameRules.new(config)
+	local levelAdmin = AdminActions.new(levelRules, config, features)
+
+	local function withTwoPets()
+		local state = levelRules.newPlayerState()
+		state.pets = { { uid = 1, petId = "Cat", xp = 0.5 }, { uid = 2, petId = "Hamster" } }
+		state.nextPetUid = 3
+		state.equipped = { 1 }
+		return state
+	end
+
+	it("setPetLevel sets the equipped pets, or all pets", function()
+		local result = levelAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 10, "no" }, ctx)
+		expect(result.ok).toBe(true)
+		expect(result.state.pets[1]).toEqual({ uid = 1, petId = "Cat", level = 10 })
+		expect(result.state.pets[2]).toEqual({ uid = 2, petId = "Hamster" })
+		local all = levelAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 4, "yes" }, ctx)
+		expect(all.state.pets[2].level).toBe(4)
+	end)
+
+	it("checks the level and the switch", function()
+		expect(levelAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 11, "no" }, ctx).reason).toBe("InvalidArgument")
+		expect(levelAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 0, "no" }, ctx).reason).toBe("InvalidArgument")
+		local offAdmin = AdminActions.new(
+			levelRules,
+			config,
+			Features.new({
+				adminPanel = true,
+				goldenToppings = true,
+				whatsNew = true,
+				secretPets = true,
+				shinyPets = true,
+				worldIntro = true,
+				petLevels = false,
+			})
+		)
+		expect(table.find(ids(offAdmin.list()), "setPetLevel")).toBe(nil)
+		expect(offAdmin.run(ADMIN, withTwoPets(), "setPetLevel", { 3, "no" }, ctx).reason).toBe("FeatureOff")
 	end)
 end)

@@ -534,6 +534,25 @@ describe("GameConfig pets and eggs", function()
 		expect(rules.shinyChance(state)).toBe(2 / 200)
 	end)
 
+	it("levels equipped pets to 10 with +2 % per level in about 5 hours of play (#90)", function()
+		local levels = GameConfig.petLevels
+		expect(levels.maxLevel).toBe(10)
+		expect(levels.bonusPerLevel).toBe(0.02)
+		expect(#levels.xpToNext).toBe(levels.maxLevel - 1)
+		local total = 0
+		for i, xp in levels.xpToNext do
+			expect(xp > 0).toBe(true)
+			if i > 1 then
+				expect(xp >= levels.xpToNext[i - 1]).toBe(true)
+			end
+			total += xp
+		end
+		local hours = total / levels.xpPerSecond / 3600
+		expect(hours > 3 and hours < 8).toBe(true)
+		local rules = GameRules.new(GameConfig)
+		expect(math.abs(rules.levelMultiplier(levels.maxLevel) - 1.18) < 1e-9).toBe(true)
+	end)
+
 	it("starts players with 3 pet slots", function()
 		local rules = GameRules.new(GameConfig)
 		expect(rules.petSlots(rules.newPlayerState())).toBe(3)

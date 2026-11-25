@@ -225,6 +225,9 @@ export type OpenEggResult = Result & { pet: OwnedPet? }
 -- Merging pets (#80): the new pet and the uids of the pets used up (empty on failure).
 export type MergeResult = Result & { pet: OwnedPet?, consumed: { number } }
 
+-- Result of rules.addPetXp (#90): the pets that reached a new level.
+export type PetXpResult = Result & { leveledUp: { { uid: number, petId: string, level: number } } }
+
 -- A group of equal pets (same petId and variant) and how far it is from merging.
 export type MergeGroup = {
 	petId: string,
@@ -1117,15 +1120,124 @@ function GameRules.new(config: any)
 		return if entry then entry.bonusMultiplier else 1
 	end
 
-	-- Effective coin bonus of one owned pet: config bonus x variant x shiny (+50 %).
+	-- Pet levels (#90): equipped pets gain XP while the player plays (config.petLevels).
+	-- `pet.level` (missing = 1) and `pet.xp` (XP inside the current level, missing = 0)
+	-- are stored sparsely; at the max level the XP is dropped.
+	local LEVELS = config.petLevels
+
+	local function levelsOn(): boolean
+		return LEVELS ~= nil and featureOn("petLevels")
+	end
+
+	-- The pet's level, 1..config.petLevels.maxLevel.
+	function rules.petLevel(pet: OwnedPet): number
+		if LEVELS == nil then
+			return 1
+		end
+		return math.clamp(math.floor(pet.level or 1), 1, LEVELS.maxLevel)
+	end
+
+	-- XP collected inside the current level.
+	function rules.petXp(pet: OwnedPet): number
+		return pet.xp or 0
+	end
+
+	-- XP needed to go from `level` to the next one, nil at the max level.
+	function rules.petXpNeeded(level: number): number?
+		if LEVELS == nil or level >= LEVELS.maxLevel then
+			return nil
+		end
+		return LEVELS.xpToNext[level]
+	end
+
+	-- Bonus factor of a level: +bonusPerLevel per level above 1 (1 while switched off).
+	function rules.levelMultiplier(level: number): number
+		if not levelsOn() then
+			return 1
+		end
+		return 1 + LEVELS.bonusPerLevel * (level - 1)
+	end
+
+	-- Effective coin bonus of one owned pet: config bonus x variant x shiny (+50 %) x level.
 	-- Equip best, the coin multiplier and the pet menu all use this.
-	-- #90 multiplies the level factor in here.
 	function rules.petBonus(pet: OwnedPet): number
 		local bonus = config.pets[pet.petId].bonus * rules.variantMultiplier(rules.petVariant(pet))
 		if pet.shiny and config.shinyPets then
 			bonus *= config.shinyPets.bonusMultiplier
 		end
+		bonus *= rules.levelMultiplier(rules.petLevel(pet))
 		return math.round(bonus * 1e6) / 1e6
+	end
+
+	-- A copy of `pet` at `level` with `xp` inside it (sparse: level 1 / 0 XP are dropped).
+	local function withLevel(pet: OwnedPet, level: number, xp: number): OwnedPet
+		local copy = table.clone(pet)
+		copy.level = if level > 1 then level else nil
+		copy.xp = if xp > 0 and level < LEVELS.maxLevel then math.round(xp * 1e3) / 1e3 else nil
+		return copy
+	end
+
+	-- Credits `seconds` of play time as XP (config.petLevels.xpPerSecond) to every equipped
+	-- pet below the max level; a pet can climb several levels at once. `leveledUp` lists the
+	-- pets that reached a new level ({ uid, petId, level }).
+	function rules.addPetXp(state: PlayerState, seconds: number): PetXpResult
+		if not levelsOn() then
+			return { ok = false, reason = "FeatureOff", state = state, leveledUp = {} }
+		end
+		if not (seconds > 0 and seconds < math.huge) then
+			return { ok = false, reason = "InvalidTime", state = state, leveledUp = {} }
+		end
+		local gain = seconds * LEVELS.xpPerSecond
+		local leveledUp = {}
+		local pets = nil
+		for index, pet in state.pets do
+			local level = rules.petLevel(pet)
+			if not table.find(state.equipped, pet.uid) or level >= LEVELS.maxLevel then
+				continue
+			end
+			local xp = rules.petXp(pet) + gain
+			local startLevel = level
+			while level < LEVELS.maxLevel and xp >= (rules.petXpNeeded(level) :: number) do
+				xp -= rules.petXpNeeded(level) :: number
+				level += 1
+			end
+			pets = pets or table.clone(state.pets)
+			pets[index] = withLevel(pet, level, xp)
+			if level > startLevel then
+				table.insert(leveledUp, { uid = pet.uid, petId = pet.petId, level = level })
+			end
+		end
+		if pets == nil then
+			return { ok = true, state = state, leveledUp = leveledUp }
+		end
+		local newState = table.clone(state)
+		newState.pets = pets
+		return { ok = true, state = newState, leveledUp = leveledUp }
+	end
+
+	-- Sets the level (XP 0) of the equipped pets, or of all pets (admin panel, #90).
+	function rules.setPetLevels(state: PlayerState, level: number, allPets: boolean): Result
+		if not levelsOn() then
+			return fail(state, "FeatureOff")
+		end
+		if level ~= math.floor(level) or level < 1 or level > LEVELS.maxLevel then
+			return fail(state, "InvalidLevel")
+		end
+		local newState = table.clone(state)
+		newState.pets = {}
+		local changed = false
+		for _, pet in state.pets do
+			if allPets or table.find(state.equipped, pet.uid) then
+				changed = true
+				table.insert(newState.pets, withLevel(pet, level, 0))
+			else
+				table.insert(newState.pets, pet)
+			end
+		end
+		if not changed then
+			return fail(state, "NoPets")
+		end
+		return { ok = true, state = newState }
 	end
 
 	-- 1 + sum of the effective coin bonuses of all equipped pets (bonuses are additive).
@@ -2286,13 +2398,22 @@ function GameRules.new(config: any)
 		return false
 	end
 
-	-- The pet a merge creates from `consumed`. #90 keeps the highest level here.
+	-- The pet a merge creates from `consumed`: Shiny when any was, with the highest level
+	-- of the used pets (#90) and that pet's XP (the most XP among equally high ones).
 	local function mergedPet(uid: number, petId: string, target: string, consumed: { OwnedPet }): OwnedPet
 		local pet: OwnedPet = { uid = uid, petId = petId, variant = target }
+		local level, xp = 1, 0
 		for _, old in consumed do
 			if old.shiny then
 				pet.shiny = true
 			end
+			local oldLevel, oldXp = rules.petLevel(old), rules.petXp(old)
+			if oldLevel > level or (oldLevel == level and oldXp > xp) then
+				level, xp = oldLevel, oldXp
+			end
+		end
+		if LEVELS ~= nil then
+			return withLevel(pet, level, xp)
 		end
 		return pet
 	end
