@@ -2084,7 +2084,10 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 			local angle = yaw + (b - 1) / branches * math.pi * 2
 			local lean = 0.25 + noise(k, b) * 0.2
 			local from = add(at, v(0, size * 0.15, 0))
-			local to = add(at, v(math.cos(angle) * size * lean, size * (0.7 + noise(b, k) * 0.35), math.sin(angle) * size * lean))
+			local to = add(
+				at,
+				v(math.cos(angle) * size * lean, size * (0.7 + noise(b, k) * 0.35), math.sin(angle) * size * lean)
+			)
 			table.insert(
 				parts,
 				beam(from, to, size * 0.16, size * 0.16, {

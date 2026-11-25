@@ -608,17 +608,16 @@ describe("GameConfig pets and eggs", function()
 	)
 
 	it("gives every egg its own look: base colour, accent colour and one of the known patterns", function()
-		local PATTERNS =
-			{
-				Spots = true,
-				Stripes = true,
-				Waves = true,
-				Diamonds = true,
-				Cracks = true,
-				Swirl = true,
-				Stars = true,
-				Bubbles = true,
-			}
+		local PATTERNS = {
+			Spots = true,
+			Stripes = true,
+			Waves = true,
+			Diamonds = true,
+			Cracks = true,
+			Swirl = true,
+			Stars = true,
+			Bubbles = true,
+		}
 		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
 			local look = egg.look
@@ -1414,5 +1413,70 @@ describe("GameConfig lucky wheel (#98)", function()
 			end
 		end
 		expect(gems / total < wheel.spinPrice).toBe(true)
+	end)
+end)
+
+-- The pattern of the new worlds (#82, copied by #83-#89): everything a world of the MEGA
+-- UPDATE brings, checked for every world from 8 on as soon as it exists.
+describe("GameConfig new worlds (#82)", function()
+	local WorldLooks = require("../src/shared/WorldLooks")
+
+	local function shopOf(worldId: string): any
+		for _, shop in GameConfig.shops do
+			if shop.worldId == worldId then
+				return shop
+			end
+		end
+		return nil
+	end
+
+	for index = 8, #GameConfig.worlds do
+		local world = GameConfig.worlds[index]
+		it(`gives {world.id} 3 toppings, one egg with 6 pets, a Secret pet and a shop`, function()
+			expect(#world.toppingSpawns).toBe(3)
+			for _, spawn in world.toppingSpawns do
+				expect(GameConfig.toppings[spawn.topping] ~= nil).toBe(true)
+			end
+			expect(#world.eggs).toBe(1)
+			expect(#GameConfig.eggs[world.eggs[1]].pets).toBe(6)
+			expect(GameConfig.pets[world.secretPet].rarity).toBe("Secret")
+			local shop = shopOf(world.id)
+			expect(shop ~= nil).toBe(true)
+			for _, potion in shop.potions do
+				expect(GameConfig.potions[potion] ~= nil).toBe(true)
+			end
+		end)
+
+		it(`gives {world.id} a weather kind, an island theme with scripted deco, a look and music`, function()
+			local weather = GameConfig.weathers[world.weather]
+			expect(weather ~= nil).toBe(true)
+			expect(type(weather.displayName) == "string" and type(weather.displayNameEn) == "string").toBe(true)
+			local theme = GameConfig.islands.themes[world.id]
+			expect(theme ~= nil and theme.deco ~= nil).toBe(true)
+			expect(theme.deco.budget <= 400).toBe(true)
+			expect(WorldLooks[world.id].music).toBe(`Music_{world.id}`)
+		end)
+
+		it(`makes {world.id}'s toppings worth more than the world before and its egg pricier`, function()
+			local previous = GameConfig.worlds[index - 1]
+			local function best(w: any): number
+				local value = 0
+				for _, spawn in w.toppingSpawns do
+					value = math.max(value, GameConfig.toppings[spawn.topping].value)
+				end
+				return value
+			end
+			expect(best(world) > best(previous)).toBe(true)
+			expect(world.unlockPrice > previous.unlockPrice).toBe(true)
+		end)
+	end
+
+	it("names every weather kind in both languages and uses only known ones", function()
+		for _, weather in GameConfig.weathers do
+			expect(#weather.particles >= 1).toBe(true)
+		end
+		for _, world in GameConfig.worlds do
+			expect(world.weather == nil or GameConfig.weathers[world.weather] ~= nil).toBe(true)
+		end
 	end)
 end)

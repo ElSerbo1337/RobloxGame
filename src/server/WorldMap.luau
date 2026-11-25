@@ -227,6 +227,10 @@ local function buildIsland(island: IslandPlan.Island, world: any, index: number,
 	for i, name in { "Egg1", "Egg2" } do
 		local station = island.stations[name]
 		local eggId = world.eggs and world.eggs[i]
+		-- The new worlds (#82 on) have one egg: no empty "coming soon" stand beside it.
+		if eggId == nil and world.eggs and #world.eggs == 1 then
+			continue
+		end
 		local stand = EggService.buildStand(folder, IslandBuilder.vector(station.position), eggId, station.yaw)
 		stand:SetAttribute("WorldId", world.id)
 		table.insert(eggStands, stand)
