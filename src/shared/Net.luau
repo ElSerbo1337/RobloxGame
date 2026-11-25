@@ -40,6 +40,9 @@
 -- ClaimLoginReward client -> server ()                           "give me today's login calendar reward"
 -- LoginRewardResult server -> client (ok: boolean, dayOrReason: number | string, rewards: { GameRules.Reward })
 --                                    result of ClaimLoginReward (day = calendar day 1-7 that was claimed)
+-- AdminRun        client -> server  (actionId: string, args: { any })  "run this admin action" (#74; the
+--                                    server checks the user id and every argument, see AdminActions)
+-- AdminResult     server -> client  (actionId: string, ok: boolean, reason: string?)  answer to AdminRun (admins only)
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -102,6 +105,8 @@ local EVENTS = {
 	HintSeen = true,
 	ClaimLoginReward = true,
 	LoginRewardResult = true,
+	AdminRun = true,
+	AdminResult = true,
 }
 
 local Net = {}

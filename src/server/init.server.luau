@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local Net = require(ReplicatedStorage.Shared.Net)
 
+local AdminService = require(script.AdminService)
 local BarrierService = require(script.BarrierService)
 local CameraService = require(script.CameraService)
 local DeliveryService = require(script.DeliveryService)
@@ -49,6 +50,8 @@ end
 for _, name in { "ClaimGift", "GiftResult", "HintSeen", "ClaimLoginReward", "LoginRewardResult" } do
 	Net.event(name)
 end
+Net.event("AdminRun")
+Net.event("AdminResult")
 
 CameraService.start()
 -- Flying islands (#27): spawn island -> bridge -> world 1 -> bridge -> world 2 ...
@@ -124,5 +127,7 @@ DeliveryService.start(DeliveryService.buildAll())
 PortalService.start(PortalService.buildAll())
 -- Rebirth (#35): HUD button + menu on the client, the rules decide.
 RebirthService.start()
+-- Admin panel (#74): only GameConfig.admin.userIds, checked per action.
+AdminService.start()
 
 print(`[{Constants.GAME_NAME}] Server gestartet`)

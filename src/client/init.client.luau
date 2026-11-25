@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Constants = require(ReplicatedStorage.Shared.Constants)
 
+local AdminPanel = require(script.AdminPanel)
 local Barriers = require(script.Barriers)
 local DeliveryMenu = require(script.DeliveryMenu)
 local EggAnimation = require(script.EggAnimation)
@@ -45,5 +46,7 @@ task.spawn(EggPreview.start)
 task.spawn(PetFollow.start)
 task.spawn(SignCulling.start)
 task.spawn(Tutorial.start)
+-- Admin panel (#74): builds nothing unless this is an admin (GameConfig.admin.userIds).
+task.spawn(AdminPanel.start)
 
 print(`[{Constants.GAME_NAME}] Client gestartet`)

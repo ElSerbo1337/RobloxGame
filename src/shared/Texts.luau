@@ -26,7 +26,10 @@ Texts.strings = {
 	["admin.open"] = { de = "🛠️", en = "🛠️" },
 	["admin.run"] = { de = "Los", en = "Run" },
 	["admin.confirm"] = { de = "Sicher?", en = "Sure?" },
-	["admin.hint"] = { de = "Nur für dich sichtbar. F2 öffnet/schließt.", en = "Only visible to you. F2 opens/closes." },
+	["admin.hint"] = {
+		de = "Nur für dich sichtbar. F2 öffnet/schließt.",
+		en = "Only visible to you. F2 opens/closes.",
+	},
 	["admin.done"] = { de = "✓ {action}", en = "✓ {action}" },
 	["admin.failed"] = { de = "✗ {action}: {reason}", en = "✗ {action}: {reason}" },
 	["admin.action.addCoins"] = { de = "Münzen geben", en = "Give coins" },

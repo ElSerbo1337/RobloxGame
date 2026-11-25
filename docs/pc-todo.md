@@ -1596,3 +1596,25 @@ Studio (API-Zugriff an, siehe #3), Rojo verbinden, **Play**:
 - [ ] Alter Spielstand unangetastet: im Bearbeitungsmodus in die Command Bar `print(game:GetService("DataStoreService"):GetDataStore("PlayerState"):GetAsync("player_" .. game:GetService("StudioService"):GetUserId()) ~= nil)` → `true` (falls du vorher gespeichert hattest).
 - [ ] Bestenlisten auf der Spawn-Insel zeigen nur neue Einträge (anfangs „Noch keine Einträge“ bzw. nur dich).
 - [ ] Neu anfangen zum Testen (nur Bearbeitungsmodus, nicht im Play-Modus): `game:GetService("DataStoreService"):GetDataStore("PlayerState_Mega1"):RemoveAsync("player_" .. game:GetService("StudioService"):GetUserId())`. Fortschritt zum Testen später über das Admin-Panel (#74) statt über Config-Änderungen.
+
+## MEGA UPDATE – #74 Admin-Panel (nur User 372358501)
+
+Nur für `GameConfig.admin.userIds` (= 372358501): oben rechts ein kleiner dunkler 🛠️-Knopf (am PC auch **F2**) öffnet ein eigenes Fenster mit einer Zeile pro Aktion (Zahlenfeld bzw. ◀ Wert ▶, Knopf **Los**; Ergebnis als Statuszeile ✓/✗). Jede Aktion prüft der Server erneut per User-Id und Argument-Check (`src/shared/AdminActions.luau`, `src/server/AdminService.luau`). Schalter: `GameConfig.features.adminPanel`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/AdminActions.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (eingeloggt als ElSerbo1337 / User 372358501):
+
+- [ ] 🛠️-Knopf oben rechts sichtbar, überdeckt nichts Wichtiges (auch am Handy-Emulator); F2 öffnet/schließt; Liste scrollt, Texte passen (auch mit `Language = en`).
+- [ ] **Münzen geben** 1000000 → Münzanzeige springt; **-500** zieht ab (nie unter 0). **Gems geben** 1000 → Gems-Anzeige.
+- [ ] **Tutorial beenden** → Tutorial-Karte/Pfeil verschwinden; nochmal → ✗ (`TutorialDone`).
+- [ ] **Upgrade-Stufe setzen** `Inventar` auf die höchste Stufe → Inventar-Anzeige im Pet-Menü wächst. Zu hohe Stufe → ✗ `InvalidArgument`.
+- [ ] **Pet geben** (◀ ▶ durchblättern, Namen in deiner Sprache) ×3 → Pets im Pet-Menü, ausrüstbar. Mehr als Platz → ✗ „Inventar voll“.
+- [ ] **Tränke geben** → Trank-Menü zeigt die Anzahl, trinkbar.
+- [ ] **Rebirths setzen** 2 → Rebirth-Knopf/Menü zeigt 2 und den neuen Multiplikator; gesperrte Welten mit Rebirth-Bedingung gelten als erfüllt.
+- [ ] **Welten freischalten (bis)** z. B. Welt 5 → Barrieren bis dahin offen, Portal-Menü zeigt sie als frei.
+- [ ] **Tage vorspulen** 1 → Login-Kalender (über Geschenke → Kalender) zeigt den nächsten Tag als abholbar; Geschenke beginnen von vorn. 7 → Kalender fängt wieder bei Tag 1 an.
+- [ ] **Spielstand zurücksetzen**: erster Tipp → Knopf zeigt „Sicher?“, zweiter Tipp innerhalb 3 s → alles auf Neuanfang, du stehst am Start von Welt 1, Tutorial läuft wieder. Stop + Play → bleibt zurückgesetzt.
+- [ ] Output: pro Aktion `[Admin] <Name>: <aktion> ok`, keine roten Fehler.
+- [ ] Fremde Spieler: **Test → Clients and Servers → 2 Players** → bei den Test-Spielern (negative User-Ids) kein 🛠️-Knopf. Optional in deren Client-Command-Bar: `game.ReplicatedStorage.Remotes.AdminRun:FireServer("addCoins", {1000})` → nichts passiert, Server-Output zeigt `[Admin] Abgelehnt: …`.
+- [ ] `GameConfig.features.adminPanel = false` → kein Knopf, Aktionen werden ignoriert. Danach wieder `true`.
