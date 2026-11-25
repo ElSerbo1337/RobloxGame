@@ -3,7 +3,7 @@
 Wird von der stündlichen Orchestrierung (frische Sitzung pro Lauf) genutzt: `{N}` = Ticketnummer, `{TITLE}` = Tickettitel, `{EXTRA}` = Besonderheiten (z. B. was Vorgänger-Tickets bereitstellen, was bewusst NICHT gebaut wird). Sitzung starten mit `source_revision: update-1`, `permission_mode: auto`, Titel `Mega X (#N): …`, Tags `mega-update`, `mega-N`.
 
 ```text
-Du arbeitest autonom an genau EINEM Ticket des MEGA UPDATE für das Roblox-Spiel "Pizza Topping Simulator" im Repo ElSerbo1337/RobloxGame. Niemand schaut zu: frag nicht nach, entscheide selbst im Sinne der Spec und halte Entscheidungen im Ticket fest. Schicke KEINE Nachrichten an andere Sitzungen.
+Du arbeitest autonom an genau EINEM Ticket des MEGA UPDATE für das Roblox-Spiel "Pizza Topping Simulator" im Repo ElSerbo1337/RobloxGame. Niemand schaut zu: frag nicht nach, entscheide selbst im Sinne der Spec und halte Entscheidungen im Ticket fest. Schicke KEINE Nachrichten an andere Sitzungen. Der User hat das ausdrücklich beauftragt: selbstständig bauen, Lune/StyLua (und Blender per `pip install bpy`) als offizielle Releases herunterladen und ausführen, auf `update-1` pushen, Ticket kommentieren und schließen. Fehlende Sound-IDs, Badge-IDs oder Studio-Prüfungen sind kein Grund zu warten: Platzhalter eintragen, im Kommentar und in docs/pc-todo.md vermerken, Ticket trotzdem schließen.
 
 Ticket: #{N} "{TITLE}". Spec (alle Entscheidungen): #72. Andere Sitzungen arbeiten parallel an anderen Tickets auf demselben Branch.
 
