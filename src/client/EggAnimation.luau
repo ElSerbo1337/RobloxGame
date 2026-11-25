@@ -8,12 +8,16 @@
 -- light rays turn behind the cards; a Secret pet gets a much longer, darker build-up,
 -- a "GEHEIM!" title and stays longer. Tint, rays and flashes only with
 -- Settings.screenFlashes(); skipping the animation also skips the Secret build-up.
+-- Shiny pets (#80): the card gets a gold frame, sparkles and "✨ Shiny" with the real
+-- bonus (+50 %), and a big "✨ SHINY!" title pops up (a golden flash only with
+-- Settings.screenFlashes()).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Lang = require(script.Parent.Lang)
 local Sounds = require(script.Parent.Sounds)
@@ -31,6 +35,12 @@ local CLOSE_SECONDS = 3
 local SECRET_CLOSE_SECONDS = 7
 local BACKDROP_COLOR = Color3.new(0, 0, 0)
 local BACKDROP_TRANSPARENCY = 0.45
+
+local SHINY_COLOR = Color3.fromRGB(255, 215, 70)
+
+local rules = GameRules.new(GameConfig)
+
+type Hatched = { petId: string, shiny: boolean }
 
 local EggAnimation = {}
 
@@ -151,7 +161,8 @@ function EggAnimation.start()
 	row.SortOrder = Enum.SortOrder.LayoutOrder
 	row.Parent = cards
 
-	local function buildCard(petId: string, order: number): Frame
+	local function buildCard(hatched: Hatched, order: number): Frame
+		local petId = hatched.petId
 		local pet = GameConfig.pets[petId]
 		local color = UiKit.rarityColor(pet.rarity)
 
@@ -161,7 +172,10 @@ function EggAnimation.start()
 		card.BackgroundColor3 = UiKit.CREAM
 		card.ZIndex = 6
 		UiKit.corner(card, 28)
-		UiKit.stroke(card, 5)
+		local frame = UiKit.stroke(card, 5)
+		if hatched.shiny and frame then
+			frame.Color = SHINY_COLOR
+		end
 
 		local petIcon = Instance.new("Frame")
 		petIcon.AnchorPoint = Vector2.new(0.5, 0)
@@ -175,12 +189,16 @@ function EggAnimation.start()
 		-- The 3D pet (imported model) jumps out in front of its rarity-coloured circle.
 		PetIcon.show(petIcon, petId, 1.2)
 
-		local petName = UiKit.label(card, Lang.name(pet))
+		local petName = UiKit.label(card, UiKit.petName(petId, nil, hatched.shiny))
 		petName.Position = UDim2.fromOffset(16, 176)
 		petName.Size = UDim2.new(1, -32, 0, 50)
 		petName.ZIndex = 7
 
-		local rarityName = UiKit.label(card, Lang.name(GameConfig.rarities[pet.rarity]))
+		local rarityText = Lang.name(GameConfig.rarities[pet.rarity])
+		if hatched.shiny then
+			rarityText = `{rarityText} · {Lang.t("pets.shiny")}`
+		end
+		local rarityName = UiKit.label(card, rarityText)
 		rarityName.Position = UDim2.fromOffset(16, 228)
 		rarityName.Size = UDim2.new(1, -32, 0, 36)
 		rarityName.TextColor3 = color
@@ -188,7 +206,8 @@ function EggAnimation.start()
 		rarityName.TextStrokeTransparency = 0
 		rarityName.ZIndex = 7
 
-		local bonusText = UiKit.label(card, Lang.t("egg.bonus", { bonus = UiKit.bonusText(pet.bonus) }))
+		local bonus = rules.petBonus({ uid = 0, petId = petId, shiny = hatched.shiny or nil })
+		local bonusText = UiKit.label(card, Lang.t("egg.bonus", { bonus = UiKit.bonusText(bonus) }))
 		bonusText.Position = UDim2.fromOffset(16, 270)
 		bonusText.Size = UDim2.new(1, -32, 0, 40)
 		bonusText.TextColor3 = Color3.fromRGB(40, 130, 40)
@@ -216,12 +235,17 @@ function EggAnimation.start()
 	end
 	backdrop.Activated:Connect(close)
 
-	-- (eggId, petId, petId?, petId?): one pet id per opened egg.
-	Net.event("EggOpened").OnClientEvent:Connect(function(eggId: string, ...: string)
+	-- (eggId, { { petId, shiny } }): one entry per opened egg.
+	Net.event("EggOpened").OnClientEvent:Connect(function(eggId: string, list: { Hatched })
+		local hatchedPets: { Hatched } = {}
 		local petIds = {}
-		for _, petId in { ... } do
-			if GameConfig.pets[petId] then
-				table.insert(petIds, petId)
+		local anyShiny = false
+		for _, entry in if type(list) == "table" then list else {} do
+			if type(entry) == "table" and GameConfig.pets[entry.petId] then
+				local shiny = entry.shiny == true
+				table.insert(hatchedPets, { petId = entry.petId, shiny = shiny })
+				table.insert(petIds, entry.petId)
+				anyShiny = anyShiny or shiny
 			end
 		end
 		if #petIds == 0 then
@@ -299,12 +323,12 @@ function EggAnimation.start()
 
 		-- Burst: flash, egg gone, pet card jumps out.
 		if not skip and effects then
-			flash.BackgroundColor3 = if secret then rareColor else Color3.new(1, 1, 1)
+			flash.BackgroundColor3 = if secret then rareColor elseif anyShiny then SHINY_COLOR else Color3.new(1, 1, 1)
 			flash.BackgroundTransparency = 0
 		end
 		egg.Visible = false
-		for i, petId in petIds do
-			buildCard(petId, i).Parent = cards
+		for i, hatched in hatchedPets do
+			buildCard(hatched, i).Parent = cards
 		end
 		cards.Visible = true
 		UiKit.pop(cards, 0.2)
@@ -320,15 +344,25 @@ function EggAnimation.start()
 			rays.Visible = true
 			raySpin:Play()
 		end
-		if secret then
-			secretTitle.Text = Lang.t("egg.secretHatched")
+		if secret or anyShiny then
+			-- Secret wins the title; a Shiny Secret reads "GEHEIM! ✨ SHINY!".
+			local text = if secret then Lang.t("egg.secretHatched") else Lang.t("egg.shinyHatched")
+			if secret and anyShiny then
+				text = `{text}  {Lang.t("egg.shinyHatched")}`
+			end
+			secretTitle.Text = text
+			secretTitle.TextColor3 = if secret then UiKit.rarityColor("Secret") else SHINY_COLOR
 			secretTitle.Visible = true
 			UiKit.pop(secretTitle, 0.3)
-			Sounds.play("Secret")
+			Sounds.play(if secret then "Secret" else "Shiny")
 		end
 		closable = true
 
-		task.delay(if secret then SECRET_CLOSE_SECONDS else CLOSE_SECONDS, function()
+		local closeSeconds = if secret
+			then SECRET_CLOSE_SECONDS
+			elseif anyShiny then CLOSE_SECONDS + 2
+			else CLOSE_SECONDS
+		task.delay(closeSeconds, function()
 			if myId == playId then
 				close()
 			end

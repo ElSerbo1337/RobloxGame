@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local HudLayout = require(ReplicatedStorage.Shared.HudLayout)
 local MenuSwitch = require(ReplicatedStorage.Shared.MenuSwitch)
+local Texts = require(ReplicatedStorage.Shared.Texts)
 local Lang = require(script.Parent.Lang)
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
@@ -35,12 +36,13 @@ function UiKit.corner(parent: Instance, radius: number)
 	uiCorner.Parent = parent
 end
 
-function UiKit.stroke(parent: Instance, thickness: number?)
+function UiKit.stroke(parent: Instance, thickness: number?): UIStroke
 	local uiStroke = Instance.new("UIStroke")
 	uiStroke.Thickness = thickness or 3
 	uiStroke.Color = UiKit.DARK
 	uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	uiStroke.Parent = parent
+	return uiStroke
 end
 
 function UiKit.label(parent: Instance, text: string): TextLabel
@@ -424,6 +426,19 @@ end
 function UiKit.rarityColor(rarityId: string): Color3
 	local color = GameConfig.rarities[rarityId].color
 	return Color3.fromRGB(color[1], color[2], color[3])
+end
+
+-- Pet name in the player's language with its variant and Shiny mark (#80):
+-- "Gold-Katze", "✨ Regenbogen-Katze" / "Golden Cat", "✨ Rainbow Cat".
+function UiKit.petName(petId: string, variant: string?, shiny: boolean?): string
+	local name = Lang.name(GameConfig.pets[petId])
+	if variant and variant ~= "Normal" and Texts.strings[`pets.name.{variant}`] then
+		name = Lang.t(`pets.name.{variant}`, { pet = name })
+	end
+	if shiny then
+		name = Lang.t("pets.name.shiny", { pet = name })
+	end
+	return name
 end
 
 -- "+25 %" from a bonus of 0.25.

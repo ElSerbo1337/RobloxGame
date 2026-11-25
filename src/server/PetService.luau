@@ -4,7 +4,8 @@
 -- sees them); each client moves all pet models locally for smooth following (PetFollow).
 --
 -- Replicated player attributes:
---   Pets            JSON list of { uid, petId, equipped }
+--   Pets            JSON list of { uid, petId, equipped, variant, shiny, locked, bonus }
+--                   (variant "Normal"|"Gold"|"Rainbow", bonus = effective GameRules.petBonus, #80)
 --   PetSlots        how many pets can be equipped
 --   InventorySlots  how many pets can be owned (full inventory blocks opening eggs)
 --   CoinMultiplier  1 + sum of equipped pet bonuses
@@ -14,6 +15,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
@@ -31,6 +33,12 @@ local MODEL_SIZE_PER_RARITY = 0.25
 -- PetFollow holds the pivot HOVER (1.4) studs above the ground; the models' bottom
 -- should float just above it, like the placeholder ball did.
 local MODEL_LIFT = 1.2
+-- Merging (#80): at most one merge request per player in this many seconds.
+local MERGE_COOLDOWN = 0.4
+-- Name tag / glow colours of the variants and the Shiny sparkles.
+local GOLD_COLOR = Color3.fromRGB(255, 200, 40)
+local RAINBOW_COLOR = Color3.fromRGB(255, 120, 220)
+local SHINY_COLOR = Color3.fromRGB(255, 245, 170)
 
 local PetService = {}
 
@@ -83,9 +91,38 @@ local function modelPet(petId: string, origin: CFrame): (Model?, BasePart?, numb
 	return model, root, boxSize.Y - MODEL_LIFT
 end
 
+-- Variant look (#80): Gold glows golden, Rainbow glows pink (the client cycles the
+-- colours of models tagged with the "Variant" attribute, see PetFollow), Shiny pets
+-- sparkle. Particles follow the low-graphics setting (GraphicsQuality).
+local function addVariantLook(body: BasePart, pet: GameRules.OwnedPet)
+	local variant = pet.variant or "Normal"
+	if variant ~= "Normal" then
+		local light = Instance.new("PointLight")
+		light.Name = "VariantGlow"
+		light.Color = if variant == "Rainbow" then RAINBOW_COLOR else GOLD_COLOR
+		light.Range = 7
+		light.Brightness = 1.6
+		light.Parent = body
+	end
+	if pet.shiny then
+		local sparkles = Instance.new("ParticleEmitter")
+		sparkles.Name = "ShinySparkles"
+		sparkles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		sparkles.Color = ColorSequence.new(SHINY_COLOR)
+		sparkles.LightEmission = 1
+		sparkles.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0) })
+		sparkles.Lifetime = NumberRange.new(0.6, 1.1)
+		sparkles.Rate = 6
+		sparkles.Speed = NumberRange.new(0.5, 1.5)
+		sparkles.SpreadAngle = Vector2.new(180, 180)
+		sparkles.Parent = body
+	end
+end
+
 -- Pet: the imported model, or a placeholder (round body in the rarity color with
--- eyes); both with a name tag.
-local function buildPet(uid: number, petId: string, origin: CFrame, parent: Instance): Model
+-- eyes); both with a name tag (variant and Shiny in the name, #80).
+local function buildPet(pet: GameRules.OwnedPet, origin: CFrame, parent: Instance): Model
+	local uid, petId = pet.uid, pet.petId
 	local model, body, height = modelPet(petId, origin)
 	if model == nil or body == nil then
 		model = Instance.new("Model")
@@ -106,6 +143,9 @@ local function buildPet(uid: number, petId: string, origin: CFrame, parent: Inst
 	assert(model and body, "pet model without body")
 	model.Name = tostring(uid)
 	model:SetAttribute("PetId", petId)
+	model:SetAttribute("Variant", pet.variant or "Normal")
+	model:SetAttribute("Shiny", pet.shiny == true)
+	addVariantLook(body, pet)
 
 	local tag = Instance.new("BillboardGui")
 	tag.Size = UDim2.fromOffset(160, 32)
@@ -117,9 +157,24 @@ local function buildPet(uid: number, petId: string, origin: CFrame, parent: Inst
 	text.BackgroundTransparency = 1
 	text.Font = Enum.Font.FredokaOne
 	text.TextScaled = true
-	-- Each player reads the pet name in their language (#68).
-	SignText.set(text, "sign.name", { name = Texts.nameArg(GameConfig.pets[petId]) })
-	text.TextColor3 = rarityColor(petId)
+	-- Each player reads the pet name in their language (#68), with variant/Shiny (#80).
+	local variant = pet.variant or "Normal"
+	if variant ~= "Normal" or pet.shiny then
+		local key = if variant ~= "Normal" then `pets.name.{variant}` else "pets.name.shiny"
+		local nameArg = Texts.nameArg(GameConfig.pets[petId])
+		if variant ~= "Normal" and pet.shiny then
+			-- "✨ Gold-Katze": shiny wraps the variant name.
+			SignText.set(text, "pets.name.shiny", { pet = { key = key, args = { pet = nameArg } } })
+		else
+			SignText.set(text, key, { pet = nameArg })
+		end
+	else
+		SignText.set(text, "sign.name", { name = Texts.nameArg(GameConfig.pets[petId]) })
+	end
+	text.TextColor3 = if variant == "Gold"
+		then GOLD_COLOR
+		elseif variant == "Rainbow" then RAINBOW_COLOR
+		else rarityColor(petId)
 	text.TextStrokeTransparency = 0.2
 	text.Parent = tag
 	tag.Parent = body
@@ -157,10 +212,10 @@ function PetService.start()
 
 	local function syncModels(player: Player, state: PlayerState)
 		local folder = ownerFolder(player)
-		local wanted: { [string]: string } = {}
+		local wanted: { [string]: GameRules.OwnedPet } = {}
 		for _, pet in state.pets do
 			if table.find(state.equipped, pet.uid) then
-				wanted[tostring(pet.uid)] = pet.petId
+				wanted[tostring(pet.uid)] = pet
 			end
 		end
 		for _, child in folder:GetChildren() do
@@ -171,9 +226,9 @@ function PetService.start()
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 		local origin = if root then root.CFrame * CFrame.new(0, 0, 4) else CFrame.new(0, 3, 0)
-		for uid, petId in wanted do
+		for uid, pet in wanted do
 			if folder:FindFirstChild(uid) == nil then
-				buildPet(tonumber(uid) :: number, petId, origin, folder)
+				buildPet(pet, origin, folder)
 			end
 		end
 		-- Slot order for the follow formation = order of equipping.
@@ -192,6 +247,10 @@ function PetService.start()
 				uid = pet.uid,
 				petId = pet.petId,
 				equipped = table.find(state.equipped, pet.uid) ~= nil,
+				variant = rules.petVariant(pet),
+				shiny = pet.shiny == true,
+				locked = rules.isPetLocked(pet),
+				bonus = rules.petBonus(pet),
 			})
 		end
 		player:SetAttribute("Pets", HttpService:JSONEncode(list))
@@ -243,7 +302,43 @@ function PetService.start()
 		end
 	end)
 
+	-- Merging (#80): the rules pick the pets; the client gets the new pet and the used
+	-- uids for its animation.
+	local features = Features.new(GameConfig.features)
+	local petMerged = Net.event("PetMerged")
+	local lastMerge: { [Player]: number } = {}
+	Net.event("MergePets").OnServerEvent
+		:Connect(features.guard("petMerge", function(player: Player, petId: unknown, variant: unknown)
+			if type(petId) ~= "string" or type(variant) ~= "string" then
+				return
+			end
+			local now = os.clock()
+			if now - (lastMerge[player] or -math.huge) < MERGE_COOLDOWN then
+				return
+			end
+			lastMerge[player] = now
+			local state = PlayerStates.get(player)
+			if state == nil then
+				return
+			end
+			local result = rules.mergePets(state, petId, variant)
+			if not result.ok then
+				notify:FireClient(player, result.reason)
+				return
+			end
+			PlayerStates.set(player, result.state)
+			local pet = result.pet :: GameRules.OwnedPet
+			petMerged:FireClient(player, {
+				uid = pet.uid,
+				petId = pet.petId,
+				variant = rules.petVariant(pet),
+				shiny = pet.shiny == true,
+				bonus = rules.petBonus(pet),
+			}, result.consumed)
+		end))
+
 	Players.PlayerRemoving:Connect(function(player)
+		lastMerge[player] = nil
 		local folder = petsFolder:FindFirstChild(tostring(player.UserId))
 		if folder then
 			folder:Destroy()

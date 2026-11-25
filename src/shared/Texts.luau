@@ -237,10 +237,6 @@ Texts.strings = {
 	-- Merge button on the pet card: pets.merge.<target variant>.
 	["pets.merge.Gold"] = { de = "Vergolden ({have}/{need})", en = "Make gold ({have}/{need})" },
 	["pets.merge.Rainbow"] = { de = "Regenbogen ({have}/{need})", en = "Rainbow ({have}/{need})" },
-	["pets.mergeHint"] = {
-		de = "Verschmelzen: {need} gleiche Pets → 1 stärkeres",
-		en = "Merge: {need} equal pets → 1 stronger pet",
-	},
 	["pets.merged"] = { de = "{pet} entstanden! {bonus}", en = "{pet} created! {bonus}" },
 	["notify.NotEnoughPets"] = { de = "Dafür brauchst du mehr gleiche Pets!", en = "You need more equal pets!" },
 	["notify.MaxVariant"] = { de = "Stärker geht es nicht!", en = "It can't get any stronger!" },
@@ -251,9 +247,8 @@ Texts.strings = {
 	["egg.secretName"] = { de = "??? (Geheim)", en = "??? (Secret)" },
 	["egg.secretOdds"] = { de = "1 : {odds}", en = "1 in {odds}" },
 	["egg.secretHatched"] = { de = "🤫 GEHEIM!", en = "🤫 SECRET!" },
-	-- Shiny pets (#80): hatch card title and the egg preview row.
+	-- Shiny pets (#80): hatch card title.
 	["egg.shinyHatched"] = { de = "✨ SHINY!", en = "✨ SHINY!" },
-	["egg.shinyOdds"] = { de = "✨ Shiny-Chance 1 : {odds}", en = "✨ Shiny chance 1 in {odds}" },
 	["announce.secret"] = {
 		de = "🌟 {player} hat {pet} geschlüpft! (Geheim)",
 		en = "🌟 {player} hatched {pet}! (Secret)",

@@ -272,11 +272,12 @@ function EggService.start(spots: { EggSpot })
 		end
 		lastOpen[player] = now
 		PlayerStates.set(player, result.state)
-		local petIds = {}
+		local petIds, hatched = {}, {}
 		for _, pet in result.pets do
 			table.insert(petIds, pet.petId)
+			table.insert(hatched, { petId = pet.petId, shiny = pet.shiny == true })
 		end
-		eggOpened:FireClient(player, eggId, table.unpack(petIds))
+		eggOpened:FireClient(player, eggId, hatched)
 		-- Secret pet (#81): announced on all servers.
 		for _, petId in petIds do
 			if GameConfig.pets[petId].rarity == "Secret" then

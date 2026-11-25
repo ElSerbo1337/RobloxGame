@@ -1779,3 +1779,25 @@ Studio, Rojo verbinden, **Play** (PC-Ansicht):
 - [ ] Sprache Englisch: „New world!“, „Farm“, „New toppings“ mit englischen Belag-Namen, „Click to skip“.
 - [ ] Handy-Ansicht (Device-Emulator): Tippen überspringt, Text „Tippen zum Überspringen“, Belag-Karten passen in eine Reihe, Welt-Name nicht abgeschnitten.
 - [ ] Schalter `features.worldIntro = false`: keine Fahrt, Admin-Aktion nicht im Panel.
+
+## MEGA UPDATE – #80 Pets verschmelzen (Gold, Regenbogen) und Shiny
+
+5 gleiche Pets → 1 **Gold** (Bonus ×2,5), 5 gleiche Gold → 1 **Regenbogen** (×6), immer erfolgreich. **Shiny** 1 : 200 pro geschlüpftem Pet (+50 %, auch als Gold/Regenbogen), Glücks-Trank ×2. Schalter: `petMerge` (Verschmelzen, Knöpfe, roter Punkt), `shinyPets` (Wurf, Admin-Shiny-Chance). Sounds `Shiny` und `Merge` in `src/client/Sounds.luau` haben noch **keine ID** (Suchbegriffe stehen dort).
+
+Vorher: `lune run test` → alle grün (u. a. `tests/PetVariants.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin; ggf. Admin „Upgrade-Stufe setzen“ InventorySpace/PetSlots max):
+
+- [ ] Admin → **Pet mit Variante geben** (Pet, Variante Normal, Shiny Nein, Anzahl 5) → Pets-Kachel bekommt den **roten Punkt**; im Pet-Menü auf jeder Karte „Vergolden (5/5)“ in Gold. Mit 3 Pets: „Vergolden (3/5)“ grau, Tippen tut nichts.
+- [ ] „Vergolden (5/5)“ tippen → 5 Pet-Bilder fliegen in die Mitte, goldener Blitz, große Karte „Gold-… entstanden! +… %“, Sound `Merge`. Danach: 1 Gold-Pet mit goldenem Rahmen, Bonus = 2,5 × Grundbonus, roter Punkt weg.
+- [ ] Ausgerüstete mitverschmelzen: 5 gleiche, 2 davon ausrüsten → verschmelzen → das neue Gold-Pet ist ausgerüstet (folgt dir, leuchtet golden), die Zusammenfassung „Bonus“ oben stimmt.
+- [ ] Admin → 5× Gold geben → „Regenbogen (5/5)“ → Regenbogen-Pet: bunter Rahmen, folgendes Pet leuchtet in wechselnden Farben, Name „Regenbogen-…“ über dem Pet; Regenbogen-Karte hat keinen Verschmelzen-Knopf.
+- [ ] Admin → **Shiny-Chance testen** 100 → Ei öffnen: goldener Kartenrahmen, „✨ Name“, Seltenheit „· ✨ Shiny“, Bonus +50 %, großes „✨ SHINY!“, goldener Blitz, Karte bleibt ~5 s; folgendes Shiny-Pet funkelt. Danach **0** → wieder normal.
+- [ ] Shiny + Geheim (Geheim-Chance 100 und Shiny-Chance 100) → Titel „🤫 GEHEIM!  ✨ SHINY!“.
+- [ ] 1 Shiny + 4 normale gleiche verschmelzen → Ergebnis „✨ Gold-…“ (Shiny bleibt erhalten).
+- [ ] **Beste ausrüsten** mit einem Regenbogen-Pet eines schwachen Pets und stärkeren normalen Pets → wählt nach echtem Bonus (Karte zeigt effektiven Bonus).
+- [ ] ⚙️ Ei-Animation überspringen **an** → Verschmelzen zeigt sofort das Ergebnis (kein Zusammenflug); Bildschirm-Blitze **aus** → kein goldener Blitz (Verschmelzen und Shiny-Schlüpfen).
+- [ ] Löschen-Modus: keine Verschmelzen-Knöpfe auf den Karten; Löschen-Frage nennt „Gold-…“ und den echten Bonus.
+- [ ] Handy: Pet-Karten mit Knopf gut tippbar, Knopf-Text passt (auch Englisch „Make gold (5/5)“).
+- [ ] Rejoin → Gold/Regenbogen/Shiny bleiben erhalten.
+- [ ] `GameConfig.features.petMerge = false` → keine Knöpfe, kein roter Punkt, Server lehnt ab; vorhandene Gold-Pets behalten ihren Bonus. `shinyPets = false` → keine Shinys mehr, Admin-Shiny-Chance weg. Danach wieder `true`.

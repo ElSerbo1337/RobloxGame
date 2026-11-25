@@ -4,19 +4,45 @@
 -- "Beste ausrüsten" asks the server to equip the strongest pets. "Löschen" switches the
 -- menu into delete mode: tapping a card then asks for confirmation before deleting it.
 -- Reads the player attributes Pets (JSON), PetSlots, InventorySlots and CoinMultiplier (see PetService).
+-- Merging (#80): every pet card of a group that can still grow shows "Vergolden (n/5)" /
+-- "Regenbogen (n/5)"; at 5/5 it asks the server to merge (MergePets) and plays a short
+-- fly-together animation on PetMerged (skipped with "skip egg animation", flash only
+-- with screen flashes on). Red dot on the pet tile while any group is ready.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PetIcon = require(script.Parent.PetIcon)
 local Lang = require(script.Parent.Lang)
+local Settings = require(script.Parent.Settings)
 local SideBar = require(script.Parent.SideBar)
+local Sounds = require(script.Parent.Sounds)
+local TweenService = game:GetService("TweenService")
 local UiKit = require(script.Parent.UiKit)
 
-type PetEntry = { uid: number, petId: string, equipped: boolean }
+-- variant/shiny/locked/bonus from #80 (bonus = effective bonus; missing on old data).
+type PetEntry = {
+	uid: number,
+	petId: string,
+	equipped: boolean,
+	variant: string?,
+	shiny: boolean?,
+	locked: boolean?,
+	bonus: number?,
+}
+
+local rules = GameRules.new(GameConfig)
+local features = Features.new(GameConfig.features)
+
+local GOLD_COLOR = Color3.fromRGB(255, 200, 40)
+local SHINY_COLOR = Color3.fromRGB(255, 245, 170)
+-- Seconds the merge animation takes (fly together + result).
+local MERGE_FLY_SECONDS = 0.55
 
 -- The pet grid scrolls, so the panel may get as short as header + one row of pets.
 local PANEL_SIZE = Vector2.new(640, 560)
@@ -33,13 +59,17 @@ local function readPets(player: Player): { PetEntry }
 	return if ok and type(list) == "table" then list else {}
 end
 
+local function bonusOf(entry: PetEntry): number
+	return entry.bonus or GameConfig.pets[entry.petId].bonus
+end
+
 -- Equipped first, then best bonus, then newest.
 local function sortPets(pets: { PetEntry })
 	table.sort(pets, function(a, b)
 		if a.equipped ~= b.equipped then
 			return a.equipped
 		end
-		local bonusA, bonusB = GameConfig.pets[a.petId].bonus, GameConfig.pets[b.petId].bonus
+		local bonusA, bonusB = bonusOf(a), bonusOf(b)
 		if bonusA ~= bonusB then
 			return bonusA > bonusB
 		end
@@ -114,7 +144,7 @@ function PetMenu.start()
 	list.Parent = panel
 
 	local grid = Instance.new("UIGridLayout")
-	grid.CellSize = UDim2.fromOffset(140, 170)
+	grid.CellSize = UDim2.fromOffset(140, if features.enabled("petMerge") then 206 else 170)
 	grid.CellPadding = UDim2.fromOffset(12, 12)
 	grid.SortOrder = Enum.SortOrder.LayoutOrder
 	grid.Parent = list
@@ -168,14 +198,25 @@ function PetMenu.start()
 		end
 	end
 
+	-- Covers the panel while the merge animation plays (#80, filled on PetMerged).
+	local overlay = Instance.new("Frame")
+	overlay.Name = "MergeOverlay"
+	overlay.Size = UDim2.fromScale(1, 1)
+	overlay.BackgroundColor3 = UiKit.DARK
+	overlay.BackgroundTransparency = 1
+	overlay.ZIndex = 20
+	overlay.Visible = false
+	UiKit.corner(overlay, 28)
+	overlay.Parent = panel
+
 	local deleteMode = false
 	local pendingDelete: number? = nil
 
 	local function askDelete(entry: PetEntry)
-		local pet = GameConfig.pets[entry.petId]
 		pendingDelete = entry.uid
 		local key = if entry.equipped then "pets.confirmDeleteEquipped" else "pets.confirmDelete"
-		question.Text = Lang.t(key, { pet = Lang.name(pet), bonus = UiKit.bonusText(pet.bonus) })
+		local name = UiKit.petName(entry.petId, entry.variant, entry.shiny)
+		question.Text = Lang.t(key, { pet = name, bonus = UiKit.bonusText(bonusOf(entry)) })
 		confirm.Visible = true
 		UiKit.pop(dialog, 0.8)
 	end
@@ -195,8 +236,12 @@ function PetMenu.start()
 
 	gui.Parent = player:WaitForChild("PlayerGui")
 
+	-- Merge groups of the current pets ("petId|variant" -> group), set in refresh().
+	local groups: { [string]: GameRules.MergeGroup } = {}
+
 	local function card(entry: PetEntry, order: number)
 		local pet = GameConfig.pets[entry.petId]
+		local variant = entry.variant or "Normal"
 		local color = UiKit.rarityColor(pet.rarity)
 
 		-- The whole card is the button: big touch target.
@@ -207,8 +252,32 @@ function PetMenu.start()
 		button.AutoButtonColor = true
 		button.BackgroundColor3 = color
 		UiKit.corner(button, 18)
-		UiKit.stroke(button, if entry.equipped then 5 else 2)
+		local frame = UiKit.stroke(button, if entry.equipped then 5 else 2)
 		button.Parent = list
+		-- Variant look (#80): gold frame, rainbow frame, Shiny sparkle in the corner.
+		if variant == "Gold" then
+			frame.Color = GOLD_COLOR
+			frame.Thickness += 2
+		elseif variant == "Rainbow" then
+			frame.Color = Color3.new(1, 1, 1)
+			frame.Thickness += 2
+			local rainbow = Instance.new("UIGradient")
+			rainbow.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 80)),
+				ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 220, 60)),
+				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 220, 120)),
+				ColorSequenceKeypoint.new(0.75, Color3.fromRGB(80, 160, 255)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(220, 90, 255)),
+			})
+			rainbow.Rotation = 45
+			rainbow.Parent = frame
+		end
+		if entry.shiny then
+			local sparkle = UiKit.label(button, "✨")
+			sparkle.Position = UDim2.fromOffset(4, 4)
+			sparkle.Size = UDim2.fromOffset(30, 30)
+			sparkle.TextColor3 = SHINY_COLOR
+		end
 
 		local icon = Instance.new("Frame")
 		icon.AnchorPoint = Vector2.new(0.5, 0)
@@ -228,14 +297,14 @@ function PetMenu.start()
 		-- The 3D pet (imported model) replaces the dot.
 		dot.Visible = not PetIcon.show(icon, entry.petId, 1.2)
 
-		local name = UiKit.label(button, Lang.name(pet))
+		local name = UiKit.label(button, UiKit.petName(entry.petId, variant, entry.shiny))
 		name.Position = UDim2.fromOffset(6, 78)
 		name.Size = UDim2.new(1, -12, 0, 28)
 		name.TextColor3 = UiKit.CREAM
 		name.TextStrokeColor3 = UiKit.DARK
 		name.TextStrokeTransparency = 0
 
-		local bonus = UiKit.label(button, UiKit.bonusText(pet.bonus))
+		local bonus = UiKit.label(button, UiKit.bonusText(bonusOf(entry)))
 		bonus.Position = UDim2.fromOffset(6, 106)
 		bonus.Size = UDim2.new(1, -12, 0, 24)
 		bonus.TextColor3 = UiKit.CREAM
@@ -254,6 +323,29 @@ function PetMenu.start()
 		state.TextColor3 = UiKit.CREAM
 		UiKit.corner(state, 12)
 
+		-- Merge button (#80): on every card of a group that can still grow.
+		local group = groups[`{entry.petId}|{variant}`]
+		if group and not deleteMode and not entry.locked then
+			local ready = group.have >= group.need
+			local merge = UiKit.button(
+				button,
+				Lang.t(`pets.merge.{group.target}`, { have = math.min(group.have, group.need), need = group.need }),
+				if ready then GOLD_COLOR else Color3.fromRGB(170, 160, 150)
+			)
+			merge.Name = "MergeButton"
+			merge.Position = UDim2.new(0, 8, 1, -74)
+			merge.Size = UDim2.new(1, -16, 0, 32)
+			merge.AutoButtonColor = ready
+			merge.Activated:Connect(function()
+				if ready then
+					Net.event("MergePets"):FireServer(entry.petId, variant)
+					UiKit.pop(merge)
+				else
+					UiKit.pop(merge, 0.9)
+				end
+			end)
+		end
+
 		button.Activated:Connect(function()
 			if deleteMode then
 				askDelete(entry)
@@ -271,6 +363,12 @@ function PetMenu.start()
 		end
 		local pets = readPets(player)
 		sortPets(pets)
+		groups = {}
+		for _, group in rules.mergeGroups(pets :: any) do
+			groups[`{group.petId}|{group.variant}`] = group
+		end
+		-- Red dot on the pet tile while a merge is ready (#80).
+		SideBar.setBadge("pets", rules.canMergeAny(pets :: any))
 		local equippedCount = 0
 		for i, entry in pets do
 			if entry.equipped then
@@ -318,6 +416,7 @@ function PetMenu.start()
 
 	local function close()
 		panel.Visible = false
+		overlay.Visible = false
 		closeConfirm()
 		setDeleteMode(false)
 	end
@@ -334,11 +433,106 @@ function PetMenu.start()
 	end
 	closeButton.Activated:Connect(close)
 
+	-- Merge animation (#80): five pet icons fly into the middle, then the new pet pops
+	-- up with its name and bonus. "Skip egg animation" shows only the result,
+	-- the golden flash needs screen flashes on.
+	local mergeId = 0
+
+	local function icon(petId: string, size: number, parent: Instance): Frame
+		local holder = Instance.new("Frame")
+		holder.AnchorPoint = Vector2.new(0.5, 0.5)
+		holder.Size = UDim2.fromOffset(size, size)
+		holder.BackgroundColor3 = UiKit.rarityColor(GameConfig.pets[petId].rarity)
+		holder.ZIndex = 21
+		UiKit.corner(holder, size // 2)
+		UiKit.stroke(holder, 3)
+		holder.Parent = parent
+		PetIcon.show(holder, petId, 1.2)
+		return holder
+	end
+
+	Net.event("PetMerged").OnClientEvent:Connect(function(pet: any)
+		if type(pet) ~= "table" or GameConfig.pets[pet.petId] == nil then
+			return
+		end
+		Sounds.play("Merge")
+		local name = UiKit.petName(pet.petId, pet.variant, pet.shiny)
+		local message = Lang.t("pets.merged", { pet = name, bonus = UiKit.bonusText(tonumber(pet.bonus) or 0) })
+		if not panel.Visible then
+			return
+		end
+		mergeId += 1
+		local myId = mergeId
+		for _, child in overlay:GetChildren() do
+			if child:IsA("GuiObject") then
+				child:Destroy()
+			end
+		end
+		overlay.Visible = true
+		overlay.BackgroundTransparency = 0.35
+		local need = GameConfig.petVariants[pet.variant] and GameConfig.petVariants[pet.variant].count or 5
+		if not Settings.skipEggAnimation() then
+			local flyers = {}
+			for i = 1, need do
+				local angle = (i - 1) / need * math.pi * 2
+				local flyer = icon(pet.petId, 70, overlay)
+				flyer.Position = UDim2.new(0.5, math.cos(angle) * 190, 0.5, math.sin(angle) * 150)
+				table.insert(flyers, flyer)
+			end
+			task.wait(0.25)
+			for _, flyer in flyers do
+				TweenService:Create(
+					flyer,
+					TweenInfo.new(MERGE_FLY_SECONDS, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+					{ Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(30, 30) }
+				):Play()
+			end
+			task.wait(MERGE_FLY_SECONDS)
+			if myId ~= mergeId then
+				return
+			end
+			for _, flyer in flyers do
+				flyer:Destroy()
+			end
+			if Settings.screenFlashes() then
+				overlay.BackgroundColor3 = GOLD_COLOR
+				overlay.BackgroundTransparency = 0.1
+				TweenService:Create(overlay, TweenInfo.new(0.4), { BackgroundTransparency = 0.35 }):Play()
+				task.delay(0.4, function()
+					overlay.BackgroundColor3 = UiKit.DARK
+				end)
+			end
+		end
+		local result = icon(pet.petId, 150, overlay)
+		result.Position = UDim2.fromScale(0.5, 0.42)
+		local frame = result:FindFirstChildOfClass("UIStroke")
+		if frame then
+			frame.Color = if pet.variant == "Gold" then GOLD_COLOR else Color3.fromRGB(255, 120, 220)
+			frame.Thickness = 6
+		end
+		UiKit.pop(result, 0.3)
+		local text = UiKit.label(overlay, message)
+		text.AnchorPoint = Vector2.new(0.5, 0)
+		text.Position = UDim2.new(0.5, 0, 0.42, 96)
+		text.Size = UDim2.new(1, -60, 0, 50)
+		text.TextColor3 = UiKit.CREAM
+		text.TextStrokeColor3 = UiKit.DARK
+		text.TextStrokeTransparency = 0
+		text.ZIndex = 22
+		task.delay(1.8, function()
+			if myId == mergeId then
+				overlay.Visible = false
+			end
+		end)
+	end)
+
 	-- "All slots taken" feedback right in the menu.
 	Net.event("Notify").OnClientEvent:Connect(function(kind: string)
 		local message = if kind == "PetSlotsFull"
 			then Lang.t("pets.slotsFull")
 			elseif kind == "NoPets" then Lang.t("pets.empty")
+			elseif kind == "NotEnoughPets" then Lang.t("notify.NotEnoughPets")
+			elseif kind == "MaxVariant" then Lang.t("notify.MaxVariant")
 			else nil
 		if message and panel.Visible then
 			local old = summary.Text

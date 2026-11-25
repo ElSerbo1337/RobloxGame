@@ -50,6 +50,18 @@ local SOUNDS: { [string]: Entry } = {
 		volume = 0.8,
 		search = { "magic reveal", "mystery", "epic reveal", "choir", "legendary" },
 	},
+	-- Shiny pet hatched and pets merged (#80). IDs still empty: the local session picks
+	-- them (Creator Store, creator "Roblox").
+	Shiny = {
+		id = "",
+		volume = 0.7,
+		search = { "sparkle", "twinkle", "magic chime", "shine", "star" },
+	},
+	Merge = {
+		id = "",
+		volume = 0.7,
+		search = { "power up", "level up", "fusion", "magic whoosh", "upgrade" },
+	},
 	-- Short fanfare for the rebirth celebration (#35).
 	Rebirth = { id = "9114898444", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
 	-- Background music per world, looped (cheerful, light).

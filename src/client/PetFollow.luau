@@ -2,6 +2,7 @@
 -- Moves every player's equipped pets (Workspace.Pets.<UserId>) behind their owner.
 -- Runs on every client for all players, so movement is smooth and everyone sees
 -- everyone's pets. The pet models are anchored; the server never moves them.
+-- Rainbow pets (#80) get their glow colour cycled here.
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -116,6 +117,13 @@ function PetFollow.start()
 				-- Face the walking direction of the owner.
 				local look = flat.LookVector
 				pet:PivotTo(CFrame.lookAt(position, position + look))
+				-- Rainbow pets (#80): their glow cycles through the colours.
+				if pet:GetAttribute("Variant") == "Rainbow" then
+					local glow = pet:FindFirstChild("VariantGlow", true)
+					if glow and glow:IsA("PointLight") then
+						glow.Color = Color3.fromHSV((t * 0.25 + slot * 0.13) % 1, 0.7, 1)
+					end
+				end
 			end
 		end
 	end)

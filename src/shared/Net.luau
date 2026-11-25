@@ -16,7 +16,8 @@
 -- DrinkPotion     client -> server  (potionId: string)           "drink one of my potions"
 -- PotionNotify    server -> client  (kind: string, potionId: string)  "Drunk" | "Expired" | a rule's failure reason
 -- OpenEgg         client -> server  (eggId: string, count: number?)  "open 1 (or 3, if bought) of this egg"
--- EggOpened       server -> client  (eggId: string, ...petId: string)  plays the hatch animation (one pet per egg)
+-- EggOpened       server -> client  (eggId: string, pets: { { petId: string, shiny: boolean } })  plays the
+--                                    hatch animation (one pet per egg; shiny = Shiny pet, #80)
 -- EquipPet        client -> server  (uid: number)               "equip this pet"
 -- UnequipPet      client -> server  (uid: number)               "put this pet away"
 -- PortalOpen      server -> client  (worldId: string, entries: { GameRules.PortalEntry }, preview: boolean?)
@@ -28,6 +29,8 @@
 -- Teleport        client -> server  (worldId: string)            "send me to this world" (only from inside a portal)
 -- EquipBest       client -> server  ()                           "equip my pets with the highest bonus"
 -- DeletePet       client -> server  (uid: number)               "delete this pet for good" (client asked to confirm)
+-- MergePets       client -> server  (petId: string, variant: string)  "merge 5 equal pets of this kind" (#80)
+-- PetMerged       server -> client  (pet: { uid, petId, variant, shiny }, consumed: { number })  play the merge animation
 -- PhoneOpen       server -> client  (order: GameRules.Order?, maxReward: GameRules.DeliveryReward?, seconds: number?)
 --                                    player stands at a ringing phone: show the order with accept/decline;
 --                                    order nil = calls are switched off: show "Anrufe sind aus"
@@ -63,7 +66,7 @@
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
 -- EggsPerOpen (1, or 3 after the gem upgrade).
 -- Tutorial: TutorialStep (step id, "" = finished), TutorialNumber, TutorialTotal, TutorialProgress, TutorialGoal.
--- Pets (see PetService): Pets (JSON list of { uid, petId, equipped }), PetSlots, InventorySlots,
+-- Pets (see PetService): Pets (JSON list of { uid, petId, equipped, variant, shiny, locked, bonus }), PetSlots, InventorySlots,
 -- CoinMultiplier (pets only).
 -- Rebirth (see RebirthService): Rebirths (number done), RebirthOffer (JSON GameRules.RebirthOffer).
 -- Potions (see PotionService): Potions (JSON { [potionId]: count owned }),
@@ -109,6 +112,8 @@ local EVENTS = {
 	Teleport = true,
 	EquipBest = true,
 	DeletePet = true,
+	MergePets = true,
+	PetMerged = true,
 	BuyPotion = true,
 	DrinkPotion = true,
 	PotionNotify = true,
