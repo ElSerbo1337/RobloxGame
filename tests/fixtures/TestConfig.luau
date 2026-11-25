@@ -46,6 +46,19 @@ return {
 			currency = "Gems",
 			levels = { { price = 150, value = 3 } },
 		},
+		-- Golden topping chance (#94); hidden while features.goldenToppings is false.
+		GoldLuck = {
+			displayName = "Gold-Glück",
+			currency = "Gems",
+			feature = "goldenToppings",
+			levels = {
+				{ price = 10, value = 0.012 },
+				{ price = 20, value = 0.014 },
+				{ price = 30, value = 0.016 },
+				{ price = 40, value = 0.018 },
+				{ price = 50, value = 0.02 },
+			},
+		},
 	},
 	shops = {
 		SmallShop = {
@@ -76,6 +89,10 @@ return {
 			-- Potions sold at this shop's gem counter.
 			potions = { "Coins", "Luck", "Speed" },
 		},
+		GoldShop = {
+			worldId = "PizzeriaGarden",
+			offers = { { upgrade = "GoldLuck", maxLevel = 5 } },
+		},
 		-- Stands in a world that must be unlocked first.
 		BeachShop = {
 			worldId = "Beach",
@@ -96,6 +113,9 @@ return {
 		toppingMin = 1,
 		toppingMax = 3,
 	},
+	-- Golden toppings (#94): chance per spawned topping (before Gold Luck) and value factor.
+	-- 0 here keeps the ToppingField draw order of other tests; GoldenToppings.spec sets its own chance.
+	goldenToppings = { chance = 0, valueMultiplier = 10 },
 	-- New HUD buttons that pulse until the player opened them once.
 	hints = { "Gifts", "Rebirth" },
 	-- Income estimate: rounds (collect + sell a full pizza) per minute.

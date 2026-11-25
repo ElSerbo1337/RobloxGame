@@ -267,6 +267,26 @@ local GameConfig = {
 				{ price = 150, value = 3 },
 			},
 		},
+		-- Golden toppings (#94): value = chance that a topping is golden for the player
+		-- (level 0 = goldenToppings.chance). Hidden and not sold while the feature is off.
+		GoldLuck = {
+			displayName = "Gold-Glück",
+			displayNameEn = "Gold Luck",
+			description = "Mehr goldene Beläge (10-facher Wert)",
+			descriptionEn = "More golden toppings (10x value)",
+			currency = "Gems",
+			feature = "goldenToppings",
+			levels = {
+				-- Shop 1 (world 1)
+				{ price = 60, value = 0.012 },
+				{ price = 180, value = 0.014 },
+				-- Shop 2 (world 4)
+				{ price = 450, value = 0.016 },
+				{ price = 1100, value = 0.018 },
+				-- Shop 3 (world 7)
+				{ price = 2500, value = 0.02 },
+			},
+		},
 	},
 
 	petSlots = {
@@ -292,6 +312,15 @@ local GameConfig = {
 		toppingChance = 1 / 150,
 		toppingMin = 1,
 		toppingMax = 3,
+	},
+
+	-- Golden toppings (#94): every normal topping has `chance` to be golden for a player
+	-- (raised by the GoldLuck gem upgrade and gold-chance potions, never by weather) and
+	-- then sells for `valueMultiplier` x its value. Kept separate from normal toppings in
+	-- the rules (collect result `golden`, pizza `pizzaGolden`) for the index and quests.
+	goldenToppings = {
+		chance = 0.01,
+		valueMultiplier = 10,
 	},
 
 	-- New HUD buttons that pulse (with a short explanation) until the player opened them
@@ -903,6 +932,7 @@ local GameConfig = {
 				{ upgrade = "InventorySpace", maxLevel = 2 },
 				{ upgrade = "WalkSpeed", maxLevel = 2 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 2 },
 			},
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },
@@ -921,6 +951,7 @@ local GameConfig = {
 				{ upgrade = "InventorySpace", maxLevel = 4 },
 				{ upgrade = "WalkSpeed", maxLevel = 4 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 4 },
 			},
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },
@@ -939,6 +970,7 @@ local GameConfig = {
 				{ upgrade = "InventorySpace", maxLevel = 5 },
 				{ upgrade = "WalkSpeed", maxLevel = 5 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
 			},
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },

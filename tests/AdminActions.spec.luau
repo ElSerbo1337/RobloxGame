@@ -9,7 +9,7 @@ local Texts = require("../src/shared/Texts")
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
 local rules = GameRules.new(TestConfig)
-local features = Features.new({ adminPanel = true, luckyWheel = false })
+local features = Features.new({ adminPanel = true, luckyWheel = false, goldenToppings = true })
 local admin = AdminActions.new(rules, TestConfig, features)
 
 local NOW = 1_800_000_000
@@ -69,6 +69,8 @@ describe("admin registry", function()
 			"setUpgrade",
 			"finishTutorial",
 			"skipDays",
+			"giveGoldenToppings",
+			"setGoldenChance",
 			"resetProgress",
 		})
 	end)
@@ -325,5 +327,52 @@ describe("admin actions", function()
 
 		expect(result.ok).toBe(true)
 		expect(result.state).toEqual(rules.newPlayerState())
+	end)
+end)
+
+describe("admin actions for golden toppings (#94)", function()
+	it("giveGoldenToppings puts golden toppings on the pizza, up to its capacity", function()
+		local state = player()
+		state.pizza = { "Salami" } -- capacity 2
+
+		local result = admin.run(ADMIN, state, "giveGoldenToppings", { "Mozzarella", 5 }, ctx)
+
+		expect(result.ok).toBe(true)
+		expect(result.state.pizza).toEqual({ "Salami", "Mozzarella" })
+		expect(rules.goldenOnPizza(result.state)).toEqual({ Mozzarella = 1 })
+		expect(state.pizza).toEqual({ "Salami" })
+	end)
+
+	it("giveGoldenToppings fails on a full pizza and lists the config toppings", function()
+		local state = player()
+		state.pizza = { "Salami", "Salami" }
+		local info
+		for _, entry in admin.list() do
+			if entry.id == "giveGoldenToppings" then
+				info = entry
+			end
+		end
+
+		expect(admin.run(ADMIN, state, "giveGoldenToppings", { "Salami", 1 }, ctx).reason).toBe("PizzaFull")
+		expect(info.params[1].choices).toEqual({ "Ham", "Mozzarella", "Mushroom", "Onion", "Salami" })
+		expect(info.params[1].names).toBe("topping")
+	end)
+
+	it("setGoldenChance sets the admin test chance in percent (0 = off)", function()
+		local result = admin.run(ADMIN, player(), "setGoldenChance", { 100 }, ctx)
+		local off = admin.run(ADMIN, result.state, "setGoldenChance", { 0 }, ctx)
+
+		expect(result.ok).toBe(true)
+		expect(result.state.adminGoldenChance).toBe(1)
+		expect(off.state.adminGoldenChance).toBe(0)
+		expect(admin.run(ADMIN, player(), "setGoldenChance", { 101 }, ctx).reason).toBe("InvalidArgument")
+	end)
+
+	it("hides both golden actions while the feature is off", function()
+		local offAdmin =
+			AdminActions.new(rules, TestConfig, Features.new({ adminPanel = true, goldenToppings = false }))
+
+		expect(table.find(ids(offAdmin.list()), "setGoldenChance")).toBeNil()
+		expect(offAdmin.run(ADMIN, player(), "giveGoldenToppings", { "Salami", 1 }, ctx).reason).toBe("FeatureOff")
 	end)
 end)

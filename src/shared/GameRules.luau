@@ -11,6 +11,12 @@ export type PlayerState = {
 	coins: number,
 	-- Topping ids currently on the pizza, in collection order.
 	pizza: { string },
+	-- Golden toppings on the pizza (#94): topping id -> how many of that id on the pizza are
+	-- golden (worth config.goldenToppings.valueMultiplier x). Read via goldenOnPizza, which
+	-- clamps to the pizza, so a stale count can never make more toppings golden.
+	pizzaGolden: { [string]: number },
+	-- Admin panel test chance for golden toppings (0 = off; see goldenChance).
+	adminGoldenChance: number,
 	-- HUD switch: collect toppings by walking over them. Free from the start.
 	autoCollect: boolean,
 	-- Rebirths done so far; each adds config.rebirth.multiplierPerRebirth to the coin
@@ -105,10 +111,12 @@ export type Result = {
 }
 
 -- `currencyEarned`: event currency id -> amount for event toppings (#77), {} otherwise.
-export type SellResult = Result & { coinsEarned: number, currencyEarned: { [string]: number } }
+-- `goldenSold`: how many of the sold toppings were golden (#94).
+export type SellResult = Result & { coinsEarned: number, currencyEarned: { [string]: number }, goldenSold: number }
 
--- Collecting a gem topping can earn gems (0 otherwise).
-export type GemResult = Result & { gemsEarned: number }
+-- Collecting a gem topping can earn gems (0 otherwise). `golden`: the collected topping was
+-- golden (#94; for the topping index and quests). Always false for failures and gem toppings.
+export type GemResult = Result & { gemsEarned: number, golden: boolean }
 
 -- One upgrade as shown in a shop menu.
 export type ShopOffer = {
@@ -315,11 +323,25 @@ function GameRules.new(config: any)
 
 	rules.dayNumber = GameRules.dayNumber
 
+	-- MEGA UPDATE feature switch (config.features, #73); missing table or id = on.
+	-- Read directly from the config so the rules stay free of other modules.
+	local function featureOn(featureId: string?): boolean
+		return featureId == nil or config.features == nil or config.features[featureId] ~= false
+	end
+
+	-- Upgrades tied to a switched-off feature are neither shown nor sold.
+	local function upgradeOffered(upgradeId: string): boolean
+		local upgrade = config.upgrades[upgradeId]
+		return upgrade ~= nil and featureOn(upgrade.feature)
+	end
+
 	function rules.newPlayerState(): PlayerState
 		return {
 			version = STATE_VERSION,
 			coins = 0,
 			pizza = {},
+			pizzaGolden = {},
+			adminGoldenChance = 0,
 			autoCollect = false,
 			rebirths = 0,
 			upgrades = {},
@@ -609,6 +631,8 @@ function GameRules.new(config: any)
 		WalkSpeed = config.movement.walkSpeed,
 		-- Eggs opened per press; the TripleOpen level sets it to 3.
 		TripleOpen = 1,
+		-- Golden topping chance before the first Gold Luck level (#94).
+		GoldLuck = if config.goldenToppings then config.goldenToppings.chance else 0,
 	}
 
 	-- The effect an upgrade gives at the player's current level.
@@ -667,19 +691,79 @@ function GameRules.new(config: any)
 		return math.max(config.collect.autoRadius, rules.magnetRange(state))
 	end
 
+	-- Golden toppings (#94) ------------------------------------------------------
+
+	-- Chance that a topping is golden for this player: the Gold Luck upgrade (base
+	-- config.goldenToppings.chance at level 0) times the `goldenChanceMultiplier` of every
+	-- running potion (the gold potion of #96 just sets it in its config). Nothing else
+	-- changes it (weather, luck potion, ...). The admin test chance wins when higher.
+	-- 0 while features.goldenToppings is off.
+	function rules.goldenChance(state: PlayerState): number
+		if config.goldenToppings == nil or not featureOn("goldenToppings") then
+			return 0
+		end
+		local chance = upgradeValue(state, "GoldLuck")
+		for potionId, secondsLeft in state.activePotions do
+			local potion = config.potions and config.potions[potionId]
+			if secondsLeft > 0 and potion and potion.goldenChanceMultiplier then
+				chance *= potion.goldenChanceMultiplier
+			end
+		end
+		chance = math.max(chance, state.adminGoldenChance or 0)
+		return math.clamp(math.round(chance * 1e9) / 1e9, 0, 1)
+	end
+
+	-- A spawned topping carries one gold roll in [0, 1) (ToppingField); it is golden for
+	-- a player whose chance is above it. Same field, different players: more Gold Luck
+	-- makes more of the lying toppings golden for that player.
+	local function isGolden(state: PlayerState, goldRoll: number?): boolean
+		return type(goldRoll) == "number" and goldRoll >= 0 and goldRoll < rules.goldenChance(state)
+	end
+
+	-- Topping id -> golden toppings of that id on the pizza (never more than the pizza holds).
+	function rules.goldenOnPizza(state: PlayerState): { [string]: number }
+		local onPizza: { [string]: number } = {}
+		for _, toppingId in state.pizza do
+			onPizza[toppingId] = (onPizza[toppingId] or 0) + 1
+		end
+		local golden: { [string]: number } = {}
+		for toppingId, count in state.pizzaGolden or {} do
+			local clamped = math.min(count, onPizza[toppingId] or 0)
+			if clamped > 0 then
+				golden[toppingId] = clamped
+			end
+		end
+		return golden
+	end
+
+	-- Number of golden toppings on the pizza.
+	function rules.goldenCount(state: PlayerState): number
+		local total = 0
+		for _, count in rules.goldenOnPizza(state) do
+			total += count
+		end
+		return total
+	end
+
 	-- A gem topping goes straight into the gem counter, not onto the pizza (works with a full pizza).
 	-- `gems` comes from the ToppingField spawn; it is clamped to the configured range.
 	local function addGems(state: PlayerState, gems: number?, distance: number, range: number): GemResult
 		if distance > range then
-			return { ok = false, reason = "OutOfRange", state = state, gemsEarned = 0 }
+			return { ok = false, reason = "OutOfRange", state = state, gemsEarned = 0, golden = false }
 		end
 		local amount = math.clamp(math.floor(gems or 0), config.gems.toppingMin, config.gems.toppingMax)
 		local newState = table.clone(state)
 		newState.gems = state.gems + amount
-		return { ok = true, state = newState, gemsEarned = amount }
+		return { ok = true, state = newState, gemsEarned = amount, golden = false }
 	end
 
-	local function addTopping(state: PlayerState, toppingId: string, distance: number, range: number): Result
+	local function addTopping(
+		state: PlayerState,
+		toppingId: string,
+		distance: number,
+		range: number,
+		golden: boolean
+	): Result
 		if config.toppings[toppingId] == nil then
 			return fail(state, "UnknownTopping")
 		end
@@ -696,31 +780,57 @@ function GameRules.new(config: any)
 		local newState = table.clone(state)
 		newState.pizza = table.clone(state.pizza)
 		table.insert(newState.pizza, toppingId)
+		if golden then
+			newState.pizzaGolden = rules.goldenOnPizza(state)
+			newState.pizzaGolden[toppingId] = (newState.pizzaGolden[toppingId] or 0) + 1
+		end
 		advanceTutorial(newState, "CollectToppings")
 		return { ok = true, state = newState }
 	end
 
-	local function collectWithin(state: PlayerState, toppingId: string, distance: number, range: number, gems: number?)
+	local function collectWithin(
+		state: PlayerState,
+		toppingId: string,
+		distance: number,
+		range: number,
+		gems: number?,
+		goldRoll: number?
+	): GemResult
 		if toppingId == config.gems.toppingId then
 			return addGems(state, gems, distance, range)
 		end
-		local result: any = addTopping(state, toppingId, distance, range)
+		local golden = isGolden(state, goldRoll)
+		local result: any = addTopping(state, toppingId, distance, range, golden)
 		result.gemsEarned = 0
+		result.golden = result.ok and golden
 		return result
 	end
 
 	-- Player clicked/tapped a topping. `distance` is measured by the server
-	-- between the player and the topping. `gems`: amount of a gem topping (from the ToppingField).
-	function rules.collectTopping(state: PlayerState, toppingId: string, distance: number, gems: number?): GemResult
-		return collectWithin(state, toppingId, distance, rules.collectRange(state), gems)
+	-- between the player and the topping. `gems`: amount of a gem topping, `goldRoll`: the
+	-- topping's gold roll (both from the ToppingField, never from the client).
+	function rules.collectTopping(
+		state: PlayerState,
+		toppingId: string,
+		distance: number,
+		gems: number?,
+		goldRoll: number?
+	): GemResult
+		return collectWithin(state, toppingId, distance, rules.collectRange(state), gems, goldRoll)
 	end
 
 	-- Player walked over a topping with auto-collect switched on.
-	function rules.autoCollectTopping(state: PlayerState, toppingId: string, distance: number, gems: number?): GemResult
+	function rules.autoCollectTopping(
+		state: PlayerState,
+		toppingId: string,
+		distance: number,
+		gems: number?,
+		goldRoll: number?
+	): GemResult
 		if not state.autoCollect then
-			return { ok = false, reason = "AutoCollectOff", state = state, gemsEarned = 0 }
+			return { ok = false, reason = "AutoCollectOff", state = state, gemsEarned = 0, golden = false }
 		end
-		return collectWithin(state, toppingId, distance, rules.autoCollectRadius(state), gems)
+		return collectWithin(state, toppingId, distance, rules.autoCollectRadius(state), gems, goldRoll)
 	end
 
 	-- Credits play time at Unix time `now`: to the play time of the (German) day and to the
@@ -814,25 +924,49 @@ function GameRules.new(config: any)
 
 	-- Sells every topping on the pizza at once (during a delivery order only the ones
 	-- the order does not need): earned = sum of topping values x coinMultiplier x coin
-	-- potion (rounded down).
+	-- potion (rounded down). A golden topping counts goldenToppings.valueMultiplier x its
+	-- value; golden ones are sold first, so an order keeps the normal ones of a kind.
 	function rules.sellPizza(state: PlayerState): SellResult
 		if #state.pizza == 0 then
-			return { ok = false, reason = "PizzaEmpty", state = state, coinsEarned = 0, currencyEarned = {} }
+			return {
+				ok = false,
+				reason = "PizzaEmpty",
+				state = state,
+				coinsEarned = 0,
+				currencyEarned = {},
+				goldenSold = 0,
+			}
 		end
 		local kept, sold = splitForOrder(state)
 		if #sold == 0 then
-			return { ok = false, reason = "OrderToppingsOnly", state = state, coinsEarned = 0, currencyEarned = {} }
+			return {
+				ok = false,
+				reason = "OrderToppingsOnly",
+				state = state,
+				coinsEarned = 0,
+				currencyEarned = {},
+				goldenSold = 0,
+			}
 		end
 
 		-- Event toppings (`currency` set, #77) pay their plain value in that currency.
-		local toppingValue = 0
+		-- Golden ones (#94) count valueMultiplier x, also for event currencies.
+		local goldenLeft = rules.goldenOnPizza(state)
+		local goldenFactor = if config.goldenToppings then config.goldenToppings.valueMultiplier else 1
+		local toppingValue, goldenSold = 0, 0
 		local currencyEarned: { [string]: number } = {}
 		for _, toppingId in sold do
 			local topping = config.toppings[toppingId]
+			local value = topping.value
+			if (goldenLeft[toppingId] or 0) > 0 then
+				goldenLeft[toppingId] -= 1
+				goldenSold += 1
+				value *= goldenFactor
+			end
 			if topping.currency then
-				currencyEarned[topping.currency] = (currencyEarned[topping.currency] or 0) + topping.value
+				currencyEarned[topping.currency] = (currencyEarned[topping.currency] or 0) + value
 			else
-				toppingValue += topping.value
+				toppingValue += value
 			end
 		end
 		-- Rounded down; the epsilon guards against float noise like 7 * 1.6 = 11.19999.
@@ -840,6 +974,9 @@ function GameRules.new(config: any)
 
 		local newState = table.clone(state)
 		newState.pizza = kept
+		-- Golden ones not sold stay golden on the kept order toppings (clamped to them).
+		newState.pizzaGolden = goldenLeft
+		newState.pizzaGolden = rules.goldenOnPizza(newState)
 		newState.coins = state.coins + earned
 		newState.totalCoinsEarned = state.totalCoinsEarned + earned
 		if next(currencyEarned) ~= nil then
@@ -849,7 +986,13 @@ function GameRules.new(config: any)
 			end
 		end
 		advanceTutorial(newState, "SellPizza")
-		return { ok = true, state = newState, coinsEarned = earned, currencyEarned = currencyEarned }
+		return {
+			ok = true,
+			state = newState,
+			coinsEarned = earned,
+			currencyEarned = currencyEarned,
+			goldenSold = goldenSold,
+		}
 	end
 
 	-- Highest level of an upgrade the given shop sells (0 = not offered there).
@@ -872,6 +1015,9 @@ function GameRules.new(config: any)
 		local upgrade = config.upgrades[upgradeId]
 		if upgrade == nil then
 			return fail(state, "UnknownUpgrade")
+		end
+		if not upgradeOffered(upgradeId) then
+			return fail(state, "NotOffered")
 		end
 		if shop.worldId and not rules.isWorldUnlocked(state, shop.worldId) then
 			return fail(state, "WorldLocked")
@@ -911,6 +1057,9 @@ function GameRules.new(config: any)
 	function rules.shopOffers(state: PlayerState, shopId: string): { ShopOffer }
 		local offers = {}
 		for _, offer in config.shops[shopId].offers do
+			if not upgradeOffered(offer.upgrade) then
+				continue
+			end
 			local upgrade = config.upgrades[offer.upgrade]
 			local level = rules.upgradeLevel(state, offer.upgrade)
 			local nextLevel = upgrade.levels[level + 1]
@@ -1487,6 +1636,7 @@ function GameRules.new(config: any)
 		local reward = rules.orderReward(state, now) :: DeliveryReward
 		local newState = withDelivery(state, nil, nil, now)
 		newState.pizza = {}
+		newState.pizzaGolden = {}
 		if reward.reward == "Coins" then
 			newState.coins = state.coins + reward.amount
 			newState.totalCoinsEarned = state.totalCoinsEarned + reward.amount
@@ -1607,6 +1757,7 @@ function GameRules.new(config: any)
 		end
 		newState.unlockedWorlds = {}
 		newState.pizza = {}
+		newState.pizzaGolden = {}
 		newState.lastWorldId = ""
 		return { ok = true, state = newState }
 	end

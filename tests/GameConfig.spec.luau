@@ -1197,3 +1197,54 @@ describe("GameConfig event islands (#77)", function()
 		end
 	end)
 end)
+
+describe("GameConfig golden toppings (#94)", function()
+	local rules = GameRules.new(GameConfig)
+
+	it("makes 1 in 100 toppings golden, worth 10x", function()
+		expect(GameConfig.goldenToppings.chance).toBe(0.01)
+		expect(GameConfig.goldenToppings.valueMultiplier).toBe(10)
+		expect(rules.goldenChance(rules.newPlayerState())).toBe(0.01)
+	end)
+
+	it("has the gem upgrade Gold Luck with 5 levels from 1 % up to 2 %", function()
+		local upgrade = GameConfig.upgrades.GoldLuck
+		expect(upgrade.currency).toBe("Gems")
+		expect(upgrade.feature).toBe("goldenToppings")
+		local values = {}
+		for _, level in upgrade.levels do
+			table.insert(values, level.value)
+		end
+		expect(values).toEqual({ 0.012, 0.014, 0.016, 0.018, 0.02 })
+		for index = 2, #upgrade.levels do
+			expect(upgrade.levels[index].price > upgrade.levels[index - 1].price).toBe(true)
+		end
+	end)
+
+	it("sells Gold Luck at every gem counter, the last level in the biggest shop", function()
+		local maxLevels = {}
+		for _, shopId in { "World1Shop", "World4Shop", "World7Shop" } do
+			for _, offer in GameConfig.shops[shopId].offers do
+				if offer.upgrade == "GoldLuck" then
+					table.insert(maxLevels, offer.maxLevel)
+				end
+			end
+		end
+		expect(maxLevels).toEqual({ 2, 4, 5 })
+	end)
+
+	it("keeps Gold Luck through a rebirth", function()
+		local state = rules.newPlayerState()
+		state.upgrades = { GoldLuck = 3 }
+		state.coins = 1e15
+		local reborn = rules.rebirth(state, 0).state
+
+		expect(reborn.upgrades.GoldLuck).toBe(3)
+	end)
+
+	it("draws a gold roll for every normal topping in the real field", function()
+		local field = ToppingField.new(GameConfig, "PizzeriaGarden", TestKit.sequenceRandom({ 0.5 }))
+
+		expect((field:get(1) :: any).goldRoll).toBe(0.5)
+	end)
+end)

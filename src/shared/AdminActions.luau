@@ -25,7 +25,7 @@
 --   }
 -- `args` arrive already checked, in `params` order. `env` = { rules, config },
 -- `ctx` = { now, random }. Choice `names` tells the panel how to show a value:
--- "pet" | "potion" | "upgrade" (config entry names) | "world" (world names); missing = id.
+-- "pet" | "potion" | "upgrade" | "topping" (config entry names) | "world" (world names); missing = id.
 -- Failure reasons: NotAdmin | UnknownAction | FeatureOff | InvalidArgument | rule reasons.
 
 export type Param = {
@@ -90,6 +90,10 @@ end
 
 local function upgradeIds(config: any): { string }
 	return sortedKeys(config.upgrades)
+end
+
+local function toppingIds(config: any): { string }
+	return sortedKeys(config.toppings)
 end
 
 local function worldIds(config: any): { string }
@@ -235,6 +239,42 @@ AdminActions.BUILT_IN = {
 					newState[field] = state[field] - args[1]
 				end
 			end
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		-- #94: test selling golden toppings without waiting for a 1 % spawn.
+		id = "giveGoldenToppings",
+		feature = "goldenToppings",
+		params = {
+			{ name = "topping", kind = "choice", names = "topping", choices = toppingIds },
+			{ name = "count", kind = "integer", min = 1, max = 100, default = 5 },
+		},
+		run = function(env, state, args)
+			local room = env.rules.pizzaCapacity(state) - #state.pizza
+			if room <= 0 then
+				return fail(state, "PizzaFull")
+			end
+			local toppingId, count = args[1], math.min(args[2], room)
+			local newState = table.clone(state)
+			newState.pizza = table.clone(state.pizza)
+			newState.pizzaGolden = env.rules.goldenOnPizza(state)
+			for _ = 1, count do
+				table.insert(newState.pizza, toppingId)
+			end
+			newState.pizzaGolden[toppingId] = (newState.pizzaGolden[toppingId] or 0) + count
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		-- #94: golden chance for this player in percent (wins when above the real chance;
+		-- 0 = off again). Makes the glitter on the field easy to check.
+		id = "setGoldenChance",
+		feature = "goldenToppings",
+		params = { { name = "percent", kind = "integer", min = 0, max = 100, default = 100 } },
+		run = function(_env, state, args)
+			local newState = table.clone(state)
+			newState.adminGoldenChance = args[1] / 100
 			return { ok = true, state = newState }
 		end,
 	},

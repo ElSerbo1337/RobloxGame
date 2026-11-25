@@ -2,7 +2,7 @@
 
 Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (Stand 20.11.2026) zur Prüfung durch den User. Erst nach der Freigabe werden sie eingebaut (#65). Der Spieltitel bleibt „Pizza Topping Simulator“.
 
-**Anzahl:** 132 `displayName`-Einträge (Pets 70, Beläge 22, Eier 14, Welten 7, Upgrades 7, Seltenheiten 6, Tränke 3, Shops 3) plus 10 Beschreibungen (Upgrades 7, Tränke 3).
+**Anzahl:** 133 `displayName`-Einträge (Pets 70, Beläge 22, Eier 14, Welten 7, Upgrades 8, Seltenheiten 6, Tränke 3, Shops 3) plus 11 Beschreibungen (Upgrades 8, Tränke 3).
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
@@ -179,7 +179,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | Luck | Glücks-Trank | Luck Potion | Seltene Pets kommen öfter aus Eiern | Rare pets hatch more often |
 | Speed | Speed-Trank | Speed Potion | Schneller laufen | Walk faster |
 
-## Upgrades (7)
+## Upgrades (8)
 
 | Id | Deutsch | Englisch (Vorschlag) | Beschreibung Deutsch | Beschreibung Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- | --- | --- |
@@ -190,6 +190,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | InventorySpace | Inventar | Inventory | Mehr Platz für Pets | More room for pets | |
 | WalkSpeed | Laufgeschwindigkeit | Walk Speed | Schneller laufen | Walk faster | |
 | TripleOpen | 3 Eier auf einmal | 3 Eggs at Once | Schaltet „3 öffnen“ an jedem Ei frei | Unlocks “Open 3” at every egg | „Open 3“ muss zum Knopftext im Ei-Menü (#67 ff.) passen |
+| GoldLuck | Gold-Glück | Gold Luck | Mehr goldene Beläge (10-facher Wert) | More golden toppings (10x value) | MEGA UPDATE #94 |
 
 ## Shops (3)
 

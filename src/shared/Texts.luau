@@ -41,6 +41,8 @@ Texts.strings = {
 	["admin.action.setUpgrade"] = { de = "Upgrade-Stufe setzen", en = "Set upgrade level" },
 	["admin.action.finishTutorial"] = { de = "Tutorial beenden", en = "Finish tutorial" },
 	["admin.action.skipDays"] = { de = "Tage vorspulen (7 = Woche)", en = "Skip days (7 = week)" },
+	["admin.action.giveGoldenToppings"] = { de = "Goldene Beläge auf die Pizza", en = "Golden toppings on pizza" },
+	["admin.action.setGoldenChance"] = { de = "Gold-Chance testen (%, 0 = aus)", en = "Test gold chance (%, 0 = off)" },
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -50,6 +52,8 @@ Texts.strings = {
 	["admin.param.upgrade"] = { de = "Upgrade", en = "Upgrade" },
 	["admin.param.level"] = { de = "Stufe", en = "Level" },
 	["admin.param.days"] = { de = "Tage", en = "Days" },
+	["admin.param.topping"] = { de = "Belag", en = "Topping" },
+	["admin.param.percent"] = { de = "Prozent", en = "Percent" },
 
 	-- Unlock button at a world barrier
 	["unlock.open"] = {
@@ -123,6 +127,15 @@ Texts.strings = {
 	},
 	["notify.PhoneCallsOn"] = { de = "📞 Anrufe sind wieder an.", en = "📞 Calls are back on." },
 	["notify.sold"] = { de = "+{amount} Münzen", en = "+{amount} coins" },
+	-- Golden toppings (#94)
+	["notify.soldGolden"] = {
+		de = "+{amount} Münzen (✨ {count}× golden)",
+		en = "+{amount} coins (✨ {count}× golden)",
+	},
+	["notify.goldenTopping"] = {
+		de = "✨ Goldener Belag: {topping}! 10-facher Wert",
+		en = "✨ Golden topping: {topping}! 10x value",
+	},
 	["notify.gems"] = { de = "+{amount} Gems!", en = "+{amount} gems!" },
 	["notify.deliveredCoins"] = { de = "Geliefert! +{amount} Münzen", en = "Delivered! +{amount} coins" },
 	["notify.deliveredGems"] = { de = "Geliefert! +{amount} Gems", en = "Delivered! +{amount} gems" },
@@ -159,6 +172,7 @@ Texts.strings = {
 	["shop.effectSpeed"] = { de = "Tempo {value}", en = "Speed {value}" },
 	["shop.effectOn"] = { de = "an", en = "on" },
 	["shop.effectOff"] = { de = "aus", en = "off" },
+	["shop.effectGoldChance"] = { de = "{value} % Gold-Chance", en = "{value}% gold chance" },
 
 	-- Pet menu (#69)
 	["pets.title"] = { de = "Meine Pets", en = "My pets" },

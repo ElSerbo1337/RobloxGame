@@ -10,6 +10,10 @@ export type Topping = {
 	-- Spawn position inside the world's topping area, each axis normalized to [0, 1).
 	x: number,
 	z: number,
+	-- Gold roll in [0, 1) for golden toppings (#94; nil for gem toppings and while
+	-- config.goldenToppings is missing or its chance is 0). The field is shared, the chance
+	-- is per player: the topping is golden for a player whose GameRules.goldenChance is above it.
+	goldRoll: number?,
 }
 
 type Slot = {
@@ -40,7 +44,7 @@ local function findWorld(config: any, worldId: string): any
 	error(`unknown world "{worldId}"`)
 end
 
-local function rollTopping(spawns: { any }, totalWeight: number, gems: any, random: () -> number): Topping
+local function rollTopping(spawns: { any }, totalWeight: number, gems: any, golden: any, random: () -> number): Topping
 	-- Rarely a gem topping instead (no extra draw when gem toppings are off).
 	if gems and gems.toppingChance > 0 and random() < gems.toppingChance then
 		local amount = gems.toppingMin + math.floor(random() * (gems.toppingMax - gems.toppingMin + 1))
@@ -55,7 +59,12 @@ local function rollTopping(spawns: { any }, totalWeight: number, gems: any, rand
 		end
 		roll -= spawn.weight
 	end
-	return { toppingId = chosen, x = random(), z = random() }
+	local topping: Topping = { toppingId = chosen, x = random(), z = random() }
+	-- Drawn last, so the kind and position draws stay the same as without golden toppings.
+	if golden and golden.chance > 0 then
+		topping.goldRoll = random()
+	end
+	return topping
 end
 
 -- `random` returns a number in [0, 1), e.g. `function() return rng:NextNumber() end`.
@@ -71,7 +80,7 @@ function ToppingField.new(config: any, worldId: string, random: () -> number): T
 		_slots = {},
 		_respawnSeconds = config.toppingField.respawnSeconds,
 		_spawn = function()
-			return rollTopping(spawns, totalWeight, config.gems, random)
+			return rollTopping(spawns, totalWeight, config.gems, config.goldenToppings, random)
 		end,
 	}, ToppingField)
 	for slotId = 1, self.slotCount do
