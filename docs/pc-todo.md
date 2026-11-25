@@ -1863,3 +1863,33 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Rejoin → Quests und Fortschritt sind gespeichert. Mit `Language = en` die englischen Texte ansehen.
 - [ ] Handy-Ansicht (Device-Emulator): Menü scrollt, Knöpfe ≥ 60 px, nichts abgeschnitten.
 - [ ] `GameConfig.features.dailyQuests = false` → keine Kachel, Admin-Aktionen weg. Danach wieder `true`.
+
+## MEGA UPDATE – #82 Welt 8 Atlantis
+
+Erste der 8 neuen Welten: versunkene Insel mit Sandboden, Korallen-Riff als Rand, Glasbrücke, versunkenem Tempel mit leuchtender Perle (Wahrzeichen), Korallen, Seetang, Ruinen-Säulen, aufsteigenden Blasen und blauen Lampen (alles per Skript, ~340 Teile, kein Import nötig). 3 Beläge (Seetang, Perlen-Kapern, Tintenfisch-Ringe), Atlantis-Ei mit 6 Pets (Seetang-Schnecke, Blasen-Kugelfisch, Kapern-Clownfisch, Laternen-Anglerfisch, Perlen-Mantarochen, Poseidon-Seedrache), Geheim-Pet Perlenkönig-Otter, Atlantis-Shop. Braucht **2 Rebirths** + 150 Mio Münzen (Preise vorläufig, #108). Wetter „Blasen-Sturm“ steht nur in der Config (#105 baut es). Musik `Music_Atlantis` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort). Vorschau: `assets/previews/worlds/Atlantis.png`, Insel: `assets/previews/islands/World8_*.jpg`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/WorldDeco.spec.luau`, `tests/WorldModels.spec.luau`, `GameConfig new worlds`).
+
+**Modelle importieren** (einmalig, **eine Datei für die ganze Welt**):
+
+- [ ] In **ReplicatedStorage → GameAssets → Models** einen **Folder** `Worlds` anlegen (einmalig für alle neuen Welten).
+- [ ] **Home → Import 3D** → `assets/models/worlds/Atlantis.fbx` → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
+- [ ] Das importierte Model `Atlantis` nach `Models/Worlds` ziehen. Darin müssen 11 Models liegen: `Seaweed`, `PearlCapers`, `SquidRings`, `KelpSnail`, `BubblePufferfish`, `CaperClownfish`, `LanternAnglerfish`, `PearlMantaRay`, `PoseidonSeaDragon`, `PearlKingOtter`, `AtlantisEgg` (MeshParts darin heißen `Top_…`, `Pet_…`, `Egg_…`, Endungen wie `.001` sind ok). **Namen nicht ändern.** Kontrolle in der Command Bar: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.Atlantis:GetChildren())` → **11**.
+- [ ] Falls Studio die Hierarchie flach importiert (nur MeshParts, keine 11 Models): hier notieren – dann baut die Cloud-Sitzung zusätzlich Einzeldateien.
+
+Ohne Import läuft alles: Beläge sind farbige Scheiben, Pets Kugeln in Seltenheitsfarbe, das Ei eine blaue Kugel mit Punkten – die Insel samt Deko ist komplett da.
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Output ohne rote Fehler beim Start (Insel 8 wird gebaut, auch ohne Import).
+- [ ] Admin-Panel → **Rebirths setzen** 2 → **Welt freischalten** bis Weltraum, dann zum Tor von Atlantis: Preisschild 150 Mio; mit **Münzen geben** kaufen → Tor offen. Mit 1 Rebirth: Tor sagt „Ab 2 Rebirths“.
+- [ ] Insel ansehen: Sand-Boden, Korallen-Riff am Rand, Glasbrücke hinein, hinten links Tempel mit Säulen und leuchtender Perle in der Muschel, überall Korallen, Seetang, Säulen (stehend, abgebrochen, umgefallen), 4 blaue Lampen, Blasen steigen auf. Nichts steht auf Weg, Feld oder vor den Stationen; man bleibt nicht an Deko hängen (nur stehende Säulen und Lampen-Steine sind fest).
+- [ ] Belagfeld: Seetang, Perlen-Kapern, Tintenfisch-Ringe sammeln und am Ofen verkaufen; Namen im Pizza-Menü/Toast in Deutsch und Englisch.
+- [ ] Atlantis-Ei (nur ein Ei-Stand, am zweiten Platz steht nichts): Vorschau mit 6 Pets + „??? (Geheim)“; öffnen. **Geheim-Pet geben** → Welt Atlantis → Perlenkönig-Otter.
+- [ ] Atlantis-Shop: Upgrades wie im Riesigen Shop, Tränke am Gem-Tresen.
+- [ ] Portal: Atlantis in der Liste, Teleport klappt; Telefon/Lieferwagen funktionieren mit Atlantis-Belägen.
+- [ ] ⚙️ → Grafik **Niedrig** → Korallen-Spitzen, Seetang-Nebenhalme, Säulen-Köpfe und Lampen-Kugeln verschwinden, weniger Blasen; **Hoch** → alles wieder da.
+- [ ] Handy-Test: Bildrate auf Atlantis ok (Deko ~340 Teile).
+- [ ] `GameConfig.features.worldDeco = false` → Insel ohne Korallen/Säulen/Seetang/Blasen/Lampen (Tempel, Riff und Stationen bleiben), keine Fehler. Danach wieder `true`.
+- [ ] Nach Import: Pets/Ei/Beläge zeigen die Modelle (Ei-Vorschau-Bilder, Pet-Menü, Feld).
+- [ ] Musik: im Creator Store eine Unterwasser-Musik (Creator „Roblox“) wählen und die ID bei `Music_Atlantis` eintragen.
