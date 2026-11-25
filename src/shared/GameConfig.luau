@@ -157,6 +157,10 @@ local GameConfig = {
 		Seaweed = { displayName = "Seetang", displayNameEn = "Seaweed", value = 55000 },
 		PearlCapers = { displayName = "Perlen-Kapern", displayNameEn = "Pearl Capers", value = 96000 },
 		SquidRings = { displayName = "Tintenfisch-Ringe", displayNameEn = "Squid Rings", value = 140000 },
+		-- World 9 (Jungle Temple, #83): about 4.8x world 8. Provisional, tuned in #108.
+		Mango = { displayName = "Mango", displayNameEn = "Mango", value = 265000 },
+		CocoaBean = { displayName = "Kakaobohne", displayNameEn = "Cocoa Bean", value = 460000 },
+		DragonFruit = { displayName = "Drachenfrucht", displayNameEn = "Dragon Fruit", value = 670000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -792,6 +796,41 @@ local GameConfig = {
 			bonus = 6.2,
 		},
 
+		-- World 9 (Dschungel-Ei, #83): one egg; its Mythic pet is the world's best (+760 %,
+		-- continuing the flat curve), the others scaled like the Atlantis egg. Provisional
+		-- (#108). Models: tools/blender/build_world.py JungleTemple.
+		CocoaFrog = { displayName = "Kakao-Frosch", displayNameEn = "Cocoa Frog", rarity = "Common", bonus = 0.5 },
+		MangoToucan = {
+			displayName = "Mango-Tukan",
+			displayNameEn = "Mango Toucan",
+			rarity = "Uncommon",
+			bonus = 0.76,
+		},
+		VineSloth = {
+			displayName = "Lianen-Faultier",
+			displayNameEn = "Vine Sloth",
+			rarity = "Rare",
+			bonus = 1.28,
+		},
+		FireflyChameleon = {
+			displayName = "Glühwürmchen-Chamäleon",
+			displayNameEn = "Firefly Chameleon",
+			rarity = "Epic",
+			bonus = 2.04,
+		},
+		DragonFruitJaguar = {
+			displayName = "Drachenfrucht-Jaguar",
+			displayNameEn = "Dragon Fruit Jaguar",
+			rarity = "Legendary",
+			bonus = 3.8,
+		},
+		JadeTempleSerpent = {
+			displayName = "Jade-Tempelschlange",
+			displayNameEn = "Jade Temple Serpent",
+			rarity = "Mythic",
+			bonus = 7.6,
+		},
+
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
 		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
 		-- World 1 (Steinofen-Ei)
@@ -979,6 +1018,12 @@ local GameConfig = {
 			rarity = "Secret",
 			bonus = 12.4,
 		},
+		GoldenMonkeyKing = {
+			displayName = "Goldener Affenkönig",
+			displayNameEn = "Golden Monkey King",
+			rarity = "Secret",
+			bonus = 15.2,
+		},
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -987,7 +1032,7 @@ local GameConfig = {
 	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
-	-- Cracks, Swirl, Stars, Bubbles. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- Cracks, Swirl, Stars, Bubbles, Vines. `glow` = accent glows (Neon); `fancy` = showier variant
 	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
@@ -1187,6 +1232,21 @@ local GameConfig = {
 				{ pet = "PoseidonSeaDragon", chance = 0.5 },
 			},
 		},
+		-- World 9 (#83). Price provisional (#108).
+		JungleEgg = {
+			displayName = "Dschungel-Ei",
+			displayNameEn = "Jungle Egg",
+			look = { color = "2E8B3A", accent = "FFC83A", pattern = "Vines", glow = false },
+			price = 22000000,
+			pets = {
+				{ pet = "CocoaFrog", chance = 50 },
+				{ pet = "MangoToucan", chance = 28 },
+				{ pet = "VineSloth", chance = 15 },
+				{ pet = "FireflyChameleon", chance = 5.5 },
+				{ pet = "DragonFruitJaguar", chance = 1 },
+				{ pet = "JadeTempleSerpent", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -1268,6 +1328,24 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },
 		},
+		World9Shop = {
+			worldId = "JungleTemple",
+			displayName = "Dschungel-Shop",
+			displayNameEn = "Jungle Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
+			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed" },
+		},
 	},
 
 	-- Flying islands (#27): spawn island, then world 1, 2, ... in a chain along -Z, all at
@@ -1335,10 +1413,10 @@ local GameConfig = {
 		-- Look of each island world (others use PizzeriaGarden). Colours are RGB 0-255.
 		-- Optional per world (defaults = world 1):
 		--   rimStyle     "Hedge" | "Fence" | "Rocks" | "IceEdge" | "Basalt" | "Peppermint" | "Moonbase"
-		--                | "CoralReef" (with `corals` = knob colours)
+		--                | "CoralReef" (with `corals` = knob colours) | "MossyStones" (with `moss`)
 		--                (low visible rim)
 		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
-		--                | "Rocket" | "SunkenTemple" (back left terrace)
+		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" (back left terrace)
 		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
 		--                the bridge leading INTO the world
 		--   trees        tree models scattered along the rim (ModelLibrary names); false = none
@@ -1352,10 +1430,16 @@ local GameConfig = {
 		--                colour `glow` (Neon with a small light each, so keep them few)
 		--   deco         scripted decoration of the new worlds (#82), no import needed:
 		--                { budget = max parts, kits = { { kit, count, size = { min, max },
-		--                colors? } } } with kits "Coral", "Column", "Kelp", "Bubbles", "Lamp"
+		--                colors? } } } with kits "Coral", "Column", "Kelp", "Bubbles", "Lamp",
+		--                "JungleTree" (trunk, crowns, hanging lianas), "Fern", "Idol" (carved
+		--                stone head), "Fireflies" and "Mist" (invisible emitters)
 		--                (IslandPlan DECO_KITS). Optional bits are hidden on graphics "Low"
 		--                (#76); everything is left out when features.worldDeco is off.
 		--   ruin, ruinDark, shell  stone colours of the SunkenTemple / lamps, clam shell colour
+		--                (the SteppedTemple uses ruin/ruinDark too, `moss` for its moss)
+		--   secretChest  { x, z, clear } spot kept for the hidden chest (#100): becomes the
+		--                station "SecretChest" (on the terrace top if inside one) and an
+		--                invisible anchor part "SecretChestAnchor" (WorldMap)
 		themes = {
 			PizzeriaGarden = {
 				grass = { 104, 196, 72 },
@@ -1626,6 +1710,65 @@ local GameConfig = {
 					},
 				},
 			},
+			-- World 9 (#83): an overgrown temple island in the rainforest - dark lush grass, a
+			-- rim of mossy boulders, a vine rope bridge, a stepped stone temple with a glowing
+			-- jade gem, jungle trees with hanging lianas, ferns, mossy ruins and stone idols,
+			-- fireflies and low mist (scripted deco, ~400 parts). The hidden chest (#100) gets
+			-- its spot behind the temple, out of sight from the path.
+			JungleTemple = {
+				grass = { 64, 140, 58 },
+				grassLight = { 88, 164, 70 },
+				field = { 118, 168, 78 },
+				cliff = { 112, 92, 70 },
+				cliffDark = { 84, 68, 52 },
+				cliffLight = { 140, 122, 96 },
+				rim = { 120, 128, 104 },
+				rimStyle = "MossyStones",
+				moss = { 92, 150, 60 },
+				path = { 178, 164, 132 },
+				pathDark = { 150, 136, 108 },
+				water = { 54, 164, 140 },
+				waterfall = { 170, 232, 214 },
+				wood = { 120, 84, 50 },
+				woodDark = { 88, 60, 36 },
+				rope = { 104, 150, 60 },
+				glow = { 120, 255, 150 },
+				ruin = { 164, 160, 132 },
+				ruinDark = { 120, 118, 98 },
+				flowers = { { 255, 80, 110 }, { 255, 160, 40 }, { 250, 220, 60 }, { 200, 90, 220 } },
+				landmark = "SteppedTemple",
+				bridge = "Rope",
+				trees = false,
+				accents = { { model = "Bush", width = 5 } },
+				secretChest = { -62, -86, 6 },
+				deco = {
+					budget = 400,
+					kits = {
+						{ kit = "Lamp", count = 3, size = { 2.6, 3 }, colors = { { 255, 170, 70 } } },
+						{
+							kit = "JungleTree",
+							count = 16,
+							size = { 16, 24 },
+							colors = { { 52, 128, 48 }, { 72, 150, 56 }, { 40, 110, 52 } },
+						},
+						{ kit = "Mist", count = 8, size = { 8, 11 }, colors = { { 220, 236, 226 } } },
+						{
+							kit = "Column",
+							count = 10,
+							size = { 6, 10 },
+							colors = { { 164, 160, 132 }, { 120, 118, 98 } },
+						},
+						{ kit = "Idol", count = 4, size = { 4, 5.5 }, colors = { { 150, 146, 120 }, { 92, 150, 60 } } },
+						{
+							kit = "Fern",
+							count = 32,
+							size = { 3, 5.5 },
+							colors = { { 60, 150, 60 }, { 90, 176, 70 }, { 44, 124, 64 } },
+						},
+						{ kit = "Fireflies", count = 10, size = { 6, 10 }, colors = { { 200, 255, 120 } } },
+					},
+				},
+			},
 		},
 	},
 
@@ -1637,6 +1780,11 @@ local GameConfig = {
 			displayName = "Blasen-Sturm",
 			displayNameEn = "Bubble Storm",
 			particles = { { 200, 240, 255 }, { 150, 220, 255 } },
+		},
+		TropicalRain = {
+			displayName = "Tropenregen",
+			displayNameEn = "Tropical Rain",
+			particles = { { 170, 210, 230 }, { 220, 240, 255 } },
 		},
 	},
 
@@ -1795,6 +1943,23 @@ local GameConfig = {
 			eggs = { "AtlantisEgg" },
 			secretPet = "PearlKingOtter",
 			weather = "BubbleStorm",
+		},
+		-- World 9 (#83), built after the pattern of world 8. Price provisional (#108).
+		{
+			id = "JungleTemple",
+			requiredRebirths = 3,
+			displayName = "Dschungel-Tempel",
+			displayNameEn = "Jungle Temple",
+			unlockPrice = 700000000,
+			color = { 60, 160, 70 },
+			toppingSpawns = {
+				{ topping = "Mango", weight = 55 },
+				{ topping = "CocoaBean", weight = 30 },
+				{ topping = "DragonFruit", weight = 15 },
+			},
+			eggs = { "JungleEgg" },
+			secretPet = "GoldenMonkeyKing",
+			weather = "TropicalRain",
 		},
 	},
 }

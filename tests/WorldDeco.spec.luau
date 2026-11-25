@@ -121,12 +121,113 @@ describe("scripted world deco (#82)", function()
 	end)
 
 	it("knows no deco kit names that the plan cannot build", function()
-		local KITS = { Coral = true, Column = true, Kelp = true, Bubbles = true, Lamp = true }
+		local KITS = {
+			Coral = true,
+			Column = true,
+			Kelp = true,
+			Bubbles = true,
+			Lamp = true,
+			JungleTree = true,
+			Fern = true,
+			Idol = true,
+			Fireflies = true,
+			Mist = true,
+		}
 		for _, theme in cfg.themes do
 			for _, item in (theme.deco and theme.deco.kits) or {} do
 				expect(KITS[item.kit]).toBe(true)
 				expect(item.count > 0 and item.size[1] <= item.size[2]).toBe(true)
 			end
+		end
+	end)
+end)
+
+describe("jungle temple deco (#83)", function()
+	local jungle = indexOf("JungleTemple")
+	local island = plan.worldIsland(jungle)
+
+	it("gives the jungle trees with lianas, ferns, ruins and idols, fireflies and mist", function()
+		local roles, names = {}, {}
+		for _, spec in decoParts(jungle) do
+			roles[spec.role or ""] = (roles[spec.role or ""] or 0) + 1
+			names[spec.name] = (names[spec.name] or 0) + 1
+		end
+		expect((names.JungleTrunk or 0) >= 12).toBe(true)
+		expect((roles.Liana or 0) >= 24).toBe(true)
+		expect((roles.Fern or 0) >= 80).toBe(true)
+		expect((names.IdolHead or 0) >= 3).toBe(true)
+		expect((roles.Fireflies or 0) >= 6).toBe(true)
+		expect((roles.Mist or 0) >= 5).toBe(true)
+	end)
+
+	it("keeps the jungle deco on the island and off the field and the main path", function()
+		local field = island.field :: any
+		for _, spec in decoParts(jungle) do
+			local x, z = spec.cframe[1], spec.cframe[3]
+			expect(IslandPlan.isInsideOutline(island.outline, x, z)).toBe(true)
+			local inField = math.abs(x - field.center[1]) < field.size[1] / 2
+				and math.abs(z - field.center[3]) < field.size[2] / 2
+			expect(inField).toBe(false)
+			expect(math.abs(x - island.center[1]) < cfg.pathWidth / 2).toBe(false)
+		end
+	end)
+
+	it("lets only trunks, standing ruins, idols and lamps collide; emitters are invisible", function()
+		for _, spec in decoParts(jungle) do
+			if spec.collide then
+				expect(spec.name == "JungleTrunk" or spec.role == "Ruin" or spec.role == "Lamp").toBe(true)
+			end
+			if spec.role == "Fireflies" or spec.role == "Mist" then
+				expect(spec.transparency).toBe(1)
+				expect(spec.collide).toBe(false)
+			end
+			if spec.role == "Liana" then
+				expect(spec.detail).toBe(true)
+			end
+		end
+	end)
+
+	it("builds a stepped temple with a stair and a glowing jade gem on the landmark terrace", function()
+		local found = {}
+		for _, spec in island.parts do
+			found[spec.name] = (found[spec.name] or 0) + 1
+		end
+		expect(found.TempleTier).toBe(3)
+		expect((found.TempleStair or 0) >= 4).toBe(true)
+		expect(found.JadeGem).toBe(1)
+		expect((found.TempleLiana or 0) >= 4).toBe(true)
+	end)
+
+	it("keeps a spot for the hidden chest (#100) behind the temple, on the terrace, free of deco", function()
+		local chest = island.stations.SecretChest
+		expect(chest ~= nil).toBe(true)
+		local landmark = island.stations.Landmark.position
+		local p = chest.position
+		expect(chest.clear ~= nil and chest.clear >= 4).toBe(true)
+		-- Behind the temple as seen from the main path (path at the island's middle x).
+		expect(math.abs(p[1] - island.center[1]) > math.abs(landmark[1] - island.center[1]) + 8).toBe(true)
+		-- On the terrace top, not under it.
+		local terrace = cfg.layout.terraces[1]
+		expect(p[2]).toBe(landmark[2] + terrace[4])
+		expect(IslandPlan.isInsideOutline(island.outline, p[1], p[3])).toBe(true)
+		for _, spec in decoParts(jungle) do
+			local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+			expect(d > chest.clear).toBe(true)
+		end
+		-- No temple part stands on the chest spot.
+		for _, spec in island.parts do
+			if spec.role == "Landmark" and spec.collide then
+				local dx, dz = math.abs(spec.cframe[1] - p[1]), math.abs(spec.cframe[3] - p[3])
+				expect(dx < spec.size[1] / 2 and dz < spec.size[3] / 2).toBe(false)
+			end
+		end
+	end)
+
+	it("gives only the jungle a chest spot so far", function()
+		for index, world in GameConfig.worlds do
+			local theme = cfg.themes[world.id]
+			local has = plan.worldIsland(index).stations.SecretChest ~= nil
+			expect(has).toBe(theme ~= nil and theme.secretChest ~= nil)
 		end
 	end)
 end)

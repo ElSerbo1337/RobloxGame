@@ -214,6 +214,36 @@ end
 
 -- World or event island, built from the shared floor plan. `index` = world index
 -- (event islands: 0, no gate).
+-- Reserved spots (#106) for the lucky wheel (#98), the merchant stand (#107) and the
+-- leaderboards Board4/Board5 (#109) on the spawn island, and the hidden chest (#100) of a
+-- world (theme.secretChest, #83): invisible anchor parts "<name>Anchor" on the ground
+-- point (front = local -Z), attribute ClearRadius = studs kept free of trees and deco,
+-- plus an Attachment "Ground". Every station with a `clear` radius gets one.
+local function buildAnchors(island: IslandPlan.Island, folder: Instance)
+	local anchors = Instance.new("Folder")
+	anchors.Name = "Anchors"
+	for name, station in island.stations do
+		if station.clear then
+			local anchor = part({
+				Name = `{name}Anchor`,
+				Size = Vector3.one,
+				Transparency = 1,
+				CanCollide = false,
+				CanQuery = false,
+				CanTouch = false,
+				CastShadow = false,
+			})
+			anchor.CFrame = IslandBuilder.station(station)
+			anchor:SetAttribute("ClearRadius", station.clear)
+			local ground = Instance.new("Attachment")
+			ground.Name = "Ground"
+			ground.Parent = anchor
+			anchor.Parent = anchors
+		end
+	end
+	anchors.Parent = folder
+end
+
 local function buildIsland(island: IslandPlan.Island, world: any, index: number, name: string): Layout
 	local center = IslandBuilder.vector(island.center)
 	local folder = IslandBuilder.island(island, name, Workspace)
@@ -222,6 +252,7 @@ local function buildIsland(island: IslandPlan.Island, world: any, index: number,
 	local ovenCf = IslandBuilder.station(island.stations.Oven)
 	local sellZone = buildOven(folder, ovenCf, world, Color3.fromRGB(226, 112, 62), Enum.Material.SmoothPlastic)
 	WorldDeco.dressOven(folder)
+	buildAnchors(island, folder)
 
 	local eggStands = {}
 	for i, name in { "Egg1", "Egg2" } do
@@ -358,32 +389,7 @@ function WorldMap.buildSpawnIsland(): Folder
 		end
 	end
 
-	-- Reserved spots (#106) for the lucky wheel (#98), the merchant stand (#107) and the
-	-- leaderboards Board4/Board5 (#109): invisible anchor parts "<name>Anchor" on the
-	-- ground point (front = local -Z, facing the middle), attribute ClearRadius = studs
-	-- kept free of trees and deco, plus an Attachment "Ground".
-	local anchors = Instance.new("Folder")
-	anchors.Name = "Anchors"
-	for name, station in island.stations do
-		if station.clear then
-			local anchor = part({
-				Name = `{name}Anchor`,
-				Size = Vector3.one,
-				Transparency = 1,
-				CanCollide = false,
-				CanQuery = false,
-				CanTouch = false,
-				CastShadow = false,
-			})
-			anchor.CFrame = IslandBuilder.station(station)
-			anchor:SetAttribute("ClearRadius", station.clear)
-			local ground = Instance.new("Attachment")
-			ground.Name = "Ground"
-			ground.Parent = anchor
-			anchor.Parent = anchors
-		end
-	end
-	anchors.Parent = folder
+	buildAnchors(island, folder)
 	return folder
 end
 

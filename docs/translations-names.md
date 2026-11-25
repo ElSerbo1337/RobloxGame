@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (84)
+## Pets (91)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -124,6 +124,17 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | PearlMantaRay | Perlen-Mantarochen | Pearl Manta Ray | Atlantis-Ei | Legendär | |
 | PoseidonSeaDragon | Poseidon-Seedrache | Poseidon Sea Dragon | Atlantis-Ei | Mythisch | |
 
+### Welt 9 – Dschungel-Tempel (#83)
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| CocoaFrog | Kakao-Frosch | Cocoa Frog | Dschungel-Ei | Gewöhnlich | Kakao-Belag als Thema |
+| MangoToucan | Mango-Tukan | Mango Toucan | Dschungel-Ei | Ungewöhnlich | |
+| VineSloth | Lianen-Faultier | Vine Sloth | Dschungel-Ei | Selten | |
+| FireflyChameleon | Glühwürmchen-Chamäleon | Firefly Chameleon | Dschungel-Ei | Episch | |
+| DragonFruitJaguar | Drachenfrucht-Jaguar | Dragon Fruit Jaguar | Dschungel-Ei | Legendär | |
+| JadeTempleSerpent | Jade-Tempelschlange | Jade Temple Serpent | Dschungel-Ei | Mythisch | |
+
 ### Geheim-Pets (#81)
 
 Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro Ei).
@@ -138,8 +149,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | GingerbreadGolem | Lebkuchen-Golem | Gingerbread Golem | Welt 6 (beide Eier) | Geheim | |
 | BlackHoleCat | Schwarzloch-Katze | Black Hole Cat | Welt 7 (beide Eier) | Geheim | |
 | PearlKingOtter | Perlenkönig-Otter | Pearl King Otter | Welt 8 (Atlantis-Ei) | Geheim | #82 |
+| GoldenMonkeyKing | Goldener Affenkönig | Golden Monkey King | Welt 9 (Dschungel-Ei) | Geheim | #83 |
 
-## Beläge (25)
+## Beläge (28)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -168,8 +180,11 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | Seaweed | Seetang | Seaweed | Atlantis | #82 |
 | PearlCapers | Perlen-Kapern | Pearl Capers | Atlantis | #82 |
 | SquidRings | Tintenfisch-Ringe | Squid Rings | Atlantis | #82 |
+| Mango | Mango | Mango | Dschungel-Tempel | #83 |
+| CocoaBean | Kakaobohne | Cocoa Bean | Dschungel-Tempel | #83 |
+| DragonFruit | Drachenfrucht | Dragon Fruit | Dschungel-Tempel | #83 |
 
-## Welten (8)
+## Welten (9)
 
 | Id | Deutsch | Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- |
@@ -181,8 +196,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | CandyLand | Süßigkeitenland | Candy Land | |
 | Space | Weltraum | Space | |
 | Atlantis | Atlantis | Atlantis | #82 |
+| JungleTemple | Dschungel-Tempel | Jungle Temple | #83 |
 
-## Eier (15)
+## Eier (16)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -201,6 +217,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | SpaceEgg | Weltraum-Ei | Space Egg | Weltraum | |
 | NebulaEgg | Nebula-Ei | Nebula Egg | Weltraum | |
 | AtlantisEgg | Atlantis-Ei | Atlantis Egg | Atlantis | #82 |
+| JungleEgg | Dschungel-Ei | Jungle Egg | Dschungel-Tempel | #83 |
 
 ## Tränke (3)
 
@@ -223,7 +240,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | TripleOpen | 3 Eier auf einmal | 3 Eggs at Once | Schaltet „3 öffnen“ an jedem Ei frei | Unlocks “Open 3” at every egg | „Open 3“ muss zum Knopftext im Ei-Menü (#67 ff.) passen |
 | GoldLuck | Gold-Glück | Gold Luck | Mehr goldene Beläge (10-facher Wert) | More golden toppings (10x value) | MEGA UPDATE #94 |
 
-## Shops (4)
+## Shops (5)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -231,14 +248,16 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | World4Shop | Großer Pizza-Shop | Big Pizza Shop | Eisberge | |
 | World7Shop | Riesiger Pizza-Shop | Giant Pizza Shop | Weltraum | |
 | World8Shop | Atlantis-Shop | Atlantis Shop | Atlantis | #82 |
+| World9Shop | Dschungel-Shop | Jungle Shop | Dschungel-Tempel | #83 |
 
-## Wetter (1)
+## Wetter (2)
 
 Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte kommen mit #105.
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
 | BubbleStorm | Blasen-Sturm | Bubble Storm | Atlantis | #82 |
+| TropicalRain | Tropenregen | Tropical Rain | Dschungel-Tempel | #83 |
 
 ## Sonstige: Seltenheiten (7)
 

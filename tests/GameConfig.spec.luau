@@ -209,6 +209,22 @@ describe("GameConfig", function()
 		expect(rules.teleport(result.state, "Atlantis").ok).toBe(true)
 	end)
 
+	it("lets a player with 3 rebirths unlock world 9 (Jungle Temple) after Atlantis, but not with 2 (#83)", function()
+		local rules = GameRules.new(GameConfig)
+		local jungle = GameConfig.worlds[9]
+		expect(jungle.id).toBe("JungleTemple")
+		local state = rules.newPlayerState()
+		state.unlockedWorlds = { "Farm", "Beach", "Icebergs", "Volcano", "CandyLand", "Space", "Atlantis" }
+		state.coins = jungle.unlockPrice
+		state.rebirths = 2
+		expect(rules.unlockWorld(state, "JungleTemple").ok).toBe(false)
+		state.rebirths = 3
+		local result = rules.unlockWorld(state, "JungleTemple")
+		expect(result.ok).toBe(true)
+		expect(result.state.coins).toBe(0)
+		expect(rules.teleport(result.state, "JungleTemple").ok).toBe(true)
+	end)
+
 	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
@@ -627,6 +643,7 @@ describe("GameConfig pets and eggs", function()
 			Swirl = true,
 			Stars = true,
 			Bubbles = true,
+			Vines = true,
 		}
 		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
@@ -681,10 +698,10 @@ describe("GameConfig worlds and eggs", function()
 	end)
 
 	-- Flat pet curve (#57): best pet of both eggs per world, within 10 %.
-	-- World 8 (#82) continues it with +620 % (provisional, #108).
-	local PET_CURVE = { 0.75, 1.1, 1.6, 2.3, 3.2, 4, 5, 6.2 }
+	-- World 8 (#82) continues it with +620 %, world 9 (#83) with +760 % (provisional, #108).
+	local PET_CURVE = { 0.75, 1.1, 1.6, 2.3, 3.2, 4, 5, 6.2, 7.6 }
 
-	it("makes the best pet of each world follow +75/110/160/230/320/400/500/620 % and rise", function()
+	it("makes the best pet of each world follow +75/110/160/230/320/400/500/620/760 % and rise", function()
 		local previous = 0
 		for index, world in GameConfig.worlds do
 			local best = 0

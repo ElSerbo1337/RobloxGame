@@ -74,6 +74,9 @@ local WorldLooks: { [string]: Look } = {
 	-- Atlantis (#82): same day look (#45); the blue light comes from the island's own
 	-- glowing corals and lamps (islands.themes.Atlantis.deco).
 	Atlantis = day("Music_Atlantis"),
+	-- Jungle temple (#83): same day look; fireflies, the jade gem and the mist come from
+	-- the island deco (islands.themes.JungleTemple.deco).
+	JungleTemple = day("Music_JungleTemple"),
 }
 
 return WorldLooks

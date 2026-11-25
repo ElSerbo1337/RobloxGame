@@ -141,6 +141,14 @@ local SOUNDS: { [string]: Entry } = {
 		looped = true,
 		search = { "underwater", "ocean", "aquatic", "harp", "dreamy" },
 	},
+	-- World 9 (#83). ID still empty: the local session picks one (Creator Store, creator
+	-- "Roblox"); adventurous but light, with drums and marimba.
+	Music_JungleTemple = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "jungle", "tropical", "adventure", "drums", "marimba" },
+	},
 }
 
 -- Several pickups within this time play only one plop.

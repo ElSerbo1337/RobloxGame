@@ -83,4 +83,20 @@ describe("World model packs (#82)", function()
 			"SquidRings",
 		})
 	end)
+
+	it("lists the Jungle Temple assets: 3 toppings, 6 pets, the Secret pet and the egg (#83)", function()
+		expect(WorldPacks.assetsOf(GameConfig.worlds[9])).toEqual({
+			"CocoaBean",
+			"CocoaFrog",
+			"DragonFruit",
+			"DragonFruitJaguar",
+			"FireflyChameleon",
+			"GoldenMonkeyKing",
+			"JadeTempleSerpent",
+			"JungleEgg",
+			"Mango",
+			"MangoToucan",
+			"VineSloth",
+		})
+	end)
 end)

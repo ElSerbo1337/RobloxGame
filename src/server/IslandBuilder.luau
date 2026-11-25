@@ -48,6 +48,56 @@ local function bubbles(p: BasePart)
 	emitter.Parent = p
 end
 
+-- Fireflies of the jungle deco (#83): tiny glowing dots drifting slowly in all
+-- directions, fading in and out.
+local function fireflies(p: BasePart)
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "Fireflies"
+	emitter.Color = ColorSequence.new(p.Color)
+	emitter.LightEmission = 1
+	emitter.Brightness = 3
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.2, 0.1),
+		NumberSequenceKeypoint.new(0.5, 0.6),
+		NumberSequenceKeypoint.new(0.75, 0.1),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Size = NumberSequence.new(0.22)
+	emitter.Rate = 3
+	emitter.Lifetime = NumberRange.new(5, 8)
+	emitter.Speed = NumberRange.new(0.4, 1.2)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	emitter.Drag = 0.5
+	emitter.Shape = Enum.ParticleEmitterShape.Box
+	emitter.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	emitter.Parent = p
+end
+
+-- Low mist of the jungle deco (#83): big, very faint puffs creeping over the ground.
+local function mist(p: BasePart)
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "Mist"
+	emitter.Color = ColorSequence.new(p.Color)
+	emitter.LightEmission = 0.2
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.3, 0.82),
+		NumberSequenceKeypoint.new(0.7, 0.86),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Size = NumberSequence.new(5, 10)
+	emitter.Rate = 1.2
+	emitter.Lifetime = NumberRange.new(9, 13)
+	emitter.Speed = NumberRange.new(0.3, 0.8)
+	emitter.SpreadAngle = Vector2.new(80, 5)
+	emitter.EmissionDirection = Enum.NormalId.Top
+	emitter.Acceleration = Vector3.new(0, -0.02, 0)
+	emitter.RotSpeed = NumberRange.new(-6, 6)
+	emitter.Shape = Enum.ParticleEmitterShape.Box
+	emitter.Parent = p
+end
+
 local SHAPES: { [string]: Enum.PartType } = {
 	Block = Enum.PartType.Block,
 	Ball = Enum.PartType.Ball,
@@ -135,6 +185,12 @@ function IslandBuilder.part(spec: IslandPlan.PartSpec, parent: Instance): BasePa
 	elseif spec.role == "Bubbles" then
 		p.CastShadow = false
 		bubbles(p)
+	elseif spec.role == "Fireflies" then
+		p.CastShadow = false
+		fireflies(p)
+	elseif spec.role == "Mist" then
+		p.CastShadow = false
+		mist(p)
 	elseif spec.name == "FountainSpout" then
 		local spray = Instance.new("ParticleEmitter")
 		spray.Color = ColorSequence.new(Color3.fromRGB(190, 235, 255))

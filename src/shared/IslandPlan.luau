@@ -304,6 +304,36 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 				)
 			end
 		end
+	elseif style == "MossyStones" then
+		-- Jungle temple (#83): low, squarish weathered stone blocks with a moss cushion
+		-- (theme.moss) on every second one.
+		local stones = math.max(1, math.floor(len / 4.5 + 0.5))
+		local seg = len / stones
+		for k = 1, stones do
+			local t = (k - 0.5) / stones
+			local h = 1.6 + noise(i, k) * 1.2
+			local at = add(add(p, scale(dir, t)), add(inset, v(0, h / 2, 0)))
+			local tilt = (noise(k, i) - 0.5) * 0.3
+			table.insert(
+				parts,
+				spec("Block", v(2.6, h, seg * 0.86), along(at, add(dir, v(0, 0, tilt))), {
+					name = "MossyStone",
+					color = if (i + k) % 3 == 0 then theme.cliffLight else theme.rim,
+					role = "Rim",
+				})
+			)
+			if (i + k) % 2 == 0 then
+				table.insert(
+					parts,
+					spec("Ball", v(2.4, 0.9, seg * 0.6), along(add(at, v(0, h / 2, 0)), dir), {
+						name = "MossCushion",
+						color = theme.moss or theme.grass,
+						collide = false,
+						role = "Rim",
+					})
+				)
+			end
+		end
 	elseif style == "IceEdge" then
 		local h = 1.8 + noise(i, 3) * 1.4
 		local center = add(scale(add(p, q), 0.5), add(inset, v(0, h / 2, 0)))
@@ -1620,7 +1650,131 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		)
 	end
 
+	-- World 9 landmark (#83): a stepped jungle temple on the terrace - three stone tiers, a
+	-- stair facing the path (+X), a small shrine with four pillars and a roof on top and a
+	-- glowing jade gem inside (the only Glow part), moss cushions and lianas hanging down
+	-- the tiers. The hidden chest (#100) sits behind it (theme.secretChest).
+	local function steppedTemple(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local stone = theme.ruin or theme.cliffLight
+		local stoneDark = theme.ruinDark or theme.cliff
+		local moss = theme.moss or theme.grass
+		local tierH = 3
+		local sizes = { 18, 14, 10 }
+		for k, size in sizes do
+			table.insert(
+				parts,
+				spec("Block", v(size, tierH, size), yawed(v(at[1], baseY + tierH * (k - 0.5), at[3]), 0), {
+					name = "TempleTier",
+					color = if k % 2 == 1 then stone else stoneDark,
+					role = "Landmark",
+				})
+			)
+		end
+		local top = baseY + tierH * #sizes
+		-- Stair up the +X face: blocks of rising height, each a bit narrower (no z-fighting).
+		local steps = 6
+		for k = 1, steps do
+			local outer = 13 - (k - 1) * 8 / steps
+			local h = tierH * #sizes * k / steps
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(outer - 5, h, 5 - k * 0.04),
+					yawed(v(at[1] + (outer + 5) / 2, baseY + h / 2, at[3]), 0),
+					{ name = "TempleStair", color = stoneDark, role = "Landmark" }
+				)
+			)
+		end
+		-- Shrine: four pillars, a roof slab and a small capstone, the jade gem in the middle.
+		for _, c in { { -3, -3 }, { 3, -3 }, { -3, 3 }, { 3, 3 } } do
+			table.insert(
+				parts,
+				spec("Block", v(1.4, 5, 1.4), yawed(v(at[1] + c[1], top + 2.5, at[3] + c[2]), 0), {
+					name = "ShrinePillar",
+					color = stone,
+					role = "Landmark",
+				})
+			)
+		end
+		table.insert(
+			parts,
+			spec("Block", v(9, 1, 9), yawed(v(at[1], top + 5.5, at[3]), 0), {
+				name = "ShrineRoof",
+				color = stoneDark,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			spec("Block", v(5, 1.2, 5), yawed(v(at[1], top + 6.6, at[3]), math.pi / 4), {
+				name = "ShrineCap",
+				color = stone,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			spec("Ball", v(2.2, 3, 2.2), yawed(v(at[1], top + 2, at[3]), 0), {
+				name = "JadeGem",
+				color = theme.glow or { 120, 255, 150 },
+				material = "Neon",
+				collide = false,
+				role = "Glow",
+			})
+		)
+		-- Moss on the tier corners and lianas hanging over the tier edges.
+		for k, size in sizes do
+			local y = baseY + tierH * k
+			for c = 0, 3 do
+				local a = c * math.pi / 2 + math.pi / 4
+				local r = size / 2 * 1.3
+				if (k + c) % 2 == 0 then
+					table.insert(
+						parts,
+						spec(
+							"Ball",
+							v(3.2, 1.1, 3.2),
+							yawed(v(at[1] + math.cos(a) * r, y, at[3] + math.sin(a) * r), a),
+							{
+								name = "TempleMoss",
+								color = moss,
+								collide = false,
+								role = "Landmark",
+							}
+						)
+					)
+				end
+			end
+		end
+		for c, z in { -6, -2, 3, 6.5 } do
+			local x = at[1] - 9.15
+			local len = 3 + noise(c, 5) * 4
+			table.insert(
+				parts,
+				beam(v(x, baseY + tierH + 0.2, at[3] + z), v(x - 0.1, baseY + tierH - len, at[3] + z + 0.3), 0.3, 0.3, {
+					name = "TempleLiana",
+					color = moss,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+			local zFront = at[3] + (if c % 2 == 0 then 7.15 else -7.15)
+			table.insert(
+				parts,
+				beam(
+					v(at[1] + z, baseY + tierH * 2 + 0.2, zFront),
+					v(at[1] + z + 0.3, baseY + tierH * 2 - math.min(len, 2.8), zFront),
+					0.3,
+					0.3,
+					{ name = "TempleLiana", color = moss, collide = false, role = "Landmark" }
+				)
+			)
+		end
+	end
+
 	local LANDMARKS = {
+		SteppedTemple = steppedTemple,
 		GiantPizza = giantPizza,
 		Windmill = windmill,
 		Lighthouse = lighthouse,
@@ -2233,6 +2387,184 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		}
 	end
 
+	-- Jungle kits (#83). JungleTree: a tall trunk (collides) with a root flare, two or three
+	-- leaf crowns and lianas hanging from the crown edge (optional, detail).
+	function DECO_KITS.JungleTree(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local trunkD = size * 0.09
+		local height = size * 0.75
+		table.insert(
+			parts,
+			disc(add(at, v(0, height / 2, 0)), trunkD, height, {
+				name = "JungleTrunk",
+				color = theme.wood,
+				role = "Tree",
+				deco = true,
+			})
+		)
+		table.insert(
+			parts,
+			disc(add(at, v(0, size * 0.04, 0)), trunkD * 2, size * 0.08, {
+				name = "JungleRoots",
+				color = theme.woodDark,
+				collide = false,
+				role = "Tree",
+				deco = true,
+			})
+		)
+		local crowns = 2 + k % 2
+		local tips = {}
+		for b = 1, crowns do
+			local angle = yaw + b * 2.2
+			local off = if b == 1 then 0 else size * 0.16
+			local c = add(at, v(math.cos(angle) * off, height + size * (0.02 - b * 0.03), math.sin(angle) * off))
+			local w = size * (0.55 - b * 0.06)
+			table.insert(
+				parts,
+				spec("Ball", v(w, w * 0.42, w), yawed(c, angle), {
+					name = "JungleCrown",
+					color = colors[(k + b) % math.max(1, #colors) + 1] or theme.grass,
+					collide = false,
+					role = "Tree",
+					deco = true,
+				})
+			)
+			table.insert(tips, { c = c, w = w, angle = angle })
+		end
+		-- Lianas: thin strands from the crown's underside, swinging a little outwards.
+		local strands = 2 + k % 2
+		for s = 1, strands do
+			local crown = tips[(s - 1) % #tips + 1]
+			local a = crown.angle + s * 1.9
+			local from = add(crown.c, v(math.cos(a) * crown.w * 0.32, -crown.w * 0.12, math.sin(a) * crown.w * 0.32))
+			local drop = size * (0.3 + noise(k, s) * 0.25)
+			local to = add(from, v(math.cos(a) * 0.6, -drop, math.sin(a) * 0.6))
+			table.insert(
+				parts,
+				beam(from, to, 0.28, 0.28, {
+					name = "Liana",
+					color = theme.moss or theme.rope,
+					role = "Liana",
+					deco = true,
+					detail = true,
+				})
+			)
+		end
+		return parts
+	end
+
+	-- Fern: four or five leaves fanned out around the middle, tilted outwards.
+	function DECO_KITS.Fern(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local leaves = 4 + k % 2
+		for b = 1, leaves do
+			local angle = yaw + (b - 1) / leaves * math.pi * 2
+			local dir = v(math.cos(angle), 0, math.sin(angle))
+			local tip = add(at, add(scale(dir, size * 0.5), v(0, size * (0.35 + noise(k, b) * 0.15), 0)))
+			table.insert(
+				parts,
+				beam(add(at, v(0, 0.2, 0)), tip, size * 0.22, 0.15, {
+					name = "FernLeaf",
+					color = colors[(k + b) % math.max(1, #colors) + 1] or theme.grass,
+					collide = false,
+					role = "Fern",
+					deco = true,
+					detail = b > 3,
+				})
+			)
+		end
+		return parts
+	end
+
+	-- Idol: a carved stone head (block with brow, dark eyes and mouth) under a moss cap.
+	function DECO_KITS.Idol(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local stone = colors[1] or theme.ruin or theme.cliffLight
+		local moss = colors[2] or theme.moss or theme.grass
+		local dark = theme.ruinDark or theme.cliffDark
+		local w = size * 0.7
+		local c, sn = math.cos(yaw), math.sin(yaw)
+		-- Front of the face = local -Z of yawed().
+		local function front(d: number, y: number, side: number): V
+			return add(at, v(-sn * d + c * side, y, -c * d - sn * side))
+		end
+		local parts = {
+			spec("Block", v(w, size, w * 0.8), yawed(add(at, v(0, size / 2, 0)), yaw), {
+				name = "IdolHead",
+				color = stone,
+				role = "Ruin",
+				deco = true,
+			}),
+			spec("Block", v(w * 1.1, size * 0.14, w * 0.3), yawed(front(w * 0.42, size * 0.68, 0), yaw), {
+				name = "IdolBrow",
+				color = dark,
+				collide = false,
+				role = "Ruin",
+				deco = true,
+			}),
+			spec("Block", v(w * 0.6, size * 0.1, 0.2), yawed(front(w * 0.41, size * 0.25, 0), yaw), {
+				name = "IdolMouth",
+				color = dark,
+				collide = false,
+				role = "Ruin",
+				deco = true,
+				detail = true,
+			}),
+		}
+		for _, side in { -1, 1 } do
+			table.insert(
+				parts,
+				spec("Block", v(w * 0.18, size * 0.12, 0.2), yawed(front(w * 0.41, size * 0.5, side * w * 0.22), yaw), {
+					name = "IdolEye",
+					color = if k % 2 == 0 then theme.glow else dark,
+					material = if k % 2 == 0 then "Neon" else "SmoothPlastic",
+					collide = false,
+					role = "Ruin",
+					deco = true,
+					detail = true,
+				})
+			)
+		end
+		table.insert(
+			parts,
+			spec("Ball", v(w * 1.05, size * 0.3, w * 0.9), yawed(add(at, v(0, size, 0)), yaw), {
+				name = "IdolMoss",
+				color = moss,
+				collide = false,
+				role = "Ruin",
+				deco = true,
+				detail = true,
+			})
+		)
+		return parts
+	end
+
+	-- Fireflies and Mist: invisible emitter parts (IslandBuilder adds the particles).
+	function DECO_KITS.Fireflies(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return {
+			spec("Block", v(size, size * 0.4, size), yawed(add(at, v(0, 2 + size * 0.2, 0)), yaw), {
+				name = "FireflySwarm",
+				color = colors[1] or theme.glow,
+				transparency = 1,
+				collide = false,
+				role = "Fireflies",
+				deco = true,
+			}),
+		}
+	end
+
+	function DECO_KITS.Mist(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return {
+			spec("Block", v(size, 0.4, size), yawed(add(at, v(0, 0.6, 0)), yaw), {
+				name = "MistPatch",
+				color = colors[1] or { 230, 240, 235 },
+				transparency = 1,
+				collide = false,
+				role = "Mist",
+				deco = true,
+			}),
+		}
+	end
+
 	-- Places theme.deco on a world island (after the trees, sharing their keep-out rules).
 	local function scatterDeco(
 		island: Island,
@@ -2373,6 +2705,19 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		stations.Van = side(layout.van)
 		stations.Portal = side(layout.portal)
 		stations.Landmark = { position = localToWorld(center, layout.landmark), yaw = 0 }
+		-- Spot kept for the hidden chest (#100, theme.secretChest = { x, z, clear }): on the
+		-- terrace top when it lies on a terrace, facing the island's middle. WorldMap puts
+		-- an invisible anchor part "SecretChestAnchor" there; trees and deco keep clear.
+		local chest = theme.secretChest
+		if chest then
+			local p = localToWorld(center, { chest[1], chest[2] })
+			for _, t in layout.terraces do
+				if math.sqrt((chest[1] - t[1]) ^ 2 + (chest[2] - t[2]) ^ 2) < t[3] then
+					p[2] = groundY + t[4]
+				end
+			end
+			stations.SecretChest = { position = p, yaw = facing(center[1] - p[1], center[3] - p[3]), clear = chest[3] }
+		end
 
 		local pondAt = localToWorld(center, layout.pond)
 		local gap = pond(island, pondAt, 8, theme)
