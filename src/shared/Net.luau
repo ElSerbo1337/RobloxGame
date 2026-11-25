@@ -19,7 +19,10 @@
 -- EggOpened       server -> client  (eggId: string, ...petId: string)  plays the hatch animation (one pet per egg)
 -- EquipPet        client -> server  (uid: number)               "equip this pet"
 -- UnequipPet      client -> server  (uid: number)               "put this pet away"
--- PortalOpen      server -> client  (worldId: string, entries: { GameRules.PortalEntry })  player stands in this world's portal
+-- PortalOpen      server -> client  (worldId: string, entries: { GameRules.PortalEntry }, preview: boolean?)
+--                                     player stands in this world's portal; preview = true: answer to
+--                                     PortalPreview (list for viewing only, the player is in no portal)
+-- PortalPreview   client -> server  ()                           "show me the world list" (side bar tile, #75)
 -- PortalClose     server -> client  ()                           player left the portal (or was teleported)
 -- Teleport        client -> server  (worldId: string)            "send me to this world" (only from inside a portal)
 -- EquipBest       client -> server  ()                           "equip my pets with the highest bonus"
@@ -88,6 +91,7 @@ local EVENTS = {
 	UnequipPet = true,
 	PortalOpen = true,
 	PortalClose = true,
+	PortalPreview = true,
 	Teleport = true,
 	EquipBest = true,
 	DeletePet = true,

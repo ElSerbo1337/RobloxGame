@@ -3,7 +3,8 @@
 -- The rules behind it are written down in docs/ui-style.md; new UI uses UiKit.
 -- Everything is sized for touch: buttons are at least 60 px high.
 -- Where things sit on screen comes from the HUD grid (src/shared/HudLayout.luau):
--- UiKit.place, UiKit.sideButton, UiKit.rightColumn and UiKit.placeMenu apply it.
+-- UiKit.place, UiKit.rightColumn, UiKit.potionColumn and UiKit.placeMenu apply it; the
+-- side bar tiles live in src/client/SideBar.luau (#75).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -79,7 +80,7 @@ function UiKit.button(parent: Instance, text: string, color: Color3): TextButton
 	return button
 end
 
--- Round icon button (HUD side buttons like "Pets"): a circle `size` px wide.
+-- Round icon button (side bar tiles with the sideBar feature off): a circle `size` px wide.
 function UiKit.roundButton(parent: Instance, text: string, color: Color3, size: number?): TextButton
 	local button = UiKit.button(parent, text, color)
 	local diameter = math.max(size or 96, UiKit.MIN_TOUCH)
@@ -134,7 +135,8 @@ function UiKit.isSmallScreen(): boolean
 	return HudLayout.isSmallScreen(camera.ViewportSize.X, camera.ViewportSize.Y)
 end
 
-local function applyZone(object: GuiObject, zone: HudLayout.Zone)
+-- Sets anchor, position and size of `object` from a HUD zone (see HudLayout.zones).
+function UiKit.applyZone(object: GuiObject, zone: HudLayout.Zone)
 	object.AnchorPoint = Vector2.new(zone.anchor[1], zone.anchor[2])
 	object.Position = UDim2.new(zone.position[1], zone.position[2], zone.position[3], zone.position[4])
 	object.Size = UDim2.new(zone.size[1], zone.size[2], zone.size[3], zone.size[4])
@@ -153,6 +155,7 @@ local function applyZone(object: GuiObject, zone: HudLayout.Zone)
 		constraint:Destroy()
 	end
 end
+local applyZone = UiKit.applyZone
 
 -- Puts `object` into a named zone of the HUD grid (see HudLayout.zones).
 function UiKit.place(object: GuiObject, zoneName: string)
@@ -169,10 +172,11 @@ local function zoneFrame(parent: Instance, zoneName: string): Frame
 	return frame
 end
 
--- One shared ScreenGui holds the side buttons (left) and the right column, so
--- buttons from different features line up in one grid instead of guessing positions.
-local grid: { side: Frame, right: Frame }? = nil
-local function hudGrid(): { side: Frame, right: Frame }
+-- One shared ScreenGui holds the right column: at the top the active bonuses and the
+-- order card, at the bottom (above the jump button) the active potions (#75). Both
+-- stacks shrink together when they need more room than the column has (HudLayout.fitStacks).
+local grid: { right: Frame, top: Frame, bottom: Frame }? = nil
+local function hudGrid(): { right: Frame, top: Frame, bottom: Frame }
 	if grid then
 		return grid
 	end
@@ -183,71 +187,75 @@ local function hudGrid(): { side: Frame, right: Frame }
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	UiKit.autoScale(gui)
 
-	local side = zoneFrame(gui, "sideArea")
-	local sideLayout = Instance.new("UIGridLayout")
-	sideLayout.FillDirection = Enum.FillDirection.Vertical
-	sideLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	sideLayout.Parent = side
-	-- Small screens: smaller buttons in a 2 x 2 block above the joystick.
-	local function fitSide()
-		local small = UiKit.isSmallScreen()
-		applyZone(side, HudLayout.zone("sideArea", small))
-		local button = HudLayout.sideButtonSize(small)
-		sideLayout.CellSize = UDim2.fromOffset(button.size, button.size)
-		sideLayout.CellPadding = UDim2.fromOffset(button.gap, button.gap)
-	end
-	fitSide()
-	if Workspace.CurrentCamera then
-		Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitSide)
-	end
-
-	-- Right column: a stack (potion pills, order card) that shrinks when it gets taller
-	-- than the room above the jump button.
 	local rightArea = zoneFrame(gui, "rightColumn")
-	local stack = Instance.new("Frame")
-	stack.Name = "Stack"
-	stack.BackgroundTransparency = 1
-	stack.AnchorPoint = Vector2.new(1, 0)
-	stack.Position = UDim2.fromScale(1, 0)
-	stack.Size = UDim2.fromScale(1, 0)
-	stack.AutomaticSize = Enum.AutomaticSize.Y
-	stack.Parent = rightArea
-	local stackLayout = Instance.new("UIListLayout")
-	stackLayout.Padding = UDim.new(0, 8)
-	stackLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-	stackLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	stackLayout.Parent = stack
-	local stackScale = Instance.new("UIScale")
-	stackScale.Parent = stack
-	local function fitStack()
-		local content = stack.AbsoluteSize.Y / stackScale.Scale
-		if content <= 0 then
+	local function stack(name: string, bottom: boolean): (Frame, UIScale)
+		local frame = Instance.new("Frame")
+		frame.Name = name
+		frame.BackgroundTransparency = 1
+		frame.AnchorPoint = Vector2.new(1, if bottom then 1 else 0)
+		frame.Position = UDim2.fromScale(1, if bottom then 1 else 0)
+		frame.Size = UDim2.fromScale(1, 0)
+		frame.AutomaticSize = Enum.AutomaticSize.Y
+		frame.Parent = rightArea
+		local layout = Instance.new("UIListLayout")
+		layout.Padding = UDim.new(0, 8)
+		layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+		layout.VerticalAlignment = if bottom then Enum.VerticalAlignment.Bottom else Enum.VerticalAlignment.Top
+		layout.SortOrder = Enum.SortOrder.LayoutOrder
+		layout.Parent = frame
+		local scale = Instance.new("UIScale")
+		scale.Parent = frame
+		return frame, scale
+	end
+	local top, topScale = stack("Stack", false)
+	local bottom, bottomScale = stack("Potions", true)
+
+	local function contentHeight(frame: Frame, scale: UIScale): number
+		local anyVisible = false
+		for _, child in frame:GetChildren() do
+			if child:IsA("GuiObject") and child.Visible then
+				anyVisible = true
+			end
+		end
+		return if anyVisible then frame.AbsoluteSize.Y / scale.Scale else 0
+	end
+	local function fitStacks()
+		local guiScale = gui:FindFirstChildOfClass("UIScale")
+		local factor = if guiScale then guiScale.Scale else 1
+		local areaH = rightArea.AbsoluteSize.Y / factor
+		if areaH <= 0 then
 			return
 		end
-		local target = math.clamp(rightArea.AbsoluteSize.Y / content, 0.5, 1)
-		if math.abs(target - stackScale.Scale) > 0.01 then
-			stackScale.Scale = target
+		local fit = HudLayout.fitStacks(
+			contentHeight(top, topScale) / factor,
+			contentHeight(bottom, bottomScale) / factor,
+			areaH,
+			8
+		)
+		if math.abs(fit.top - topScale.Scale) > 0.01 then
+			topScale.Scale = fit.top
+		end
+		if math.abs(fit.bottom - bottomScale.Scale) > 0.01 then
+			bottomScale.Scale = fit.bottom
 		end
 	end
-	stack:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitStack)
-	rightArea:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitStack)
+	top:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitStacks)
+	bottom:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitStacks)
+	rightArea:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitStacks)
+	for _, frame in { top, bottom } do
+		frame.ChildAdded:Connect(function(child)
+			if child:IsA("GuiObject") then
+				child:GetPropertyChangedSignal("Visible"):Connect(fitStacks)
+			end
+		end)
+	end
 
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-	grid = { side = side, right = stack }
-	return grid :: { side: Frame, right: Frame }
+	grid = { right = rightArea, top = top, bottom = bottom }
+	return grid :: { right: Frame, top: Frame, bottom: Frame }
 end
 
--- Round HUD button on the left in its fixed slot ("pets", "potions", "gifts", "rebirth").
-function UiKit.sideButton(slot: string, text: string, color: Color3): TextButton
-	local order = table.find(HudLayout.SIDE_SLOTS, slot)
-	assert(order, `Unknown side slot {slot}`)
-	local button = UiKit.roundButton(hudGrid().side, text, color, HudLayout.SIDE_BUTTON)
-	button.Name = slot
-	button.LayoutOrder = order
-	return button
-end
-
--- Places a "Neu! …" note (child of a side button) where it covers no other side button:
+-- Places a "Neu! …" note (child of a side bar tile) where it covers no other tile:
 -- right of the button while the buttons stand in a column, above it while they stand
 -- in a row (low screens, #52), where the right side holds the next button.
 function UiKit.placeSideNote(note: GuiObject, button: GuiObject, gap: number)
@@ -279,10 +287,16 @@ function UiKit.placeSideNote(note: GuiObject, button: GuiObject, gap: number)
 	task.defer(update)
 end
 
--- The right-hand stack: parent potion pills (LayoutOrder 1) and the order card (2) here.
--- Width is HudLayout.RIGHT_COLUMN_WIDTH; hidden children take no room.
+-- Top of the right column: active bonuses (LayoutOrder 1, e.g. friends, weather) and
+-- the order card (2). Width is HudLayout.RIGHT_COLUMN_WIDTH; hidden children take no room.
 function UiKit.rightColumn(): Frame
-	return hudGrid().right
+	return hudGrid().top
+end
+
+-- Bottom of the right column, right above the jump button: the active potion pills.
+-- Children stack upwards from the bottom.
+function UiKit.potionColumn(): Frame
+	return hudGrid().bottom
 end
 
 -- Puts `panel` into a HUD zone, designed at `designSize`: it gets shorter down to
@@ -381,7 +395,7 @@ function UiKit.placePanel(
 end
 
 -- Puts a menu panel into the menu area (below currencies and messages, above the
--- pizza bar). The panel is designed at `designSize`; it gets shorter down to
+-- auto-collect switch). The panel is designed at `designSize`; it gets shorter down to
 -- `minHeight` (menus with a scrolling list) and shrinks only after that.
 -- Afterwards the panel fills its holder: keep using panel.Visible and UiKit.pop(panel).
 function UiKit.placeMenu(gui: ScreenGui, panel: GuiObject, designSize: Vector2, minHeight: number?)

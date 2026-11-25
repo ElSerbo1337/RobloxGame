@@ -1,7 +1,6 @@
 --!strict
 -- Rebirth on the client (#35):
--- * Round "Rebirth" button on the left (HUD slot "rebirth") with the number of rebirths
---   as a badge. It pulses (with a short hint) the first time a rebirth is affordable,
+-- * Side bar tile "Rebirth" (#75) with the number of rebirths as a badge (top left). It pulses (with a short hint) the first time a rebirth is affordable,
 --   until the menu is opened once (hint "Rebirth", remembered on the server like the
 --   gifts button, so it does not pulse again in the next session).
 -- * Menu: rebirths, coin multiplier now -> next, price and progress, what is reset and what
@@ -21,6 +20,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
 local Lang = require(script.Parent.Lang)
+local SideBar = require(script.Parent.SideBar)
 local UiKit = require(script.Parent.UiKit)
 
 local PANEL_SIZE = Vector2.new(560, 500)
@@ -93,20 +93,34 @@ function RebirthMenu.start()
 	gui.DisplayOrder = 5
 	UiKit.autoScale(gui)
 
-	-- HUD button with badge -------------------------------------------------------
-	local openButton = UiKit.sideButton("rebirth", Lang.t("side.rebirth"), PURPLE)
-	openButton.Name = "RebirthButton"
+	-- Side bar tile with badge --------------------------------------------------------
+	local toggle: () -> () = function() end
+	local openButton = SideBar.register({
+		id = "rebirth",
+		order = 50,
+		text = Lang.t("side.rebirth"),
+		color = PURPLE,
+		icon = { shape = "rebirth" },
+		open = function()
+			toggle()
+		end,
+	})
 
 	local badge = UiKit.label(openButton, "0")
 	badge.Name = "Badge"
+	-- Top left of the tile: the top right corner is kept for the red dot (#75).
 	badge.AnchorPoint = Vector2.new(0.5, 0.5)
-	badge.Position = UDim2.new(1, -12, 0, 12)
-	badge.Size = UDim2.fromOffset(40, 40)
+	badge.Position = UDim2.fromOffset(6, 6)
+	badge.Size = UDim2.fromScale(0.4, 0.4)
 	badge.BackgroundTransparency = 0
 	badge.BackgroundColor3 = UiKit.COIN
-	badge.ZIndex = 3
+	badge.ZIndex = 6
 	badge.Visible = false
-	UiKit.corner(badge, 20)
+	local badgeRatio = Instance.new("UIAspectRatioConstraint")
+	badgeRatio.Parent = badge
+	local badgeRound = Instance.new("UICorner")
+	badgeRound.CornerRadius = UDim.new(0.5, 0)
+	badgeRound.Parent = badge
 	UiKit.stroke(badge, 2)
 
 	-- Short hint next to the button while it pulses.
@@ -345,14 +359,14 @@ function RebirthMenu.start()
 	end
 	UiKit.registerMenu("rebirth", close)
 
-	openButton.Activated:Connect(function()
+	toggle = function()
 		if panel.Visible then
 			close()
 		else
 			open()
 			UiKit.pop(openButton)
 		end
-	end)
+	end
 	closeButton.Activated:Connect(close)
 	rebirthButton.Activated:Connect(function()
 		local offer = readOffer(player)

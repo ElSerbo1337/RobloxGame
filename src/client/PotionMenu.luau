@@ -1,8 +1,8 @@
 --!strict
 -- Potions on the client:
--- * Round "Tränke" button on the left (below "Pets") opens the potion inventory: every
+-- * Side bar tile "Tränke" (after "Pets") opens the potion inventory: every
 --   potion with how many the player owns, time left and a big "Trinken" button.
--- * Right side of the HUD: one timer per running potion with its time left.
+-- * Bottom right of the HUD (above the jump button, #75): one timer per running potion.
 -- Reads the attributes Potions and ActivePotions (JSON, see Net / PotionService). The time
 -- left is re-synced by the server every few seconds and counted down locally in between.
 -- "Trinken" only sends the wish DrinkPotion; the server decides and answers PotionNotify.
@@ -16,6 +16,7 @@ local TweenService = game:GetService("TweenService")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Lang = require(script.Parent.Lang)
+local SideBar = require(script.Parent.SideBar)
 local UiKit = require(script.Parent.UiKit)
 
 -- Display order and look of each potion (the effects live in GameConfig / GameRules).
@@ -72,11 +73,20 @@ function PotionMenu.start()
 	gui.DisplayOrder = 5
 	UiKit.autoScale(gui)
 
-	-- Left side, the slot after "Pets" in the HUD grid.
-	local openButton = UiKit.sideButton("potions", Lang.t("side.potions"), Color3.fromRGB(170, 90, 230))
-	openButton.Name = "PotionsButton"
+	-- Side bar tile, the place after "Pets".
+	local toggle: () -> () = function() end
+	local openButton = SideBar.register({
+		id = "potions",
+		order = 20,
+		text = Lang.t("side.potions"),
+		color = Color3.fromRGB(170, 90, 230),
+		icon = { shape = "potion" },
+		open = function()
+			toggle()
+		end,
+	})
 
-	-- Running potions: top of the right column (HUD grid), the order card goes below.
+	-- Running potions: bottom of the right column, above the jump button (#75).
 	local timers = Instance.new("Frame")
 	timers.Name = "PotionTimers"
 	timers.LayoutOrder = 1
@@ -84,7 +94,7 @@ function PotionMenu.start()
 	timers.AutomaticSize = Enum.AutomaticSize.Y
 	timers.BackgroundTransparency = 1
 	timers.Visible = false
-	timers.Parent = UiKit.rightColumn()
+	timers.Parent = UiKit.potionColumn()
 	local timerLayout = Instance.new("UIListLayout")
 	timerLayout.Padding = UDim.new(0, 8)
 	timerLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -293,14 +303,14 @@ function PotionMenu.start()
 		TweenService:Create(scale, TweenInfo.new(0.2, Enum.EasingStyle.Back), { Scale = 1 }):Play()
 	end
 
-	openButton.Activated:Connect(function()
+	toggle = function()
 		UiKit.pop(openButton)
 		if panel.Visible then
 			close()
 		else
 			open()
 		end
-	end)
+	end
 	closeButton.Activated:Connect(close)
 
 	Net.event("PotionNotify").OnClientEvent:Connect(function(kind: string, potionId: string)

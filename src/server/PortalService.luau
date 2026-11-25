@@ -3,11 +3,14 @@
 -- get theirs without code changes. Walking into a portal opens the world menu on the
 -- client, walking out closes it. The client only sends the wished target; the server
 -- checks that the player stands in a portal and lets the game rules decide.
+-- The side bar tile "Worlds" (#75) asks for the same list from anywhere (PortalPreview);
+-- it is for viewing only, travelling still needs a portal.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
@@ -18,6 +21,8 @@ local WorldMap = require(script.Parent.WorldMap)
 
 local CHECK_SECONDS = 0.2
 local TELEPORT_COOLDOWN = 1
+local PREVIEW_COOLDOWN = 0.5
+local features = Features.new(GameConfig.features)
 -- The spawn island's portal gate has no world of its own.
 local SPAWN_PORTAL_ID = "SpawnIsland"
 local RING_SIZE = 12
@@ -216,6 +221,22 @@ function PortalService.start(portals: { Portal })
 		SpawnService.enterWorld(player, worldId)
 	end)
 
+	-- World list for viewing from anywhere (side bar tile "Worlds", #75). Teleporting
+	-- still needs the player to stand in a portal (see Teleport above).
+	local lastPreview: { [Player]: number } = {}
+	Net.event("PortalPreview").OnServerEvent:Connect(features.guard("sideBar", function(player: Player)
+		local state = PlayerStates.get(player)
+		local now = os.clock()
+		if state == nil or now - (lastPreview[player] or 0) < PREVIEW_COOLDOWN then
+			return
+		end
+		lastPreview[player] = now
+		local inside = insidePortal[player]
+		local rules = PlayerStates.rules
+		local currentWorld = inside or rules.spawnWorld(state) or GameConfig.worlds[1].id
+		portalOpen:FireClient(player, currentWorld, rules.portalMenu(state), inside == nil)
+	end))
+
 	-- Keep an open menu current (e.g. a world unlocked while standing in the portal).
 	PlayerStates.onChanged(function(player, state)
 		local worldId = insidePortal[player]
@@ -227,6 +248,7 @@ function PortalService.start(portals: { Portal })
 	Players.PlayerRemoving:Connect(function(player)
 		insidePortal[player] = nil
 		lastTeleport[player] = nil
+		lastPreview[player] = nil
 	end)
 
 	task.spawn(function()

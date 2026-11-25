@@ -13,6 +13,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PetIcon = require(script.Parent.PetIcon)
 local Lang = require(script.Parent.Lang)
+local SideBar = require(script.Parent.SideBar)
 local UiKit = require(script.Parent.UiKit)
 
 type PetEntry = { uid: number, petId: string, equipped: boolean }
@@ -55,9 +56,18 @@ function PetMenu.start()
 	gui.DisplayOrder = 5
 	UiKit.autoScale(gui)
 
-	-- Left side, first slot of the HUD grid: big round button.
-	local openButton = UiKit.sideButton("pets", Lang.t("side.pets"), UiKit.ORANGE)
-	openButton.Name = "PetsButton"
+	-- Side bar tile (first place), with the first pet of world 1 as live 3D icon.
+	local toggle: () -> () = function() end
+	SideBar.register({
+		id = "pets",
+		order = 10,
+		text = Lang.t("side.pets"),
+		color = UiKit.ORANGE,
+		icon = { model = "DoughHamster", shape = "pet" },
+		open = function()
+			toggle()
+		end,
+	})
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
@@ -313,7 +323,7 @@ function PetMenu.start()
 	end
 	UiKit.registerMenu("pets", close)
 
-	openButton.Activated:Connect(function()
+	toggle = function()
 		if panel.Visible then
 			close()
 		else
@@ -321,7 +331,7 @@ function PetMenu.start()
 			UiKit.menuOpened("pets")
 			UiKit.pop(panel, 0.8)
 		end
-	end)
+	end
 	closeButton.Activated:Connect(close)
 
 	-- "All slots taken" feedback right in the menu.

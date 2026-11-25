@@ -35,7 +35,7 @@ Net.event("UnlockWorld")
 for _, name in { "OpenEgg", "EggOpened", "EquipPet", "UnequipPet" } do
 	Net.event(name)
 end
-for _, name in { "PortalOpen", "PortalClose", "Teleport" } do
+for _, name in { "PortalOpen", "PortalClose", "PortalPreview", "Teleport" } do
 	Net.event(name)
 end
 for _, name in { "ShopOpen", "ShopUpdate", "ShopClose", "BuyUpgrade", "ShopPurchase", "BuyPotion" } do

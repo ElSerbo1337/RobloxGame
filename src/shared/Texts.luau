@@ -72,6 +72,11 @@ Texts.strings = {
 	["side.giftsTomorrow"] = { de = "Morgen", en = "Tomorrow" },
 	["side.giftsNote"] = { de = "Neu! Geschenke fürs Spielen", en = "New! Gifts for playing" },
 	["side.rebirthNote"] = { de = "Neu! Mehr Münzen", en = "New! More coins" },
+	-- Side bar (#75)
+	["side.calendar"] = { de = "Kalender", en = "Calendar" },
+	["side.worlds"] = { de = "Welten", en = "Worlds" },
+	["side.more"] = { de = "Mehr", en = "More" },
+	["side.moreTitle"] = { de = "Mehr Menüs", en = "More menus" },
 
 	-- Messages (toasts); notify.<Kind> matches the Notify kinds the server sends
 	-- Shown in the newly chosen language when the player switches languages in the menu.
@@ -315,6 +320,8 @@ Texts.strings = {
 	},
 	["portal.locked"] = { de = "🔒 {world} – {price} Münzen", en = "🔒 {world} – {price} coins" },
 	["portal.here"] = { de = "📍 {world} (du bist hier)", en = "📍 {world} (you are here)" },
+	-- Opened from the side bar outside a portal (#75): the list is for viewing only.
+	["portal.preview"] = { de = "Zum Reisen in ein Portal stellen", en = "Step into a portal to travel" },
 
 	-- Phone, delivery order and order card
 	["delivery.ring"] = { de = "📞 RING!", en = "📞 RING!" },

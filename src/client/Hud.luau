@@ -1,6 +1,6 @@
 --!strict
--- HUD: coins and gems at the top, pizza fill level and auto-collect switch at the bottom,
--- short messages in between. Reads the replicated player attributes (Coins,
+-- HUD: coins and gems at the top centre with the pizza fill level right below (#75),
+-- short messages under them, the auto-collect switch at the bottom. Reads the replicated player attributes (Coins,
 -- PizzaCount, PizzaCapacity, AutoCollect) and Notify events. The switch only
 -- sends a wish to the server; its look follows the replicated attribute.
 
@@ -139,29 +139,29 @@ function Hud.start(): GuiObject
 	gemsText.Size = UDim2.new(1, -74, 0, 44)
 	gemsText.TextXAlignment = Enum.TextXAlignment.Left
 
-	-- Pizza fill level (bottom center)
+	-- Pizza fill level (top center, right below coins and gems: same layer, #75)
 	local pizza = Instance.new("Frame")
 	pizza.Name = "PizzaFill"
 	UiKit.place(pizza, "pizzaBar")
 	pizza.BackgroundColor3 = CREAM
-	corner(pizza, 32)
+	corner(pizza, 24)
 	stroke(pizza)
-	pizza.Parent = gui
+	pizza.Parent = currency
 
 	local bar = Instance.new("Frame")
 	bar.Name = "Bar"
-	bar.Position = UDim2.fromOffset(8, 8)
-	bar.Size = UDim2.new(0, 0, 1, -16)
+	bar.Position = UDim2.fromOffset(6, 6)
+	bar.Size = UDim2.new(0, 0, 1, -12)
 	bar.BackgroundColor3 = Color3.fromRGB(240, 160, 60)
-	corner(bar, 24)
+	corner(bar, 18)
 	bar.Parent = pizza
 
 	local pizzaText = label(pizza, Lang.t("hud.pizza", { count = 0, capacity = 2 }))
-	pizzaText.Position = UDim2.fromOffset(12, 10)
-	pizzaText.Size = UDim2.new(1, -24, 1, -20)
+	pizzaText.Position = UDim2.fromOffset(12, 7)
+	pizzaText.Size = UDim2.new(1, -24, 1, -14)
 	pizzaText.ZIndex = 2
 
-	-- Auto-collect switch (bottom center, above the pizza fill). Big for thumbs.
+	-- Auto-collect switch (bottom center). Big for thumbs.
 	local autoButton = Instance.new("TextButton")
 	autoButton.Name = "AutoCollect"
 	UiKit.place(autoButton, "autoCollect")
@@ -181,7 +181,7 @@ function Hud.start(): GuiObject
 	padding.Parent = autoButton
 	autoButton.Parent = gui
 
-	-- Short messages (below the coins)
+	-- Short messages (below the pizza bar)
 	local toast = label(gui, "")
 	toast.Name = "Toast"
 	UiKit.place(toast, "toast")
@@ -241,7 +241,7 @@ function Hud.start(): GuiObject
 		pizzaText.Text = Lang.t(if isFull then "hud.pizzaFull" else "hud.pizza", { count = count, capacity = capacity })
 		bar.BackgroundColor3 = if isFull then FULL else Color3.fromRGB(240, 160, 60)
 		TweenService:Create(bar, TweenInfo.new(0.2), {
-			Size = UDim2.new(math.clamp(count / capacity, 0, 1), -16 * math.clamp(count / capacity, 0, 1), 1, -16),
+			Size = UDim2.new(math.clamp(count / capacity, 0, 1), -12 * math.clamp(count / capacity, 0, 1), 1, -12),
 		}):Play()
 	end
 

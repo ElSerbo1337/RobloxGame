@@ -4,6 +4,8 @@
 -- locked ones are grey with their price (worlds behind rebirths also "Ab X Rebirths",
 -- #43) and cannot be chosen. Buttons only send the wish (Teleport); the server checks
 -- again and moves the character.
+-- The side bar tile "Welten" (#75) asks for the same list from anywhere (PortalPreview);
+-- outside a portal it is for viewing only ("Zum Reisen in ein Portal stellen").
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -11,6 +13,7 @@ local Players = game:GetService("Players")
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Lang = require(script.Parent.Lang)
+local SideBar = require(script.Parent.SideBar)
 local UiKit = require(script.Parent.UiKit)
 
 type PortalEntry = GameRules.PortalEntry
@@ -53,6 +56,14 @@ function PortalMenu.start()
 	title.Size = UDim2.new(1, -120, 0, 52)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 
+	-- Viewing only (opened from the side bar outside a portal).
+	local previewHint = UiKit.label(panel, Lang.t("portal.preview"))
+	previewHint.Position = UDim2.fromOffset(20, 62)
+	previewHint.Size = UDim2.new(1, -120, 0, 22)
+	previewHint.TextXAlignment = Enum.TextXAlignment.Left
+	previewHint.TextColor3 = Color3.fromRGB(110, 80, 55)
+	previewHint.Visible = false
+
 	local closeButton = UiKit.button(panel, "X", UiKit.RED)
 	closeButton.AnchorPoint = Vector2.new(1, 0)
 	closeButton.Position = UDim2.new(1, -12, 0, 10)
@@ -85,8 +96,9 @@ function PortalMenu.start()
 		end
 	end
 
-	local function render(currentWorldId: string, entries: { PortalEntry })
+	local function render(currentWorldId: string, entries: { PortalEntry }, preview: boolean)
 		clear()
+		previewHint.Visible = preview
 		for index, entry in entries do
 			local here = entry.worldId == currentWorldId
 			local text, color
@@ -115,7 +127,7 @@ function PortalMenu.start()
 			row.LayoutOrder = index
 			row.Size = UDim2.new(1, 0, 0, ROW_HEIGHT)
 			row.TextXAlignment = Enum.TextXAlignment.Left
-			if entry.unlocked and not here then
+			if entry.unlocked and not here and not preview then
 				row.Activated:Connect(function()
 					UiKit.pop(row)
 					teleport:FireServer(entry.worldId)
@@ -135,31 +147,62 @@ function PortalMenu.start()
 	-- portal. Once closed ("X" or another menu opening), it stays closed until the player
 	-- leaves the portal (PortalClose).
 	local dismissed = false
+	-- Showing the viewing-only list (side bar) rather than a portal's menu.
+	local previewing = false
+	-- The side bar tile asked for the list: show the next answer even if dismissed.
+	local requested = false
 
 	local function close()
 		if gui.Enabled then
 			gui.Enabled = false
-			dismissed = true
+			dismissed = not previewing
 		end
 	end
 	UiKit.registerMenu("portal", close)
 
-	Net.event("PortalOpen").OnClientEvent:Connect(function(currentWorldId: string, entries: { PortalEntry })
-		if dismissed then
-			return
-		end
-		local wasOpen = gui.Enabled
-		render(currentWorldId, entries)
-		gui.Enabled = true
-		if not wasOpen then
-			UiKit.menuOpened("portal")
-			UiKit.pop(panel, 0.85)
-		end
-	end)
+	local portalPreview = Net.event("PortalPreview")
+	SideBar.register({
+		id = "worlds",
+		order = 60,
+		text = Lang.t("side.worlds"),
+		color = PURPLE,
+		icon = { model = "PortalArch", shape = "portal" },
+		open = function()
+			if gui.Enabled then
+				close()
+				return
+			end
+			requested = true
+			portalPreview:FireServer()
+		end,
+	})
+
+	Net.event("PortalOpen").OnClientEvent
+		:Connect(function(currentWorldId: string, entries: { PortalEntry }, preview: boolean?)
+			if dismissed and not requested then
+				return
+			end
+			if preview and not requested and not (gui.Enabled and previewing) then
+				return
+			end
+			if requested then
+				requested = false
+				dismissed = false
+			end
+			local wasOpen = gui.Enabled
+			previewing = preview == true
+			render(currentWorldId, entries, previewing)
+			gui.Enabled = true
+			if not wasOpen then
+				UiKit.menuOpened("portal")
+				UiKit.pop(panel, 0.85)
+			end
+		end)
 
 	Net.event("PortalClose").OnClientEvent:Connect(function()
 		gui.Enabled = false
 		dismissed = false
+		previewing = false
 	end)
 
 	closeButton.Activated:Connect(close)

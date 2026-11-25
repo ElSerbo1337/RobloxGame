@@ -4,7 +4,8 @@
 --   "Abholen" button while today's reward is still open.
 -- * Opens by itself once per German day on join: when the server sets the attribute
 --   LoginCalendarAutoOpen (after the tutorial, so it does not get in its way).
---   LoginCalendarMenu.open() opens it by hand (button in the gifts menu).
+--   LoginCalendarMenu.open() opens it by hand (button in the gifts menu); the side bar
+--   tile "Kalender" (#75) opens it too and shows a red dot while today's reward is ready.
 -- Reads the attribute LoginCalendar (JSON, see Net / LoginCalendarService).
 -- "Abholen" only sends the wish ClaimLoginReward; the server decides and answers
 -- LoginRewardResult.
@@ -17,6 +18,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
 local Lang = require(script.Parent.Lang)
+local SideBar = require(script.Parent.SideBar)
 local UiKit = require(script.Parent.UiKit)
 
 local DAY_COUNT = #GameConfig.loginCalendar
@@ -187,12 +189,12 @@ function LoginCalendarMenu.start()
 	local function sync()
 		current = readCalendar(player)
 		update()
+		SideBar.setBadge("calendar", current.claimable)
 		if statusId == 0 or status.TextColor3 == HINT_COLOR then
 			status.Text = defaultStatus()
 		end
 	end
 	player:GetAttributeChangedSignal("LoginCalendar"):Connect(sync)
-	sync()
 
 	local function close()
 		panel.Visible = false
@@ -205,6 +207,23 @@ function LoginCalendarMenu.start()
 		UiKit.menuOpened("calendar")
 		UiKit.pop(panel)
 	end
+
+	-- Side bar tile (#75): red dot while today's reward is ready.
+	SideBar.register({
+		id = "calendar",
+		order = 40,
+		text = Lang.t("side.calendar"),
+		color = Color3.fromRGB(70, 170, 230),
+		icon = { shape = "calendar" },
+		open = function()
+			if panel.Visible then
+				close()
+			else
+				openWindow()
+			end
+		end,
+	})
+	sync()
 
 	closeButton.Activated:Connect(close)
 	claimButton.Activated:Connect(function()

@@ -1,7 +1,7 @@
 --!strict
 -- Play time gifts on the client:
--- * Round "Geschenke" button on the left (HUD slot "gifts") with a countdown to the next
---   gift and a red "!" badge while one is ready. It pulses (with a short note) until the
+-- * Side bar tile "Geschenke" (#75) with a countdown to the next gift as caption and a
+--   red dot while one is ready. It pulses (with a short note) until the
 --   player opened it once (hint "Gifts", remembered on the server), starting after the tutorial.
 -- * The menu lists every gift of the day: play time needed, rewards and a button
 --   ("Abholen" when ready, the time left while waiting, a tick once claimed), and a
@@ -20,10 +20,12 @@ local LoginCalendarMenu = require(script.Parent.LoginCalendarMenu)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Sounds = require(script.Parent.Sounds)
 local Lang = require(script.Parent.Lang)
+local SideBar = require(script.Parent.SideBar)
 local UiKit = require(script.Parent.UiKit)
 
 local HINT_ID = "Gifts"
 local BUTTON_COLOR = Color3.fromRGB(235, 90, 140)
+local TILE_ID = "gifts"
 local ROW_HEIGHT = 64
 local ROW_GAP = 8
 local HEADER_HEIGHT = 124
@@ -71,37 +73,19 @@ function GiftMenu.start()
 	gui.DisplayOrder = 5
 	UiKit.autoScale(gui)
 
-	-- Left side, HUD slot "gifts": title and countdown inside the circle.
-	local openButton = UiKit.sideButton("gifts", "", BUTTON_COLOR)
-	openButton.Name = "GiftsButton"
-	local buttonTitle = UiKit.label(openButton, Lang.t("side.gifts"))
-	buttonTitle.Size = UDim2.fromScale(1, 0.42)
-	buttonTitle.Position = UDim2.fromScale(0, 0.08)
-	buttonTitle.TextColor3 = UiKit.CREAM
-	UiKit.stroke(buttonTitle, 2)
-	local countdown = UiKit.label(openButton, "")
-	countdown.Size = UDim2.fromScale(1, 0.4)
-	countdown.Position = UDim2.fromScale(0, 0.52)
-	countdown.TextColor3 = UiKit.CREAM
-	UiKit.stroke(countdown, 2)
-	-- UiKit.stroke adds a border stroke; text on colour needs the contextual one.
-	for _, textLabel in { buttonTitle, countdown } do
-		local stroke = textLabel:FindFirstChildOfClass("UIStroke") :: UIStroke
-		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
-	end
-
-	local badge = UiKit.label(openButton, "!")
-	badge.Name = "Badge"
-	badge.AnchorPoint = Vector2.new(0.5, 0.5)
-	badge.Position = UDim2.new(1, -6, 0, 6)
-	badge.Size = UDim2.fromOffset(36, 36)
-	badge.BackgroundTransparency = 0
-	badge.BackgroundColor3 = UiKit.RED
-	badge.TextColor3 = UiKit.CREAM
-	badge.ZIndex = 3
-	badge.Visible = false
-	UiKit.corner(badge, 18)
-	UiKit.stroke(badge, 2)
+	-- Side bar tile: the countdown to the next gift is its caption, a red dot while one
+	-- is ready.
+	local toggle: () -> () = function() end
+	local openButton = SideBar.register({
+		id = TILE_ID,
+		order = 30,
+		text = Lang.t("side.gifts"),
+		color = BUTTON_COLOR,
+		icon = { shape = "gift" },
+		open = function()
+			toggle()
+		end,
+	})
 
 	-- Short note next to the button while it is new.
 	local note = UiKit.label(openButton, Lang.t("side.giftsNote"))
@@ -208,13 +192,13 @@ function GiftMenu.start()
 	end
 
 	local function updateButton()
-		badge.Visible = current.ready > 0
+		SideBar.setBadge(TILE_ID, current.ready > 0)
 		if current.ready > 0 then
-			countdown.Text = Lang.t("side.giftsReady")
+			SideBar.setCaption(TILE_ID, Lang.t("side.giftsReady"))
 		elseif current.nextSeconds >= 0 then
-			countdown.Text = clockText(current.nextSeconds - passed())
+			SideBar.setCaption(TILE_ID, clockText(current.nextSeconds - passed()))
 		else
-			countdown.Text = Lang.t("side.giftsTomorrow")
+			SideBar.setCaption(TILE_ID, Lang.t("side.giftsTomorrow"))
 		end
 	end
 
@@ -304,7 +288,7 @@ function GiftMenu.start()
 	end
 	UiKit.registerMenu("gifts", close)
 
-	openButton.Activated:Connect(function()
+	toggle = function()
 		UiKit.pop(openButton)
 		if panel.Visible then
 			close()
@@ -321,7 +305,7 @@ function GiftMenu.start()
 				hintSeen:FireServer(HINT_ID)
 			end
 		end
-	end)
+	end
 	closeButton.Activated:Connect(close)
 
 	Net.event("GiftResult").OnClientEvent:Connect(function(ok: boolean, indexOrReason: any, rewards: { Reward })

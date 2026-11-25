@@ -61,7 +61,7 @@ local function buildButton(player: Player): (ScreenGui, TextButton)
 
 	local button = Instance.new("TextButton")
 	button.Name = "Unlock"
-	-- Right of the pizza bar, clear of auto-collect and the phone jump button (HUD grid).
+	-- Right of auto-collect (bottom middle), clear of the phone jump button (HUD grid).
 	UiKit.place(button, "unlockButton")
 	button.BackgroundColor3 = GREEN
 	button.AutoButtonColor = true
