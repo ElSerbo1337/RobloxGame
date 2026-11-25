@@ -4,7 +4,8 @@
 -- docs/pc-todo.md, #15). Rojo leaves that folder alone, it is saved with the place.
 -- Every function here falls back gracefully: if a model is missing, nothing happens
 -- and the callers keep their simple placeholder parts.
--- Models may also sit in subfolders of Models (e.g. Models/Pets, Models/Deco).
+-- Models may also sit in subfolders of Models (e.g. Models/Pets, Models/Deco), and the
+-- toppings, pets and egg of a new world (#82 on) inside its world model in Models/Worlds.
 -- Pets (tools/blender/build_pets.py), eggs (tools/blender/build_eggs.py) and the toppings
 -- of worlds 2-7 (tools/blender/build_toppings.py, #18) carry their colour in the part name
 -- instead of a palette entry: "Pet_F2D49B", "Pet_FF7A1A_Neon", "Egg_FFC83A_Metal" or
@@ -173,6 +174,19 @@ local function source(name: string): Instance?
 	local direct = models:FindFirstChild(name)
 	if direct then
 		return direct
+	end
+	-- One FBX per new world (#82, tools/blender/build_world.py): imported as one Model
+	-- per world into Models/Worlds, with a Model per topping/pet/egg (named after its id)
+	-- inside. Parts there are named after their colour ("Pet_F2D49B"), never after an id.
+	local worlds = models:FindFirstChild("Worlds")
+	if worlds then
+		for _, pack in worlds:GetChildren() do
+			for _, child in pack:GetDescendants() do
+				if child.Name == name and (child:IsA("Model") or child:IsA("BasePart")) then
+					return child
+				end
+			end
+		end
 	end
 	-- Models sorted into subfolders (Models/Pets/...): only folders are searched, so a
 	-- part called like a model (e.g. "Leaves" inside "Tree") never counts.

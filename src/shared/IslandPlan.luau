@@ -27,6 +27,11 @@ export type PartSpec = {
 	collide: boolean,
 	transparency: number?,
 	role: string?,
+	-- Scripted world decoration (#82, theme.deco): counted against the theme's part
+	-- budget and left out when the feature switch worldDeco is off.
+	deco: boolean?,
+	-- Optional detail: hidden on graphics "Low" (tag GraphicsDetail, #76). Never collides.
+	detail: boolean?,
 }
 
 export type ModelSpec = { model: string, width: number, position: { number }, yaw: number, collide: boolean }
@@ -155,6 +160,8 @@ type Props = {
 	collide: boolean?,
 	transparency: number?,
 	role: string?,
+	deco: boolean?,
+	detail: boolean?,
 }
 
 local function spec(shape: string, size: V, cframe: { number }, props: Props): PartSpec
@@ -165,9 +172,11 @@ local function spec(shape: string, size: V, cframe: { number }, props: Props): P
 		cframe = cframe,
 		color = props.color,
 		material = props.material or "SmoothPlastic",
-		collide = props.collide ~= false,
+		collide = props.collide ~= false and props.detail ~= true,
 		transparency = props.transparency,
 		role = props.role,
+		deco = props.deco,
+		detail = props.detail,
 	}
 end
 
@@ -233,7 +242,8 @@ end
 -- default "Hedge" is built in shell): "Fence" (farm: posts and two rails), "Rocks"
 -- (beach: round boulders), "IceEdge" (icebergs: ice blocks with crystal spikes),
 -- "Basalt" (volcano: basalt columns), "Peppermint" (candy land: icing with standing
--- peppermints and gumdrops) or "Moonbase" (space: low panels with glowing post tips).
+-- peppermints and gumdrops), "Moonbase" (space: low panels with glowing post tips) or
+-- "CoralReef" (Atlantis: pale reef rocks with coral knobs, #82).
 -- `inward` points into the island; everything stays low so the view stays open.
 local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: V, i: number, theme: any)
 	local dir = sub(q, p)
@@ -271,6 +281,28 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 					role = "Rim",
 				})
 			)
+		end
+	elseif style == "CoralReef" then
+		-- Atlantis (#82): low reef of pale rocks with a coral knob in the theme's
+		-- coral colours (theme.corals) on every second rock.
+		local corals = theme.corals or { theme.rim }
+		local stones = math.max(1, math.floor(len / 5 + 0.5))
+		for k = 1, stones do
+			local t = (k - 0.5) / stones
+			local d = 2.4 + noise(i, k) * 1.4
+			local at = add(add(p, scale(dir, t)), add(inset, v(0, d * 0.25, 0)))
+			table.insert(parts, ball(at, d, { name = "ReefRock", color = theme.cliffLight, role = "Rim" }))
+			if (i + k) % 2 == 0 then
+				table.insert(
+					parts,
+					ball(add(at, v(0, d * 0.45, 0)), d * 0.55, {
+						name = "ReefCoral",
+						color = corals[(i + k) % #corals + 1],
+						collide = false,
+						role = "Rim",
+					})
+				)
+			end
 		end
 	elseif style == "IceEdge" then
 		local h = 1.8 + noise(i, 3) * 1.4
@@ -1496,6 +1528,98 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		end
 	end
 
+	-- World 8 landmark (#82): a sunken temple on the terrace - a round stone floor with a
+	-- ring of columns (two of them broken), an architrave over the front pair and a giant
+	-- glowing pearl in an open clam shell in the middle (the island's only Glow part there).
+	local function sunkenTemple(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local stone = theme.ruin or theme.cliffLight
+		local stoneDark = theme.ruinDark or theme.cliff
+		table.insert(
+			parts,
+			disc(v(at[1], baseY + 0.6, at[3]), 22, 1.2, { name = "TempleFloor", color = stone, role = "Landmark" })
+		)
+		table.insert(
+			parts,
+			disc(v(at[1], baseY + 1.5, at[3]), 15, 0.6, { name = "TempleStep", color = stoneDark, role = "Landmark" })
+		)
+		local floorTop = baseY + 1.2
+		local columns = 8
+		for k = 1, columns do
+			local angle = (k - 0.5) / columns * math.pi * 2
+			local p = v(at[1] + math.cos(angle) * 9, floorTop, at[3] + math.sin(angle) * 9)
+			local broken = k == 3 or k == 6
+			local height = if broken then 4 + noise(k, 3) * 2 else 11
+			table.insert(
+				parts,
+				spec("Block", v(2.4, 0.8, 2.4), yawed(add(p, v(0, 0.4, 0)), angle), {
+					name = "TempleColumnBase",
+					color = stoneDark,
+					role = "Landmark",
+				})
+			)
+			table.insert(
+				parts,
+				disc(add(p, v(0, 0.8 + height / 2, 0)), 1.6, height, {
+					name = "TempleColumn",
+					color = stone,
+					role = "Landmark",
+				})
+			)
+			if not broken then
+				table.insert(
+					parts,
+					spec("Block", v(2.6, 0.8, 2.6), yawed(add(p, v(0, 0.8 + height + 0.4, 0)), angle), {
+						name = "TempleCapital",
+						color = stoneDark,
+						role = "Landmark",
+					})
+				)
+			end
+		end
+		-- Architrave over the two columns facing the path (+X side, k = 1 and 8).
+		local a1, a2 = (0.5 / columns) * math.pi * 2, (7.5 / columns) * math.pi * 2
+		local top = floorTop + 0.8 + 11 + 0.8
+		table.insert(
+			parts,
+			beam(
+				v(at[1] + math.cos(a1) * 9, top + 0.6, at[3] + math.sin(a1) * 9),
+				v(at[1] + math.cos(a2) * 9, top + 0.6, at[3] + math.sin(a2) * 9),
+				2.8,
+				1.2,
+				{ name = "TempleArchitrave", color = stone, role = "Landmark" }
+			)
+		)
+		-- Open clam shell with the pearl.
+		local shell = theme.shell or { 255, 214, 226 }
+		table.insert(
+			parts,
+			spec("Ball", v(7, 1.6, 6), yawed(v(at[1], floorTop + 1.4, at[3]), 0), {
+				name = "TempleClam",
+				color = shell,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			spec("Ball", v(7, 1.4, 6), along(v(at[1] - 1.6, floorTop + 3.6, at[3]), v(0.55, 1, 0)), {
+				name = "TempleClamLid",
+				color = shell,
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			ball(v(at[1] + 0.4, floorTop + 3, at[3]), 2.6, {
+				name = "TemplePearl",
+				color = theme.glow or { 230, 248, 255 },
+				material = "Neon",
+				collide = false,
+				role = "Glow",
+			})
+		)
+	end
+
 	local LANDMARKS = {
 		GiantPizza = giantPizza,
 		Windmill = windmill,
@@ -1504,6 +1628,7 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		Volcano = volcano,
 		Cake = cake,
 		Rocket = rocket,
+		SunkenTemple = sunkenTemple,
 	}
 
 	local function localToWorld(center: V, p: { number }): V
@@ -1914,6 +2039,295 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 
 	-- A world-style island at `center`. `index` seeds the irregular shapes (world index,
 	-- or 100 + slot for event islands); openBack/openFront = bridge openings on the rim.
+	-- ---------------------------------------------------------------- scripted deco (#82)
+	-- Theme-driven decoration of the new worlds, built from a few reusable kits instead of
+	-- imported models (works without any import). theme.deco = { budget, kits = { { kit,
+	-- count, colors?, size = { min, max } } } }; kits: "Coral" (branchy or fan coral),
+	-- "Column" (standing, broken or fallen ruin column), "Kelp" (swaying strands),
+	-- "Bubbles" (invisible emitter part, IslandRole "Bubbles"), "Lamp" (glowing orb on a
+	-- stone, role Glow = small light; keep few). Spots are taken like trees (clear of the
+	-- field, path, stations, pond and terraces), every part is marked `deco` and counted
+	-- against `budget`; optional bits are `detail` (hidden on graphics "Low").
+	local DECO_KITS: { [string]: (at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any) -> { PartSpec } } =
+		{}
+
+	function DECO_KITS.Coral(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local color = colors[(k - 1) % #colors + 1]
+		local tip = colors[k % #colors + 1]
+		table.insert(
+			parts,
+			disc(add(at, v(0, size * 0.1, 0)), size * 0.55, size * 0.2, {
+				name = "CoralRock",
+				color = theme.cliffLight,
+				collide = false,
+				role = "Coral",
+				deco = true,
+			})
+		)
+		if k % 3 == 0 then
+			-- Fan coral: a thin upright fan with a lighter rim on top.
+			table.insert(
+				parts,
+				spec("Ball", v(size, size * 0.9, size * 0.14), yawed(add(at, v(0, size * 0.55, 0)), yaw), {
+					name = "CoralFan",
+					color = color,
+					collide = false,
+					role = "Coral",
+					deco = true,
+				})
+			)
+			return parts
+		end
+		local branches = 2 + k % 2
+		for b = 1, branches do
+			local angle = yaw + (b - 1) / branches * math.pi * 2
+			local lean = 0.25 + noise(k, b) * 0.2
+			local from = add(at, v(0, size * 0.15, 0))
+			local to = add(at, v(math.cos(angle) * size * lean, size * (0.7 + noise(b, k) * 0.35), math.sin(angle) * size * lean))
+			table.insert(
+				parts,
+				beam(from, to, size * 0.16, size * 0.16, {
+					name = "CoralBranch",
+					color = color,
+					collide = false,
+					role = "Coral",
+					deco = true,
+				})
+			)
+			table.insert(
+				parts,
+				ball(to, size * 0.26, {
+					name = "CoralTip",
+					color = tip,
+					material = if b == 1 and k % 4 == 1 then "Neon" else "SmoothPlastic",
+					role = "Coral",
+					deco = true,
+					detail = true,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.Column(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local stone = colors[1] or theme.cliffLight
+		local dark = colors[2] or theme.cliff
+		local d = size * 0.22
+		table.insert(
+			parts,
+			spec("Block", v(d * 1.5, size * 0.08, d * 1.5), yawed(add(at, v(0, size * 0.04, 0)), yaw), {
+				name = "RuinBase",
+				color = dark,
+				role = "Ruin",
+				deco = true,
+			})
+		)
+		local variant = k % 3
+		if variant == 2 then
+			-- Fallen: the shaft lies beside its base, a little sunk into the sand.
+			local c, sn = math.cos(yaw), math.sin(yaw)
+			table.insert(
+				parts,
+				spec(
+					"Cylinder",
+					v(size * 0.8, d, d),
+					yawed(add(at, v(c * size * 0.5, d * 0.4, -sn * size * 0.5)), yaw),
+					{ name = "RuinFallen", color = stone, role = "Ruin", deco = true }
+				)
+			)
+			return parts
+		end
+		local height = if variant == 0 then size else size * (0.45 + noise(k, 9) * 0.2)
+		table.insert(
+			parts,
+			disc(add(at, v(0, size * 0.08 + height / 2, 0)), d, height, {
+				name = "RuinColumn",
+				color = stone,
+				role = "Ruin",
+				deco = true,
+			})
+		)
+		if variant == 0 then
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(d * 1.6, size * 0.08, d * 1.6),
+					yawed(add(at, v(0, size * 0.12 + height, 0)), yaw),
+					{ name = "RuinCapital", color = dark, role = "Ruin", deco = true, detail = true }
+				)
+			)
+		else
+			-- Broken: a chunk of the shaft lies next to it.
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(d * 0.9, d * 0.7, d * 1.1),
+					yawed(add(at, v(math.sin(yaw) * d * 1.6, d * 0.35, math.cos(yaw) * d * 1.6)), yaw + 0.6),
+					{ name = "RuinChunk", color = stone, role = "Ruin", deco = true, detail = true }
+				)
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.Kelp(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local strands = 2 + k % 2
+		for b = 1, strands do
+			local color = colors[(k + b) % #colors + 1]
+			local angle = yaw + b * 2.1
+			local base = add(at, v(math.cos(angle) * size * 0.15, 0, math.sin(angle) * size * 0.15))
+			local lean = (noise(k, b) - 0.5) * size * 0.35
+			local top = add(base, v(math.cos(angle) * lean, size * (0.75 + noise(b, k) * 0.4), math.sin(angle) * lean))
+			table.insert(
+				parts,
+				beam(base, top, size * 0.12, size * 0.04, {
+					name = "Kelp",
+					color = color,
+					role = "Kelp",
+					deco = true,
+					detail = b > 1,
+					collide = false,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.Bubbles(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return {
+			spec("Block", v(size, 0.4, size), yawed(add(at, v(0, 0.4, 0)), yaw), {
+				name = "BubbleVent",
+				color = colors[1] or { 210, 240, 255 },
+				transparency = 1,
+				collide = false,
+				role = "Bubbles",
+				deco = true,
+			}),
+		}
+	end
+
+	function DECO_KITS.Lamp(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return {
+			disc(add(at, v(0, size * 0.3, 0)), size * 0.7, size * 0.6, {
+				name = "LampStone",
+				color = theme.ruinDark or theme.cliff,
+				role = "Lamp",
+				deco = true,
+			}),
+			ball(add(at, v(0, size * 0.6 + size * 0.3, 0)), size * 0.6, {
+				name = "LampOrb",
+				color = colors[1] or theme.glow,
+				material = "Neon",
+				role = "Glow",
+				deco = true,
+				detail = true,
+			}),
+		}
+	end
+
+	-- Places theme.deco on a world island (after the trees, sharing their keep-out rules).
+	local function scatterDeco(
+		island: Island,
+		keepOut: (x: number, z: number, r: number) -> boolean,
+		seed: number,
+		theme: any
+	)
+		local deco = theme.deco
+		if deco == nil then
+			return
+		end
+		local outline = island.outline
+		local center = island.center
+		-- Candidate spots: rings inside the rim, in a fixed pseudo-random order.
+		local spots = {}
+		for ring, inset in { 6, 14, 24, 36, 50 } do
+			for i, p in outline do
+				local dx, dz = p[1] - center[1], p[2] - center[3]
+				local d = math.sqrt(dx * dx + dz * dz)
+				local x = p[1] - dx / d * inset + (noise(i, seed + ring) - 0.5) * 6
+				local z = p[2] - dz / d * inset + (noise(seed + ring, i) - 0.5) * 6
+				table.insert(spots, { x = x, z = z, order = noise(i * 7 + ring, seed) })
+			end
+		end
+		-- Plus a loose grid over the whole island (between the field and the rim).
+		for gx = -half + 6, half - 6, 9 do
+			for gz = -half + 6, half - 6, 9 do
+				local x = center[1] + gx + (noise(gx, gz + seed) - 0.5) * 5
+				local z = center[3] + gz + (noise(gz + seed, gx) - 0.5) * 5
+				table.insert(spots, { x = x, z = z, order = noise(gx * 3 + gz, seed + 1) })
+			end
+		end
+		table.sort(spots, function(a, b)
+			return a.order < b.order
+		end)
+		local placed: { { x: number, z: number, r: number } } = {}
+		local used = 0
+		local cursor = 1
+		local function free(x: number, z: number, r: number): boolean
+			if keepOut(x, z, r) then
+				return false
+			end
+			-- The whole piece stands on the island (fallen columns and branches reach out).
+			for _, o in { { 0, 0 }, { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } } do
+				if not IslandPlan.isInsideOutline(outline, x + o[1] * (r + 2), z + o[2] * (r + 2)) then
+					return false
+				end
+			end
+			for _, other in island.models do
+				local ox, oz = other.position[1], other.position[3]
+				if math.sqrt((ox - x) ^ 2 + (oz - z) ^ 2) < other.width * 0.45 + r then
+					return false
+				end
+			end
+			for _, other in placed do
+				if math.sqrt((other.x - x) ^ 2 + (other.z - z) ^ 2) < other.r + r + 0.5 then
+					return false
+				end
+			end
+			return true
+		end
+		for kitIndex, item in deco.kits do
+			local build = DECO_KITS[item.kit]
+			assert(build, `unknown deco kit {item.kit}`)
+			local placedOfKit = 0
+			local tries = 0
+			while placedOfKit < item.count and cursor <= #spots and tries < #spots do
+				tries += 1
+				local spot = spots[cursor]
+				cursor += 1
+				local k = placedOfKit + 1
+				local size = lerp(item.size[1], item.size[2], noise(k * 3 + kitIndex, seed))
+				local r = size * 0.42
+				if free(spot.x, spot.z, r) then
+					local parts = build(
+						v(spot.x, groundY, spot.z),
+						size,
+						noise(k, seed + kitIndex) * math.pi * 2,
+						item.colors or {},
+						k,
+						theme
+					)
+					if used + #parts > deco.budget then
+						return
+					end
+					for _, part in parts do
+						table.insert(island.parts, part)
+					end
+					used += #parts
+					placedOfKit += 1
+					table.insert(placed, { x = spot.x, z = spot.z, r = r })
+				end
+			end
+			-- Every kit starts over at the first spots that were too close or blocked.
+			cursor = 1
+		end
+	end
+
 	local function buildIsland(center: V, index: number, world: any, openFront: boolean, openBack: boolean): Island
 		local island = newIsland("world", center)
 		local theme = themeOf(world.id)
@@ -2117,7 +2531,10 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 			end
 			return false
 		end
-		scatterTrees(island, keepOut, index * 13, theme)
+		if theme.trees ~= false then
+			scatterTrees(island, keepOut, index * 13, theme)
+		end
+		scatterDeco(island, keepOut, index * 17, theme)
 
 		-- Bushes and flower beds along the field's long sides and around the pond.
 		local fieldHalfX = layout.field.size[1] / 2

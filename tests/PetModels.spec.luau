@@ -5,16 +5,22 @@ local fs = require("@lune/fs")
 
 local TestKit = require("./TestKit")
 local GameConfig = require("../src/shared/GameConfig")
+local WorldPacks = require("./fixtures/WorldPacks")
 
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
 local MODELS = "assets/models/pets"
 local PREVIEWS = "assets/previews/pets"
+-- Pets and eggs of the new worlds (#82 on) live in one FBX per world (WorldModels.spec).
+local packed = WorldPacks.packedAssets()
 
 describe("Pet models", function()
 	it("has a model (FBX) and a preview picture named after every pet id", function()
 		local missing = {}
 		for petId in GameConfig.pets do
+			if packed[petId] then
+				continue
+			end
 			if not fs.isFile(`{MODELS}/{petId}.fbx`) then
 				table.insert(missing, `{petId}.fbx`)
 			end
@@ -41,6 +47,9 @@ describe("Pet models", function()
 	it("has a preview sheet with all pets side by side for every egg", function()
 		local missing = {}
 		for eggId in GameConfig.eggs do
+			if packed[eggId] then
+				continue
+			end
 			if not fs.isFile(`{PREVIEWS}/{eggId}.png`) then
 				table.insert(missing, eggId)
 			end
@@ -54,6 +63,9 @@ describe("Pet models", function()
 	it("gives Neon parts only to eggs whose look has glow", function()
 		local wrong = {}
 		for eggId, egg in GameConfig.eggs do
+			if packed[eggId] then
+				continue
+			end
 			local model = fs.readFile(`assets/models/eggs/{eggId}.fbx`)
 			local hasNeon = string.find(model, "_Neon", 1, true) ~= nil
 			if hasNeon ~= (egg.look.glow == true) then

@@ -133,6 +133,14 @@ local SOUNDS: { [string]: Entry } = {
 		looped = true,
 		search = { "space", "synth", "ambient", "cosmic" },
 	},
+	-- World 8 (#82). ID still empty: the local session picks one (Creator Store, creator
+	-- "Roblox"); calm and a bit mysterious, but still cheerful.
+	Music_Atlantis = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "underwater", "ocean", "aquatic", "harp", "dreamy" },
+	},
 }
 
 -- Several pickups within this time play only one plop.

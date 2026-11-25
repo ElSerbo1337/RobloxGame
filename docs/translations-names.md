@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (77)
+## Pets (84)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -113,6 +113,17 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | StardustLion | Sternenstaub-Löwe | Stardust Lion | Nebula-Ei | Legendär | |
 | GalaxyPizzaLeviathan | Galaxie-Pizza-Leviathan | Galaxy Pizza Leviathan | Nebula-Ei | Mythisch | lang, aber genauso lang wie das Deutsche |
 
+### Welt 8 – Atlantis (#82)
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| KelpSnail | Seetang-Schnecke | Kelp Snail | Atlantis-Ei | Gewöhnlich | |
+| BubblePufferfish | Blasen-Kugelfisch | Bubble Pufferfish | Atlantis-Ei | Ungewöhnlich | |
+| CaperClownfish | Kapern-Clownfisch | Caper Clownfish | Atlantis-Ei | Selten | Kapern-Belag als Thema |
+| LanternAnglerfish | Laternen-Anglerfisch | Lantern Anglerfish | Atlantis-Ei | Episch | |
+| PearlMantaRay | Perlen-Mantarochen | Pearl Manta Ray | Atlantis-Ei | Legendär | |
+| PoseidonSeaDragon | Poseidon-Seedrache | Poseidon Sea Dragon | Atlantis-Ei | Mythisch | |
+
 ### Geheim-Pets (#81)
 
 Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro Ei).
@@ -126,8 +137,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | ObsidianDragon | Obsidian-Drache | Obsidian Dragon | Welt 5 (beide Eier) | Geheim | |
 | GingerbreadGolem | Lebkuchen-Golem | Gingerbread Golem | Welt 6 (beide Eier) | Geheim | |
 | BlackHoleCat | Schwarzloch-Katze | Black Hole Cat | Welt 7 (beide Eier) | Geheim | |
+| PearlKingOtter | Perlenkönig-Otter | Pearl King Otter | Welt 8 (Atlantis-Ei) | Geheim | #82 |
 
-## Beläge (22)
+## Beläge (25)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -153,8 +165,11 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | MoonCheese | Mond-Käse | Moon Cheese | Weltraum | |
 | StarOlives | Sternen-Oliven | Star Olives | Weltraum | |
 | AlienMushroom | Alien-Pilz | Alien Mushroom | Weltraum | |
+| Seaweed | Seetang | Seaweed | Atlantis | #82 |
+| PearlCapers | Perlen-Kapern | Pearl Capers | Atlantis | #82 |
+| SquidRings | Tintenfisch-Ringe | Squid Rings | Atlantis | #82 |
 
-## Welten (7)
+## Welten (8)
 
 | Id | Deutsch | Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- |
@@ -165,8 +180,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | Volcano | Vulkan | Volcano | |
 | CandyLand | Süßigkeitenland | Candy Land | |
 | Space | Weltraum | Space | |
+| Atlantis | Atlantis | Atlantis | #82 |
 
-## Eier (14)
+## Eier (15)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -184,6 +200,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | BonbonEgg | Bonbon-Ei | Sweets Egg | Süßigkeitenland | „Bonbon“ ist im Englischen unüblich; Alternative „Lolly Egg“ |
 | SpaceEgg | Weltraum-Ei | Space Egg | Weltraum | |
 | NebulaEgg | Nebula-Ei | Nebula Egg | Weltraum | |
+| AtlantisEgg | Atlantis-Ei | Atlantis Egg | Atlantis | #82 |
 
 ## Tränke (3)
 
@@ -206,13 +223,22 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | TripleOpen | 3 Eier auf einmal | 3 Eggs at Once | Schaltet „3 öffnen“ an jedem Ei frei | Unlocks “Open 3” at every egg | „Open 3“ muss zum Knopftext im Ei-Menü (#67 ff.) passen |
 | GoldLuck | Gold-Glück | Gold Luck | Mehr goldene Beläge (10-facher Wert) | More golden toppings (10x value) | MEGA UPDATE #94 |
 
-## Shops (3)
+## Shops (4)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
 | World1Shop | Pizza-Shop | Pizza Shop | Pizzeria-Garten | |
 | World4Shop | Großer Pizza-Shop | Big Pizza Shop | Eisberge | |
 | World7Shop | Riesiger Pizza-Shop | Giant Pizza Shop | Weltraum | |
+| World8Shop | Atlantis-Shop | Atlantis Shop | Atlantis | #82 |
+
+## Wetter (1)
+
+Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte kommen mit #105.
+
+| Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
+| --- | --- | --- | --- | --- |
+| BubbleStorm | Blasen-Sturm | Bubble Storm | Atlantis | #82 |
 
 ## Sonstige: Seltenheiten (7)
 

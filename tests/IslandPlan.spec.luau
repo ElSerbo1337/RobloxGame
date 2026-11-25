@@ -475,9 +475,9 @@ describe("world themes (worlds 2-7, #31, #32)", function()
 		return count
 	end
 
-	local THEMED = { "Farm", "Beach", "Icebergs", "Volcano", "CandyLand", "Space" }
+	local THEMED = { "Farm", "Beach", "Icebergs", "Volcano", "CandyLand", "Space", "Atlantis" }
 
-	it("builds every world as an island, worlds 2-7 with their own theme", function()
+	it("builds every world as an island, worlds 2-8 with their own theme", function()
 		for index = 1, WORLD_COUNT do
 			expect(plan.worldIsland(index).kind).toBe("world")
 		end

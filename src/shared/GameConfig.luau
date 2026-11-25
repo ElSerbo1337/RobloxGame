@@ -45,6 +45,7 @@ local GameConfig = {
 		friendsBonus = true,
 		weather = true,
 		dayNight = true,
+		worldDeco = true, -- scripted decoration of the new worlds (corals, ruins, bubbles, lights; #82)
 		-- Progress and social
 		stats = true, -- lifetime statistics
 		badges = true,
@@ -152,6 +153,10 @@ local GameConfig = {
 		MoonCheese = { displayName = "Mond-Käse", displayNameEn = "Moon Cheese", value = 11500 },
 		StarOlives = { displayName = "Sternen-Oliven", displayNameEn = "Star Olives", value = 20000 },
 		AlienMushroom = { displayName = "Alien-Pilz", displayNameEn = "Alien Mushroom", value = 29000 },
+		-- World 8 (Atlantis, #82): about 4.8x world 7. Provisional, tuned in #108.
+		Seaweed = { displayName = "Seetang", displayNameEn = "Seaweed", value = 55000 },
+		PearlCapers = { displayName = "Perlen-Kapern", displayNameEn = "Pearl Capers", value = 96000 },
+		SquidRings = { displayName = "Tintenfisch-Ringe", displayNameEn = "Squid Rings", value = 140000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -744,6 +749,41 @@ local GameConfig = {
 			bonus = 3.33,
 		},
 
+		-- World 8 (Atlantis-Ei, #82): one egg; its Mythic pet is the world's best (+620 %,
+		-- continuing the flat curve), the others scaled like the Space egg. Provisional (#108).
+		-- Models: tools/blender/build_world.py Atlantis (one FBX for the whole world).
+		KelpSnail = { displayName = "Seetang-Schnecke", displayNameEn = "Kelp Snail", rarity = "Common", bonus = 0.41 },
+		BubblePufferfish = {
+			displayName = "Blasen-Kugelfisch",
+			displayNameEn = "Bubble Pufferfish",
+			rarity = "Uncommon",
+			bonus = 0.62,
+		},
+		CaperClownfish = {
+			displayName = "Kapern-Clownfisch",
+			displayNameEn = "Caper Clownfish",
+			rarity = "Rare",
+			bonus = 1.04,
+		},
+		LanternAnglerfish = {
+			displayName = "Laternen-Anglerfisch",
+			displayNameEn = "Lantern Anglerfish",
+			rarity = "Epic",
+			bonus = 1.66,
+		},
+		PearlMantaRay = {
+			displayName = "Perlen-Mantarochen",
+			displayNameEn = "Pearl Manta Ray",
+			rarity = "Legendary",
+			bonus = 3.1,
+		},
+		PoseidonSeaDragon = {
+			displayName = "Poseidon-Seedrache",
+			displayNameEn = "Poseidon Sea Dragon",
+			rarity = "Mythic",
+			bonus = 6.2,
+		},
+
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
 		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
 		-- World 1 (Steinofen-Ei)
@@ -925,6 +965,12 @@ local GameConfig = {
 			rarity = "Secret",
 			bonus = 10,
 		},
+		PearlKingOtter = {
+			displayName = "Perlenkönig-Otter",
+			displayNameEn = "Pearl King Otter",
+			rarity = "Secret",
+			bonus = 12.4,
+		},
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -933,7 +979,7 @@ local GameConfig = {
 	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
-	-- Cracks, Swirl, Stars. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- Cracks, Swirl, Stars, Bubbles. `glow` = accent glows (Neon); `fancy` = showier variant
 	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
@@ -1118,6 +1164,21 @@ local GameConfig = {
 				{ pet = "GalaxyPizzaLeviathan", chance = 1 },
 			},
 		},
+		-- World 8 (#82): the new worlds have one egg with 6 pets. Price provisional (#108).
+		AtlantisEgg = {
+			displayName = "Atlantis-Ei",
+			displayNameEn = "Atlantis Egg",
+			look = { color = "1E8FB8", accent = "FFE9A8", pattern = "Bubbles", glow = true },
+			price = 4800000,
+			pets = {
+				{ pet = "KelpSnail", chance = 50 },
+				{ pet = "BubblePufferfish", chance = 28 },
+				{ pet = "CaperClownfish", chance = 15 },
+				{ pet = "LanternAnglerfish", chance = 5.5 },
+				{ pet = "PearlMantaRay", chance = 1 },
+				{ pet = "PoseidonSeaDragon", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -1165,6 +1226,26 @@ local GameConfig = {
 			worldId = "Space",
 			displayName = "Riesiger Pizza-Shop",
 			displayNameEn = "Giant Pizza Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
+			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed" },
+		},
+		-- Every new world (#82-#89) has its own shop. For now with the levels of shop 3
+		-- (all levels there are); #108 adds higher levels for the new worlds.
+		World8Shop = {
+			worldId = "Atlantis",
+			displayName = "Atlantis-Shop",
+			displayNameEn = "Atlantis Shop",
 			offers = {
 				{ upgrade = "PizzaSpace", maxLevel = 8 },
 				{ upgrade = "CollectRange", maxLevel = 8 },
@@ -1246,12 +1327,13 @@ local GameConfig = {
 		-- Look of each island world (others use PizzeriaGarden). Colours are RGB 0-255.
 		-- Optional per world (defaults = world 1):
 		--   rimStyle     "Hedge" | "Fence" | "Rocks" | "IceEdge" | "Basalt" | "Peppermint" | "Moonbase"
+		--                | "CoralReef" (with `corals` = knob colours)
 		--                (low visible rim)
 		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
-		--                | "Rocket" (back left terrace)
+		--                | "Rocket" | "SunkenTemple" (back left terrace)
 		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
 		--                the bridge leading INTO the world
-		--   trees        tree models scattered along the rim (ModelLibrary names)
+		--   trees        tree models scattered along the rim (ModelLibrary names); false = none
 		--   treeScale    size factor for those (default 1: 10-16 studs wide)
 		--   accents      { model, width } props along the field's long sides
 		--   terraceProps { terrace, model, width, at = { x, z }, yaw?, collide?, lift? } on a
@@ -1260,6 +1342,12 @@ local GameConfig = {
 		--   flowerStems  false = flowers are pebbles/shells lying on the ground
 		--   cracks       glowing cracks in the ground { x, z, length, yaw (degrees) } in the
 		--                colour `glow` (Neon with a small light each, so keep them few)
+		--   deco         scripted decoration of the new worlds (#82), no import needed:
+		--                { budget = max parts, kits = { { kit, count, size = { min, max },
+		--                colors? } } } with kits "Coral", "Column", "Kelp", "Bubbles", "Lamp"
+		--                (IslandPlan DECO_KITS). Optional bits are hidden on graphics "Low"
+		--                (#76); everything is left out when features.worldDeco is off.
+		--   ruin, ruinDark, shell  stone colours of the SunkenTemple / lamps, clam shell colour
 		themes = {
 			PizzeriaGarden = {
 				grass = { 104, 196, 72 },
@@ -1464,6 +1552,83 @@ local GameConfig = {
 					{ terrace = 2, model = "SpaceCrystal", width = 4, at = { 5, -4 }, yaw = 60 },
 				},
 			},
+			-- World 8 (#82): sunken island on the sea floor - pale sand, turquoise water,
+			-- coral rocks as rim, a glassy sea-glass bridge, ruins of a sunken temple with a
+			-- glowing pearl, corals, kelp, ruin columns, rising bubbles and blue lamps
+			-- (scripted deco, ~400 parts). The pattern for the worlds of #83-#89.
+			Atlantis = {
+				grass = { 222, 212, 176 },
+				grassLight = { 236, 228, 196 },
+				field = { 196, 222, 214 },
+				cliff = { 120, 150, 170 },
+				cliffDark = { 92, 118, 140 },
+				cliffLight = { 158, 186, 200 },
+				rim = { 255, 128, 120 },
+				rimStyle = "CoralReef",
+				corals = { { 255, 128, 120 }, { 190, 120, 255 }, { 255, 200, 100 }, { 80, 220, 210 } },
+				path = { 232, 236, 226 },
+				pathDark = { 206, 216, 208 },
+				water = { 60, 200, 230 },
+				waterfall = { 160, 236, 255 },
+				wood = { 150, 176, 188 },
+				woodDark = { 110, 136, 150 },
+				rope = { 230, 240, 236 },
+				ice = { 110, 220, 240 },
+				iceDark = { 40, 120, 170 },
+				snow = { 236, 252, 255 },
+				glow = { 120, 220, 255 },
+				ruin = { 226, 230, 222 },
+				ruinDark = { 180, 194, 196 },
+				shell = { 255, 206, 222 },
+				flowers = { { 255, 206, 222 }, { 255, 244, 214 }, { 140, 230, 230 }, { 255, 160, 120 } },
+				flowerStems = false,
+				landmark = "SunkenTemple",
+				bridge = "Ice",
+				trees = false,
+				accents = { { model = "BeachRock", width = 4 } },
+				deco = {
+					budget = 400,
+					kits = {
+						{ kit = "Lamp", count = 4, size = { 2.6, 3 }, colors = { { 90, 190, 255 } } },
+						{
+							kit = "Column",
+							count = 14,
+							size = { 7, 12 },
+							colors = { { 226, 230, 222 }, { 180, 194, 196 } },
+						},
+						{
+							kit = "Kelp",
+							count = 36,
+							size = { 6, 11 },
+							colors = { { 60, 170, 90 }, { 90, 196, 110 }, { 40, 140, 100 } },
+						},
+						{
+							kit = "Coral",
+							count = 42,
+							size = { 3.5, 7 },
+							colors = {
+								{ 255, 110, 130 },
+								{ 255, 160, 90 },
+								{ 190, 120, 255 },
+								{ 80, 220, 210 },
+								{ 255, 220, 110 },
+							},
+						},
+						{ kit = "Bubbles", count = 10, size = { 2, 4 }, colors = { { 210, 244, 255 } } },
+					},
+				},
+			},
+		},
+	},
+
+	-- Weather kinds (#72): names and look only. The rules (every ~15 min for 2 min per
+	-- world, +20 % toppings) and the effects come with #105; worlds pick theirs with
+	-- `weather = "<id>"`. `particles`: colours (RGB) of the weather particles.
+	weathers = {
+		BubbleStorm = {
+			displayName = "Blasen-Sturm",
+			displayNameEn = "Bubble Storm",
+			particles = { { 200, 240, 255 }, { 150, 220, 255 } },
 		},
 	},
 
@@ -1602,6 +1767,26 @@ local GameConfig = {
 			eggs = { "SpaceEgg", "NebulaEgg" },
 			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
 			secretPet = "BlackHoleCat",
+		},
+		-- World 8 (#82), the pattern for worlds 9-15: toppings, one egg with 6 pets, a Secret
+		-- pet, a shop (shops.World8Shop), weather, island theme (islands.themes.Atlantis,
+		-- incl. scripted `deco`), look and music (WorldLooks), models in one FBX per world
+		-- (tools/blender/build_world.py). Price provisional (#108).
+		{
+			id = "Atlantis",
+			requiredRebirths = 2,
+			displayName = "Atlantis",
+			displayNameEn = "Atlantis",
+			unlockPrice = 150000000,
+			color = { 40, 170, 230 },
+			toppingSpawns = {
+				{ topping = "Seaweed", weight = 55 },
+				{ topping = "PearlCapers", weight = 30 },
+				{ topping = "SquidRings", weight = 15 },
+			},
+			eggs = { "AtlantisEgg" },
+			secretPet = "PearlKingOtter",
+			weather = "BubbleStorm",
 		},
 	},
 }

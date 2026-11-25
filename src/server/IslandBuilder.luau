@@ -4,13 +4,49 @@
 -- comes from the plan, so the Blender previews (tools/blender/render_islands.py) show
 -- exactly what is built here.
 
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Features = require(ReplicatedStorage.Shared.Features)
+local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local IslandPlan = require(ReplicatedStorage.Shared.IslandPlan)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local WorldDeco = require(script.Parent.WorldDeco)
 
 local IslandBuilder = {}
+
+local features = Features.new(GameConfig.features)
+
+-- Optional decoration (PartSpec.detail): the client hides it on graphics "Low" (#76,
+-- client/GraphicsQuality.DETAIL_TAG).
+local DETAIL_TAG = "GraphicsDetail"
+
+-- Rising bubbles of the Atlantis deco (#82): small, light, a little wobbly. The client
+-- lowers the rate on graphics "Low" (GraphicsQuality).
+local function bubbles(p: BasePart)
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "Bubbles"
+	emitter.Color = ColorSequence.new(p.Color)
+	emitter.LightEmission = 0.5
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.2),
+		NumberSequenceKeypoint.new(0.8, 0.4),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.25),
+		NumberSequenceKeypoint.new(1, 0.7),
+	})
+	emitter.Rate = 6
+	emitter.Lifetime = NumberRange.new(4, 6)
+	emitter.Speed = NumberRange.new(3, 5)
+	emitter.SpreadAngle = Vector2.new(10, 10)
+	emitter.Acceleration = Vector3.new(0, 1, 0)
+	emitter.RotSpeed = NumberRange.new(-40, 40)
+	emitter.EmissionDirection = Enum.NormalId.Top
+	emitter.Shape = Enum.ParticleEmitterShape.Box
+	emitter.Parent = p
+end
 
 local SHAPES: { [string]: Enum.PartType } = {
 	Block = Enum.PartType.Block,
@@ -96,6 +132,9 @@ function IslandBuilder.part(spec: IslandPlan.PartSpec, parent: Instance): BasePa
 		smoke.RotSpeed = NumberRange.new(-15, 15)
 		smoke.EmissionDirection = Enum.NormalId.Top
 		smoke.Parent = p
+	elseif spec.role == "Bubbles" then
+		p.CastShadow = false
+		bubbles(p)
 	elseif spec.name == "FountainSpout" then
 		local spray = Instance.new("ParticleEmitter")
 		spray.Color = ColorSequence.new(Color3.fromRGB(190, 235, 255))
@@ -115,13 +154,21 @@ function IslandBuilder.part(spec: IslandPlan.PartSpec, parent: Instance): BasePa
 		light.Brightness = 1.2
 		light.Parent = p
 	end
+	if spec.detail then
+		p.CastShadow = false
+		CollectionService:AddTag(p, DETAIL_TAG)
+	end
 	p.Parent = parent
 	return p
 end
 
+-- All parts of a plan; the scripted world deco (#82) only with features.worldDeco.
 function IslandBuilder.parts(specs: { IslandPlan.PartSpec }, parent: Instance)
+	local withDeco = features.enabled("worldDeco")
 	for _, spec in specs do
-		IslandBuilder.part(spec, parent)
+		if withDeco or not spec.deco then
+			IslandBuilder.part(spec, parent)
+		end
 	end
 end
 

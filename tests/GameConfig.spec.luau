@@ -188,9 +188,25 @@ describe("GameConfig", function()
 		end
 
 		expect(state.coins).toBe(0)
-		for _, world in GameConfig.worlds do
-			expect(rules.teleport(state, world.id).ok).toBe(true)
+		for index = 1, 7 do
+			expect(rules.teleport(state, GameConfig.worlds[index].id).ok).toBe(true)
 		end
+	end)
+
+	it("lets a player with 2 rebirths unlock world 8 (Atlantis) after Space, but not with 1 (#82)", function()
+		local rules = GameRules.new(GameConfig)
+		local atlantis = GameConfig.worlds[8]
+		expect(atlantis.id).toBe("Atlantis")
+		local state = rules.newPlayerState()
+		state.unlockedWorlds = { "Farm", "Beach", "Icebergs", "Volcano", "CandyLand", "Space" }
+		state.coins = atlantis.unlockPrice
+		state.rebirths = 1
+		expect(rules.unlockWorld(state, "Atlantis").ok).toBe(false)
+		state.rebirths = 2
+		local result = rules.unlockWorld(state, "Atlantis")
+		expect(result.ok).toBe(true)
+		expect(result.state.coins).toBe(0)
+		expect(rules.teleport(result.state, "Atlantis").ok).toBe(true)
 	end)
 
 	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
@@ -593,7 +609,16 @@ describe("GameConfig pets and eggs", function()
 
 	it("gives every egg its own look: base colour, accent colour and one of the known patterns", function()
 		local PATTERNS =
-			{ Spots = true, Stripes = true, Waves = true, Diamonds = true, Cracks = true, Swirl = true, Stars = true }
+			{
+				Spots = true,
+				Stripes = true,
+				Waves = true,
+				Diamonds = true,
+				Cracks = true,
+				Swirl = true,
+				Stars = true,
+				Bubbles = true,
+			}
 		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
 			local look = egg.look
@@ -633,10 +658,11 @@ describe("GameConfig pets and eggs", function()
 end)
 
 describe("GameConfig worlds and eggs", function()
-	it("gives every world its own two eggs", function()
+	-- Worlds 1-7 have two eggs (#39); the new worlds of the MEGA UPDATE (#82-#89) one.
+	it("gives worlds 1-7 their own two eggs and every later world its own one", function()
 		local seen = {}
-		for _, world in GameConfig.worlds do
-			expect(world.eggs ~= nil and #world.eggs == 2).toBe(true)
+		for index, world in GameConfig.worlds do
+			expect(world.eggs ~= nil and #world.eggs == (if index <= 7 then 2 else 1)).toBe(true)
 			for _, eggId in world.eggs do
 				expect(GameConfig.eggs[eggId] ~= nil).toBe(true)
 				expect(seen[eggId] == nil).toBe(true)
@@ -646,9 +672,10 @@ describe("GameConfig worlds and eggs", function()
 	end)
 
 	-- Flat pet curve (#57): best pet of both eggs per world, within 10 %.
-	local PET_CURVE = { 0.75, 1.1, 1.6, 2.3, 3.2, 4, 5 }
+	-- World 8 (#82) continues it with +620 % (provisional, #108).
+	local PET_CURVE = { 0.75, 1.1, 1.6, 2.3, 3.2, 4, 5, 6.2 }
 
-	it("makes the best pet of each world follow +75/110/160/230/320/400/500 % and rise", function()
+	it("makes the best pet of each world follow +75/110/160/230/320/400/500/620 % and rise", function()
 		local previous = 0
 		for index, world in GameConfig.worlds do
 			local best = 0
@@ -674,6 +701,13 @@ describe("GameConfig worlds and eggs", function()
 end)
 
 describe("GameConfig second egg per world", function()
+	-- Only worlds 1-7 have a second egg (#39); the new worlds have one (#82).
+	local twoEggWorlds = {}
+	for _, world in GameConfig.worlds do
+		if #world.eggs >= 2 then
+			table.insert(twoEggWorlds, world)
+		end
+	end
 	local SECOND_EGG_RARITIES = { "Rare", "Epic", "Legendary", "Mythic" }
 
 	local function petOfRarity(eggId: string, rarity: string): any
@@ -689,7 +723,7 @@ describe("GameConfig second egg per world", function()
 	it(
 		"fills the second egg with 4 pets from Selten to Mythisch (no Gewöhnlich/Ungewöhnlich), chances 100 %",
 		function()
-			for _, world in GameConfig.worlds do
+			for _, world in twoEggWorlds do
 				local egg = GameConfig.eggs[world.eggs[2]]
 				expect(#egg.pets).toBe(4)
 				local total, rarities = 0, {}
@@ -709,7 +743,7 @@ describe("GameConfig second egg per world", function()
 	)
 
 	it("prices the second egg at about 5x the first egg of the world", function()
-		for _, world in GameConfig.worlds do
+		for _, world in twoEggWorlds do
 			local first = GameConfig.eggs[world.eggs[1]].price
 			local second = GameConfig.eggs[world.eggs[2]].price
 			expect(second > first).toBe(true)
@@ -719,7 +753,7 @@ describe("GameConfig second egg per world", function()
 	end)
 
 	it("makes its pets about 1.5x as strong as the same rarity in the first egg", function()
-		for _, world in GameConfig.worlds do
+		for _, world in twoEggWorlds do
 			for _, rarity in SECOND_EGG_RARITIES do
 				local ratio = petOfRarity(world.eggs[2], rarity).bonus / petOfRarity(world.eggs[1], rarity).bonus
 				expect(ratio >= 1.3 and ratio <= 1.7).toBe(true)
@@ -728,7 +762,7 @@ describe("GameConfig second egg per world", function()
 	end)
 
 	it("gives the second egg the showier look and a pattern of its own in the world", function()
-		for _, world in GameConfig.worlds do
+		for _, world in twoEggWorlds do
 			local first = GameConfig.eggs[world.eggs[1]].look
 			local second = GameConfig.eggs[world.eggs[2]].look
 			expect(second.fancy).toBe(true)
@@ -743,7 +777,7 @@ describe("GameConfig second egg per world", function()
 			return 0.5
 		end
 		local before = {}
-		for _, world in GameConfig.worlds do
+		for _, world in twoEggWorlds do
 			local eggId = world.eggs[2]
 			local state = rules.newPlayerState()
 			state.coins = GameConfig.eggs[eggId].price
@@ -1237,6 +1271,7 @@ describe("GameConfig leaderboards", function()
 			"weeklyChampion",
 			"weeklyQuests",
 			"whatsNew",
+			"worldDeco",
 			"worldIntro",
 			"worldMenu",
 		}

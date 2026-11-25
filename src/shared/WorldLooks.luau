@@ -71,6 +71,9 @@ local WorldLooks: { [string]: Look } = {
 	Volcano = day("Music_Volcano"),
 	CandyLand = day("Music_CandyLand"),
 	Space = day("Music_Space"),
+	-- Atlantis (#82): same day look (#45); the blue light comes from the island's own
+	-- glowing corals and lamps (islands.themes.Atlantis.deco).
+	Atlantis = day("Music_Atlantis"),
 }
 
 return WorldLooks

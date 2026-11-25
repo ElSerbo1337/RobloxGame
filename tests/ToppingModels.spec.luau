@@ -7,16 +7,22 @@ local fs = require("@lune/fs")
 
 local TestKit = require("./TestKit")
 local GameConfig = require("../src/shared/GameConfig")
+local WorldPacks = require("./fixtures/WorldPacks")
 
 local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 
 local MODELS = "assets/models/toppings"
 local PREVIEWS = "assets/previews/toppings"
+-- Toppings of the new worlds (#82 on) live in one FBX per world (WorldModels.spec).
+local packed = WorldPacks.packedAssets()
 
 describe("Topping models", function()
 	it("has a model (FBX) and a preview picture named after every topping id", function()
 		local missing = {}
 		for toppingId in GameConfig.toppings do
+			if packed[toppingId] then
+				continue
+			end
 			if not (fs.isFile(`{MODELS}/{toppingId}.fbx`) or fs.isFile(`assets/models/{toppingId}.fbx`)) then
 				table.insert(missing, `{toppingId}.fbx`)
 			end
@@ -40,9 +46,10 @@ describe("Topping models", function()
 		expect(table.concat(unknown, ", ")).toBe("")
 	end)
 
-	it("has a check picture (on the ground and on the pizza) for every world", function()
+	-- Worlds 8+ show their toppings on the pizza in the world preview (WorldModels.spec).
+	it("has a check picture (on the ground and on the pizza) for worlds 2-7", function()
 		local missing = {}
-		for index = 2, #GameConfig.worlds do
+		for index = 2, math.min(#GameConfig.worlds, 7) do
 			if not fs.isFile(`{PREVIEWS}/World{index}.png`) then
 				table.insert(missing, `World{index}.png`)
 			end
