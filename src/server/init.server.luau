@@ -37,7 +37,22 @@ Net.event("CollectTopping")
 Net.event("SetAutoCollect")
 Net.event("Notify")
 Net.event("UnlockWorld")
-for _, name in { "OpenEgg", "EggOpened", "EquipPet", "UnequipPet", "MergePets", "PetMerged" } do
+for _, name in
+	{
+		"OpenEgg",
+		"EggOpened",
+		"EquipPet",
+		"UnequipPet",
+		"MergePets",
+		"PetMerged",
+		"DeletePets",
+		"LockPet",
+		"RenamePet",
+		"SetAutoDelete",
+		"SaveTeam",
+		"EquipTeam",
+	}
+do
 	Net.event(name)
 end
 for _, name in { "PortalOpen", "PortalClose", "PortalPreview", "Teleport" } do
