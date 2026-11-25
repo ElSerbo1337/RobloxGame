@@ -119,6 +119,10 @@ SideBar.setCaption("quests", "2/3") -- Beschriftung ändern, nil = wieder `text`
 
 Kein Shop- und kein Teleport-Knopf im HUD – Shops und Portale betritt man in der Welt. Die Kachel „Welten“ zeigt die Weltenliste nur zum Anschauen; reisen kann man weiter nur im Portal.
 
+## Welten-Menü (#78)
+
+Portal und Kachel „Welten“ zeigen jede Welt aus `GameConfig.worlds` als Karte (`src/client/PortalMenu.luau`, 3 pro Reihe, scrollt; Schalter `features.worldMenu`, aus = alte Liste). Karte: Nummer oben links in Weltfarbe, darunter eine kleine schwenkende 3D-Insel (`TileIcon.buildModel`; Farben und Wahrzeichen rein aus `src/shared/WorldPreview.luau`: Insel-Thema, sonst Weltfarbe + Ersatzform), Name, Status. Gesperrt: Vorschau abgedunkelt, 🔒, „Es fehlt:“ mit den Einträgen aus `rules.portalMenu(state)[i].missing` (`PreviousWorld`, `Rebirths`, `Coins`, jeweils der fehlende Rest); alles erfüllt: grün „Am Tor freischalten“ + Preis. Neue Welten brauchen keinen Menü-Code, nur ihren Config-Eintrag (für das Wahrzeichen ein `landmark` im Thema).
+
 ## Einstellungen (#76)
 
 Kachel ⚙️ „Optionen“ (`settings`, order 200) öffnet `src/client/SettingsMenu.luau`: Musik und Effekte (Regler 0–100 % + 🔊/🔇), Grafik Hoch/Niedrig, Kamera-Wackeln, Bildschirm-Blitze, Ei-Animation überspringen, Codes-Feld (nur bei `features.codes`). Schalter: `features.settings` (aus = keine Kachel, alles auf Standard).

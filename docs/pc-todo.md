@@ -1741,3 +1741,22 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Drossel: auf Server A schnell 6× schlüpfen (Geheim-Chance 100) → auf A alle 6 Banner nacheinander (max. 3 in der Warteschlange), auf B höchstens 5 pro Minute; Output „throttled“ beim 6.
 - [ ] ⚙️ → Bildschirm-Blitze **aus** → bei Geheim/Legendär kein Blitz, keine Färbung, keine Strahlen; die lange Geheim-Animation und „GEHEIM!“ bleiben. ⚙️ → Ei-Animation überspringen **an** → Karten sofort (auch bei Geheim keine Spannungs-Phase), Färbung/Strahlen/„GEHEIM!“ (bei Blitzen an) trotzdem.
 - [ ] `GameConfig.features.secretAnnouncement = false` → kein Banner, Schlüpfen geht. `secretPets = false` → keine Geheim-Zeile in der Vorschau, Admin-Aktionen weg, kein Geheim-Wurf. Danach wieder `true`.
+
+## MEGA UPDATE – #78 Welten-Menü mit Karten und 3D-Vorschau
+
+Neu: Das Portal-Menü (und die Welten-Kachel der Seitenleiste) zeigt jede Welt aus `GameConfig.worlds` als Karte mit kleiner, schwenkender 3D-Insel (Farben aus dem Insel-Thema, Wahrzeichen-Modell; fehlt das Modell oder das Thema – z. B. die Welten 8–15, bis ihre Modelle kommen – eine Ersatzform in der Weltfarbe). Gesperrte Karten sind dunkel, mit 🔒 und dem, was noch fehlt („Erst Strand“, „2 Rebirths“, „5 Mio Münzen“ – jeweils der fehlende Rest, direkt aus den Regeln). Schalter: `GameConfig.features.worldMenu`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/WorldMenu.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (Admin-Panel #74):
+
+- [ ] Neuer Spielstand (Admin: **Fortschritt zurücksetzen**), ins Portal der Spawn-Insel laufen: Titel „🌍 Welten“, darunter „1/7 offen“; 3 Karten pro Reihe, jede mit Nummer oben links, 3D-Insel und Namen. Welt 1 zeigt „📍 Du bist hier“ bzw. „Reisen“. Output ohne rote Fehler.
+- [ ] Gesperrte Karten: dunkel mit 🔒; Bauernhof „Es fehlt: … Münzen“, Strand „Erst Bauernhof“ + Münzen, Vulkan zusätzlich „1 Rebirth“, Weltraum „2 Rebirths“.
+- [ ] Admin: **Münzen geben** 1500 im Portal stehend → Bauernhof-Karte wechselt sofort auf grün „Am Tor freischalten / 1.500 Münzen“. Am Tor kaufen, zurück ins Portal: Bauernhof offen mit „Reisen“, Reisen klappt.
+- [ ] Admin: **Rebirths setzen** 1 → Vulkan zeigt nur noch die fehlenden Münzen (und ggf. „Erst Eisberge“), Weltraum „1 Rebirth“.
+- [ ] Welten-Kachel irgendwo auf der Insel: dieselben Karten mit „Zum Reisen in ein Portal stellen“, ohne „Reisen“-Knöpfe, offene Welten mit „✅ Offen“. Admin **Münzen geben** bei offenem Menü → fehlende Münzen werden innerhalb ~1 s weniger. X schließen, Kachel erneut → geht wieder auf.
+- [ ] 3D-Vorschau: mit importierten Modellen stehen Windmühle, Leuchtturm, Eisgipfel, Vulkan, Torte, Rakete bzw. Riesenpizza auf den Inseln; ohne Import eine runde Ersatzform in Weltfarbe. Schwenkt sanft, ruckelt nicht.
+- [ ] Mit `Language = en`: „🌍 Worlds“, „Missing:“, „2 rebirths“, „5M coins“, „First Farm“, „Unlock at the gate“, englische Weltnamen.
+- [ ] Handy (iPhone SE / iPhone 14 Landscape): Menü füllt fast den Bildschirm, Karten scrollen senkrecht bis Welt 7 (später 15), „Reisen“ gut mit dem Daumen drückbar, nichts abgeschnitten.
+- [ ] `GameConfig.features.worldMenu = false` → alte Liste mit einem Knopf pro Welt wie vorher. Danach wieder `true`.
+- [ ] Sobald die Welten 8–15 (#82–#89) in der Config sind: alle 15 Karten da, auch ohne importierte Modelle (Ersatzform).
