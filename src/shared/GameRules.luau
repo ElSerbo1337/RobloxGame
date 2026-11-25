@@ -159,7 +159,16 @@ export type PortalEntry = {
 	-- Rebirths the world asks for besides its price (#43) and whether the player has them.
 	requiredRebirths: number,
 	enoughRebirths: boolean,
+	-- World menu cards (#78): place in the world order (1 = first world), whether the
+	-- player could buy the world at its gate right now, and what is still missing, in
+	-- this order: { kind = "PreviousWorld", worldId }, { kind = "Rebirths", amount },
+	-- { kind = "Coins", amount } (amounts = what is missing, not the full price).
+	index: number,
+	canUnlock: boolean,
+	missing: { WorldRequirement },
 }
+
+export type WorldRequirement = { kind: string, amount: number?, worldId: string? }
 
 -- One potion as shown at a shop's gem counter.
 export type PotionOffer = {
@@ -616,17 +625,45 @@ function GameRules.new(config: any)
 		return nil
 	end
 
-	-- Every world in unlock order, as shown in the portal menu.
+	-- What a locked world still needs, in the same order unlockWorld checks it (#78):
+	-- the previous world, the missing rebirths, the missing coins. Empty when unlocked.
+	local function missingFor(state: PlayerState, index: number): { WorldRequirement }
+		local world = config.worlds[index]
+		local missing: { WorldRequirement } = {}
+		if rules.isWorldUnlocked(state, world.id) then
+			return missing
+		end
+		if index > 1 and not rules.isWorldUnlocked(state, config.worlds[index - 1].id) then
+			table.insert(missing, { kind = "PreviousWorld", worldId = config.worlds[index - 1].id })
+		end
+		local rebirths = (world.requiredRebirths or 0) - state.rebirths
+		if rebirths > 0 then
+			table.insert(missing, { kind = "Rebirths", amount = rebirths })
+		end
+		local coins = (world.unlockPrice or 0) - state.coins
+		if coins > 0 then
+			table.insert(missing, { kind = "Coins", amount = coins })
+		end
+		return missing
+	end
+
+	-- Every world in unlock order, as shown in the portal / world menu (#78: one card
+	-- per world, locked ones with what is missing).
 	function rules.portalMenu(state: PlayerState): { PortalEntry }
 		local entries = {}
-		for _, world in config.worlds do
+		for index, world in config.worlds do
+			local unlocked = rules.isWorldUnlocked(state, world.id)
+			local missing = missingFor(state, index)
 			table.insert(entries, {
 				worldId = world.id,
 				displayName = world.displayName,
 				unlockPrice = world.unlockPrice or 0,
-				unlocked = rules.isWorldUnlocked(state, world.id),
+				unlocked = unlocked,
 				requiredRebirths = world.requiredRebirths or 0,
 				enoughRebirths = rules.hasRebirthsFor(state, world.id),
+				index = index,
+				canUnlock = not unlocked and #missing == 0,
+				missing = missing,
 			})
 		end
 		return entries
