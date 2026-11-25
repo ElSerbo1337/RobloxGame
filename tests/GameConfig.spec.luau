@@ -1022,4 +1022,91 @@ describe("GameConfig leaderboards", function()
 			stores[board.store] = true
 		end
 	end)
+
+	-- MEGA UPDATE (#72/#73): everybody starts fresh in new stores; old stores stay untouched.
+	it("saves players in a new DataStore for the fresh start, never in the old one", function()
+		expect(type(GameConfig.save.storeName)).toBe("string")
+		expect(GameConfig.save.storeName ~= "PlayerState").toBe(true)
+	end)
+
+	it("keeps leaderboards in new stores for the fresh start", function()
+		local oldStores = {
+			Leaderboard_Playtime_v1 = true,
+			Leaderboard_CoinsEarned_v1 = true,
+			Leaderboard_Rebirths_v1 = true,
+		}
+		for _, board in GameConfig.leaderboards.boards do
+			expect(oldStores[board.store]).toBeNil()
+		end
+	end)
+
+	it("starts a new player at 0 coins, 0 gems and 0 rebirths in world 1", function()
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+
+		expect(state.coins).toBe(0)
+		expect(state.gems).toBe(0)
+		expect(state.rebirths).toBe(0)
+		expect(#state.pets).toBe(0)
+	end)
+
+	it("has a switch for every feature of the MEGA UPDATE, all on", function()
+		local expected = {
+			"adminPanel",
+			"analytics",
+			"badges",
+			"christmasCountdown",
+			"codes",
+			"dailyQuests",
+			"dayNight",
+			"effectiveEggChances",
+			"eventWorlds",
+			"featureHints",
+			"friendsBonus",
+			"goldenToppings",
+			"hiddenChests",
+			"juice",
+			"loadingScreen",
+			"loginCalendar30",
+			"luckyWheel",
+			"newLeaderboards",
+			"newPotions",
+			"petAuras",
+			"petAutoDelete",
+			"petDetails",
+			"petIndex",
+			"petLevels",
+			"petLock",
+			"petMerge",
+			"petMultiDelete",
+			"petRename",
+			"petTeams",
+			"profile",
+			"rebirthPreview",
+			"secretAnnouncement",
+			"secretPets",
+			"settings",
+			"shinyPets",
+			"sideBar",
+			"spawnMarketplace",
+			"stats",
+			"titles",
+			"toppingIndex",
+			"travelingMerchant",
+			"weather",
+			"weeklyChampion",
+			"weeklyQuests",
+			"whatsNew",
+			"worldIntro",
+			"worldMenu",
+		}
+		local ids = {}
+		for id, value in GameConfig.features do
+			expect(type(value)).toBe("boolean")
+			expect(value).toBe(true)
+			table.insert(ids, id)
+		end
+		table.sort(ids)
+		expect(ids).toEqual(expected)
+	end)
 end)

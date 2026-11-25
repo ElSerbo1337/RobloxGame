@@ -1582,3 +1582,17 @@ Alle Namen aus `GameConfig` (Pets, Beläge, Welten, Eier, Tränke, Upgrades, Sho
 - [ ] **Englisch** (`Language` = `en`): „Dough Hamster“, „Common“/„Mythic“, „Garden Egg“, „Pizza Shop“, „Pizza Space“ + „More toppings per pizza“, „3 Eggs at Once“ + „Unlocks “Open 3” at every egg“, „Coin Potion drunk!“, „📍 Pizzeria Garden (you are here)“, „🔓 Unlock Farm“, Lieferauftrag „Mushroom“, „Hot Pepper“ (nicht „Pepperoni“), „2× Luck Potion“, „Oven (Farm) – sell here“, „Pizza Shop – Upgrades“, „Sweets Egg“ im Süßigkeitenland, Pet-Namensschild „Galaxy Pizza Leviathan“ passt aufs Schild. Nichts abgeschnitten (auch Handy-Emulator).
 - [x] **2 Spieler, verschiedene Sprachen** (wie bei #71): jeder sieht die Pet-Namensschilder der Pets (auch die des anderen Spielers) in seiner Sprache. _(24.11.: Pet-Namensschilder beider Spieler je in der eigenen Sprache, `107`, `108`)_
 - [x] Altes Spiel laden: Pets, Tränke, Upgrades unverändert (Spielstände nutzen nur Ids). Output ohne Fehler. _(24.11.: dein Spielstand lädt unverändert, 0 Fehler)_
+
+## MEGA UPDATE – #73 Neustart-DataStore und Feature-Schalter
+
+Spielstände liegen jetzt im DataStore `PlayerState_Mega1` (`GameConfig.save.storeName`), Bestenlisten in `Leaderboard_*_mega1`. Der alte Store `PlayerState` und die alten `_v1`-Bestenlisten werden nicht mehr gelesen und nicht verändert. Feature-Schalter: `GameConfig.features` (alle `true`).
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Features.spec.luau`, `GameConfig` „fresh start“/„switch for every feature“).
+
+Studio (API-Zugriff an, siehe #3), Rojo verbinden, **Play**:
+
+- [ ] Du startest als neuer Spieler: 0 Münzen, 0 Gems, keine Pets, Welt 1, Tutorial Schritt 1/4. Output ohne rote Fehler, keine `[Save]`-Warnung.
+- [ ] Etwas Münzen sammeln, Stop, erneut **Play** → Fortschritt ist noch da (gespeichert im neuen Store).
+- [ ] Alter Spielstand unangetastet: im Bearbeitungsmodus in die Command Bar `print(game:GetService("DataStoreService"):GetDataStore("PlayerState"):GetAsync("player_" .. game:GetService("StudioService"):GetUserId()) ~= nil)` → `true` (falls du vorher gespeichert hattest).
+- [ ] Bestenlisten auf der Spawn-Insel zeigen nur neue Einträge (anfangs „Noch keine Einträge“ bzw. nur dich).
+- [ ] Neu anfangen zum Testen (nur Bearbeitungsmodus, nicht im Play-Modus): `game:GetService("DataStoreService"):GetDataStore("PlayerState_Mega1"):RemoveAsync("player_" .. game:GetService("StudioService"):GetUserId())`. Fortschritt zum Testen später über das Admin-Panel (#74) statt über Config-Änderungen.

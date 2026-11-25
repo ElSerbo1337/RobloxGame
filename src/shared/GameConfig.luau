@@ -4,7 +4,69 @@
 -- New worlds and toppings are added here only.
 
 local GameConfig = {
+	-- MEGA UPDATE feature switches (#73): one boolean per new feature. A switched-off
+	-- feature shows no UI and its server handlers refuse requests (Shared.Features).
+	-- New feature: add its id here (default true) and check it via Features.new(...).
+	features = {
+		-- Foundation and tools
+		adminPanel = true, -- admin panel, only user 372358501
+		analytics = true, -- funnel events (tutorial, first unlocks, first rebirth, quests)
+		-- Worlds and rebirth
+		eventWorlds = true, -- event islands with their own currency (prepared only)
+		worldMenu = true, -- world menu with cards and 3D preview
+		worldIntro = true, -- camera flight on the first visit of a world
+		rebirthPreview = true, -- rebirth menu shows multiplier before/after and opened worlds
+		-- Pets
+		petMerge = true, -- 5 equal -> Gold, 5 Gold -> Rainbow
+		shinyPets = true,
+		secretPets = true, -- rarity "Secret", one pet per world
+		secretAnnouncement = true, -- message to all servers on a Secret hatch
+		petLevels = true,
+		petIndex = true,
+		toppingIndex = true,
+		petAutoDelete = true,
+		petMultiDelete = true,
+		petLock = true,
+		petDetails = true, -- pet detail card
+		petTeams = true,
+		petRename = true,
+		petAuras = true, -- auras, shine and animations
+		effectiveEggChances = true, -- egg panel shows chances incl. potions/upgrades
+		-- Gameplay
+		goldenToppings = true, -- incl. the "Gold Luck" gem upgrade
+		newPotions = true, -- Shiny, Gold, Mega
+		dailyQuests = true,
+		weeklyQuests = true,
+		luckyWheel = true,
+		codes = true,
+		hiddenChests = true,
+		loginCalendar30 = true, -- 30-day login calendar
+		travelingMerchant = true,
+		friendsBonus = true,
+		weather = true,
+		dayNight = true,
+		-- Progress and social
+		stats = true, -- lifetime statistics
+		badges = true,
+		titles = true,
+		profile = true,
+		newLeaderboards = true, -- eggs opened, toppings collected
+		weeklyChampion = true,
+		-- Look and UI
+		sideBar = true, -- new HUD side bar with tiles and red dots
+		settings = true,
+		spawnMarketplace = true, -- spawn island stands (wheel, update board, merchant)
+		christmasCountdown = true,
+		whatsNew = true,
+		juice = true,
+		loadingScreen = true,
+		featureHints = true,
+	},
+
 	save = {
+		-- DataStore of all player states. MEGA UPDATE (#73): fresh start for everybody
+		-- in a new store; the old "PlayerState" store is left untouched (no migration).
+		storeName = "PlayerState_Mega1",
 		-- Seconds between periodic saves of every player (also renews the session lock).
 		autosaveSeconds = 120,
 		-- A session lock older than this is treated as orphaned (its server crashed)
@@ -24,14 +86,14 @@ local GameConfig = {
 		refreshSeconds = 120,
 		top = 10,
 		boards = {
-			{ id = "Playtime", store = "Leaderboard_Playtime_v1", title = "⏱ Spielzeit", format = "Duration" },
+			{ id = "Playtime", store = "Leaderboard_Playtime_mega1", title = "⏱ Spielzeit", format = "Duration" },
 			{
 				id = "CoinsEarned",
-				store = "Leaderboard_CoinsEarned_v1",
+				store = "Leaderboard_CoinsEarned_mega1",
 				title = "💰 Münzen verdient",
 				format = "Number",
 			},
-			{ id = "Rebirths", store = "Leaderboard_Rebirths_v1", title = "🔁 Rebirths", format = "Number" },
+			{ id = "Rebirths", store = "Leaderboard_Rebirths_mega1", title = "🔁 Rebirths", format = "Number" },
 		},
 	},
 

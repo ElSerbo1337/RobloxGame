@@ -19,12 +19,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local SaveData = require(ReplicatedStorage.Shared.SaveData)
 
-local STORE_NAME = "PlayerState"
 local LOAD_ATTEMPTS = 3
 local SAVE_ATTEMPTS = 3
 local RETRY_SECONDS = 2
 
 local LOCK = GameConfig.save
+local STORE_NAME = GameConfig.save.storeName
 -- JobId is empty in Studio, so fall back to a random id per server.
 local SERVER_ID = if game.JobId ~= "" then game.JobId else HttpService:GenerateGUID(false)
 
