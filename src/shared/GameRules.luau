@@ -71,6 +71,9 @@ export type PlayerState = {
 	-- World the player was last in (walked into or teleported to); "" = none yet.
 	-- Deaths and rejoins spawn there while it is unlocked (see spawnWorld).
 	lastWorldId: string,
+	-- Settings menu (#76): setting key (GameRules.SETTINGS) -> value the player chose.
+	-- Sparse: a missing key means "default" (resolveSettings). Kept on rebirth.
+	settings: { [string]: any },
 }
 
 export type Delivery = { call: Order?, order: Order?, nextCallAt: number? }
@@ -106,6 +109,7 @@ export type Result = {
 	-- | "OrderExpired" | "WrongToppings" | "NotExpired"
 	-- | "UnknownGift" | "GiftNotReady" | "GiftClaimed" | "UnknownHint" | "HintSeen"
 	-- | "LoginClaimed" | "CalendarShown"
+	-- | "UnknownSetting" | "InvalidValue"
 	reason: string?,
 	state: PlayerState,
 }
@@ -306,6 +310,64 @@ end
 
 local GameRules = {}
 
+export type SettingSpec = {
+	-- "percent" (whole number 0-100) | "boolean" | "choice" (one of `options`)
+	kind: string,
+	default: any,
+	-- Default on touch devices without a keyboard (phones/tablets), if different.
+	touchDefault: any?,
+	options: { string }?,
+}
+
+-- Settings menu (#76): every setting a player can change, with its default. Saved per
+-- player in state.settings (only what differs from untouched), validated by setSetting.
+-- New setting: add it here, add texts `settings.<key>` and use it via the client's
+-- Settings.get(key).
+GameRules.SETTINGS = {
+	musicVolume = { kind = "percent", default = 100 },
+	musicMuted = { kind = "boolean", default = false },
+	effectsVolume = { kind = "percent", default = 100 },
+	effectsMuted = { kind = "boolean", default = false },
+	-- "Low": fewer particles, decoration hidden (phones start on Low).
+	graphics = { kind = "choice", options = { "High", "Low" }, default = "High", touchDefault = "Low" },
+	cameraShake = { kind = "boolean", default = true },
+	screenFlashes = { kind = "boolean", default = true },
+	skipEggAnimation = { kind = "boolean", default = false },
+} :: { [string]: SettingSpec }
+
+local function validSetting(spec: SettingSpec, value: any): boolean
+	if spec.kind == "boolean" then
+		return type(value) == "boolean"
+	elseif spec.kind == "percent" then
+		return type(value) == "number" and value == value and value >= 0 and value <= 100 and value % 1 == 0
+	elseif spec.kind == "choice" then
+		return type(value) == "string" and spec.options ~= nil and table.find(spec.options, value) ~= nil
+	end
+	return false
+end
+
+-- Every setting with the player's choice or its default (`touch` = touch device without
+-- keyboard: uses touchDefault). Unknown keys and invalid saved values are ignored.
+function GameRules.resolveSettings(saved: { [string]: any }?, touch: boolean): { [string]: any }
+	local resolved = {}
+	for key, spec in GameRules.SETTINGS do
+		local value = if type(saved) == "table" then saved[key] else nil
+		if value ~= nil and validSetting(spec, value) then
+			resolved[key] = value
+		elseif touch and spec.touchDefault ~= nil then
+			resolved[key] = spec.touchDefault
+		else
+			resolved[key] = spec.default
+		end
+	end
+	return resolved
+end
+
+function GameRules.isValidSetting(key: string, value: any): boolean
+	local spec = GameRules.SETTINGS[key]
+	return spec ~= nil and validSetting(spec, value)
+end
+
 -- Number of the calendar day in German time (CET/CEST, EU rule: summer time from the
 -- last Sunday of March to the last Sunday of October, 01:00 UTC each) for a Unix time:
 -- days since 1970-01-01 there. Daily resets (gifts, login calendar) compare these numbers.
@@ -368,6 +430,7 @@ function GameRules.new(config: any)
 			delivery = {},
 			phoneCalls = true,
 			lastWorldId = "",
+			settings = {},
 		}
 	end
 
@@ -1601,6 +1664,30 @@ function GameRules.new(config: any)
 			return fail(state, "PhoneNotReady")
 		end
 		return { ok = true, state = withDelivery(state, newOrder(state, random), nil) }
+	end
+
+	-- Settings menu (#76): stores one setting. Validates key and value (GameRules.SETTINGS);
+	-- the same value again is "Unchanged". Storing the default is kept as an explicit choice
+	-- (a phone player choosing "High" must not fall back to the touch default "Low").
+	function rules.setSetting(state: PlayerState, key: any, value: any): Result
+		if type(key) ~= "string" or GameRules.SETTINGS[key] == nil then
+			return fail(state, "UnknownSetting")
+		end
+		if not GameRules.isValidSetting(key, value) then
+			return fail(state, "InvalidValue")
+		end
+		local current = if type(state.settings) == "table" then state.settings else {}
+		if current[key] == value then
+			return fail(state, "Unchanged")
+		end
+		local newState = table.clone(state)
+		newState.settings = table.clone(current)
+		newState.settings[key] = value
+		return { ok = true, state = newState }
+	end
+
+	function rules.settings(state: PlayerState, touch: boolean): { [string]: any }
+		return GameRules.resolveSettings(state.settings, touch)
 	end
 
 	-- Switches phone calls on or off. Off ends a waiting call (an accepted order keeps
