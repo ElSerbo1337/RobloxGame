@@ -2128,3 +2128,12 @@ Studio, Rojo verbinden, **Play** (als Admin), zu einem Ei laufen:
 - [ ] Quests und Index (nach dem ersten Pet) pulsieren je einmal mit kurzem Text.
 - [ ] Kachel hinter „Mehr“: Öffnen über das Mehr-Fenster zählt auch als gesehen (das Pulsieren selbst ist dann nicht sichtbar).
 - [ ] Sprache auf Englisch: Texte englisch. Mit `features.featureHints = false` pulsiert nichts davon.
+
+## MEGA UPDATE – #92 Pet-Auren und -Animationen
+
+- [ ] Per Admin-Panel einen Legendär-, Mythisch- und Geheim-Pet geben und ausrüsten: Leuchten + aufsteigende Funken in Seltenheitsfarbe, stärker je Seltenheit (Geheim am stärksten).
+- [ ] Gold-Pet (Merge oder Admin-Panel): goldenes Leuchten pulsiert. Regenbogen-Pet: Leuchten **und** Aura wechseln die Farben. Shiny-Pet glitzert weiter (#80).
+- [ ] Laufen: Pets hüpfen, im Stand schweben sie leicht. Verkaufen: eigene Pets drehen sich einmal kurz nacheinander.
+- [ ] Einstellungen → Grafik „Niedrig“: Aura-Lichter und Gold-Leuchten aus, Legendär ohne Funken, Mythisch/Geheim mit deutlich weniger. Zurück auf „Hoch“ stellt alles wieder her.
+- [ ] Volle Pet-Plätze mit Auren: keine spürbaren FPS-Einbrüche (Strg+Shift+F5 / Micro-Profiler).
+- [ ] Schalter `features.petAuras = false`: keine Auren, kein Gold-Puls, keine Drehung (Hüpfen und Regenbogen-Leuchten aus #80 bleiben).

@@ -3,10 +3,21 @@
 -- Runs on every client for all players, so movement is smooth and everyone sees
 -- everyone's pets. The pet models are anchored; the server never moves them.
 -- Rainbow pets (#80) get their glow colour cycled here.
+-- Auras and animations (#92, switch features.petAuras): Legendary/Mythic/Secret pets get
+-- an aura (light + particles in the rarity colour, PetAura), Gold pets shine (pulsing
+-- glow), own pets spin once when the player sells. Graphics "Low" (#76) turns aura
+-- lights off and keeps few particles (weakest aura none, GraphicsQuality scales the rest).
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+
+local Features = require(ReplicatedStorage.Shared.Features)
+local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local Net = require(ReplicatedStorage.Shared.Net)
+local PetAura = require(ReplicatedStorage.Shared.PetAura)
+local Settings = require(script.Parent.Settings)
 
 -- Distance behind the owner and spacing between pets (studs).
 local BEHIND = 5
@@ -26,7 +37,70 @@ local WALL_RAY_HEIGHT = 1.2
 -- Where pets of owners without a loaded character wait, out of sight below the islands.
 local HIDDEN_Y = -500
 
+-- Seconds of the spin on a sale, and how often pets turn in that time.
+local SELL_SPIN_SECONDS = 0.7
+local SELL_SPIN_TURNS = 1
+-- Gold shine: glow brightness pulses between these values.
+local GOLD_SHINE_MIN, GOLD_SHINE_MAX = 1, 2.6
+
 local PetFollow = {}
+
+type Look = { level: number, light: PointLight?, emitter: ParticleEmitter? }
+
+local function rarityColor(petId: any): Color3?
+	local pet = type(petId) == "string" and GameConfig.pets[petId]
+	local rarity = pet and GameConfig.rarities[pet.rarity]
+	if rarity == nil then
+		return nil
+	end
+	return Color3.fromRGB(rarity.color[1], rarity.color[2], rarity.color[3])
+end
+
+-- Adds the aura of a pet once (rarity from its PetId attribute). Returns its parts.
+local function addAura(pet: Model): Look
+	local petId = pet:GetAttribute("PetId")
+	local info = type(petId) == "string" and GameConfig.pets[petId]
+	local level = PetAura.level(info and info.rarity, GameConfig.rarities)
+	local body = pet.PrimaryPart or pet:FindFirstChildWhichIsA("BasePart", true)
+	local color = rarityColor(petId)
+	if level == 0 or body == nil or color == nil then
+		return { level = 0 }
+	end
+	local light = Instance.new("PointLight")
+	light.Name = "AuraGlow"
+	light.Color = color
+	light.Range = 5 + level * 2
+	light.Brightness = 0.8 + level * 0.4
+	light.Parent = body
+
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "AuraParticles"
+	emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	emitter.Color = ColorSequence.new(color)
+	emitter.LightEmission = 1
+	emitter.Transparency = NumberSequence.new(0.2, 1)
+	emitter.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.3 + level * 0.15),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	emitter.Lifetime = NumberRange.new(0.8, 1.4)
+	emitter.Speed = NumberRange.new(0.6, 1.4)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	emitter.Acceleration = Vector3.new(0, 1.5, 0)
+	-- Full rate; on "Low" GraphicsQuality scales every emitter down itself.
+	emitter.Rate = PetAura.particleRate(level, false)
+	emitter.Parent = body
+	return { level = level, light = light, emitter = emitter }
+end
+
+local function applyQuality(look: Look, low: boolean)
+	if look.light then
+		look.light.Enabled = not low
+	end
+	if look.emitter then
+		look.emitter.Enabled = PetAura.particleRate(look.level, low) > 0
+	end
+end
 
 -- Offset of pet `slot` of `count` relative to the owner: a row behind, centered.
 local function formationOffset(slot: number, count: number): Vector3
@@ -72,6 +146,25 @@ function PetFollow.start()
 	-- Only solid parts count as walls or ground (not toppings, zones or decals).
 	rayParams.RespectCanCollide = true
 
+	local auras = Features.new(GameConfig.features).enabled("petAuras")
+	local looks: { [Model]: Look } = setmetatable({}, { __mode = "k" }) :: any
+	local low = Settings.lowGraphics()
+	local spinStart = -math.huge
+	if auras then
+		Settings.observe("graphics", function()
+			low = Settings.lowGraphics()
+			for _, look in looks do
+				applyQuality(look, low)
+			end
+		end)
+		Net.event("Notify").OnClientEvent:Connect(function(kind: string)
+			if kind == "Sold" then
+				spinStart = os.clock()
+			end
+		end)
+	end
+	local localUserId = tostring(Players.LocalPlayer.UserId)
+
 	RunService.RenderStepped:Connect(function(dt: number)
 		local alpha = 1 - math.exp(-FOLLOW_SPEED * dt)
 		local t = os.clock()
@@ -100,6 +193,8 @@ function PetFollow.start()
 			local pets = ownerFolder:GetChildren()
 			local moving = root.AssemblyLinearVelocity.Magnitude > 1
 			local flat = CFrame.new(root.Position) * CFrame.Angles(0, select(2, root.CFrame:ToEulerAnglesYXZ()), 0)
+			-- Sale (#92): own pets turn once around (ease out), one after the other.
+			local spinAge = if ownerFolder.Name == localUserId then t - spinStart else math.huge
 			for index, pet in pets do
 				if not pet:IsA("Model") then
 					continue
@@ -116,12 +211,35 @@ function PetFollow.start()
 					else current.Position:Lerp(target, alpha)
 				-- Face the walking direction of the owner.
 				local look = flat.LookVector
-				pet:PivotTo(CFrame.lookAt(position, position + look))
-				-- Rainbow pets (#80): their glow cycles through the colours.
-				if pet:GetAttribute("Variant") == "Rainbow" then
+				local facing = CFrame.lookAt(position, position + look)
+				local progress = (spinAge - slot * 0.06) / SELL_SPIN_SECONDS
+				if progress > 0 and progress < 1 then
+					local eased = 1 - (1 - progress) ^ 3
+					facing *= CFrame.Angles(0, eased * SELL_SPIN_TURNS * 2 * math.pi, 0)
+				end
+				pet:PivotTo(facing)
+				local variant = pet:GetAttribute("Variant")
+				if auras and looks[pet] == nil then
+					looks[pet] = addAura(pet)
+					applyQuality(looks[pet], low)
+				end
+				-- Rainbow pets (#80): their glow cycles through the colours; with auras
+				-- (#92) the aura and the particles cycle too. Gold pets shine (pulse).
+				if variant == "Rainbow" or (auras and variant == "Gold") then
 					local glow = pet:FindFirstChild("VariantGlow", true)
-					if glow and glow:IsA("PointLight") then
-						glow.Color = Color3.fromHSV((t * 0.25 + slot * 0.13) % 1, 0.7, 1)
+					if variant == "Rainbow" then
+						local color = Color3.fromHSV((t * 0.25 + slot * 0.13) % 1, 0.7, 1)
+						if glow and glow:IsA("PointLight") then
+							glow.Color = color
+						end
+						local aura = looks[pet]
+						if aura and aura.light then
+							aura.light.Color = color
+						end
+					elseif glow and glow:IsA("PointLight") then
+						local pulse = (math.sin(t * 3 + slot) + 1) / 2
+						glow.Brightness = GOLD_SHINE_MIN + (GOLD_SHINE_MAX - GOLD_SHINE_MIN) * pulse
+						glow.Enabled = not low
 					end
 				end
 			end
