@@ -77,6 +77,9 @@ local WorldLooks: { [string]: Look } = {
 	-- Jungle temple (#83): same day look; fireflies, the jade gem and the mist come from
 	-- the island deco (islands.themes.JungleTemple.deco).
 	JungleTemple = day("Music_JungleTemple"),
+	-- Desert Pyramids (#84): same day look (#45); the warm light comes from the golden sand
+	-- and the glowing capstone of the pyramid.
+	DesertPyramids = day("Music_DesertPyramids"),
 }
 
 return WorldLooks

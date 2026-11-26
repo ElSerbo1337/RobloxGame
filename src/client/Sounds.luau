@@ -149,6 +149,14 @@ local SOUNDS: { [string]: Entry } = {
 		looped = true,
 		search = { "jungle", "tropical", "adventure", "drums", "marimba" },
 	},
+	-- World 10 (#84). ID still empty: the local session picks one (Creator Store, creator
+	-- "Roblox"); warm, adventurous, a bit oriental, but still cheerful.
+	Music_DesertPyramids = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "desert", "egypt", "arabian", "oud", "adventure" },
+	},
 }
 
 -- Several pickups within this time play only one plop.

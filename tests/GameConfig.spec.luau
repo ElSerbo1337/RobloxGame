@@ -145,15 +145,22 @@ describe("GameConfig", function()
 		{ "PizzaParadise", 10 },
 	}
 
+	-- Worlds 8-15 are built in parallel (#82-#89): a planned world may still be missing
+	-- (e.g. world 10 before world 9), but the ones that exist keep the planned order.
 	it("keeps the worlds in the planned order with their rebirth tiers (#77)", function()
 		expect(#GameConfig.worlds <= #WORLD_PLAN).toBe(true)
+		local cursor = 1
 		for index, world in GameConfig.worlds do
-			local planned = WORLD_PLAN[index]
-			if world.id ~= planned[1] or (world.requiredRebirths or 0) ~= planned[2] then
-				error(
-					`world {index}: {world.id} with {world.requiredRebirths or 0} rebirths, planned {planned[1]} with {planned[2]}`
-				)
+			while WORLD_PLAN[cursor] and WORLD_PLAN[cursor][1] ~= world.id do
+				-- Worlds 1-8 already exist and never leave a gap.
+				expect(cursor > 8).toBe(true)
+				cursor += 1
 			end
+			local planned = WORLD_PLAN[cursor]
+			if planned == nil or (world.requiredRebirths or 0) ~= planned[2] then
+				error(`world {index}: {world.id} with {world.requiredRebirths or 0} rebirths is not in the plan here`)
+			end
+			cursor += 1
 		end
 	end)
 
@@ -225,6 +232,32 @@ describe("GameConfig", function()
 		expect(rules.teleport(result.state, "JungleTemple").ok).toBe(true)
 	end)
 
+	it("lets a player with 3 rebirths unlock world 10 (Desert Pyramids), but not with 2 (#84)", function()
+		local rules = GameRules.new(GameConfig)
+		local desert
+		local before = {}
+		for _, world in GameConfig.worlds do
+			if world.id == "DesertPyramids" then
+				desert = world
+				break
+			end
+			if world.id ~= "PizzeriaGarden" then
+				table.insert(before, world.id)
+			end
+		end
+		expect(desert.displayName).toBe("Wüsten-Pyramiden")
+		local state = rules.newPlayerState()
+		state.unlockedWorlds = before
+		state.coins = desert.unlockPrice
+		state.rebirths = 2
+		expect(rules.unlockWorld(state, "DesertPyramids").ok).toBe(false)
+		state.rebirths = 3
+		local result = rules.unlockWorld(state, "DesertPyramids")
+		expect(result.ok).toBe(true)
+		expect(result.state.coins).toBe(0)
+		expect(rules.teleport(result.state, "DesertPyramids").ok).toBe(true)
+	end)
+
 	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
@@ -272,9 +305,34 @@ describe("GameConfig", function()
 			end
 			return total / #world.toppingSpawns
 		end
+		-- Planned slots of the worlds (#72): worlds 8-15 are built in parallel (#82-#89), so
+		-- a world may still be missing in between; then the step counts twice.
+		local slots = {}
+		for slot, id in
+			{
+				"PizzeriaGarden",
+				"Farm",
+				"Beach",
+				"Icebergs",
+				"Volcano",
+				"CandyLand",
+				"Space",
+				"Atlantis",
+				"JungleTemple",
+				"DesertPyramids",
+				"HauntedCastle",
+				"DinoAge",
+				"CrystalCave",
+				"CloudCity",
+				"PizzaParadise",
+			}
+		do
+			slots[id] = slot
+		end
 		for i = 2, #GameConfig.worlds do
 			local ratio = averageValue(GameConfig.worlds[i]) / averageValue(GameConfig.worlds[i - 1])
-			expect(ratio >= 3 and ratio <= 5).toBe(true)
+			local steps = slots[GameConfig.worlds[i].id] - slots[GameConfig.worlds[i - 1].id]
+			expect(ratio >= 3 ^ steps and ratio <= 5 ^ steps).toBe(true)
 		end
 	end)
 end)
@@ -644,6 +702,7 @@ describe("GameConfig pets and eggs", function()
 			Stars = true,
 			Bubbles = true,
 			Vines = true,
+			Zigzag = true,
 		}
 		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
@@ -698,19 +757,32 @@ describe("GameConfig worlds and eggs", function()
 	end)
 
 	-- Flat pet curve (#57): best pet of both eggs per world, within 10 %.
-	-- World 8 (#82) continues it with +620 %, world 9 (#83) with +760 % (provisional, #108).
-	local PET_CURVE = { 0.75, 1.1, 1.6, 2.3, 3.2, 4, 5, 6.2, 7.6 }
+	-- World 8 (#82) continues it with +620 %, world 9 (#83) with +760 %, world 10 (#84)
+	-- with +900 % (provisional, #108).
+	-- By world id, as worlds 8-15 are built in parallel (#82-#89).
+	local PET_CURVE = {
+		PizzeriaGarden = 0.75,
+		Farm = 1.1,
+		Beach = 1.6,
+		Icebergs = 2.3,
+		Volcano = 3.2,
+		CandyLand = 4,
+		Space = 5,
+		Atlantis = 6.2,
+		JungleTemple = 7.6,
+		DesertPyramids = 9,
+	}
 
 	it("makes the best pet of each world follow +75/110/160/230/320/400/500/620/760 % and rise", function()
 		local previous = 0
-		for index, world in GameConfig.worlds do
+		for _, world in GameConfig.worlds do
 			local best = 0
 			for _, eggId in world.eggs do
 				for _, entry in GameConfig.eggs[eggId].pets do
 					best = math.max(best, GameConfig.pets[entry.pet].bonus)
 				end
 			end
-			if math.abs(best / PET_CURVE[index] - 1) > 0.1 then
+			if PET_CURVE[world.id] == nil or math.abs(best / PET_CURVE[world.id] - 1) > 0.1 then
 				error(`{world.id}: best pet +{math.round(best * 100)} %`)
 			end
 			expect(best > previous).toBe(true)

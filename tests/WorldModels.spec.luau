@@ -99,4 +99,26 @@ describe("World model packs (#82)", function()
 			"VineSloth",
 		})
 	end)
+
+	it("lists the Desert Pyramids assets: 3 toppings, 6 pets, the Secret pet and the egg (#84)", function()
+		local desert
+		for _, world in GameConfig.worlds do
+			if world.id == "DesertPyramids" then
+				desert = world
+			end
+		end
+		expect(WorldPacks.assetsOf(desert)).toEqual({
+			"CactusFennec",
+			"Date",
+			"DateGecko",
+			"DesertTruffle",
+			"OasisCamel",
+			"PharaohCat",
+			"PricklyPear",
+			"PyramidEgg",
+			"SandScarab",
+			"ScorpionKing",
+			"SunSphinx",
+		})
+	end)
 end)

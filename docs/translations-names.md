@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (91)
+## Pets (98)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -134,6 +134,16 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | FireflyChameleon | Glühwürmchen-Chamäleon | Firefly Chameleon | Dschungel-Ei | Episch | |
 | DragonFruitJaguar | Drachenfrucht-Jaguar | Dragon Fruit Jaguar | Dschungel-Ei | Legendär | |
 | JadeTempleSerpent | Jade-Tempelschlange | Jade Temple Serpent | Dschungel-Ei | Mythisch | |
+### Welt 10 – Wüsten-Pyramiden (#84)
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| DateGecko | Dattel-Gecko | Date Gecko | Pyramiden-Ei | Gewöhnlich | Dattel-Belag als Thema |
+| SandScarab | Sand-Skarabäus | Sand Scarab | Pyramiden-Ei | Ungewöhnlich | |
+| CactusFennec | Kaktus-Fennek | Cactus Fennec | Pyramiden-Ei | Selten | Wüstenfuchs mit Kaktusfeigen-Hut |
+| OasisCamel | Oasen-Kamel | Oasis Camel | Pyramiden-Ei | Episch | |
+| PharaohCat | Pharaonen-Katze | Pharaoh Cat | Pyramiden-Ei | Legendär | |
+| SunSphinx | Sonnen-Sphinx | Sun Sphinx | Pyramiden-Ei | Mythisch | |
 
 ### Geheim-Pets (#81)
 
@@ -150,8 +160,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | BlackHoleCat | Schwarzloch-Katze | Black Hole Cat | Welt 7 (beide Eier) | Geheim | |
 | PearlKingOtter | Perlenkönig-Otter | Pearl King Otter | Welt 8 (Atlantis-Ei) | Geheim | #82 |
 | GoldenMonkeyKing | Goldener Affenkönig | Golden Monkey King | Welt 9 (Dschungel-Ei) | Geheim | #83 |
+| ScorpionKing | Skorpionkönig | Scorpion King | Welt 10 (Pyramiden-Ei) | Geheim | #84 |
 
-## Beläge (28)
+## Beläge (31)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -183,8 +194,11 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | Mango | Mango | Mango | Dschungel-Tempel | #83 |
 | CocoaBean | Kakaobohne | Cocoa Bean | Dschungel-Tempel | #83 |
 | DragonFruit | Drachenfrucht | Dragon Fruit | Dschungel-Tempel | #83 |
+| Date | Dattel | Date | Wüsten-Pyramiden | #84 |
+| PricklyPear | Kaktusfeige | Prickly Pear | Wüsten-Pyramiden | #84 |
+| DesertTruffle | Wüsten-Trüffel | Desert Truffle | Wüsten-Pyramiden | #84 |
 
-## Welten (9)
+## Welten (10)
 
 | Id | Deutsch | Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- |
@@ -197,8 +211,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | Space | Weltraum | Space | |
 | Atlantis | Atlantis | Atlantis | #82 |
 | JungleTemple | Dschungel-Tempel | Jungle Temple | #83 |
+| DesertPyramids | Wüsten-Pyramiden | Desert Pyramids | #84 |
 
-## Eier (16)
+## Eier (17)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -218,6 +233,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | NebulaEgg | Nebula-Ei | Nebula Egg | Weltraum | |
 | AtlantisEgg | Atlantis-Ei | Atlantis Egg | Atlantis | #82 |
 | JungleEgg | Dschungel-Ei | Jungle Egg | Dschungel-Tempel | #83 |
+| PyramidEgg | Pyramiden-Ei | Pyramid Egg | Wüsten-Pyramiden | #84 |
 
 ## Tränke (3)
 
@@ -240,7 +256,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | TripleOpen | 3 Eier auf einmal | 3 Eggs at Once | Schaltet „3 öffnen“ an jedem Ei frei | Unlocks “Open 3” at every egg | „Open 3“ muss zum Knopftext im Ei-Menü (#67 ff.) passen |
 | GoldLuck | Gold-Glück | Gold Luck | Mehr goldene Beläge (10-facher Wert) | More golden toppings (10x value) | MEGA UPDATE #94 |
 
-## Shops (5)
+## Shops (6)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -249,8 +265,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | World7Shop | Riesiger Pizza-Shop | Giant Pizza Shop | Weltraum | |
 | World8Shop | Atlantis-Shop | Atlantis Shop | Atlantis | #82 |
 | World9Shop | Dschungel-Shop | Jungle Shop | Dschungel-Tempel | #83 |
+| World10Shop | Wüsten-Shop | Desert Shop | Wüsten-Pyramiden | #84 |
 
-## Wetter (2)
+## Wetter (3)
 
 Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte kommen mit #105.
 
@@ -258,6 +275,7 @@ Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte kommen mit #1
 | --- | --- | --- | --- | --- |
 | BubbleStorm | Blasen-Sturm | Bubble Storm | Atlantis | #82 |
 | TropicalRain | Tropenregen | Tropical Rain | Dschungel-Tempel | #83 |
+| Sandstorm | Sandsturm | Sandstorm | Wüsten-Pyramiden | #84 |
 
 ## Sonstige: Seltenheiten (7)
 

@@ -161,6 +161,11 @@ local GameConfig = {
 		Mango = { displayName = "Mango", displayNameEn = "Mango", value = 265000 },
 		CocoaBean = { displayName = "Kakaobohne", displayNameEn = "Cocoa Bean", value = 460000 },
 		DragonFruit = { displayName = "Drachenfrucht", displayNameEn = "Dragon Fruit", value = 670000 },
+		-- World 10 (Desert Pyramids, #84): about 4.8x per world after Atlantis (world 9 in
+		-- between). Provisional, tuned in #108.
+		Date = { displayName = "Dattel", displayNameEn = "Date", value = 1270000 },
+		PricklyPear = { displayName = "Kaktusfeige", displayNameEn = "Prickly Pear", value = 2200000 },
+		DesertTruffle = { displayName = "Wüsten-Trüffel", displayNameEn = "Desert Truffle", value = 3250000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -831,6 +836,31 @@ local GameConfig = {
 			bonus = 7.6,
 		},
 
+		-- World 10 (Pyramiden-Ei, #84): one egg; the Mythic pet continues the flat curve
+		-- (+900 %), the others scaled like the Atlantis egg. Provisional (#108).
+		-- Models: tools/blender/build_world.py DesertPyramids.
+		DateGecko = { displayName = "Dattel-Gecko", displayNameEn = "Date Gecko", rarity = "Common", bonus = 0.6 },
+		SandScarab = {
+			displayName = "Sand-Skarabäus",
+			displayNameEn = "Sand Scarab",
+			rarity = "Uncommon",
+			bonus = 0.9,
+		},
+		CactusFennec = {
+			displayName = "Kaktus-Fennek",
+			displayNameEn = "Cactus Fennec",
+			rarity = "Rare",
+			bonus = 1.5,
+		},
+		OasisCamel = { displayName = "Oasen-Kamel", displayNameEn = "Oasis Camel", rarity = "Epic", bonus = 2.4 },
+		PharaohCat = {
+			displayName = "Pharaonen-Katze",
+			displayNameEn = "Pharaoh Cat",
+			rarity = "Legendary",
+			bonus = 4.5,
+		},
+		SunSphinx = { displayName = "Sonnen-Sphinx", displayNameEn = "Sun Sphinx", rarity = "Mythic", bonus = 9 },
+
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
 		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
 		-- World 1 (Steinofen-Ei)
@@ -1024,6 +1054,12 @@ local GameConfig = {
 			rarity = "Secret",
 			bonus = 15.2,
 		},
+		ScorpionKing = {
+			displayName = "Skorpionkönig",
+			displayNameEn = "Scorpion King",
+			rarity = "Secret",
+			bonus = 18,
+		},
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -1032,7 +1068,7 @@ local GameConfig = {
 	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
-	-- Cracks, Swirl, Stars, Bubbles, Vines. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag. `glow` = accent glows (Neon); `fancy` = showier variant
 	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
@@ -1247,6 +1283,21 @@ local GameConfig = {
 				{ pet = "JadeTempleSerpent", chance = 0.5 },
 			},
 		},
+		-- World 10 (#84): one egg with 6 pets. Price provisional (#108).
+		PyramidEgg = {
+			displayName = "Pyramiden-Ei",
+			displayNameEn = "Pyramid Egg",
+			look = { color = "E8B860", accent = "2E6FB0", pattern = "Zigzag", glow = true },
+			price = 600000000,
+			pets = {
+				{ pet = "DateGecko", chance = 50 },
+				{ pet = "SandScarab", chance = 28 },
+				{ pet = "CactusFennec", chance = 15 },
+				{ pet = "OasisCamel", chance = 5.5 },
+				{ pet = "PharaohCat", chance = 1 },
+				{ pet = "SunSphinx", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -1346,6 +1397,24 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },
 		},
+		World10Shop = {
+			worldId = "DesertPyramids",
+			displayName = "Wüsten-Shop",
+			displayNameEn = "Desert Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
+			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed" },
+		},
 	},
 
 	-- Flying islands (#27): spawn island, then world 1, 2, ... in a chain along -Z, all at
@@ -1414,9 +1483,10 @@ local GameConfig = {
 		-- Optional per world (defaults = world 1):
 		--   rimStyle     "Hedge" | "Fence" | "Rocks" | "IceEdge" | "Basalt" | "Peppermint" | "Moonbase"
 		--                | "CoralReef" (with `corals` = knob colours) | "MossyStones" (with `moss`)
-		--                (low visible rim)
+		--                | "Sandstone" (low visible rim)
 		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
-		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" (back left terrace)
+		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" | "GreatPyramid" (back left
+		--                terrace)
 		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
 		--                the bridge leading INTO the world
 		--   trees        tree models scattered along the rim (ModelLibrary names); false = none
@@ -1432,7 +1502,8 @@ local GameConfig = {
 		--                { budget = max parts, kits = { { kit, count, size = { min, max },
 		--                colors? } } } with kits "Coral", "Column", "Kelp", "Bubbles", "Lamp",
 		--                "JungleTree" (trunk, crowns, hanging lianas), "Fern", "Idol" (carved
-		--                stone head), "Fireflies" and "Mist" (invisible emitters)
+		--                stone head), "Fireflies" and "Mist" (invisible emitters), "Dune",
+		--                "Pyramid", "Oasis", "Cactus"
 		--                (IslandPlan DECO_KITS). Optional bits are hidden on graphics "Low"
 		--                (#76); everything is left out when features.worldDeco is off.
 		--   ruin, ruinDark, shell  stone colours of the SunkenTemple / lamps, clam shell colour
@@ -1440,6 +1511,7 @@ local GameConfig = {
 		--   secretChest  { x, z, clear } spot kept for the hidden chest (#100): becomes the
 		--                station "SecretChest" (on the terrace top if inside one) and an
 		--                invisible anchor part "SecretChestAnchor" (WorldMap)
+		--   gold         capstone and obelisk tips of the GreatPyramid
 		themes = {
 			PizzeriaGarden = {
 				grass = { 104, 196, 72 },
@@ -1769,6 +1841,63 @@ local GameConfig = {
 					},
 				},
 			},
+			-- World 10 (#84): warm desert island - golden sand, a low sandstone wall as rim, a
+			-- stone bridge in sandstone colours, a great step pyramid with a glowing capstone,
+			-- sand dunes, small pyramids, oases with palms and cacti (scripted deco, ~400 parts).
+			DesertPyramids = {
+				grass = { 232, 198, 128 },
+				grassLight = { 244, 214, 150 },
+				field = { 222, 184, 120 },
+				cliff = { 196, 140, 84 },
+				cliffDark = { 160, 108, 64 },
+				cliffLight = { 226, 178, 116 },
+				rim = { 214, 168, 104 },
+				rimStyle = "Sandstone",
+				path = { 238, 222, 186 },
+				pathDark = { 214, 196, 156 },
+				water = { 70, 190, 210 },
+				waterfall = { 150, 226, 240 },
+				wood = { 150, 110, 70 },
+				woodDark = { 112, 80, 52 },
+				rope = { 220, 200, 160 },
+				ice = { 120, 210, 230 },
+				iceDark = { 60, 140, 170 },
+				snow = { 250, 240, 220 },
+				glow = { 255, 210, 90 },
+				ruin = { 230, 196, 132 },
+				ruinDark = { 196, 156, 96 },
+				gold = { 255, 200, 70 },
+				flowers = { { 255, 120, 160 }, { 255, 200, 80 }, { 240, 90, 90 }, { 255, 250, 230 } },
+				flowerStems = false,
+				landmark = "GreatPyramid",
+				bridge = "Basalt",
+				trees = false,
+				accents = { { model = "BeachRock", width = 4 } },
+				deco = {
+					budget = 400,
+					kits = {
+						{ kit = "Oasis", count = 4, size = { 9, 12 }, colors = { { 80, 170, 70 }, { 50, 130, 60 } } },
+						{
+							kit = "Pyramid",
+							count = 12,
+							size = { 6, 10 },
+							colors = { { 230, 196, 132 }, { 196, 156, 96 } },
+						},
+						{
+							kit = "Dune",
+							count = 40,
+							size = { 7, 12 },
+							colors = { { 236, 200, 130 }, { 222, 182, 112 }, { 244, 214, 150 } },
+						},
+						{
+							kit = "Cactus",
+							count = 80,
+							size = { 3.5, 7 },
+							colors = { { 80, 150, 80 }, { 60, 130, 70 }, { 110, 170, 90 } },
+						},
+					},
+				},
+			},
 		},
 	},
 
@@ -1785,6 +1914,11 @@ local GameConfig = {
 			displayName = "Tropenregen",
 			displayNameEn = "Tropical Rain",
 			particles = { { 170, 210, 230 }, { 220, 240, 255 } },
+		},
+		Sandstorm = {
+			displayName = "Sandsturm",
+			displayNameEn = "Sandstorm",
+			particles = { { 236, 200, 130 }, { 210, 168, 100 } },
 		},
 	},
 
@@ -1960,6 +2094,23 @@ local GameConfig = {
 			eggs = { "JungleEgg" },
 			secretPet = "GoldenMonkeyKing",
 			weather = "TropicalRain",
+		},
+		-- World 10 (#84), after world 9 (#83): same pattern as Atlantis. Price provisional (#108).
+		{
+			id = "DesertPyramids",
+			requiredRebirths = 3,
+			displayName = "Wüsten-Pyramiden",
+			displayNameEn = "Desert Pyramids",
+			unlockPrice = 20000000000,
+			color = { 232, 184, 96 },
+			toppingSpawns = {
+				{ topping = "Date", weight = 55 },
+				{ topping = "PricklyPear", weight = 30 },
+				{ topping = "DesertTruffle", weight = 15 },
+			},
+			eggs = { "PyramidEgg" },
+			secretPet = "ScorpionKing",
+			weather = "Sandstorm",
 		},
 	},
 }
