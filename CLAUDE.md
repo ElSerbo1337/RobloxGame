@@ -31,7 +31,7 @@ Dateinamen-Konventionen (Rojo): `Foo.server.luau` = Script, `Foo.client.luau` = 
 - Konvention: Specs liegen als `tests/**/*.spec.luau`, nutzen `tests/TestKit.luau` (`describe`/`it`/`expect`, `sequenceRandom` für deterministischen Zufall) und `require` mit relativen Pfaden (`../src/shared/GameRules`).
 - Getestet wird nur die Spielregeln-Naht (Aktion auf Stand anwenden → Ergebnis prüfen). Regel-Tests nutzen `tests/fixtures/TestConfig.luau`, damit Balancing-Änderungen sie nicht brechen; `tests/GameConfig.spec.luau` prüft die echte Konfiguration.
 - Roblox-Schicht wird manuell in Studio getestet (Checkliste in `docs/pc-todo.md`).
-- Cloud-Hinweis: Rokit erreicht dort die GitHub-API nicht und `selene` kann den Roblox-API-Dump nicht laden (`setup.rbxcdn.com` gesperrt). Tools dann direkt aus den GitHub-Release-ZIPs holen und Selene mit einer temporären Std (Basis `luau` + Roblox-Globals als `any`) laufen lassen.
+- Cloud-Hinweis: `bash tools/cloud-tools.sh` installiert Lune und StyLua (Versionen wie in `rokit.toml`) nach `$HOME/.cloud-tools/bin`. Rokit erreicht dort die GitHub-API nicht und `selene` kann den Roblox-API-Dump nicht laden (`setup.rbxcdn.com` gesperrt). Tools dann direkt aus den GitHub-Release-ZIPs holen und Selene mit einer temporären Std (Basis `luau` + Roblox-Globals als `any`) laufen lassen.
 
 ## Regeln
 
