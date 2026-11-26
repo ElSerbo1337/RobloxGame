@@ -365,6 +365,11 @@ VIEWS = {
     "World10_Overview": ((150, 150, -1985), (0, -6, -2165), 32, (1600, 900)),
     "World10_Landmark": ((20, 24, -2180), (-40, 10, -2246), 30, (1600, 900)),
     "World10_Player": ((0, 14, -2040), (0, 2, -2140), 30, (1600, 900)),
+    # World 11 Haunted Castle (#85) at z = -2400: overview, castle (with the chest spot
+    # behind it) and the deco from the main path.
+    "World11_Overview": ((150, 150, -2225), (0, -6, -2405), 32, (1600, 900)),
+    "World11_Landmark": ((10, 22, -2430), (-40, 12, -2486), 30, (1600, 900)),
+    "World11_Player": ((0, 14, -2280), (0, 2, -2380), 30, (1600, 900)),
     # The whole chain, spawn island (z = +202) to world 7 (z = -1440).
     "Islands_FullChain": ((980, 640, 420), (0, -20, -600), 27, (1920, 820)),
 }

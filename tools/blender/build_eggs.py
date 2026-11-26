@@ -402,6 +402,43 @@ def pattern_zigzag(look):
     return [shell_region(keep, cuts=5)]
 
 
+def bat_mesh(size, depth):
+    """Flat bat silhouette (wings spread, little ears) around the origin, extruded along Z."""
+    half = [(0.0, 0.32), (0.08, 0.42), (0.12, 0.26), (0.22, 0.2), (0.5, 0.38), (0.95, 0.3),
+            (0.82, 0.08), (0.66, 0.12), (0.56, -0.08), (0.4, 0.0), (0.28, -0.16), (0.12, -0.1),
+            (0.0, -0.28)]
+    pts = half + [(-x, y) for x, y in reversed(half[1:-1])]
+    mesh = bpy.data.meshes.new("Bat")
+    bm = bmesh.new()
+    bottom = [bm.verts.new((x * size, y * size, 0)) for x, y in pts]
+    top = [bm.verts.new((x * size, y * size, depth)) for x, y in pts]
+    n = len(pts)
+    bm.faces.new(list(reversed(bottom)))
+    bm.faces.new(top)
+    for i in range(n):
+        j = (i + 1) % n
+        bm.faces.new((bottom[i], bottom[j], top[j], top[i]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new("Bat", mesh)
+    bpy.context.collection.objects.link(obj)
+    return obj
+
+
+def pattern_bats(look):
+    """Haunted castle (#85): a flock of little bat silhouettes flying around the egg and a
+    round moon on one side."""
+    objs = []
+    bats = [(0.0, 0.15, 0.36), (1.3, -0.25, 0.3), (2.6, 0.3, 0.32), (-1.3, 0.4, 0.28), (-2.5, -0.2, 0.3),
+            (0.7, 0.62, 0.2), (-0.6, -0.5, 0.24), (1.9, 0.7, 0.16), (-2.0, 0.75, 0.15)]
+    for i, (theta, u, r) in enumerate(bats):
+        objs.append(on_surface(bat_mesh(r, 0.05), theta, u, lift=-0.02, spin=0.3 * ((i % 3) - 1)))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=20, radius=0.26, depth=0.05)
+    objs.append(on_surface(bpy.context.active_object, 3.3, -0.55, lift=-0.02))
+    return objs
+
+
 PATTERNS = {
     "Spots": pattern_spots,
     "Stripes": pattern_stripes,
@@ -413,6 +450,7 @@ PATTERNS = {
     "Bubbles": pattern_bubbles,
     "Vines": pattern_vines,
     "Zigzag": pattern_zigzag,
+    "Bats": pattern_bats,
 }
 
 
