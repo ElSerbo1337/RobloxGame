@@ -13,6 +13,7 @@ local GemService = require(script.GemService)
 local GiftService = require(script.GiftService)
 local LoginCalendarService = require(script.LoginCalendarService)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local IndexService = require(script.IndexService)
 local OvenService = require(script.OvenService)
 local PetService = require(script.PetService)
 local PizzaVisual = require(script.PizzaVisual)
@@ -173,5 +174,7 @@ SettingsService.start()
 CodeService.start()
 -- Daily and weekly quests (#97): new quests per German day / week, claims and rerolls.
 QuestService.start()
+-- Pet index and topping index (#95): replicates the Index attribute.
+IndexService.start()
 
 print(`[{Constants.GAME_NAME}] Server gestartet`)

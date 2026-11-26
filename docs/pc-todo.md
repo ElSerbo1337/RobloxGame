@@ -2005,3 +2005,23 @@ Studio, Rojo verbinden, **Play**, Seitenleiste → „Optionen“ → Abschnitt 
 - [ ] Rejoin (mit „Enable Studio Access to API Services“): eingelöste Codes bleiben eingelöst.
 - [ ] Englisch (Attribut `Language` = `en`): „Redeemed: +50 gems“, „You already used this code.“ usw.
 - [ ] Abgelaufen („Dieser Code ist abgelaufen.“) ist nur per Test geprüft; wer es sehen will: in `GameConfig.codes` bei einem Code `expires` auf ein vergangenes Datum stellen, danach zurück.
+
+## MEGA UPDATE – #95 Pet-Index und Belag-Index
+
+Neu: Kachel 📖 „Index“ in der Seitenleiste (Platz 90) mit einem Menü und zwei Reitern. **🐾 Pets:** eine Welt pro Seite (◀ ▶, startet in der aktuellen Welt), jede Ei-Pet-Karte der Welt (Geheim nicht nötig) – gefunden = 3D-Pet in Seltenheitsfarbe, sonst schwarze Silhouette mit „???“ – darunter drei Sterne Gold / Regenbogen / Shiny (ohne Belohnung). Alle Pets einer Welt gefunden → **dauerhaft +4 % Münzen** pro Welt (vorläufig, `GameConfig.petIndex.worldBonus`, Feinschliff #108), im Münz-Multiplikator (Verkauf, Lieferung, Einkommen). Gelöschte, auto-gelöschte und verschmolzene Pets zählen. **🍕 Beläge:** jeder Belag der Welt mit zwei Hälften Normal / ✨ Gold (goldene getrennt), ohne Belohnung. Roter Punkt = seit dem letzten Öffnen etwas Neues gefunden. Schalter: `petIndex`, `toppingIndex`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Index.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Kachel „Index“ (blau, Stern-Icon) in der Seitenleiste, Output ohne rote Fehler. Tippen → Menü „📖 Index“, Reiter „🐾 Pets“ orange, Seite „Welt 1: Pizzeria-Garten“, „0/10 gefunden · Alle finden: +4 % Münzen · ⭐ 0/30“, 10 schwarze Silhouetten „???“ (ohne Modell-Import: graue Kreise mit „?“). Oben rechts „Index-Bonus: +0 % Münzen“.
+- [ ] ◀ / ▶ blättern durch **alle 11 Welten** (Welt 8–11 mit je 6 Pets), ◀ fehlt auf Seite 1, ▶ auf der letzten. Menü in Welt 3 öffnen → startet auf Welt 3.
+- [ ] Ein Ei öffnen → Pet erscheint auf seiner Karte in 3D mit Namen, roter Punkt an der Kachel (Menü zu), nach dem Öffnen weg.
+- [ ] Admin **Pet mit Variante geben** Gold / Regenbogen / Shiny desselben Pets → die passenden Sterne werden gold / lila / rosa, „⭐ n/30“ zählt mit. Das Pet löschen → bleibt gefunden, Sterne bleiben.
+- [ ] Admin **Pet-Index einer Welt füllen** „Pizzeria-Garten“ → Toast „📖 Index komplett: Pizzeria-Garten! +4 % Münzen“ (Sound wie Quest fertig), Seite zeigt „✅ Komplett: +4 % Münzen“, oben „Index-Bonus: +4 % Münzen“. Pizza verkaufen → ca. 4 % mehr Münzen als vorher. Nochmal dieselbe Welt → „Schon alle gefunden.“
+- [ ] Zweite Welt füllen → „+8 %“. Rebirth (Admin **Münzen geben** + echter Rebirth) → Index und Bonus bleiben.
+- [ ] Reiter „🍕 Beläge“ → Seite Welt 1, 3 Karten mit „???“ und zwei schwarzen Hälften. Belag sammeln → Name + Hälfte „Normal“ in 3D mit ✓. Admin **Gold-Chance testen** 100, goldenen Belag sammeln → Hälfte „✨ Gold“ golden eingefärbt mit ✓, oben rechts „n/68 gefunden“ (bei 11 Welten: 34 Beläge × normal + golden). Beide Hälften → Karte hellgrün.
+- [ ] Nur ein Menü gleichzeitig: Index offen, Quests öffnen → Index geht zu.
+- [ ] Handy: Menü füllt den Bildschirm, Karten scrollen, ◀ ▶ und Reiter gut zu treffen; Englisch: „Index“, „🍕 Toppings“, „World 1: Pizzeria Garden“, „Index bonus: +4% coins“, „✨ Golden“.
+- [ ] Rejoin → alles bleibt (auch Belag-Index), kein roter Punkt direkt nach dem Beitreten.
+- [ ] Schalter: `petIndex = false` → nur Reiter „Beläge“, Bonus 0 (Verkauf wie ohne Index), Admin-Aktion weg; `toppingIndex = false` → nur Reiter „Pets“; beide aus → keine Kachel. Danach wieder `true`.

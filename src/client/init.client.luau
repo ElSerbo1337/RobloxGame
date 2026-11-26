@@ -13,6 +13,7 @@ local GiftMenu = require(script.GiftMenu)
 local GoldenGlitter = require(script.GoldenGlitter)
 local GraphicsQuality = require(script.GraphicsQuality)
 local Hud = require(script.Hud)
+local IndexMenu = require(script.IndexMenu)
 local Lang = require(script.Lang)
 local LoginCalendarMenu = require(script.LoginCalendarMenu)
 local PetFollow = require(script.PetFollow)
@@ -53,6 +54,8 @@ LoginCalendarMenu.start()
 WheelMenu.start()
 -- Daily and weekly quests (#97): side bar tile with a red dot when a quest is done.
 QuestMenu.start()
+-- Pet index and topping index (#95): side bar tile, one menu with two tabs.
+IndexMenu.start()
 -- "What's new" window (#106): once per player, after the tutorial and the calendar.
 WhatsNewMenu.start()
 DeliveryMenu.start()
