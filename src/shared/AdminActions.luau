@@ -476,6 +476,17 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Friends bonus (#102): pretend to have this many friends on the server; 0 = real count.
+		id = "simulateFriends",
+		feature = "friendsBonus",
+		params = { { name = "friends", kind = "integer", min = 0, max = 5, default = 3 } },
+		run = function(_env, state, args)
+			local newState = table.clone(state)
+			newState.adminFriends = args[1]
+			return { ok = true, state = newState }
+		end,
+	},
+	{
 		id = "resetProgress",
 		confirm = true,
 		params = {},

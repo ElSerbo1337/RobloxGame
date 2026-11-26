@@ -744,6 +744,10 @@ local GameConfig = {
 	-- and the topping index (features.toppingIndex) give no reward.
 	petIndex = { worldBonus = 0.04 },
 
+	-- Friends bonus (#102, switch features.friendsBonus): +perFriend coins per friend on the
+	-- same server, at most +max; multiplied into the coin multiplier like the index bonus.
+	friendsBonus = { perFriend = 0.1, max = 0.3 },
+
 	-- Pet management (#91): saved pet teams, longest custom pet name (characters, filtered
 	-- by TextService on the server) and rarities that can never be auto-deleted.
 	petManagement = {

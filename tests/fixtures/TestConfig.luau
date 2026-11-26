@@ -324,4 +324,5 @@ return {
 			toppingSpawns = {},
 		},
 	},
+	friendsBonus = { perFriend = 0.1, max = 0.3 },
 }

@@ -17,6 +17,11 @@ export type PlayerState = {
 	pizzaGolden: { [string]: number },
 	-- Admin panel test chance for golden toppings (0 = off; see goldenChance).
 	adminGoldenChance: number,
+	-- Friends bonus (#102): friends of this player on the same server, set by the server
+	-- (FriendsService, Player:IsFriendsWith) on every join/leave via setFriendsOnServer.
+	friendsOnServer: number,
+	-- Admin panel simulation of the friends count (#102); 0 = real count again.
+	adminFriends: number,
 	-- Admin test chance (0-1) for the Secret roll per egg (#81); 0 = off.
 	adminSecretChance: number,
 	-- Admin test chance (0-1) for the Shiny roll per hatched pet (#80); 0 = off.
@@ -655,6 +660,8 @@ function GameRules.new(config: any)
 			adminGoldenChance = 0,
 			adminSecretChance = 0,
 			adminShinyChance = 0,
+			friendsOnServer = 0,
+			adminFriends = 0,
 			autoCollect = false,
 			rebirths = 0,
 			upgrades = {},
@@ -1516,7 +1523,8 @@ function GameRules.new(config: any)
 	-- delivery coins (and the income estimate) are multiplied by.
 	function rules.coinMultiplier(state: PlayerState): number
 		local index = 1 + rules.indexBonus(state)
-		return math.round(rules.petMultiplier(state) * rules.rebirthMultiplier(state) * index * 1e6) / 1e6
+		local friends = 1 + rules.friendsBonus(state)
+		return math.round(rules.petMultiplier(state) * rules.rebirthMultiplier(state) * index * friends * 1e6) / 1e6
 	end
 
 	-- Splits the pizza into toppings the active delivery order still needs (kept, in
@@ -3890,6 +3898,35 @@ function GameRules.new(config: any)
 			end
 		end
 		return { worlds = worlds, found = found, total = total, completeWorlds = completeWorlds }
+	end
+
+	-- Friends bonus (#102): friends counted for this player (admin simulation wins while > 0).
+	function rules.friendsCount(state: PlayerState): number
+		local simulated = state.adminFriends or 0
+		if simulated > 0 then
+			return simulated
+		end
+		return state.friendsOnServer or 0
+	end
+
+	-- config.friendsBonus.perFriend per friend on the server, at most config.friendsBonus.max
+	-- (0 without the config or with features.friendsBonus off). Part of rules.coinMultiplier.
+	function rules.friendsBonus(state: PlayerState): number
+		local bonus = config.friendsBonus
+		if bonus == nil or not featureOn("friendsBonus") then
+			return 0
+		end
+		return math.min(rules.friendsCount(state) * bonus.perFriend, bonus.max)
+	end
+
+	-- Server only: the number of friends of this player on the same server.
+	function rules.setFriendsOnServer(state: PlayerState, count: number): Result
+		if count ~= count or count < 0 or count == math.huge or count % 1 ~= 0 then
+			return { ok = false, reason = "InvalidFriends", state = state }
+		end
+		local newState = table.clone(state)
+		newState.friendsOnServer = count
+		return { ok = true, state = newState }
 	end
 
 	-- Permanent coin bonus of the pet index: config.petIndex.worldBonus per complete world

@@ -17,6 +17,11 @@ Texts.strings = {
 	-- HUD
 	["hud.pizza"] = { de = "Pizza {count}/{capacity}", en = "Pizza {count}/{capacity}" },
 	["hud.pizzaFull"] = { de = "Pizza VOLL {count}/{capacity}", en = "Pizza FULL {count}/{capacity}" },
+	["hud.friendsBonus"] = {
+		de = "👥 {count} Freunde: +{percent} 💰",
+		en = "👥 {count} friends: +{percent} 💰",
+	},
+	["hud.friendsBonusOne"] = { de = "👥 1 Freund: +{percent} 💰", en = "👥 1 friend: +{percent} 💰" },
 	["hud.autoCollectOn"] = { de = "Auto-Sammeln: AN", en = "Auto-Collect: ON" },
 	["hud.autoCollectOff"] = { de = "Auto-Sammeln: AUS", en = "Auto-Collect: OFF" },
 
@@ -84,6 +89,10 @@ Texts.strings = {
 	["admin.action.completeQuest"] = { de = "Quest abschließen", en = "Complete quest" },
 	["admin.action.rerollQuests"] = { de = "Quests neu würfeln", en = "Reroll quests" },
 	["admin.action.completePetIndex"] = { de = "Pet-Index einer Welt füllen", en = "Fill a world's pet index" },
+	["admin.action.simulateFriends"] = {
+		de = "Freunde-Anzahl simulieren (0 = echt)",
+		en = "Simulate friend count (0 = real)",
+	},
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -95,6 +104,7 @@ Texts.strings = {
 	["admin.param.days"] = { de = "Tage", en = "Days" },
 	["admin.param.day"] = { de = "Tag", en = "Day" },
 	["admin.param.topping"] = { de = "Belag", en = "Topping" },
+	["admin.param.friends"] = { de = "Freunde", en = "Friends" },
 	["admin.param.percent"] = { de = "Prozent", en = "Percent" },
 	["admin.param.variant"] = { de = "Variante", en = "Variant" },
 	["admin.param.shiny"] = { de = "Shiny", en = "Shiny" },

@@ -17,6 +17,7 @@ local features = Features.new({
 	goldenToppings = true,
 	whatsNew = true,
 	petIndex = true,
+	friendsBonus = true,
 	secretPets = true,
 	worldIntro = true,
 	shinyPets = true,
@@ -97,6 +98,7 @@ describe("admin registry", function()
 			"completeQuest",
 			"rerollQuests",
 			"completePetIndex",
+			"simulateFriends",
 			"resetProgress",
 		})
 	end)
@@ -439,6 +441,7 @@ describe("admin actions for golden toppings (#94)", function()
 				goldenToppings = false,
 				whatsNew = true,
 				petIndex = true,
+				friendsBonus = true,
 				secretPets = true,
 				worldIntro = true,
 				shinyPets = true,
@@ -522,6 +525,7 @@ describe("admin Secret pet actions (#81)", function()
 				goldenToppings = true,
 				whatsNew = true,
 				petIndex = true,
+				friendsBonus = true,
 				secretPets = false,
 				worldIntro = true,
 				shinyPets = true,
@@ -603,6 +607,7 @@ describe("pet variant admin actions (#80)", function()
 				goldenToppings = true,
 				whatsNew = true,
 				petIndex = true,
+				friendsBonus = true,
 				secretPets = true,
 				shinyPets = false,
 				worldIntro = true,
@@ -662,6 +667,7 @@ describe("pet level admin action (#90)", function()
 				goldenToppings = true,
 				whatsNew = true,
 				petIndex = true,
+				friendsBonus = true,
 				secretPets = true,
 				shinyPets = true,
 				worldIntro = true,
@@ -688,6 +694,7 @@ describe("admin lucky wheel (#98)", function()
 			goldenToppings = true,
 			whatsNew = true,
 			petIndex = true,
+			friendsBonus = true,
 			secretPets = true,
 			worldIntro = true,
 			shinyPets = true,
@@ -788,6 +795,18 @@ describe("admin codes (#99)", function()
 	it("is hidden and refused while codes are switched off", function()
 		local offAdmin = AdminActions.new(rules, TestConfig, withCodes(false))
 		expect(offAdmin.run(ADMIN, player(), "resetCodes", {}, ctx).reason).toBe("FeatureOff")
+	end)
+end)
+
+describe("admin friends action (#102)", function()
+	it("simulateFriends sets the simulated count, 0 goes back to the real count", function()
+		local result = admin.run(ADMIN, player(), "simulateFriends", { 2 }, ctx)
+		expect(result.ok).toBe(true)
+		expect(rules.friendsCount(result.state)).toBe(2)
+		expect(math.abs(rules.friendsBonus(result.state) - 0.2) < 1e-9).toBe(true)
+		local off = admin.run(ADMIN, result.state, "simulateFriends", { 0 }, ctx)
+		expect(rules.friendsCount(off.state)).toBe(0)
+		expect(admin.run(ADMIN, player(), "simulateFriends", { 6 }, ctx).reason).toBe("InvalidArgument")
 	end)
 end)
 
