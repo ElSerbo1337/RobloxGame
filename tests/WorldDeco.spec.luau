@@ -132,6 +132,10 @@ describe("scripted world deco (#82)", function()
 			Idol = true,
 			Fireflies = true,
 			Mist = true,
+			Dune = true,
+			Pyramid = true,
+			Oasis = true,
+			Cactus = true,
 		}
 		for _, theme in cfg.themes do
 			for _, item in (theme.deco and theme.deco.kits) or {} do
@@ -139,6 +143,54 @@ describe("scripted world deco (#82)", function()
 				expect(item.count > 0 and item.size[1] <= item.size[2]).toBe(true)
 			end
 		end
+	end)
+
+	local desert = indexOf("DesertPyramids")
+
+	it("gives the Desert Pyramids dunes, small pyramids, oases with palms and cacti (#84)", function()
+		local roles = {}
+		for _, spec in decoParts(desert) do
+			roles[spec.role or ""] = (roles[spec.role or ""] or 0) + 1
+		end
+		expect((roles.Dune or 0) >= 40).toBe(true)
+		expect((roles.Pyramid or 0) >= 20).toBe(true)
+		expect((roles.Oasis or 0) >= 20).toBe(true)
+		expect((roles.Cactus or 0) >= 60).toBe(true)
+	end)
+
+	it("keeps the desert deco on the island, clear of the field and path, with detail never colliding (#84)", function()
+		local island = plan.worldIsland(desert)
+		local center = island.center
+		local field = island.field :: any
+		local details = 0
+		for _, spec in decoParts(desert) do
+			local x, z = spec.cframe[1], spec.cframe[3]
+			expect(IslandPlan.isInsideOutline(island.outline, x, z)).toBe(true)
+			local inField = math.abs(x - field.center[1]) < field.size[1] / 2
+				and math.abs(z - field.center[3]) < field.size[2] / 2
+			expect(inField).toBe(false)
+			expect(math.abs(x - center[1]) < cfg.pathWidth / 2).toBe(false)
+			if spec.detail then
+				details += 1
+				expect(spec.collide).toBe(false)
+			end
+			-- Oasis water and palm leaves never block the way.
+			if spec.name == "OasisWater" or spec.name == "PalmLeaf" or spec.name == "OasisShore" then
+				expect(spec.collide).toBe(false)
+			end
+		end
+		expect(details > 20).toBe(true)
+	end)
+
+	it("puts a step pyramid with a glowing capstone and obelisks on the landmark terrace (#84)", function()
+		local found = {}
+		for _, spec in plan.worldIsland(desert).parts do
+			found[spec.name] = (found[spec.name] or 0) + 1
+		end
+		expect(found.PyramidTier).toBe(5)
+		expect(found.PyramidCapstone).toBe(1)
+		expect(found.Obelisk).toBe(2)
+		expect((found.Sandstone or 0) > 20).toBe(true)
 	end)
 end)
 

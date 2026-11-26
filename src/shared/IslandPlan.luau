@@ -243,7 +243,8 @@ end
 -- (beach: round boulders), "IceEdge" (icebergs: ice blocks with crystal spikes),
 -- "Basalt" (volcano: basalt columns), "Peppermint" (candy land: icing with standing
 -- peppermints and gumdrops), "Moonbase" (space: low panels with glowing post tips) or
--- "CoralReef" (Atlantis: pale reef rocks with coral knobs, #82).
+-- "CoralReef" (Atlantis: pale reef rocks with coral knobs, #82) or "Sandstone" (Desert
+-- Pyramids: low sandstone blocks of uneven height, #84).
 -- `inward` points into the island; everything stays low so the view stays open.
 local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: V, i: number, theme: any)
 	local dir = sub(q, p)
@@ -333,6 +334,26 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 					})
 				)
 			end
+		end
+	elseif style == "Sandstone" then
+		-- Desert Pyramids (#84): a low wall of sandstone blocks along the edge, of uneven
+		-- height, every third one lighter and every fifth one a little sunk and tilted.
+		local blocks = math.max(1, math.floor(len / 5 + 0.5))
+		local seg = len / blocks
+		for k = 1, blocks do
+			local t = (k - 0.5) / blocks
+			local h = 1.4 + noise(i, k) * 1.4
+			local sunk = (i + k) % 5 == 0
+			local at = add(add(p, scale(dir, t)), add(inset, v(0, h / 2 - (if sunk then 0.5 else 0), 0)))
+			local cf = along(at, if sunk then add(unit(dir), v(0, 0.12, 0)) else dir)
+			table.insert(
+				parts,
+				spec("Block", v(1.8, h, seg * 0.9), cf, {
+					name = "Sandstone",
+					color = if (i + k) % 3 == 0 then theme.cliffLight else theme.rim,
+					role = "Rim",
+				})
+			)
 		end
 	elseif style == "IceEdge" then
 		local h = 1.8 + noise(i, 3) * 1.4
@@ -1773,6 +1794,76 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		end
 	end
 
+	-- World 10 landmark (#84): a big step pyramid on the terrace - five sandstone tiers, a
+	-- dark entrance facing the path (+X), a golden capstone that glows (the only Glow part
+	-- there) and two obelisks with golden tips beside the entrance.
+	local function greatPyramid(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local stone = theme.ruin or theme.cliffLight
+		local stoneDark = theme.ruinDark or theme.cliff
+		local gold = theme.gold or { 255, 200, 70 }
+		local tiers = { 22, 18, 14, 10, 6 }
+		local tierHeight = 3
+		for k, width in tiers do
+			table.insert(
+				parts,
+				spec("Block", v(width, tierHeight, width), yawed(v(at[1], baseY + (k - 0.5) * tierHeight, at[3]), 0), {
+					name = "PyramidTier",
+					color = if k % 2 == 0 then stoneDark else stone,
+					role = "Landmark",
+				})
+			)
+		end
+		local top = baseY + #tiers * tierHeight
+		table.insert(
+			parts,
+			spec("Block", v(3, 3, 3), yawed(v(at[1], top + 1.5, at[3]), math.pi / 4), {
+				name = "PyramidCapstone",
+				color = gold,
+				material = "Neon",
+				collide = false,
+				role = "Glow",
+			})
+		)
+		-- Entrance: a dark doorway on the front of the lowest tier with a lintel above.
+		table.insert(
+			parts,
+			spec("Block", v(0.4, 4.2, 3.2), yawed(v(at[1] + 11.05, baseY + 2.1, at[3]), 0), {
+				name = "PyramidDoor",
+				color = { 70, 50, 34 },
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			spec("Block", v(1, 1, 4.6), yawed(v(at[1] + 11.3, baseY + 4.7, at[3]), 0), {
+				name = "PyramidLintel",
+				color = stoneDark,
+				role = "Landmark",
+			})
+		)
+		for _, side in { -1, 1 } do
+			local o = v(at[1] + 13.5, baseY, at[3] + side * 6)
+			table.insert(
+				parts,
+				spec("Block", v(1.6, 9, 1.6), yawed(add(o, v(0, 4.5, 0)), 0), {
+					name = "Obelisk",
+					color = stone,
+					role = "Landmark",
+				})
+			)
+			table.insert(
+				parts,
+				spec("Block", v(1.1, 1.1, 1.1), yawed(add(o, v(0, 9.5, 0)), math.pi / 4), {
+					name = "ObeliskTip",
+					color = gold,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+	end
+
 	local LANDMARKS = {
 		SteppedTemple = steppedTemple,
 		GiantPizza = giantPizza,
@@ -1783,6 +1874,7 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		Cake = cake,
 		Rocket = rocket,
 		SunkenTemple = sunkenTemple,
+		GreatPyramid = greatPyramid,
 	}
 
 	local function localToWorld(center: V, p: { number }): V
@@ -2563,6 +2655,174 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 				deco = true,
 			}),
 		}
+	end
+
+	-- Desert Pyramids kits (#84): "Dune" (a sand ridge of two wedges, long windward and
+	-- short lee side), "Pyramid" (small step pyramid), "Oasis" (pond with palms) and
+	-- "Cactus" (saguaro with arms and a flower).
+	function DECO_KITS.Dune(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local sand = colors[(k - 1) % #colors + 1] or theme.grass
+		local height = size * (0.18 + noise(k, 4) * 0.08)
+		local width = size * 0.55
+		local c, s = math.cos(yaw), math.sin(yaw)
+		local back = v(s, 0, c)
+		local long, short = size * 0.6, size * 0.28
+		local ridge = add(at, v(0, height / 2 - 0.15, 0))
+		return {
+			spec("Wedge", v(width, height, long), yawed(add(ridge, scale(back, -long / 2)), yaw), {
+				name = "Dune",
+				color = sand,
+				role = "Dune",
+				deco = true,
+			}),
+			spec("Wedge", v(width, height, short), yawed(add(ridge, scale(back, short / 2)), yaw + math.pi), {
+				name = "DuneLee",
+				color = colors[k % #colors + 1] or sand,
+				role = "Dune",
+				deco = true,
+			}),
+		}
+	end
+
+	function DECO_KITS.Pyramid(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local stone = colors[1] or theme.cliffLight
+		local dark = colors[2] or theme.cliff
+		local tiers = 3 + k % 2
+		local step = size / tiers
+		local h = size * 0.22
+		for t = 1, tiers do
+			local w = size - (t - 1) * step
+			table.insert(
+				parts,
+				spec("Block", v(w, h, w), yawed(add(at, v(0, (t - 0.5) * h, 0)), yaw), {
+					name = "MiniPyramid",
+					color = if t % 2 == 0 then dark else stone,
+					role = "Pyramid",
+					deco = true,
+					-- The small top tier is optional.
+					detail = t == tiers,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.Oasis(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		table.insert(
+			parts,
+			disc(add(at, v(0, 0.12, 0)), size, 0.24, {
+				name = "OasisShore",
+				color = theme.grassLight or theme.grass,
+				collide = false,
+				role = "Oasis",
+				deco = true,
+			})
+		)
+		table.insert(
+			parts,
+			disc(add(at, v(0, 0.3, 0)), size * 0.72, 0.2, {
+				name = "OasisWater",
+				color = theme.water,
+				material = "Glass",
+				transparency = 0.2,
+				collide = false,
+				role = "Oasis",
+				deco = true,
+			})
+		)
+		local leaf = colors[1] or { 70, 160, 70 }
+		local leafDark = colors[2] or leaf
+		local trunk = theme.wood or { 160, 120, 80 }
+		local palms = 1 + k % 2
+		for b = 1, palms do
+			local angle = yaw + b * 2.4
+			local base = add(at, v(math.cos(angle) * size * 0.44, 0, math.sin(angle) * size * 0.44))
+			local height = size * (0.7 + noise(k, b) * 0.25)
+			local lean = size * 0.15
+			local top = add(base, v(-math.cos(angle) * lean, height, -math.sin(angle) * lean))
+			table.insert(
+				parts,
+				beam(base, top, size * 0.08, size * 0.08, {
+					name = "PalmTrunk",
+					color = trunk,
+					role = "Oasis",
+					deco = true,
+				})
+			)
+			for f = 1, 4 do
+				local a = angle + f * math.pi / 2 + 0.4
+				local tip = add(top, v(math.cos(a) * size * 0.32, -size * 0.1, math.sin(a) * size * 0.32))
+				table.insert(
+					parts,
+					beam(top, tip, size * 0.14, size * 0.03, {
+						name = "PalmLeaf",
+						color = if f % 2 == 0 then leafDark else leaf,
+						collide = false,
+						role = "Oasis",
+						deco = true,
+						detail = f > 2,
+					})
+				)
+			end
+		end
+		return parts
+	end
+
+	function DECO_KITS.Cactus(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local green = colors[(k - 1) % #colors + 1] or { 80, 150, 80 }
+		local d = size * 0.2
+		table.insert(
+			parts,
+			disc(add(at, v(0, size / 2, 0)), d, size, {
+				name = "Cactus",
+				color = green,
+				role = "Cactus",
+				deco = true,
+			})
+		)
+		local arms = k % 3
+		for a = 1, arms do
+			local side = if a == 1 then 1 else -1
+			local c, s = math.cos(yaw) * side, math.sin(yaw) * side
+			local h = size * (0.35 + noise(k, a) * 0.2)
+			local out = d * 1.3
+			table.insert(
+				parts,
+				beam(add(at, v(0, h, 0)), add(at, v(c * out, h, -s * out)), d * 0.7, d * 0.7, {
+					name = "CactusArm",
+					color = green,
+					collide = false,
+					role = "Cactus",
+					deco = true,
+				})
+			)
+			table.insert(
+				parts,
+				disc(add(at, v(c * out, h + size * 0.15, -s * out)), d * 0.7, size * 0.32, {
+					name = "CactusArm",
+					color = green,
+					collide = false,
+					role = "Cactus",
+					deco = true,
+				})
+			)
+		end
+		if k % 2 == 0 then
+			table.insert(
+				parts,
+				ball(add(at, v(0, size + d * 0.1, 0)), d * 0.7, {
+					name = "CactusFlower",
+					color = theme.flowers and theme.flowers[k % #theme.flowers + 1] or { 255, 110, 150 },
+					role = "Cactus",
+					deco = true,
+					detail = true,
+				})
+			)
+		end
+		return parts
 	end
 
 	-- Places theme.deco on a world island (after the trees, sharing their keep-out rules).
