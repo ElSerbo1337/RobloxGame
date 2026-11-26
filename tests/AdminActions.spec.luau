@@ -11,6 +11,7 @@ local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 local rules = GameRules.new(TestConfig)
 local features = Features.new({
 	adminPanel = true,
+	loginCalendar30 = true,
 	codes = false,
 	luckyWheel = false,
 	goldenToppings = true,
@@ -92,6 +93,7 @@ describe("admin registry", function()
 			"setShinyChance",
 			"setPetLevel",
 			"givePetXp",
+			"setCalendarDay",
 			"completeQuest",
 			"rerollQuests",
 			"completePetIndex",
@@ -430,6 +432,7 @@ describe("admin actions for golden toppings (#94)", function()
 			TestConfig,
 			Features.new({
 				adminPanel = true,
+				loginCalendar30 = true,
 				codes = false,
 				petLevels = true,
 				luckyWheel = true,
@@ -512,6 +515,7 @@ describe("admin Secret pet actions (#81)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				loginCalendar30 = true,
 				codes = false,
 				petLevels = true,
 				luckyWheel = true,
@@ -593,6 +597,7 @@ describe("pet variant admin actions (#80)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				loginCalendar30 = true,
 				codes = false,
 				luckyWheel = true,
 				goldenToppings = true,
@@ -651,6 +656,7 @@ describe("pet level admin action (#90)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				loginCalendar30 = true,
 				codes = false,
 				luckyWheel = true,
 				goldenToppings = true,
@@ -675,6 +681,7 @@ describe("admin lucky wheel (#98)", function()
 		TestConfig,
 		Features.new({
 			adminPanel = true,
+			loginCalendar30 = true,
 			codes = false,
 			petLevels = true,
 			luckyWheel = true,
@@ -809,5 +816,39 @@ describe("admin pet index action (#95)", function()
 
 		expect(table.find(ids(offAdmin.list()), "completePetIndex")).toBeNil()
 		expect(offAdmin.run(ADMIN, player(), "completePetIndex", { "PizzeriaGarden" }, ctx).reason).toBe("FeatureOff")
+	end)
+end)
+
+describe("admin login calendar (#101)", function()
+	local function withCalendar(on: boolean)
+		local map = {}
+		for id in GameConfig.features do
+			map[id] = false
+		end
+		map.adminPanel = true
+		map.loginCalendar30 = on
+		return Features.new(map)
+	end
+	local calendarAdmin = AdminActions.new(rules, TestConfig, withCalendar(true))
+
+	it("setCalendarDay makes the chosen day claimable today", function()
+		local result = calendarAdmin.run(ADMIN, player(), "setCalendarDay", { 30 }, ctx)
+
+		expect(result.ok).toBe(true)
+		local calendar = rules.loginCalendar(result.state, NOW)
+		expect(calendar.today).toBe(30)
+		expect(calendar.claimable).toBe(true)
+	end)
+
+	it("only offers days 1-30", function()
+		expect(calendarAdmin.run(ADMIN, player(), "setCalendarDay", { 31 }, ctx).reason).toBe("InvalidArgument")
+		expect(calendarAdmin.run(ADMIN, player(), "setCalendarDay", { 0 }, ctx).reason).toBe("InvalidArgument")
+	end)
+
+	it("is hidden and refused while the 30-day calendar is switched off", function()
+		local offAdmin = AdminActions.new(rules, TestConfig, withCalendar(false))
+
+		expect(table.find(ids(offAdmin.list()), "setCalendarDay")).toBeNil()
+		expect(offAdmin.run(ADMIN, player(), "setCalendarDay", { 7 }, ctx).reason).toBe("FeatureOff")
 	end)
 end)

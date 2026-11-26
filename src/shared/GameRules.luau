@@ -50,7 +50,7 @@ export type PlayerState = {
 	totalCoinsEarned: number,
 	-- Ids (config.hints) of new HUD buttons the player has opened once (they stop pulsing).
 	seenHints: { string },
-	-- Login calendar: calendar day (1-7) of the last claimed reward and the German day
+	-- Login calendar: calendar day (1-30, #101; 1-7 with loginCalendar30 off) of the last claimed reward and the German day
 	-- (see dayNumber) it was claimed on, and the German day the calendar last opened by
 	-- itself on join (0 = never).
 	loginStreak: number,
@@ -382,11 +382,13 @@ export type EventWorldEntry = {
 -- A reward as configured for gifts (and the login calendar): a fixed `amount` of gems or
 -- potions.
 -- `potionId` (codes, #99) pays that potion instead of a random one.
-export type RewardSpec = { kind: string, amount: number, potionId: string? }
+-- "Pet" (login calendar day 30, #101): `amount` pets `petId`, added even to a full
+-- inventory (a reward is never lost).
+export type RewardSpec = { kind: string, amount: number, potionId: string?, petId: string? }
 
--- A reward as paid out / shown: "Gems" | "Potion", how many, and which potion
--- (set once a potion reward was drawn).
-export type Reward = { kind: string, amount: number, potionId: string? }
+-- A reward as paid out / shown: "Gems" | "Potion" | "Pet", how many, which potion (set once
+-- a potion reward was drawn) and which pet.
+export type Reward = { kind: string, amount: number, potionId: string?, petId: string? }
 
 -- One play time gift as shown in the gifts menu.
 export type GiftEntry = {
@@ -416,11 +418,14 @@ export type LoginDay = {
 	-- "Claimed" (earlier in the current series, or today once claimed) | "Ready" (today,
 	-- not claimed yet) | "Waiting" (later days)
 	status: string,
+	-- Big reward day (7, 14, 30 in the 30-day calendar, #101).
+	big: boolean,
 	rewards: { Reward },
 }
 
 export type LoginCalendar = {
-	-- Calendar day (1-7) of today: claimable now, or already claimed today.
+	-- Calendar day (1-30, 1-7 with loginCalendar30 off) of today: claimable now, or
+	-- already claimed today.
 	today: number,
 	claimable: boolean,
 	days: { LoginDay },
@@ -2167,17 +2172,19 @@ function GameRules.new(config: any)
 	local function previewRewards(specs: { RewardSpec }): { Reward }
 		local rewards = {}
 		for _, spec in specs do
-			table.insert(rewards, { kind = spec.kind, amount = spec.amount })
+			table.insert(rewards, { kind = spec.kind, amount = spec.amount, petId = spec.petId })
 		end
 		return rewards
 	end
 
 	-- Pays configured rewards into a copy of the state; each potion reward draws one
 	-- random potion (like delivery orders). Returns the new state and what was paid.
+	-- Pet rewards go through addPet (index, foundAt = `now`), also past the inventory limit.
 	local function payRewards(
 		state: PlayerState,
 		specs: { RewardSpec },
-		random: () -> number
+		random: () -> number,
+		now: number?
 	): (PlayerState, { Reward })
 		local newState = table.clone(state)
 		newState.potions = table.clone(state.potions)
@@ -2185,6 +2192,13 @@ function GameRules.new(config: any)
 		for index, reward in paid do
 			if reward.kind == "Gems" then
 				newState.gems += reward.amount
+			elseif reward.kind == "Pet" and reward.petId and config.pets[reward.petId] then
+				if newState.pets == state.pets then
+					newState.pets = table.clone(state.pets)
+				end
+				for _ = 1, reward.amount do
+					addPet(newState, { uid = newState.nextPetUid, petId = reward.petId }, now)
+				end
 			elseif reward.kind == "Potion" then
 				local fixed = specs[index].potionId
 				local potionId = if fixed and rules.isPotionOffered(fixed) then fixed else randomPotionId(random)
@@ -2250,31 +2264,46 @@ function GameRules.new(config: any)
 		return { ok = true, state = newState, rewards = paid }
 	end
 
+	-- The calendar days in use: the 30-day calendar (#101) while features.loginCalendar30
+	-- is on (and configured), otherwise the 7-day one.
+	local function calendarDays(): { any }
+		if config.loginCalendar30 ~= nil and featureOn("loginCalendar30") then
+			return config.loginCalendar30
+		end
+		return config.loginCalendar
+	end
+
 	-- Today's calendar day and whether it can still be claimed: a claim yesterday continues
-	-- the series (after day 7 back to day 1), a claim today means claimed, anything older
-	-- starts over at day 1. A claim on a later day than today (clock of another server
-	-- ahead) counts as claimed, so the reward cannot be taken twice.
+	-- the series (after the last day back to day 1), a claim today means claimed, anything
+	-- older starts over at day 1. A claim on a later day than today (clock of another server
+	-- ahead) counts as claimed, so the reward cannot be taken twice. A saved series longer
+	-- than the calendar (30-day calendar switched off) wraps around inside it.
 	local function loginToday(state: PlayerState, now: number): (number, boolean)
 		local today = rules.dayNumber(now)
+		local count = #calendarDays()
 		if state.loginClaimDay >= today then
-			return math.max(1, state.loginStreak), false
+			return (math.max(1, state.loginStreak) - 1) % count + 1, false
 		elseif state.loginClaimDay == today - 1 then
-			return state.loginStreak % #config.loginCalendar + 1, true
+			return state.loginStreak % count + 1, true
 		end
 		return 1, true
 	end
 
 	-- The login calendar on the German day of `now`: today's calendar day, whether it can be
-	-- claimed, and all days (config.loginCalendar) with status and rewards.
+	-- claimed, and all days (config.loginCalendar30 / loginCalendar) with status, big flag
+	-- and rewards.
 	function rules.loginCalendar(state: PlayerState, now: number): LoginCalendar
 		local today, claimable = loginToday(state, now)
 		local days = {}
-		for day, entry in config.loginCalendar do
+		for day, entry in calendarDays() do
 			local status = if day < today or (day == today and not claimable)
 				then "Claimed"
 				elseif day == today then "Ready"
 				else "Waiting"
-			table.insert(days, { day = day, status = status, rewards = previewRewards(entry.rewards) })
+			table.insert(
+				days,
+				{ day = day, status = status, big = entry.big == true, rewards = previewRewards(entry.rewards) }
+			)
 		end
 		return { today = today, claimable = claimable, days = days }
 	end
@@ -2285,10 +2314,22 @@ function GameRules.new(config: any)
 		if not claimable then
 			return { ok = false, reason = "LoginClaimed", state = state, rewards = {}, day = 0 }
 		end
-		local newState, paid = payRewards(state, config.loginCalendar[today].rewards, random)
+		local newState, paid = payRewards(state, calendarDays()[today].rewards, random, now)
 		newState.loginStreak = today
 		newState.loginClaimDay = rules.dayNumber(now)
 		return { ok = true, state = newState, rewards = paid, day = today }
+	end
+
+	-- Admin (#101): makes calendar day `day` claimable today, as if the series had reached
+	-- day - 1 yesterday.
+	function rules.setLoginCalendarDay(state: PlayerState, day: number, now: number): Result
+		if day < 1 or day > #calendarDays() or day ~= math.floor(day) then
+			return fail(state, "UnknownDay")
+		end
+		local newState = table.clone(state)
+		newState.loginStreak = day - 1
+		newState.loginClaimDay = if day == 1 then 0 else rules.dayNumber(now) - 1
+		return { ok = true, state = newState }
 	end
 
 	-- The calendar opens by itself on the first join of each German day: succeeds (and

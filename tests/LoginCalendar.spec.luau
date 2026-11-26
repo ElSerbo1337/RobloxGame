@@ -15,8 +15,23 @@ local function DAY(n: number): number
 end
 local NO_RANDOM = sequenceRandom({ 0 })
 
--- TestConfig calendar: 1 5 gems, 2 10 gems, 3 1 potion, 4 1 potion, 5 20 gems, 6 2 potions,
--- 7 50 gems + 3 potions.
+-- TestConfig 30-day calendar (#101): 1 5 gems, 2 10 gems, 3 1 potion, 4 1 potion, 5 20 gems,
+-- 6 2 potions, 7 50 gems + 3 potions (big), 8-29 (day) gems, 14 50 gems + 2 potions (big),
+-- 30 the pet Dragon + 100 gems (big).
+
+-- Same config with the 30-day calendar switched off: the old 7-day calendar.
+local sevenDayConfig = table.clone(TestConfig)
+sevenDayConfig.features = { loginCalendar30 = false }
+local sevenDayRules = GameRules.new(sevenDayConfig)
+
+-- Claims on the days 0 .. count - 1 (day offsets from NOW).
+local function series(count: number): { number }
+	local days = {}
+	for day = 0, count - 1 do
+		table.insert(days, day)
+	end
+	return days
+end
 
 -- Claims on each of the given days (day offsets from NOW), starting from `state`.
 local function claimOn(state: any, days: { number }): any
@@ -34,13 +49,13 @@ describe("login calendar status", function()
 
 		expect(calendar.today).toBe(1)
 		expect(calendar.claimable).toBe(true)
-		expect(#calendar.days).toBe(7)
+		expect(#calendar.days).toBe(30)
 		expect(calendar.days[1].status).toBe("Ready")
 		expect(calendar.days[2].status).toBe("Waiting")
-		expect(calendar.days[7].status).toBe("Waiting")
+		expect(calendar.days[30].status).toBe("Waiting")
 	end)
 
-	it("shows the fixed rewards of all seven days", function()
+	it("shows the fixed rewards of the days, the pet of day 30 with its id", function()
 		local days = rules.loginCalendar(rules.newPlayerState(), NOW).days
 
 		expect(days[1].rewards).toEqual({ { kind = "Gems", amount = 5 } })
@@ -48,6 +63,32 @@ describe("login calendar status", function()
 		expect(days[3].rewards).toEqual({ { kind = "Potion", amount = 1 } })
 		expect(days[4].rewards).toEqual({ { kind = "Potion", amount = 1 } })
 		expect(days[7].rewards).toEqual({ { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } })
+		expect(days[20].rewards).toEqual({ { kind = "Gems", amount = 20 } })
+		expect(days[30].rewards).toEqual({
+			{ kind = "Pet", amount = 1, petId = "Dragon" },
+			{ kind = "Gems", amount = 100 },
+		})
+	end)
+
+	it("marks days 7, 14 and 30 as big reward days", function()
+		local big = {}
+		for _, day in rules.loginCalendar(rules.newPlayerState(), NOW).days do
+			if day.big then
+				table.insert(big, day.day)
+			end
+		end
+
+		expect(big).toEqual({ 7, 14, 30 })
+	end)
+
+	it("in the middle of the series earlier days are claimed and later ones waiting", function()
+		local calendar = rules.loginCalendar(claimOn(rules.newPlayerState(), series(19)), DAY(19))
+
+		expect(calendar.today).toBe(20)
+		expect(calendar.claimable).toBe(true)
+		expect(calendar.days[19].status).toBe("Claimed")
+		expect(calendar.days[20].status).toBe("Ready")
+		expect(calendar.days[21].status).toBe("Waiting")
 	end)
 
 	it("after claiming, today is claimed and nothing is claimable until tomorrow", function()
@@ -128,19 +169,79 @@ describe("claiming the login reward", function()
 		expect(rules.loginCalendar(state, DAY(4)).today).toBe(1)
 	end)
 
-	it("after day 7 the calendar starts over at day 1", function()
-		local state = claimOn(rules.newPlayerState(), { 0, 1, 2, 3, 4, 5 })
+	it("after day 7 the series goes on with day 8", function()
+		local state = claimOn(rules.newPlayerState(), series(7))
 
-		local seventh = rules.claimLoginReward(state, DAY(6), NO_RANDOM)
-		local eighth = rules.claimLoginReward(seventh.state, DAY(7), NO_RANDOM)
+		local eighth = rules.claimLoginReward(state, DAY(7), NO_RANDOM)
 
-		expect(seventh.day).toBe(7)
-		expect(eighth.day).toBe(1)
-		expect(eighth.rewards).toEqual({ { kind = "Gems", amount = 5 } })
+		expect(eighth.day).toBe(8)
+		expect(eighth.rewards).toEqual({ { kind = "Gems", amount = 8 } })
+	end)
+
+	it("a missed day late in the series also starts over at day 1", function()
+		local state = claimOn(rules.newPlayerState(), series(25))
+
+		local result = rules.claimLoginReward(state, DAY(26), NO_RANDOM)
+
+		expect(result.day).toBe(1)
+		expect(result.rewards).toEqual({ { kind = "Gems", amount = 5 } })
+	end)
+
+	it("day 14 pays its big reward", function()
+		local state = claimOn(rules.newPlayerState(), series(13))
+
+		local result = rules.claimLoginReward(state, DAY(13), sequenceRandom({ 0 }))
+
+		expect(result.day).toBe(14)
+		expect(result.state.gems - state.gems).toBe(50)
+		expect(rules.potionCount(result.state, "Coins") - rules.potionCount(state, "Coins")).toBe(2)
+	end)
+
+	it("day 30 gives the calendar pet and the gems", function()
+		local state = claimOn(rules.newPlayerState(), series(29))
+
+		local result = rules.claimLoginReward(state, DAY(29), NO_RANDOM)
+
+		expect(result.ok).toBe(true)
+		expect(result.day).toBe(30)
+		expect(result.rewards).toEqual({
+			{ kind = "Pet", amount = 1, petId = "Dragon" },
+			{ kind = "Gems", amount = 100 },
+		})
+		expect(#result.state.pets).toBe(#state.pets + 1)
+		local pet = result.state.pets[#result.state.pets]
+		expect(pet.petId).toBe("Dragon")
+		expect(pet.foundAt).toBe(DAY(29))
+		expect(result.state.nextPetUid).toBe(pet.uid + 1)
+		expect(rules.hasOwnedPet(result.state, "Dragon")).toBe(true)
+		expect(result.state.gems - state.gems).toBe(100)
+	end)
+
+	it("day 30 gives the pet even with a full inventory", function()
+		local state = claimOn(rules.newPlayerState(), series(29))
+		state.pets = {}
+		for uid = 1, rules.inventorySlots(state) do
+			table.insert(state.pets, { uid = uid, petId = "Hamster" })
+		end
+		state.nextPetUid = #state.pets + 1
+
+		local result = rules.claimLoginReward(state, DAY(29), NO_RANDOM)
+
+		expect(result.ok).toBe(true)
+		expect(#result.state.pets).toBe(rules.inventorySlots(state) + 1)
+	end)
+
+	it("after day 30 the calendar starts over at day 1", function()
+		local state = claimOn(rules.newPlayerState(), series(30))
+
+		local result = rules.claimLoginReward(state, DAY(30), NO_RANDOM)
+
+		expect(result.day).toBe(1)
+		expect(rules.loginCalendar(result.state, DAY(30)).days[30].status).toBe("Waiting")
 	end)
 
 	it("pays gems and random potions like gifts (sorted ids: Coins, Luck, Speed)", function()
-		local state = claimOn(rules.newPlayerState(), { 0, 1, 2, 3, 4, 5 })
+		local state = claimOn(rules.newPlayerState(), series(6))
 
 		local result = rules.claimLoginReward(state, DAY(6), sequenceRandom({ 0.5 }))
 
@@ -230,5 +331,64 @@ describe("login calendar and saving", function()
 
 		expect(rules.loginCalendar(reborn, DAY(1)).claimable).toBe(false)
 		expect(rules.claimLoginReward(reborn, DAY(2), NO_RANDOM).day).toBe(3)
+	end)
+end)
+
+describe("login calendar switched off (features.loginCalendar30 = false)", function()
+	it("uses the 7-day calendar without big days", function()
+		local calendar = sevenDayRules.loginCalendar(sevenDayRules.newPlayerState(), NOW)
+
+		expect(#calendar.days).toBe(7)
+		expect(calendar.days[7].big).toBe(false)
+	end)
+
+	it("after day 7 starts over at day 1", function()
+		local state = sevenDayRules.newPlayerState()
+		for day = 0, 6 do
+			state = sevenDayRules.claimLoginReward(state, DAY(day), NO_RANDOM).state
+		end
+
+		expect(sevenDayRules.claimLoginReward(state, DAY(7), NO_RANDOM).day).toBe(1)
+	end)
+
+	it("a series beyond day 7 (switched off later) stays inside the 7 days", function()
+		local state = claimOn(rules.newPlayerState(), series(12))
+
+		local claimed = sevenDayRules.loginCalendar(state, DAY(11))
+		local next = sevenDayRules.claimLoginReward(state, DAY(12), NO_RANDOM)
+
+		expect(claimed.today).toBe(5)
+		expect(claimed.claimable).toBe(false)
+		expect(next.ok).toBe(true)
+		expect(next.day).toBe(6)
+	end)
+end)
+
+describe("setting the calendar day (admin, #101)", function()
+	it("makes the given day claimable today", function()
+		local result = rules.setLoginCalendarDay(rules.newPlayerState(), 30, NOW)
+
+		expect(result.ok).toBe(true)
+		local calendar = rules.loginCalendar(result.state, NOW)
+		expect(calendar.today).toBe(30)
+		expect(calendar.claimable).toBe(true)
+		expect(rules.claimLoginReward(result.state, NOW, NO_RANDOM).day).toBe(30)
+	end)
+
+	it("also after today's reward was claimed", function()
+		local state = claimOn(rules.newPlayerState(), { 0 })
+
+		local result = rules.setLoginCalendarDay(state, 7, NOW)
+
+		expect(rules.loginCalendar(result.state, NOW).today).toBe(7)
+		expect(rules.loginCalendar(result.state, NOW).claimable).toBe(true)
+	end)
+
+	it("refuses days outside the calendar", function()
+		local state = rules.newPlayerState()
+
+		expect(rules.setLoginCalendarDay(state, 0, NOW).reason).toBe("UnknownDay")
+		expect(rules.setLoginCalendarDay(state, 31, NOW).reason).toBe("UnknownDay")
+		expect(sevenDayRules.setLoginCalendarDay(state, 8, NOW).reason).toBe("UnknownDay")
 	end)
 end)

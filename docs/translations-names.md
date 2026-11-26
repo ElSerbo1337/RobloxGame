@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (105)
+## Pets (106)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -173,6 +173,14 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | GoldenMonkeyKing | Goldener Affenkönig | Golden Monkey King | Welt 9 (Dschungel-Ei) | Geheim | #83 |
 | ScorpionKing | Skorpionkönig | Scorpion King | Welt 10 (Pyramiden-Ei) | Geheim | #84 |
 | CountFangtastic | Graf Gruselzahn | Count Fangtastic | Welt 11 (Spuk-Ei) | Geheim | #85, freundlicher Vampir-Fledermaus-Graf |
+
+### Kalender-Pet (#101)
+
+Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| CalendarFox | Kalender-Fuchs | Calendar Fox | – (Login-Kalender Tag 30) | Mythisch | #101 |
 
 ## Beläge (34)
 

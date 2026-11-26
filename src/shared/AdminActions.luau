@@ -412,6 +412,15 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Login calendar (#101): makes the chosen day claimable today (e.g. 30 = calendar pet).
+		id = "setCalendarDay",
+		feature = "loginCalendar30",
+		params = { { name = "day", kind = "integer", min = 1, max = 30, default = 30 } },
+		run = function(env, state, args, ctx)
+			return env.rules.setLoginCalendarDay(state, args[1], ctx.now)
+		end,
+	},
+	{
 		-- Codes (#99): every code can be redeemed again.
 		id = "resetCodes",
 		feature = "codes",

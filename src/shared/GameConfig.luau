@@ -442,6 +442,52 @@ local GameConfig = {
 		{ rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },
 	},
 
+	-- 30-day login calendar (#101, feature loginCalendar30; replaces loginCalendar while on,
+	-- same series rules: a missed day starts over at day 1, after day 30 back to day 1).
+	-- Big reward days (`big`, highlighted in the menu): 7, 14 and 30; day 30 gives the
+	-- exclusive calendar pet (CalendarFox, in no egg). 384 gems in 30 days = ~12.8 a day
+	-- (the 7-day calendar: ~12.1), so gifts + calendar stay at ~39 for a 60 minute day.
+	-- Preliminary, tuned in the balancing ticket (#108).
+	loginCalendar30 = {
+		{ rewards = { { kind = "Gems", amount = 5 } } }, -- 1
+		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 2
+		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 3
+		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 4
+		{ rewards = { { kind = "Gems", amount = 15 } } }, -- 5
+		{ rewards = { { kind = "Potion", amount = 2 } } }, -- 6
+		{ big = true, rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } }, -- 7
+		{ rewards = { { kind = "Gems", amount = 8 } } }, -- 8
+		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 9
+		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 10
+		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 11
+		{ rewards = { { kind = "Gems", amount = 12 } } }, -- 12
+		{ rewards = { { kind = "Potion", amount = 2 } } }, -- 13
+		{ big = true, rewards = { { kind = "Gems", amount = 60 }, { kind = "Potion", amount = 3 } } }, -- 14
+		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 15
+		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 16
+		{ rewards = { { kind = "Gems", amount = 12 } } }, -- 17
+		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 18
+		{ rewards = { { kind = "Gems", amount = 15 } } }, -- 19
+		{ rewards = { { kind = "Potion", amount = 2 } } }, -- 20
+		{ rewards = { { kind = "Gems", amount = 20 } } }, -- 21
+		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 22
+		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 23
+		{ rewards = { { kind = "Gems", amount = 12 } } }, -- 24
+		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 25
+		{ rewards = { { kind = "Gems", amount = 15 } } }, -- 26
+		{ rewards = { { kind = "Potion", amount = 2 } } }, -- 27
+		{ rewards = { { kind = "Gems", amount = 25 } } }, -- 28
+		{ rewards = { { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 2 } } }, -- 29
+		{
+			big = true,
+			rewards = {
+				{ kind = "Pet", amount = 1, petId = "CalendarFox" },
+				{ kind = "Gems", amount = 80 },
+				{ kind = "Potion", amount = 3 },
+			},
+		}, -- 30
+	},
+
 	-- Daily and weekly quests (#97, GameRules "Quests"). Daily: `dailyCount` quests per German
 	-- day, each paying one of `dailyRewards` (drawn when the quest is made); all of them
 	-- done = bonus chest; `freeRerolls` rerolls a day, then `rerollGems` each. Bonus chests
@@ -1148,6 +1194,15 @@ local GameConfig = {
 			displayNameEn = "Black Hole Cat",
 			rarity = "Secret",
 			bonus = 10,
+		},
+		-- Login calendar pet (#101): only from day 30 of the 30-day calendar, in no egg (and so
+		-- not needed for the pet index). Fixed bonus like the Mythic pets of worlds 4-5.
+		CalendarFox = {
+			displayName = "Kalender-Fuchs",
+			displayNameEn = "Calendar Fox",
+			rarity = "Mythic",
+			bonus = 1.5,
+			calendarPet = true,
 		},
 		PearlKingOtter = {
 			displayName = "Perlenkönig-Otter",

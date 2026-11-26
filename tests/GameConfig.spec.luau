@@ -1281,7 +1281,7 @@ describe("GameConfig login calendar", function()
 		return table.concat(parts, " + ")
 	end
 
-	it("has exactly 7 days", function()
+	it("has exactly 7 days (used while loginCalendar30 is off)", function()
 		expect(#GameConfig.loginCalendar).toBe(7)
 	end)
 
@@ -1303,6 +1303,85 @@ describe("GameConfig login calendar", function()
 	end)
 end)
 
+describe("GameConfig 30-day login calendar (#101)", function()
+	local days = GameConfig.loginCalendar30
+
+	it("has exactly 30 days with big rewards on days 7, 14 and 30", function()
+		expect(#days).toBe(30)
+		local big = {}
+		for day, entry in days do
+			if entry.big then
+				table.insert(big, day)
+			end
+		end
+		expect(big).toEqual({ 7, 14, 30 })
+	end)
+
+	it("gives only gems, potions and (on day 30) the calendar pet", function()
+		for day, entry in days do
+			assert(#entry.rewards > 0, `day {day} without reward`)
+			for _, reward in entry.rewards do
+				assert(reward.amount > 0 and reward.amount == math.floor(reward.amount), `day {day}: bad amount`)
+				if reward.kind == "Pet" then
+					expect(day).toBe(30)
+				else
+					assert(reward.kind == "Gems" or reward.kind == "Potion", `day {day}: {reward.kind}`)
+				end
+			end
+		end
+	end)
+
+	it("makes the big days worth more gems than any normal day", function()
+		local function gemsOf(entry: any): number
+			local total = 0
+			for _, reward in entry.rewards do
+				if reward.kind == "Gems" then
+					total += reward.amount
+				end
+			end
+			return total
+		end
+		local smallMax = 0
+		for _, entry in days do
+			if not entry.big then
+				smallMax = math.max(smallMax, gemsOf(entry))
+			end
+		end
+		for _, day in { 7, 14, 30 } do
+			assert(gemsOf(days[day]) > smallMax, `day {day} is not bigger`)
+		end
+	end)
+
+	it("gives the exclusive calendar pet on day 30: Mythic, named in both languages, in no egg", function()
+		local petReward
+		for _, reward in days[30].rewards do
+			if reward.kind == "Pet" then
+				petReward = reward
+			end
+		end
+		assert(petReward, "day 30 has no pet")
+		expect(petReward.amount).toBe(1)
+		local pet = GameConfig.pets[petReward.petId]
+		assert(pet, "unknown calendar pet")
+		expect(pet.calendarPet).toBe(true)
+		assert(pet.rarity == "Legendary" or pet.rarity == "Mythic", "calendar pet rarity")
+		expect(type(pet.displayName)).toBe("string")
+		expect(type(pet.displayNameEn)).toBe("string")
+		for eggId, egg in GameConfig.eggs do
+			for _, entry in egg.pets do
+				assert(entry.pet ~= petReward.petId, `calendar pet in egg {eggId}`)
+			end
+		end
+		for _, world in GameConfig.worlds do
+			assert(world.secretPet ~= petReward.petId, "calendar pet is a Secret pet")
+		end
+	end)
+
+	it("is switched on", function()
+		expect(GameConfig.features.loginCalendar30).toBe(true)
+	end)
+end)
+
 describe("GameConfig gift and calendar gems", function()
 	local function gems(rewards: any): number
 		local total = 0
@@ -1320,13 +1399,15 @@ describe("GameConfig gift and calendar gems", function()
 		for _, gift in GameConfig.gifts do
 			perDay += gems(gift.rewards)
 		end
-		local calendarWeek = 0
-		for _, entry in GameConfig.loginCalendar do
-			calendarWeek += gems(entry.rewards)
-		end
-		perDay += calendarWeek / #GameConfig.loginCalendar
+		for _, calendar in { GameConfig.loginCalendar, GameConfig.loginCalendar30 } do
+			local calendarGems = 0
+			for _, entry in calendar do
+				calendarGems += gems(entry.rewards)
+			end
+			local total = perDay + calendarGems / #calendar
 
-		expect(perDay >= 20 and perDay <= 40).toBe(true)
+			expect(total >= 20 and total <= 40).toBe(true)
+		end
 	end)
 end)
 

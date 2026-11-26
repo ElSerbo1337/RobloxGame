@@ -60,7 +60,7 @@ describe("English names (#68)", function()
 	it("gives every displayName in GameConfig the approved English name", function()
 		local rows = readNameList()
 		local entries = namedEntries()
-		expect(#entries).toBe(200)
+		expect(#entries).toBe(201)
 		for _, item in entries do
 			local row = rows[item.id]
 			expect(row ~= nil).toBe(true)

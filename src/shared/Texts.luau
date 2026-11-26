@@ -47,6 +47,10 @@ Texts.strings = {
 	["admin.action.setUpgrade"] = { de = "Upgrade-Stufe setzen", en = "Set upgrade level" },
 	["admin.action.finishTutorial"] = { de = "Tutorial beenden", en = "Finish tutorial" },
 	["admin.action.skipDays"] = { de = "Tage vorspulen (7 = Woche)", en = "Skip days (7 = week)" },
+	["admin.action.setCalendarDay"] = {
+		de = "Kalendertag heute abholbar (30 = Pet)",
+		en = "Calendar day claimable today (30 = pet)",
+	},
 	["admin.action.giveGoldenToppings"] = { de = "Goldene Beläge auf die Pizza", en = "Golden toppings on pizza" },
 	["admin.action.setGoldenChance"] = { de = "Gold-Chance testen (%, 0 = aus)", en = "Test gold chance (%, 0 = off)" },
 	["admin.action.resetWhatsNew"] = {
@@ -89,6 +93,7 @@ Texts.strings = {
 	["admin.param.upgrade"] = { de = "Upgrade", en = "Upgrade" },
 	["admin.param.level"] = { de = "Stufe", en = "Level" },
 	["admin.param.days"] = { de = "Tage", en = "Days" },
+	["admin.param.day"] = { de = "Tag", en = "Day" },
 	["admin.param.topping"] = { de = "Belag", en = "Topping" },
 	["admin.param.percent"] = { de = "Prozent", en = "Percent" },
 	["admin.param.variant"] = { de = "Variante", en = "Variant" },

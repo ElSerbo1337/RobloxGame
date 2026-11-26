@@ -145,6 +145,29 @@ return {
 		{ rewards = { { kind = "Potion", amount = 2 } } },
 		{ rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },
 	},
+	-- 30-day login calendar (#101, feature loginCalendar30, used instead of loginCalendar
+	-- while on): days 1-7 like loginCalendar; days 8-29 give (day) gems, day 14 50 gems
+	-- + 2 potions, day 30 the pet Dragon + 100 gems. `big` marks the big reward days.
+	loginCalendar30 = (function()
+		local days = {
+			{ rewards = { { kind = "Gems", amount = 5 } } },
+			{ rewards = { { kind = "Gems", amount = 10 } } },
+			{ rewards = { { kind = "Potion", amount = 1 } } },
+			{ rewards = { { kind = "Potion", amount = 1 } } },
+			{ rewards = { { kind = "Gems", amount = 20 } } },
+			{ rewards = { { kind = "Potion", amount = 2 } } },
+			{ big = true, rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } },
+		}
+		for day = 8, 29 do
+			days[day] = { rewards = { { kind = "Gems", amount = day } } }
+		end
+		days[14] = { big = true, rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 2 } } }
+		days[30] = {
+			big = true,
+			rewards = { { kind = "Pet", amount = 1, petId = "Dragon" }, { kind = "Gems", amount = 100 } },
+		}
+		return days
+	end)(),
 	-- Lucky wheel (#98): free spins per German day (+1 after bonusSpinMinutes of play time
 	-- that day), more for spinPrice gems. Fields drawn by weight; "Coins" pays `minutes` of
 	-- income (incomePerMinute, at least minCoins).
