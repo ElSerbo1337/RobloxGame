@@ -1987,3 +1987,21 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] `GameConfig.features.worldDeco = false` → keine Bäume/Kürbisse/Ruinen/Fledermäuse/Nebel (Schloss, Zaun, Stationen bleiben), keine Fehler; danach wieder `true`.
 - [ ] Sobald #105 (Wetter) da ist: Admin → **Wetter starten** Gewitter auf der Spuk-Insel; mit „Bildschirm-Blitze“ **aus** keine Blitze.
 - [ ] Musik: verspielt-gruselige Musik (Creator „Roblox“, z. B. Cembalo/Pizzicato) wählen, ID bei `Music_HauntedCastle` eintragen.
+
+## MEGA UPDATE – #99 Codes
+
+Neu: Codes im Einstellungs-Menü (Feld aus #76) werden jetzt vom Server geprüft (`src/server/CodeService.luau`, Regeln `rules.redeemCode`). Codes in `GameConfig.codes`: `WELCOME` = 50 Gems, `PIZZA` = 2 Glücks-Tränke, beide bis 31.12.2026 23:59 deutscher Zeit, einmal pro Spieler. Schalter: `GameConfig.features.codes`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Codes.spec.luau`).
+
+Studio, Rojo verbinden, **Play**, Seitenleiste → „Optionen“ → Abschnitt „🎟️ Codes“:
+
+- [ ] `welcome` eintippen → „Eingelöst: +50 Gems“ (grün), Gem-Zähler +50, Feld wird geleert. Output ohne rote Fehler.
+- [ ] `PIZZA` → „Eingelöst: 2× Glücks-Trank“, im Trank-Inventar 2 Glücks-Tränke mehr.
+- [ ] `WELCOME` noch einmal → „Diesen Code hast du schon benutzt.“ (rot).
+- [ ] `quatsch` → „Diesen Code gibt es nicht.“
+- [ ] Sechs Versuche innerhalb einer Minute → beim sechsten „Zu viele Versuche – warte kurz.“; nach einer Minute geht es wieder.
+- [ ] Admin-Panel → **Codes zurücksetzen** → beide Codes lassen sich wieder einlösen.
+- [ ] Rejoin (mit „Enable Studio Access to API Services“): eingelöste Codes bleiben eingelöst.
+- [ ] Englisch (Attribut `Language` = `en`): „Redeemed: +50 gems“, „You already used this code.“ usw.
+- [ ] Abgelaufen („Dieser Code ist abgelaufen.“) ist nur per Test geprüft; wer es sehen will: in `GameConfig.codes` bei einem Code `expires` auf ein vergangenes Datum stellen, danach zurück.
