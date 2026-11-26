@@ -26,6 +26,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
 local Net = require(ReplicatedStorage.Shared.Net)
+local AnalyticsService = require(script.Parent.AnalyticsService)
 local PlayerStates = require(script.Parent.PlayerStates)
 local SignText = require(script.Parent.SignText)
 local Texts = require(ReplicatedStorage.Shared.Texts)
@@ -359,6 +360,7 @@ function PetService.start()
 			end
 			PlayerStates.set(player, result.state)
 			local pet = result.pet :: GameRules.OwnedPet
+			AnalyticsService.logMerge(player, rules.petVariant(pet))
 			petMerged:FireClient(player, {
 				uid = pet.uid,
 				petId = pet.petId,

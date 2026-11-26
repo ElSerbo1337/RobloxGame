@@ -4,6 +4,7 @@ local Constants = require(ReplicatedStorage.Shared.Constants)
 local Net = require(ReplicatedStorage.Shared.Net)
 
 local AdminService = require(script.AdminService)
+local AnalyticsService = require(script.AnalyticsService)
 local AnnounceService = require(script.AnnounceService)
 local BarrierService = require(script.BarrierService)
 local CameraService = require(script.CameraService)
@@ -103,6 +104,8 @@ end
 LeaderboardService.start(spawnIsland)
 -- Spawn marketplace (#106): update board and Christmas countdown texts.
 SpawnMarketService.start(spawnIsland)
+-- Analytics (#114): before PlayerStates.start so the first state of every player counts.
+AnalyticsService.start()
 PlayerStates.start()
 PizzaVisual.start()
 for _, world in worlds do

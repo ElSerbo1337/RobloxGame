@@ -6,6 +6,18 @@
 --
 -- Usage: local rules = GameRules.new(GameConfig)
 
+-- An analytics event (#114, see rules.analyticsEvents). kind: "Onboarding" | "Funnel" |
+-- "Custom"; `key` is set for once-only events; `field` is an optional custom field.
+export type AnalyticsEvent = {
+	kind: string,
+	name: string,
+	step: number?,
+	funnel: string?,
+	value: number?,
+	field: string?,
+	key: string?,
+}
+
 export type PlayerState = {
 	version: number,
 	coins: number,
@@ -121,6 +133,9 @@ export type PlayerState = {
 	petIndexStars: { [string]: { [string]: boolean } },
 	toppingsFound: { [string]: boolean },
 	goldenToppingsFound: { [string]: boolean },
+	-- Analytics (#114): keys of the once-only events already logged (see
+	-- rules.analyticsEvents), so a "first" event never fires twice. Kept on rebirth.
+	analyticsLogged: { [string]: boolean },
 }
 
 -- One quest (#97): kind (config.quests.kinds id), goal and progress (PlayMinutes counts
@@ -706,6 +721,7 @@ function GameRules.new(config: any)
 			petIndexStars = {},
 			toppingsFound = {},
 			goldenToppingsFound = {},
+			analyticsLogged = {},
 		}
 	end
 
@@ -4000,6 +4016,73 @@ function GameRules.new(config: any)
 			end
 		end
 		return { worlds = worlds, found = found, total = total }
+	end
+
+	-- Analytics (#114). Events to log after a state change from `old` (nil = first
+	-- state of the session, e.g. right after loading) to `new`:
+	--   Onboarding (once): step 1 "Start", then step n + 1 = tutorial step n finished
+	--   Funnel "WorldUnlocks" (once per world): step = position in config.worlds
+	--   Custom "FirstRebirth" (once)
+	--   Custom "QuestClaimed" / "WheelSpin": every claim / spin during the session
+	-- Once-only events carry a `key`; the caller logs them and then stores the keys with
+	-- markAnalyticsLogged, so they never fire twice (also not after a rebirth resets the
+	-- bought worlds). Repeated events need `old` and are never derived from a load.
+	function rules.analyticsEvents(old: PlayerState?, new: PlayerState): { AnalyticsEvent }
+		local events: { AnalyticsEvent } = {}
+		if not featureOn("analytics") then
+			return events
+		end
+		local logged = new.analyticsLogged or {}
+		local function once(key: string, event: AnalyticsEvent)
+			if not logged[key] then
+				event.key = key
+				table.insert(events, event)
+			end
+		end
+		for step = 1, math.min(new.tutorialStep, #TUTORIAL_STEPS + 1) do
+			local name = if step == 1 then "Start" else TUTORIAL_STEPS[step - 1]
+			once(`tutorial:{step}`, { kind = "Onboarding", name = name, step = step })
+		end
+		for index, world in config.worlds do
+			if rules.isWorldUnlocked(new, world.id) then
+				once(`world:{world.id}`, { kind = "Funnel", funnel = "WorldUnlocks", name = world.id, step = index })
+			end
+		end
+		if new.rebirths > 0 then
+			once("rebirth:1", { kind = "Custom", name = "FirstRebirth", value = 1 })
+		end
+		if old == nil then
+			return events
+		end
+		for _, field in { "dailyQuests", "weeklyQuests" } do
+			local before, after = (old :: any)[field], (new :: any)[field]
+			if before == after then
+				continue
+			end
+			local period = if field == "dailyQuests" then "Daily" else "Weekly"
+			for index, quest in after do
+				local previous = before[index]
+				if quest.claimed and previous ~= nil and not previous.claimed and previous.kind == quest.kind then
+					table.insert(events, { kind = "Custom", name = "QuestClaimed", value = 1, field = period })
+				end
+			end
+		end
+		local spins = new.wheelSpins - old.wheelSpins
+		if spins > 0 then
+			table.insert(events, { kind = "Custom", name = "WheelSpin", value = spins })
+		end
+		return events
+	end
+
+	-- Stores that the once-only analytics events with these keys were logged.
+	function rules.markAnalyticsLogged(state: PlayerState, keys: { string }): Result
+		local newState = table.clone(state)
+		local logged = table.clone(state.analyticsLogged or {})
+		for _, key in keys do
+			logged[key] = true
+		end
+		newState.analyticsLogged = logged
+		return { ok = true, state = newState }
 	end
 
 	return rules

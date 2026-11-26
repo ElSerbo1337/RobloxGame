@@ -2090,3 +2090,16 @@ Eigener Ladebildschirm in `ReplicatedFirst` (`src/first/LoadingScreen.client.lua
 - [ ] 3D-Pizza: Wenn `ReplicatedStorage.GameAssets.Models.Pizza` vorhanden ist, dreht sich das Modell statt der GUI-Pizza. Zum Prüfen der Ersatz-Pizza `GameAssets` kurz umbenennen.
 - [ ] Danach erscheinen „Neu im Update“, Tutorial und Welt-Intro normal (der Ladebildschirm liegt mit `DisplayOrder` 1000 darüber, solange er da ist).
 - [ ] Schalter: `GameConfig.features.loadingScreen = false` → normaler Roblox-Ladebildschirm (nur zum Test, wieder auf `true`; das Admin-Panel kann den Schalter nicht umlegen, weil der Bildschirm vor allem anderen läuft).
+
+## MEGA UPDATE – #114 Analytics-Ereignisse
+
+Serverseitig über Roblox `AnalyticsService` (`src/server/AnalyticsService.luau`, Regeln `rules.analyticsEvents` in `GameRules`), Schalter `features.analytics`. Einmal-Ereignisse werden im Spielstand gemerkt (`analyticsLogged`), auch nach Rebirth nicht doppelt. Fehler beim Loggen landen nur als Warnung `[Analytics] …` im Output.
+
+- Onboarding-Funnel: Schritt 1 „Start“, dann je ein Schritt pro abgeschlossenem Tutorial-Schritt (2 CollectToppings, 3 SellPizza, 4 BuyUpgrade, 5 OpenEgg).
+- Funnel `WorldUnlocks`: erste Freischaltung jeder Welt (Schritt = Position in `GameConfig.worlds`, Name = Welt-Id).
+- Custom: `FirstRebirth` (einmal), `QuestClaimed` (Feld 1 = Daily/Weekly), `WheelSpin` (Wert = Drehungen), `PetMerge` (Feld 1 = neue Variante).
+
+- [ ] Nur in der privaten Test-Experience (veröffentlicht, Studio loggt nicht in den Creator Hub): Neuer Spieler spielt das Tutorial durch, kauft per Admin-Panel Münzen und schaltet Welt 2 frei, macht eine Rebirth, holt eine Quest-Belohnung ab, dreht das Glücksrad und verschmilzt Pets.
+- [ ] Creator Hub → Analytics → Funnels: „Onboarding“ zeigt die 5 Schritte, Funnel „WorldUnlocks“ die freigeschalteten Welten; Analytics → Custom Events: `FirstRebirth`, `QuestClaimed`, `WheelSpin`, `PetMerge` (kann einige Stunden dauern).
+- [ ] Studio-Play: Output ohne `[Analytics]`-Warnungen (in Studio loggt Roblox nicht, darf aber auch nicht fehlschlagen).
+- [ ] Zweite Rebirth bzw. Welt 2 nach Rebirth erneut freischalten → keine zweiten `FirstRebirth`/`WorldUnlocks`-Einträge.
