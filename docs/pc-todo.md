@@ -2042,3 +2042,23 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Geschenke/Glücksrad/Lieferung: zufällige Trank-Belohnungen können jetzt auch Shiny/Gold sein, **nie Mega** (Mega nur als feste Belohnung, z. B. 7-Tage-Quest-Serie).
 - [ ] Englisch: „Shiny Potion“, „Gold Potion“, „Mega Potion“, „Active via Mega Potion“.
 - [ ] Schalter `newPotions = false` → im Shop und Trank-Menü nur die alten 3 Tränke, keine Zufallsbelohnung Shiny/Gold, Quest-Serie gibt statt Mega einen zufälligen Trank. Danach wieder `true`.
+
+## MEGA UPDATE – #101 Login-Kalender auf 30 Tage
+
+Neu: Der Kalender hat **30 Tage** in 5 Wochen-Reihen (7-7-7-7-2), scrollbar, springt beim Öffnen zur Reihe von heute. **Große Tage** 7, 14 und 30: goldene Kachel mit „⭐ Tag n“ und orangem Rand, beim Abholen Fanfare (Sound `Rebirth`) und große Hüpf-Animation. **Tag 30:** exklusives Pet **Kalender-Fuchs** (Mythisch, +150 %, in keinem Ei) + 80 Gems + 3 Tränke; das Pet kommt auch bei vollem Inventar dazu. Verpasster Tag → wieder Tag 1, nach Tag 30 → Tag 1. Gems: 384 in 30 Tagen (~12,8/Tag, vorläufig, Feinschliff #108). Schalter `loginCalendar30 = false` → alter 7-Tage-Kalender.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/LoginCalendar.spec.luau`). **Modell-Import:** `assets/models/pets/CalendarFox.fbx` wie die anderen Pets nach `ReplicatedStorage.GameAssets.Models.Pets` importieren (Name `CalendarFox`); ohne Import zeigt das Spiel den runden Platzhalter in Mythisch-Farbe und auf Kachel 30 den Namen als Text.
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Kachel „Kalender“ → Fenster „Login-Kalender“ mit Tag 1–30 in Reihen zu 7, Tag 1 gelb „Heute“, Tage 7/14/30 golden mit ⭐. Output ohne rote Fehler.
+- [ ] Liste scrollt (Maus/Finger), Kachel 30 zeigt den Kalender-Fuchs in 3D (nach Import) und darunter „80 Gems + 3 Tränke“.
+- [ ] Abholen → „Tag 1! +5 Gems“, Kachel ✓, Knopf grau „Morgen wieder“, Statuszeile „Komm morgen wieder! Noch 29 Tage bis Kalender-Fuchs.“, roter Punkt an der Kachel weg.
+- [ ] Admin **Kalendertag heute abholbar (30 = Pet)** mit 7 → Fenster springt zu Reihe 1, Tag 7 „Heute“; abholen → Fanfare, Kachel hüpft, „+50 Gems + 3 Tränke“. Mit 14 genauso (Reihe 2).
+- [ ] Admin Kalendertag **30** → Fenster scrollt zur letzten Reihe; abholen → „Tag 30! +Kalender-Fuchs + 80 Gems + 3 Tränke“, Pet erscheint im Pet-Menü (Mythisch) und lässt sich ausrüsten; folgt mit Namensschild „Kalender-Fuchs“.
+- [ ] Inventar voll machen (Admin **Pet geben**), dann Kalendertag 30 abholen → Pet kommt trotzdem dazu (Inventar kurz über dem Limit; Eier öffnen geht erst nach dem Löschen wieder).
+- [ ] Admin **Tage vorspulen** 1 → Tag 1 wieder abholbar (nach Tag 30 geht's bei 1 los); **Tage vorspulen** 2 nach einem Abholen → Serie verpasst, wieder Tag 1.
+- [ ] Rejoin am nächsten Tag (oder Tage vorspulen 1 + Rejoin): Fenster öffnet sich von selbst und steht auf der richtigen Reihe.
+- [ ] Handy (Emulator, kleines Querformat): Fenster füllt den Bildschirm, mindestens eine ganze Wochen-Reihe plus Knopf sichtbar, Rest scrollt; Texte lesbar.
+- [ ] Englisch (`Language` = `en`): „⭐ Day 7“, „Come back tomorrow! 29 days to go until Calendar Fox.“, „Calendar Fox + 80 gems + 3 potions“.
+- [ ] Schalter `loginCalendar30 = false` → eine Reihe mit 7 Tagen wie früher, Admin-Aktion weg; danach wieder `true`.

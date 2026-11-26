@@ -1,5 +1,6 @@
 --!strict
--- Login calendar (7 days, new day at midnight German time):
+-- Login calendar (30 days, #101; 7 while features.loginCalendar30 is off; new day at
+-- midnight German time; day 30 adds the calendar pet to the inventory via the rules):
 -- * On the first join of a German day the calendar opens by itself: once the player's
 --   state is loaded, rules.markLoginCalendarShown decides (remembered in the PlayerState,
 --   so rejoining the same day does not open it again) and the LoginCalendarAutoOpen
@@ -29,7 +30,7 @@ local function replicate(player: Player, state: PlayerState)
 	local calendar = PlayerStates.rules.loginCalendar(state, os.time())
 	local days = {}
 	for _, day in calendar.days do
-		table.insert(days, { day = day.day, status = day.status, rewards = day.rewards })
+		table.insert(days, { day = day.day, status = day.status, big = day.big, rewards = day.rewards })
 	end
 	player:SetAttribute(
 		"LoginCalendar",

@@ -378,6 +378,7 @@ Texts.strings = {
 	["reward.gems"] = { de = "{amount} Gems", en = "{amount} gems" },
 	["reward.potionOne"] = { de = "1 Trank", en = "1 potion" },
 	["reward.potionMany"] = { de = "{count} Tränke", en = "{count} potions" },
+	["reward.pet"] = { de = "Pet", en = "Pet" },
 
 	-- Potion menu
 	["potions.title"] = { de = "Meine Tränke", en = "My potions" },
@@ -531,6 +532,15 @@ Texts.strings = {
 	["quests.kind.UnlockWorld"] = { de = "Schalte eine neue Welt frei", en = "Unlock a new world" },
 	["calendar.title"] = { de = "Login-Kalender", en = "Login calendar" },
 	["calendar.day"] = { de = "Tag {day}", en = "Day {day}" },
+	["calendar.dayBig"] = { de = "⭐ Tag {day}", en = "⭐ Day {day}" },
+	["calendar.petIn"] = {
+		de = "Komm morgen wieder! Noch {days} Tage bis {pet}.",
+		en = "Come back tomorrow! {days} days to go until {pet}.",
+	},
+	["calendar.petTomorrow"] = {
+		de = "Komm morgen wieder: dann wartet {pet} auf dich!",
+		en = "Come back tomorrow: {pet} is waiting for you!",
+	},
 	["calendar.today"] = { de = "Heute", en = "Today" },
 	["calendar.claim"] = { de = "Abholen", en = "Claim" },
 	["calendar.tomorrow"] = { de = "Morgen wieder", en = "Back tomorrow" },

@@ -454,13 +454,18 @@ function UiKit.chanceText(percent: number): string
 	return (string.gsub(text, "%.", ",")) .. " %"
 end
 
--- A reward of gifts or the login calendar ({ kind = "Gems" | "Potion", amount, potionId? })
--- as short German text: "10 Gems", "2× Glücks-Trank", "1 Trank".
-function UiKit.rewardText(reward: { kind: string, amount: number, potionId: string? }): string
+-- A reward of gifts or the login calendar ({ kind = "Gems" | "Potion" | "Pet", amount,
+-- potionId?, petId? }) as short text: "10 Gems", "2× Glücks-Trank", "1 Trank",
+-- "Kalender-Fuchs" (#101).
+function UiKit.rewardText(reward: { kind: string, amount: number, potionId: string?, petId: string? }): string
 	if reward.kind == "Gems" then
 		return Lang.t("reward.gems", { amount = UiKit.shortNumber(reward.amount) })
 	elseif reward.kind == "Coins" then
 		return Lang.t("reward.coins", { amount = UiKit.shortNumber(reward.amount) })
+	elseif reward.kind == "Pet" then
+		local pet = reward.petId and GameConfig.pets[reward.petId]
+		local name = if pet then Lang.name(pet) else Lang.t("reward.pet")
+		return if reward.amount == 1 then name else `{reward.amount}× {name}`
 	end
 	local potion = reward.potionId and GameConfig.potions[reward.potionId]
 	if potion then
@@ -472,7 +477,7 @@ function UiKit.rewardText(reward: { kind: string, amount: number, potionId: stri
 end
 
 -- Several rewards joined with " + ".
-function UiKit.rewardsText(rewards: { { kind: string, amount: number, potionId: string? } }): string
+function UiKit.rewardsText(rewards: { { kind: string, amount: number, potionId: string?, petId: string? } }): string
 	local parts = {}
 	for _, reward in rewards do
 		table.insert(parts, UiKit.rewardText(reward))
