@@ -4,7 +4,7 @@
 -- PlayerStates.set, so it is saved with the player and survives a rejoin. The saved
 -- choices are replicated as the attribute Settings (JSON, only changed keys); the client
 -- fills in the defaults itself (phones start on "Low" graphics).
--- RedeemCode is NOT handled here: the code rules and their handler come with #99.
+-- RedeemCode is handled by CodeService (#99).
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")

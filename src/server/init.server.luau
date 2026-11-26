@@ -22,6 +22,7 @@ local PotionService = require(script.PotionService)
 local QuestService = require(script.QuestService)
 local RebirthService = require(script.RebirthService)
 local SettingsService = require(script.SettingsService)
+local CodeService = require(script.CodeService)
 local ShopService = require(script.ShopService)
 local SpawnMarketService = require(script.SpawnMarketService)
 local SpawnService = require(script.SpawnService)
@@ -168,6 +169,8 @@ RebirthService.start()
 AdminService.start()
 -- Settings menu (#76): volume, graphics, camera, egg animation; saved per player.
 SettingsService.start()
+-- Codes (#99): typed in the settings menu, once per player.
+CodeService.start()
 -- Daily and weekly quests (#97): new quests per German day / week, claims and rerolls.
 QuestService.start()
 

@@ -5,9 +5,9 @@
 -- * Graphics High/Low (phones start on Low, see GraphicsQuality), camera shake and
 --   screen flashes on/off.
 -- * Skip egg animation (EggAnimation).
--- * Code field (feature "codes"): sends only the wish RedeemCode(code); the server rules
---   and the answer CodeResult(ok, reason?, rewards?) come with #99. Until then (no answer
---   within CODE_TIMEOUT) it says "Codes gibt es bald!".
+-- * Code field (feature "codes"): sends only the wish RedeemCode(code); CodeService (#99)
+--   answers CodeResult(ok, reason?, rewards?). No answer within CODE_TIMEOUT (server
+--   switch off) says "Codes gibt es bald!".
 -- Every change goes through Settings.set (local at once, saved on the server).
 
 local Players = game:GetService("Players")
@@ -296,7 +296,7 @@ function SettingsMenu.start()
 	section("settings.sectionGame")
 	switchRow("skipEggAnimation")
 
-	-- Code field (#99 builds the rules and answers CodeResult).
+	-- Code field (CodeService, #99, answers CodeResult).
 	if features.enabled("codes") then
 		section("settings.sectionCodes")
 		local frame = Instance.new("Frame")
