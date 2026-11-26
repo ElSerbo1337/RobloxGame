@@ -81,6 +81,8 @@ export type PlayerState = {
 	-- Settings menu (#76): setting key (GameRules.SETTINGS) -> value the player chose.
 	-- Sparse: a missing key means "default" (resolveSettings). Kept on rebirth.
 	settings: { [string]: any },
+	-- Codes (#99): ids (upper case, GameConfig.codes) this player has redeemed. Kept on rebirth.
+	redeemedCodes: { string },
 	-- Lucky wheel (#98): free spins used on German day `wheelDay` (0 = never) and spins in
 	-- total (free and paid, for stats).
 	wheelDay: number,
@@ -354,7 +356,8 @@ export type EventWorldEntry = {
 
 -- A reward as configured for gifts (and the login calendar): a fixed `amount` of gems or
 -- potions.
-export type RewardSpec = { kind: string, amount: number }
+-- `potionId` (codes, #99) pays that potion instead of a random one.
+export type RewardSpec = { kind: string, amount: number, potionId: string? }
 
 -- A reward as paid out / shown: "Gems" | "Potion", how many, and which potion
 -- (set once a potion reward was drawn).
@@ -522,6 +525,23 @@ function GameRules.dayNumber(unixSeconds: number): number
 	return (unixSeconds + offset) // DAY_SECONDS
 end
 
+-- Unix time of a German wall-clock time (CET/CEST, see dayNumber), e.g. a code's end.
+function GameRules.germanTime(
+	date: { year: number, month: number, day: number, hour: number?, minute: number? }
+): number
+	local wallClock = daysFromCivil(date.year, date.month, date.day) * DAY_SECONDS
+		+ (date.hour or 0) * 3600
+		+ (date.minute or 0) * 60
+	local summer = wallClock - 2 * 3600
+	if summer >= clockChange(date.year, 3) and summer < clockChange(date.year, 10) then
+		return summer
+	end
+	return wallClock - 3600
+end
+
+-- Longest code a player can type (the settings menu cuts at the same length).
+GameRules.CODE_MAX_LENGTH = 32
+
 -- Whole German calendar days from the day of `unixSeconds` (German time, see dayNumber)
 -- until the calendar date `date`: 1 on the day before, 0 on that day, negative after it.
 function GameRules.daysUntil(unixSeconds: number, date: { year: number, month: number, day: number }): number
@@ -631,6 +651,7 @@ function GameRules.new(config: any)
 			lastWorldId = "",
 			seenWorldIntros = {},
 			settings = {},
+			redeemedCodes = {},
 			wheelDay = 0,
 			wheelFreeUsed = 0,
 			wheelSpins = 0,
@@ -2029,11 +2050,11 @@ function GameRules.new(config: any)
 		local newState = table.clone(state)
 		newState.potions = table.clone(state.potions)
 		local paid = previewRewards(specs)
-		for _, reward in paid do
+		for index, reward in paid do
 			if reward.kind == "Gems" then
 				newState.gems += reward.amount
 			elseif reward.kind == "Potion" then
-				local potionId = randomPotionId(random)
+				local potionId = specs[index].potionId or randomPotionId(random)
 				reward.potionId = potionId
 				newState.potions[potionId] = (newState.potions[potionId] or 0) + reward.amount
 			end
@@ -2345,6 +2366,37 @@ function GameRules.new(config: any)
 		local newState = table.clone(state)
 		newState.settings = table.clone(current)
 		newState.settings[key] = value
+		return { ok = true, state = newState }
+	end
+
+	-- Codes (#99): redeems a code from config.codes once per player. Case and surrounding
+	-- spaces do not matter. `expires` is a German wall-clock minute that still counts.
+	-- Reasons: Unknown | AlreadyUsed | Expired.
+	function rules.redeemCode(state: PlayerState, code: any, now: number, random: () -> number): RewardsResult
+		local id = if type(code) == "string" and #code <= GameRules.CODE_MAX_LENGTH * 2
+			then string.upper((string.gsub(code, "^%s*(.-)%s*$", "%1")))
+			else ""
+		local spec = if id ~= "" and #id <= GameRules.CODE_MAX_LENGTH and config.codes then config.codes[id] else nil
+		if spec == nil then
+			return { ok = false, reason = "Unknown", state = state, rewards = {} }
+		end
+		local redeemed = if type(state.redeemedCodes) == "table" then state.redeemedCodes else {}
+		if table.find(redeemed, id) then
+			return { ok = false, reason = "AlreadyUsed", state = state, rewards = {} }
+		end
+		if spec.expires and now >= GameRules.germanTime(spec.expires) + 60 then
+			return { ok = false, reason = "Expired", state = state, rewards = {} }
+		end
+		local newState, paid = payRewards(state, spec.rewards, random)
+		newState.redeemedCodes = table.clone(redeemed)
+		table.insert(newState.redeemedCodes, id)
+		return { ok = true, state = newState, rewards = paid }
+	end
+
+	-- Admin (#99): forgets which codes the player redeemed.
+	function rules.resetCodes(state: PlayerState): Result
+		local newState = table.clone(state)
+		newState.redeemedCodes = {}
 		return { ok = true, state = newState }
 	end
 

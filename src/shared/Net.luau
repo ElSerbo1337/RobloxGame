@@ -60,9 +60,10 @@
 -- SetSetting      client -> server  (key: string, value: any)   "store this setting" (#76; the server
 --                                    validates key and value, see GameRules.SETTINGS)
 -- RedeemCode      client -> server  (code: string)              "redeem this code" (settings menu, #76;
---                                    the code rules and the server handler come with #99)
+--                                    CodeService, #99; max. 5 tries per minute)
 -- CodeResult      server -> client  (ok: boolean, reason: string?, rewards: { GameRules.Reward }?)
---                                    answer to RedeemCode (#99); reason is shown as `codes.<reason>`
+--                                    answer to RedeemCode (#99); reason (Unknown | AlreadyUsed | Expired |
+--                                    TooManyTries) is shown as `codes.<reason>`
 -- SecretAnnounce  server -> client  (playerName: string, petId: string)  someone (on any server) hatched
 --                                    a Secret pet (#81): show the banner
 -- ClaimQuest      client -> server  (period: "Daily" | "Weekly", index: number)  "pay out this finished quest" (#97)

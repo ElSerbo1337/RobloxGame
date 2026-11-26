@@ -412,6 +412,15 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Codes (#99): every code can be redeemed again.
+		id = "resetCodes",
+		feature = "codes",
+		params = {},
+		run = function(env, state)
+			return env.rules.resetCodes(state)
+		end,
+	},
+	{
 		-- Quests (#97): finishes a daily/weekly quest (claiming stays in the quest menu).
 		-- Makes today's quests first if there are none yet.
 		id = "completeQuest",

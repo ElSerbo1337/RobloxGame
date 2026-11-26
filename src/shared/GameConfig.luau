@@ -370,6 +370,20 @@ local GameConfig = {
 		roundsPerMinute = 2,
 	},
 
+	-- Codes (#99, feature "codes"): typed in the settings menu, once per player, case does not
+	-- matter. Key = code in upper case; `expires` = last valid minute in German time
+	-- (optional); rewards like gifts, a potion reward with `potionId` pays that potion.
+	codes = {
+		WELCOME = {
+			rewards = { { kind = "Gems", amount = 50 } },
+			expires = { year = 2026, month = 12, day = 31, hour = 23, minute = 59 },
+		},
+		PIZZA = {
+			rewards = { { kind = "Potion", amount = 2, potionId = "Luck" } },
+			expires = { year = 2026, month = 12, day = 31, hour = 23, minute = 59 },
+		},
+	},
+
 	-- Lucky wheel (#98, feature "luckyWheel"): 1 free spin per German day + 1 more after
 	-- bonusSpinMinutes of play time that day, further spins for spinPrice gems. The server
 	-- draws the field by weight (sum 100 = percent). "Coins" pays `minutes` of the player's

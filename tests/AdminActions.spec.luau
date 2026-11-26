@@ -11,6 +11,7 @@ local describe, it, expect = TestKit.describe, TestKit.it, TestKit.expect
 local rules = GameRules.new(TestConfig)
 local features = Features.new({
 	adminPanel = true,
+	codes = false,
 	luckyWheel = false,
 	goldenToppings = true,
 	whatsNew = true,
@@ -427,6 +428,7 @@ describe("admin actions for golden toppings (#94)", function()
 			TestConfig,
 			Features.new({
 				adminPanel = true,
+				codes = false,
 				petLevels = true,
 				luckyWheel = true,
 				goldenToppings = false,
@@ -507,6 +509,7 @@ describe("admin Secret pet actions (#81)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				codes = false,
 				petLevels = true,
 				luckyWheel = true,
 				goldenToppings = true,
@@ -586,6 +589,7 @@ describe("pet variant admin actions (#80)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				codes = false,
 				luckyWheel = true,
 				goldenToppings = true,
 				whatsNew = true,
@@ -642,6 +646,7 @@ describe("pet level admin action (#90)", function()
 			config,
 			Features.new({
 				adminPanel = true,
+				codes = false,
 				luckyWheel = true,
 				goldenToppings = true,
 				whatsNew = true,
@@ -664,6 +669,7 @@ describe("admin lucky wheel (#98)", function()
 		TestConfig,
 		Features.new({
 			adminPanel = true,
+			codes = false,
 			petLevels = true,
 			luckyWheel = true,
 			goldenToppings = true,
@@ -741,5 +747,32 @@ describe("admin actions: quests (#97)", function()
 		expect(result.state.questStreakDay).toBe(state.questDay - 1)
 		expect(result.state.questWeekDay).toBe(state.questWeekDay - 1)
 		expect(rules.refreshQuests(result.state, QUEST_NOW, TestKit.sequenceRandom({ 0 })).ok).toBe(true)
+	end)
+end)
+
+describe("admin codes (#99)", function()
+	local function withCodes(on: boolean)
+		local map = {}
+		for id in GameConfig.features do
+			map[id] = false
+		end
+		map.adminPanel = true
+		map.codes = on
+		return Features.new(map)
+	end
+	local codesAdmin = AdminActions.new(rules, TestConfig, withCodes(true))
+
+	it("resetCodes lets the player redeem every code again", function()
+		local state = rules.redeemCode(player(), "HELLO", NOW, TestKit.sequenceRandom({ 0.5 })).state
+		local result = codesAdmin.run(ADMIN, state, "resetCodes", {}, ctx)
+		expect(result.ok).toBe(true)
+		expect(result.state.redeemedCodes).toEqual({})
+		expect(rules.redeemCode(result.state, "hello", NOW, TestKit.sequenceRandom({ 0.5 })).ok).toBe(true)
+		expect(state.redeemedCodes).toEqual({ "HELLO" })
+	end)
+
+	it("is hidden and refused while codes are switched off", function()
+		local offAdmin = AdminActions.new(rules, TestConfig, withCodes(false))
+		expect(offAdmin.run(ADMIN, player(), "resetCodes", {}, ctx).reason).toBe("FeatureOff")
 	end)
 end)

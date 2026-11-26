@@ -197,6 +197,14 @@ return {
 			{ id = "UnlockWorld", daily = { base = 1, perWorld = 0 } },
 		},
 	},
+	-- Codes (#99): upper-case id -> rewards and optional German end time (inclusive minute).
+	codes = {
+		HELLO = { rewards = { { kind = "Gems", amount = 50 } } },
+		LUCKY = {
+			rewards = { { kind = "Potion", amount = 2, potionId = "Luck" } },
+			expires = { year = 2026, month = 12, day = 31, hour = 23, minute = 59 },
+		},
+	},
 	-- Potions: bought with gems, drunk from the potion inventory, active for `durationSeconds`.
 	potions = {
 		Coins = { displayName = "Münz-Trank", price = 20, durationSeconds = 600, coinMultiplier = 2 },

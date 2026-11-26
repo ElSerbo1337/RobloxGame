@@ -72,6 +72,7 @@ Texts.strings = {
 		de = "Pet-XP geben (ausgerüstete, Minuten Spielzeit)",
 		en = "Give pet XP (equipped, minutes of play)",
 	},
+	["admin.action.resetCodes"] = { de = "Codes zurücksetzen", en = "Reset codes" },
 	["admin.action.resetWheelSpins"] = {
 		de = "Gratis-Drehungen zurücksetzen",
 		en = "Reset free spins",
@@ -661,6 +662,13 @@ Texts.strings = {
 	["codes.empty"] = { de = "Bitte einen Code eingeben.", en = "Please enter a code." },
 	["codes.unavailable"] = { de = "Codes gibt es bald!", en = "Codes are coming soon!" },
 	["codes.redeemed"] = { de = "Eingelöst: {rewards}", en = "Redeemed: {rewards}" },
+	["codes.Unknown"] = { de = "Diesen Code gibt es nicht.", en = "This code does not exist." },
+	["codes.AlreadyUsed"] = { de = "Diesen Code hast du schon benutzt.", en = "You already used this code." },
+	["codes.Expired"] = { de = "Dieser Code ist abgelaufen.", en = "This code has expired." },
+	["codes.TooManyTries"] = {
+		de = "Zu viele Versuche – warte kurz.",
+		en = "Too many tries – wait a moment.",
+	},
 } :: { [string]: Entry }
 
 -- Locale id ("de-de", "en-us", ...) → language: every German locale is German, all else English.
