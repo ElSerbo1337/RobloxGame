@@ -298,6 +298,12 @@ function Hud.start(): GuiObject
 			local key = if amount >= GameConfig.petLevels.maxLevel then "notify.petLevelMax" else "notify.petLevelUp"
 			showToast(Lang.t(key, { pet = Lang.name(GameConfig.pets[rewardKind]), level = amount }), ON)
 			Sounds.play("PetLevelUp")
+		elseif kind == "IndexComplete" and type(amount) == "string" then
+			-- Pet index (#95): every normal pet of a world found -> permanent coin bonus.
+			local bonus = (GameConfig.petIndex and GameConfig.petIndex.worldCoinBonus) or 0
+			local text = Lang.t("notify.indexComplete", { world = Lang.worldName(amount), bonus = Lang.percent(bonus) })
+			showToast(text, COIN)
+			Sounds.play("QuestDone")
 		elseif kind == "Gems" and amount then
 			showToast(Lang.t("notify.gems", { amount = formatNumber(amount) }), GEM)
 		elseif MESSAGE_KINDS[kind] then

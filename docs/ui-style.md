@@ -107,7 +107,7 @@ SideBar.setBadge("quests", true)   -- roter Punkt an/aus („hat Neues“), geht
 SideBar.setCaption("quests", "2/3") -- Beschriftung ändern, nil = wieder `text`
 ```
 
-`open` schaltet das Menü um (offen → zu, zu → auf) und ruft beim Öffnen wie jedes Menü `UiKit.menuOpened(id)` auf. `register` liefert den Knopf der Kachel (z. B. für einen „Neu!“-Hinweis mit `UiKit.placeSideNote`). Vergeben (`order`): `pets` 10, `potions` 20, `gifts` 30, `calendar` 40, `rebirth` 50, `worlds` 60, `quests` 70 (#97), `wheel` 80 (#98), `settings` 200 (#76); neue Menüs nehmen freie Zahlen (Vorschlag: Quests 70, Glücksrad 80, Index 90, Profil 100, Einstellungen 200).
+`open` schaltet das Menü um (offen → zu, zu → auf) und ruft beim Öffnen wie jedes Menü `UiKit.menuOpened(id)` auf. `register` liefert den Knopf der Kachel (z. B. für einen „Neu!“-Hinweis mit `UiKit.placeSideNote`). Vergeben (`order`): `pets` 10, `potions` 20, `gifts` 30, `calendar` 40, `rebirth` 50, `worlds` 60, `quests` 70 (#97), `wheel` 80 (#98), `settings` 200 (#76); neue Menüs nehmen freie Zahlen (Vorschlag: Quests 70, Glücksrad 80, Index 90 (#95), Profil 100, Einstellungen 200).
 
 **Rote Punkte:** Ein Menü meldet „hat Neues“ mit `SideBar.setBadge(id, true)` und nimmt ihn zurück, sobald es nichts mehr gibt (nicht beim bloßen Öffnen). Heute: Geschenk abholbereit, Kalender-Belohnung offen, Verschmelzen möglich (`pets`, #80: `GameRules.canMergeAny` auf den replizierten Pets), Gratis-Drehung übrig (`wheel`, #98), Quest oder Bonus-Truhe abholbereit (`quests`, #97: `readyCount` im Attribut `Quests`). Liegt eine Kachel im Mehr-Fenster, bekommt „Mehr“ den Punkt.
 
@@ -201,6 +201,10 @@ Settings.volume("music")    -- 0..1 inkl. Stumm ("music" | "effects")
 - **Auto-Delete im Ei-Panel:** die ganze Pet-Zeile ist der Knopf, rechts ein 30-px-Kästchen (rot mit 🗑 = an, Zeile blasser), Hinweis unter dem Titel. Beim Schlüpfen: Karte grau mit schrägem rotem Stempel „🗑 Auto-gelöscht“. #93 (Chancen-Anzeige) baut im selben Panel weiter; die Spalten Chance/Bonus sind bei `petAutoDelete` schmaler (0,47 / 0,68 / Kästchen).
 - **Namen:** eigene Namen nur über den Server (`RenamePet`, TextService `GetNonChatStringForBroadcastAsync`), im UI über `displayName(entry)` im PetMenu, auf dem Namensschild über `SignText` `sign.name`.
 - **Pet-Index (#95):** „jemals besessen“ steht in `state.petsOwnedEver` (Pet-Id → true, auch auto-gelöschte/gelöschte/verschmolzene), Abfrage `rules.hasOwnedPet(state, petId)`; jedes neue Pet läuft durch `addPet` (setzt auch `foundAt`).
+
+## Index (#95)
+
+Kachel ⭐ „Index“ (`index`, order 90, Form `star`, `src/client/IndexMenu.luau`): ein Menü mit zwei Reitern (aktiver Reiter gold). Pro Welt eine Überschrift („Welt – 3/10“, komplett grün „Welt – ✓ +4 %“) und ein Raster aus Karten 132×176: 3D-Bild (`ModelLibrary.viewport`; unbekannt = schwarze Silhouette, Karte grau, Name „???“), Name in Seltenheitsfarbe, darunter Sterne ⭐ 🌈 ✨ (blass = noch nicht). Beläge: Karte mit „Normal“ und „✨ Golden“ (blass = noch nicht). Daten: Attribut `Index` (JSON `rules.indexStatus`, `src/server/IndexService.luau`); komplette Welt → `Notify("IndexComplete", worldId)` (Toast im HUD). Regeln: `rules.petIndex`, `toppingIndex`, `indexCoinBonus` (in `coinMultiplier`), Sterne in `state.petIndexStars` (gesetzt in `addPet`), Beläge in `toppingsFound`/`goldenToppingsFound`.
 
 ## Quests (#97)
 

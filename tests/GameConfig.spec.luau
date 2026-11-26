@@ -585,6 +585,22 @@ describe("GameConfig pets and eggs", function()
 		expect(math.abs(rules.levelMultiplier(levels.maxLevel) - 1.18) < 1e-9).toBe(true)
 	end)
 
+	it("gives +4 % coins per complete world in the pet index, each world with pets (#95)", function()
+		expect(GameConfig.petIndex.worldCoinBonus).toBe(0.04)
+		local rules = GameRules.new(GameConfig)
+		for _, world in GameConfig.worlds do
+			local pets = rules.indexPetsOf(world.id)
+			expect(#pets >= 1).toBe(true)
+			for _, petId in pets do
+				expect(GameConfig.pets[petId].rarity ~= "Secret").toBe(true)
+			end
+			if world.secretPet then
+				expect(table.find(pets, world.secretPet)).toBeNil()
+			end
+			expect(#rules.indexToppingsOf(world.id) >= 1).toBe(true)
+		end
+	end)
+
 	it("has 3 pet teams, 20-character names and never auto-deletes Secret pets (#91)", function()
 		local management = GameConfig.petManagement
 		expect(management.teams).toBe(3)

@@ -20,6 +20,7 @@ local features = Features.new({
 	petLevels = true,
 	dailyQuests = true,
 	weeklyQuests = true,
+	petIndex = true,
 })
 local admin = AdminActions.new(rules, TestConfig, features)
 
@@ -92,6 +93,8 @@ describe("admin registry", function()
 			"givePetXp",
 			"completeQuest",
 			"rerollQuests",
+			"completeIndexWorld",
+			"resetIndex",
 			"resetProgress",
 		})
 	end)
@@ -741,5 +744,43 @@ describe("admin actions: quests (#97)", function()
 		expect(result.state.questStreakDay).toBe(state.questDay - 1)
 		expect(result.state.questWeekDay).toBe(state.questWeekDay - 1)
 		expect(rules.refreshQuests(result.state, QUEST_NOW, TestKit.sequenceRandom({ 0 })).ok).toBe(true)
+	end)
+end)
+
+describe("admin pet index (#95)", function()
+	it("completeIndexWorld marks every normal pet of the world as found", function()
+		local result = admin.run(ADMIN, player(), "completeIndexWorld", { "PizzeriaGarden" }, ctx)
+		expect(result.ok).toBe(true)
+		expect(result.state.petsOwnedEver).toEqual({ Hamster = true, Cat = true, Dragon = true })
+		expect(#result.state.pets).toBe(0)
+	end)
+
+	it("completeIndexWorld fails for a world without pets", function()
+		expect(admin.run(ADMIN, player(), "completeIndexWorld", { "Beach" }, ctx).reason).toBe("NoPets")
+	end)
+
+	it("resetIndex clears found pets, stars and toppings", function()
+		local state = admin.run(ADMIN, player(), "completeIndexWorld", { "Farm" }, ctx).state
+		state.petIndexStars = { Cat = { Gold = true } }
+		state.toppingsFound = { Salami = true }
+		state.goldenToppingsFound = { Salami = true }
+		local result = admin.run(ADMIN, state, "resetIndex", {}, ctx)
+		expect(result.ok).toBe(true)
+		expect(result.state.petsOwnedEver).toEqual({})
+		expect(result.state.petIndexStars).toEqual({})
+		expect(result.state.toppingsFound).toEqual({})
+		expect(result.state.goldenToppingsFound).toEqual({})
+	end)
+
+	it("hides the index actions while petIndex is off", function()
+		local switches = {}
+		for _, id in features.ids() do
+			switches[id] = features.enabled(id)
+		end
+		switches.petIndex = false
+		local off = AdminActions.new(rules, TestConfig, Features.new(switches))
+		for _, info in off.list() do
+			expect(info.id ~= "completeIndexWorld" and info.id ~= "resetIndex").toBe(true)
+		end
 	end)
 end)

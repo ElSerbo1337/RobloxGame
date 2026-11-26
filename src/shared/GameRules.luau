@@ -108,6 +108,37 @@ export type PlayerState = {
 	autoDelete: { [string]: boolean },
 	petsOwnedEver: { [string]: boolean },
 	petTeams: { { number } },
+	-- Index (#95), all kept on rebirth. `petIndexStars`: pet id -> star -> true for the
+	-- extra stars "Gold" / "Rainbow" / "Shiny" ever owned (set in addPet, so deleted and
+	-- merged pets keep them). `toppingsFound` / `goldenToppingsFound`: topping id -> true
+	-- once collected normal / golden (counted separately).
+	petIndexStars: { [string]: { [string]: boolean } },
+	toppingsFound: { [string]: boolean },
+	goldenToppingsFound: { [string]: boolean },
+}
+
+-- Pet index (#95) of one world: its normal pets (all egg pets of the world, no Secret
+-- pet), each with "found" and its extra stars; `complete` = every pet found.
+export type PetIndexEntry = { petId: string, found: boolean, gold: boolean, rainbow: boolean, shiny: boolean }
+export type PetIndexWorld = {
+	worldId: string,
+	pets: { PetIndexEntry },
+	found: number,
+	total: number,
+	complete: boolean,
+}
+-- Topping index (#95) of one world: each spawning topping, found normal / golden.
+export type ToppingIndexEntry = { toppingId: string, normal: boolean, golden: boolean }
+export type ToppingIndexWorld = { worldId: string, toppings: { ToppingIndexEntry } }
+export type IndexStatus = {
+	pets: { PetIndexWorld },
+	toppings: { ToppingIndexWorld },
+	-- Worlds complete in the pet index and the coin bonus they give (0.04 = +4 %).
+	completeWorlds: number,
+	coinBonus: number,
+	-- Feature switches (the client shows only the tabs that are on).
+	petIndexOn: boolean,
+	toppingIndexOn: boolean,
 }
 
 -- One quest (#97): kind (config.quests.kinds id), goal and progress (PlayMinutes counts
@@ -645,6 +676,9 @@ function GameRules.new(config: any)
 			autoDelete = {},
 			petsOwnedEver = {},
 			petTeams = emptyTeams(),
+			petIndexStars = {},
+			toppingsFound = {},
+			goldenToppingsFound = {},
 		}
 	end
 
@@ -1110,6 +1144,19 @@ function GameRules.new(config: any)
 		return { ok = true, state = newState, gemsEarned = amount, golden = false }
 	end
 
+	-- Topping index (#95): marks `toppingId` as found normal or golden (counted separately).
+	-- Mutates `newState` (a fresh copy); the maps are copied only when something is new.
+	local function recordTopping(newState: PlayerState, toppingId: string, golden: boolean)
+		local key = if golden then "goldenToppingsFound" else "toppingsFound"
+		local found = (newState :: any)[key] or {}
+		if found[toppingId] then
+			return
+		end
+		found = table.clone(found)
+		found[toppingId] = true;
+		(newState :: any)[key] = found
+	end
+
 	local function addTopping(
 		state: PlayerState,
 		toppingId: string,
@@ -1137,6 +1184,7 @@ function GameRules.new(config: any)
 			newState.pizzaGolden = rules.goldenOnPizza(state)
 			newState.pizzaGolden[toppingId] = (newState.pizzaGolden[toppingId] or 0) + 1
 		end
+		recordTopping(newState, toppingId, golden)
 		advanceTutorial(newState, "CollectToppings")
 		addQuestProgress(newState, "CollectToppings", 1)
 		if golden then
@@ -1395,9 +1443,13 @@ function GameRules.new(config: any)
 		return math.round((1 + bonus) * 1e6) / 1e6
 	end
 
-	-- Pet multiplier x rebirth multiplier: what selling and delivery coins are multiplied by.
+	-- Pet multiplier x rebirth multiplier x pet index bonus (#95): what selling, delivery
+	-- and wheel coins are multiplied by.
 	function rules.coinMultiplier(state: PlayerState): number
-		return math.round(rules.petMultiplier(state) * rules.rebirthMultiplier(state) * 1e6) / 1e6
+		local multiplier = rules.petMultiplier(state)
+			* rules.rebirthMultiplier(state)
+			* (1 + rules.indexCoinBonus(state))
+		return math.round(multiplier * 1e6) / 1e6
 	end
 
 	-- Splits the pizza into toppings the active delivery order still needs (kept, in
@@ -1689,6 +1741,40 @@ function GameRules.new(config: any)
 		newState.petsOwnedEver = owned
 	end
 
+	-- Index stars (#95) a pet carries: "Gold" / "Rainbow" (its variant) and "Shiny".
+	local function petStars(pet: OwnedPet): { string }
+		local stars = {}
+		if pet.variant == "Gold" or pet.variant == "Rainbow" then
+			table.insert(stars, pet.variant :: string)
+		end
+		if pet.shiny then
+			table.insert(stars, "Shiny")
+		end
+		return stars
+	end
+
+	-- Records the pet's extra index stars (#95). Mutates `newState` (already cloned); the
+	-- maps are copied only when a star is new.
+	local function recordStars(newState: PlayerState, pet: OwnedPet)
+		local all = newState.petIndexStars or {}
+		local mine = all[pet.petId] or {}
+		local changed = false
+		for _, star in petStars(pet) do
+			if not mine[star] then
+				if not changed then
+					mine = table.clone(mine)
+					changed = true
+				end
+				mine[star] = true
+			end
+		end
+		if changed then
+			all = table.clone(all)
+			all[pet.petId] = mine
+			newState.petIndexStars = all
+		end
+	end
+
 	-- `now` (optional) becomes the pet's foundAt (#91 detail card).
 	local function addPet(newState: PlayerState, pet: OwnedPet, now: number?)
 		if now ~= nil and pet.foundAt == nil then
@@ -1697,6 +1783,7 @@ function GameRules.new(config: any)
 		table.insert(newState.pets, pet)
 		newState.nextPetUid = math.max(newState.nextPetUid, pet.uid + 1)
 		recordOwned(newState, pet.petId)
+		recordStars(newState, pet)
 	end
 
 	-- Whether the player ever had a pet of this id (#91): also deleted, auto-deleted and
@@ -1711,6 +1798,151 @@ function GameRules.new(config: any)
 			end
 		end
 		return false
+	end
+
+	-- Pet index and topping index (#95) ------------------------------------------------
+	local PET_INDEX = config.petIndex or {}
+	local SECRET_RARITY = "Secret"
+
+	-- The normal pets of a world for the pet index: every pet of the world's eggs in egg
+	-- order, without duplicates and without Secret pets (they are not needed).
+	function rules.indexPetsOf(worldId: string): { string }
+		local world = findWorld(worldId)
+		local list: { string } = {}
+		if world == nil then
+			return list
+		end
+		for _, eggId in world.eggs or {} do
+			local egg = config.eggs and config.eggs[eggId]
+			for _, entry in (egg and egg.pets) or {} do
+				local pet = config.pets[entry.pet]
+				if pet and pet.rarity ~= SECRET_RARITY and not table.find(list, entry.pet) then
+					table.insert(list, entry.pet)
+				end
+			end
+		end
+		return list
+	end
+
+	-- The toppings of a world for the topping index (its spawn list, no gem topping).
+	function rules.indexToppingsOf(worldId: string): { string }
+		local world = findWorld(worldId)
+		local list: { string } = {}
+		for _, spawn in (world and world.toppingSpawns) or {} do
+			local toppingId = spawn.topping
+			local isGem = config.gems ~= nil and toppingId == config.gems.toppingId
+			if config.toppings[toppingId] and not isGem and not table.find(list, toppingId) then
+				table.insert(list, toppingId)
+			end
+		end
+		return list
+	end
+
+	-- Whether the player ever owned this extra star ("Gold" | "Rainbow" | "Shiny") of a
+	-- pet. Pets in the inventory always count (saves from before #95).
+	function rules.hasIndexStar(state: PlayerState, petId: string, star: string): boolean
+		local stars = state.petIndexStars and state.petIndexStars[petId]
+		if stars and stars[star] then
+			return true
+		end
+		for _, pet in state.pets do
+			if pet.petId == petId and table.find(petStars(pet), star) then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- Pet index of every world that has pets, in world order.
+	function rules.petIndex(state: PlayerState): { PetIndexWorld }
+		local worlds: { PetIndexWorld } = {}
+		for _, world in config.worlds do
+			local petIds = rules.indexPetsOf(world.id)
+			if #petIds > 0 then
+				local entries: { PetIndexEntry } = {}
+				local found = 0
+				for _, petId in petIds do
+					local owned = rules.hasOwnedPet(state, petId)
+					if owned then
+						found += 1
+					end
+					table.insert(entries, {
+						petId = petId,
+						found = owned,
+						gold = rules.hasIndexStar(state, petId, "Gold"),
+						rainbow = rules.hasIndexStar(state, petId, "Rainbow"),
+						shiny = rules.hasIndexStar(state, petId, "Shiny"),
+					})
+				end
+				table.insert(worlds, {
+					worldId = world.id,
+					pets = entries,
+					found = found,
+					total = #petIds,
+					complete = found == #petIds,
+				})
+			end
+		end
+		return worlds
+	end
+
+	-- How many worlds are complete in the pet index (0 while features.petIndex is off).
+	function rules.indexCompleteWorlds(state: PlayerState): number
+		if not featureOn("petIndex") then
+			return 0
+		end
+		local count = 0
+		for _, world in rules.petIndex(state) do
+			if world.complete then
+				count += 1
+			end
+		end
+		return count
+	end
+
+	-- Permanent coin bonus of the pet index: config.petIndex.worldCoinBonus per complete
+	-- world (additive, 0.04 = +4 %). Part of rules.coinMultiplier.
+	function rules.indexCoinBonus(state: PlayerState): number
+		local perWorld = PET_INDEX.worldCoinBonus or 0
+		return math.round(rules.indexCompleteWorlds(state) * perWorld * 1e6) / 1e6
+	end
+
+	function rules.hasFoundTopping(state: PlayerState, toppingId: string, golden: boolean): boolean
+		local found = if golden then state.goldenToppingsFound else state.toppingsFound
+		return found ~= nil and found[toppingId] == true
+	end
+
+	-- Topping index of every world that has toppings, in world order (no rewards).
+	function rules.toppingIndex(state: PlayerState): { ToppingIndexWorld }
+		local worlds: { ToppingIndexWorld } = {}
+		for _, world in config.worlds do
+			local toppingIds = rules.indexToppingsOf(world.id)
+			if #toppingIds > 0 then
+				local entries: { ToppingIndexEntry } = {}
+				for _, toppingId in toppingIds do
+					table.insert(entries, {
+						toppingId = toppingId,
+						normal = rules.hasFoundTopping(state, toppingId, false),
+						golden = rules.hasFoundTopping(state, toppingId, true),
+					})
+				end
+				table.insert(worlds, { worldId = world.id, toppings = entries })
+			end
+		end
+		return worlds
+	end
+
+	-- Everything the index menu shows (replicated as JSON by IndexService).
+	function rules.indexStatus(state: PlayerState): IndexStatus
+		local completeWorlds = rules.indexCompleteWorlds(state)
+		return {
+			pets = rules.petIndex(state),
+			toppings = rules.toppingIndex(state),
+			completeWorlds = completeWorlds,
+			coinBonus = rules.indexCoinBonus(state),
+			petIndexOn = featureOn("petIndex"),
+			toppingIndexOn = featureOn("toppingIndex"),
+		}
 	end
 
 	-- Whether a freshly hatched pet is deleted at once (#91): its rarity is ticked in

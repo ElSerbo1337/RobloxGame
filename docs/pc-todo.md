@@ -1883,6 +1883,26 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Handy-Ansicht (Device-Emulator): Menü scrollt, Knöpfe ≥ 60 px, nichts abgeschnitten.
 - [ ] `GameConfig.features.dailyQuests = false` → keine Kachel, Admin-Aktionen weg. Danach wieder `true`.
 
+## MEGA UPDATE – #95 Pet-Index und Belag-Index
+
+Neu: Kachel ⭐ „Index“ in der Seitenleiste (order 90, Beschriftung „komplette Welten/Welten“) mit zwei Reitern. **Pets:** pro Welt alle normalen Pets ihrer Eier (Geheim-Pet nicht nötig; Welten 1–7 haben je 2 Eier, also mehr als 6 Pets), unbekannte als dunkle Silhouette „???“, Sterne ⭐ Gold / 🌈 Regenbogen / ✨ Shiny (blass = noch nicht). Komplette Welt = **+4 % Münzen dauerhaft** (`GameConfig.petIndex.worldCoinBonus`, vorläufig, #108), steckt in `rules.coinMultiplier` (Verkauf, Lieferung, Glücksrad). Gelöschte, auto-gelöschte und verschmolzene Pets zählen. **Beläge:** pro Belag „Normal“ und „✨ Golden“ getrennt, ohne Belohnung. Schalter: `GameConfig.features.petIndex` / `toppingIndex`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Index.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Kachel „Index“ öffnen → Reiter „🐾 Pets“: Welt 1 „0/10“, alle Pets als Silhouette mit „???“, Hinweis „+4 % Münzen“. Alle 15 (bzw. bisher vorhandenen) Welten stehen untereinander, Liste scrollt.
+- [ ] Ein Ei öffnen → das Pet erscheint mit Bild, Name in Seltenheitsfarbe, Zähler „1/10“.
+- [ ] Admin-Panel → **Pet mit Variante geben** (z. B. Gold + Shiny) → bei dem Pet leuchten ⭐ und ✨. Pet löschen → bleibt im Index samt Sternen.
+- [ ] Admin-Panel → **Pet-Index: Welt komplett machen** (Pizzeria-Garten) → Toast „📖 Index komplett: Pizzeria-Garten! +4 % Münzen für immer“, Überschrift grün „✓ +4 %“, Kachel-Beschriftung „1/…“. Pizza verkaufen → 4 % mehr Münzen als vorher (Pet-Menü-Multiplikator zeigt nur Pets, das ist gewollt).
+- [ ] Auto-Delete für Gewöhnlich anhaken, Ei öffnen bis ein neues gewöhnliches Pet auto-gelöscht wird → trotzdem im Index.
+- [ ] Reiter „🍕 Beläge“ → Beläge sammeln → „Normal“ wird hell; Admin **Gold-Chance testen 100** → goldenen Belag sammeln → „✨ Golden“ hell (getrennt gezählt).
+- [ ] Rebirth → Index und Bonus bleiben. Rejoin → alles gespeichert (kein Toast für schon komplette Welten beim Join).
+- [ ] **Index zurücksetzen** → nur Pets im Inventar zählen noch, Beläge leer.
+- [ ] Englisch (`Language = en`) und Handy-Ansicht: Karten passen, Reiter tippbar, nichts abgeschnitten.
+- [ ] Neue Welten (#83–#85 …) erscheinen ohne Code-Änderung, sobald sie in `GameConfig.worlds` stehen.
+- [ ] `GameConfig.features.petIndex = false` → nur Reiter Beläge, kein Bonus, Admin-Aktionen weg; beide aus → keine Kachel. Danach wieder `true`.
+
 ## MEGA UPDATE – #82 Welt 8 Atlantis
 
 Erste der 8 neuen Welten: versunkene Insel mit Sandboden, Korallen-Riff als Rand, Glasbrücke, versunkenem Tempel mit leuchtender Perle (Wahrzeichen), Korallen, Seetang, Ruinen-Säulen, aufsteigenden Blasen und blauen Lampen (alles per Skript, ~340 Teile, kein Import nötig). 3 Beläge (Seetang, Perlen-Kapern, Tintenfisch-Ringe), Atlantis-Ei mit 6 Pets (Seetang-Schnecke, Blasen-Kugelfisch, Kapern-Clownfisch, Laternen-Anglerfisch, Perlen-Mantarochen, Poseidon-Seedrache), Geheim-Pet Perlenkönig-Otter, Atlantis-Shop. Braucht **2 Rebirths** + 150 Mio Münzen (Preise vorläufig, #108). Wetter „Blasen-Sturm“ steht nur in der Config (#105 baut es). Musik `Music_Atlantis` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort). Vorschau: `assets/previews/worlds/Atlantis.png`, Insel: `assets/previews/islands/World8_*.jpg`.

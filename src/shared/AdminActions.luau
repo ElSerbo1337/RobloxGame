@@ -434,6 +434,41 @@ AdminActions.BUILT_IN = {
 			return env.rules.refreshQuests(state, ctx.now, ctx.random, true)
 		end,
 	},
+	-- Pet index (#95): every normal pet of the world counts as found (no pets given), so
+	-- the world is complete and pays its index coin bonus. resetIndex clears the index.
+	{
+		id = "completeIndexWorld",
+		feature = "petIndex",
+		params = { { name = "world", kind = "choice", names = "world", choices = worldIds } },
+		run = function(env, state, args)
+			local petIds = env.rules.indexPetsOf(args[1])
+			if #petIds == 0 then
+				return fail(state, "NoPets")
+			end
+			local newState = table.clone(state)
+			newState.petsOwnedEver = table.clone(state.petsOwnedEver or {})
+			for _, petId in petIds do
+				newState.petsOwnedEver[petId] = true
+			end
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		id = "resetIndex",
+		feature = "petIndex",
+		confirm = true,
+		params = {},
+		run = function(_env, state)
+			-- Pets in the inventory still count (rules.hasOwnedPet), so this shows the index
+			-- of a player with exactly these pets.
+			local newState = table.clone(state)
+			newState.petsOwnedEver = {}
+			newState.petIndexStars = {}
+			newState.toppingsFound = {}
+			newState.goldenToppingsFound = {}
+			return { ok = true, state = newState }
+		end,
+	},
 	{
 		id = "resetProgress",
 		confirm = true,

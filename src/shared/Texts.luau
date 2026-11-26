@@ -53,6 +53,11 @@ Texts.strings = {
 		de = "„Was ist neu“ wieder zeigen (Rejoin)",
 		en = 'Show "What\'s new" again (rejoin)',
 	},
+	["admin.action.completeIndexWorld"] = {
+		de = "Pet-Index: Welt komplett machen",
+		en = "Pet index: complete world",
+	},
+	["admin.action.resetIndex"] = { de = "Index zurücksetzen", en = "Reset index" },
 	["admin.action.giveSecretPet"] = { de = "Geheim-Pet geben", en = "Give Secret pet" },
 	["admin.action.setSecretChance"] = {
 		de = "Geheim-Chance testen (%, 0 = aus)",
@@ -127,6 +132,7 @@ Texts.strings = {
 	["side.worlds"] = { de = "Welten", en = "Worlds" },
 	["side.quests"] = { de = "Quests", en = "Quests" },
 	["side.more"] = { de = "Mehr", en = "More" },
+	["side.index"] = { de = "Index", en = "Index" },
 	["side.moreTitle"] = { de = "Mehr Menüs", en = "More menus" },
 
 	-- Messages (toasts); notify.<Kind> matches the Notify kinds the server sends
@@ -178,6 +184,10 @@ Texts.strings = {
 	["notify.soldGolden"] = {
 		de = "+{amount} Münzen (✨ {count}× golden)",
 		en = "+{amount} coins (✨ {count}× golden)",
+	},
+	["notify.indexComplete"] = {
+		de = "📖 Index komplett: {world}! +{bonus} % Münzen für immer",
+		en = "📖 Index complete: {world}! +{bonus}% coins forever",
 	},
 	["notify.goldenTopping"] = {
 		de = "✨ Goldener Belag: {topping}! 10-facher Wert",
@@ -440,6 +450,30 @@ Texts.strings = {
 
 	-- Login calendar
 	-- Quests (#97): menu, quest kinds (goal = formatted amount), rule refusals.
+	-- Pet index and topping index (#95): one menu with two tabs.
+	["index.title"] = { de = "📖 Index", en = "📖 Index" },
+	["index.tabPets"] = { de = "🐾 Pets", en = "🐾 Pets" },
+	["index.tabToppings"] = { de = "🍕 Beläge", en = "🍕 Toppings" },
+	["index.petsHint"] = {
+		de = "Finde alle Pets einer Welt für +{bonus} % Münzen – für immer. Gelöschte Pets zählen.",
+		en = "Find all pets of a world for +{bonus}% coins – forever. Deleted pets count.",
+	},
+	["index.toppingsHint"] = {
+		de = "Sammle jeden Belag einmal normal und einmal golden.",
+		en = "Collect every topping once normal and once golden.",
+	},
+	["index.bonus"] = {
+		de = "Index-Bonus: +{bonus} % Münzen ({worlds} Welten komplett)",
+		en = "Index bonus: +{bonus}% coins ({worlds} worlds complete)",
+	},
+	["index.worldProgress"] = { de = "{world} – {found}/{total}", en = "{world} – {found}/{total}" },
+	["index.worldComplete"] = { de = "{world} – ✓ +{bonus} %", en = "{world} – ✓ +{bonus}%" },
+	["index.worldToppings"] = { de = "{world} – {found}/{total}", en = "{world} – {found}/{total}" },
+	["index.unknown"] = { de = "???", en = "???" },
+	["index.stars"] = { de = "⭐ Gold  🌈 Regenbogen  ✨ Shiny", en = "⭐ Gold  🌈 Rainbow  ✨ Shiny" },
+	["index.normal"] = { de = "Normal", en = "Normal" },
+	["index.golden"] = { de = "✨ Golden", en = "✨ Golden" },
+
 	["quests.title"] = { de = "📜 Quests", en = "📜 Quests" },
 	["quests.hint"] = {
 		de = "Schaff alle 3 Tagesquests für die Bonus-Truhe!",

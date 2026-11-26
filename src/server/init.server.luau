@@ -27,6 +27,7 @@ local SpawnMarketService = require(script.SpawnMarketService)
 local SpawnService = require(script.SpawnService)
 local ToppingService = require(script.ToppingService)
 local TutorialService = require(script.TutorialService)
+local IndexService = require(script.IndexService)
 local IslandBuilder = require(script.IslandBuilder)
 local LeaderboardService = require(script.LeaderboardService)
 local WheelService = require(script.WheelService)
@@ -170,5 +171,7 @@ AdminService.start()
 SettingsService.start()
 -- Daily and weekly quests (#97): new quests per German day / week, claims and rerolls.
 QuestService.start()
+-- Pet index and topping index (#95): replicates the Index attribute.
+IndexService.start()
 
 print(`[{Constants.GAME_NAME}] Server gestartet`)

@@ -633,6 +633,14 @@ local GameConfig = {
 		noAutoDelete = { "Secret" },
 	},
 
+	-- Pet index (#95): a world is complete when every normal pet of its eggs was ever
+	-- owned (the Secret pet is not needed; deleted/merged pets count). Each complete world
+	-- adds this permanent coin bonus (additive, 0.04 = +4 %), multiplied into the coin
+	-- multiplier. Provisional, tuned in balancing (#108).
+	petIndex = {
+		worldCoinBonus = 0.04,
+	},
+
 	-- Pet id -> display name, rarity and coin bonus (0.1 = +10 % sell value; bonuses add up).
 	-- Flat curve (#57): the best pet of a world (both eggs) gives +75/110/160/230/320/400/500 %
 	-- in worlds 1-7; the other pets of a world are scaled in the same proportion.
