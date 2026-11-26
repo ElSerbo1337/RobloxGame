@@ -1938,3 +1938,24 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Handy: Bildrate auf der Dschungel-Insel ok.
 - [ ] `GameConfig.features.worldDeco = false` → keine Bäume/Farne/Ruinen/Glühwürmchen/Nebel (Tempel, Rand, Stationen bleiben), keine Fehler; danach wieder `true`.
 - [ ] Musik: Dschungel-/Abenteuer-Musik (Creator „Roblox“) wählen, ID bei `Music_JungleTemple` eintragen.
+## MEGA UPDATE – #84 Welt 10 Wüsten-Pyramiden
+
+Wüsten-Insel nach dem Atlantis-Muster: goldener Sand, Sandstein-Mauer als Rand, Steinbrücke in Sandsteinfarben, große Stufenpyramide mit leuchtender Goldspitze, Eingang und zwei Obelisken (Wahrzeichen), dazu Dünen, kleine Pyramiden, Oasen mit Palmen und Kakteen (alles per Skript, ~360 Teile, kein Import nötig). 3 Beläge (Dattel, Kaktusfeige, Wüsten-Trüffel), Pyramiden-Ei mit 6 Pets (Dattel-Gecko, Sand-Skarabäus, Kaktus-Fennek, Oasen-Kamel, Pharaonen-Katze, Sonnen-Sphinx), Geheim-Pet Skorpionkönig, Wüsten-Shop. Braucht **3 Rebirths** + 20 Mrd. Münzen (Preise vorläufig, #108). Wetter „Sandsturm“ steht nur in der Config (#105 baut es). Musik `Music_DesertPyramids` hat noch **keine ID**. Vorschau: `assets/previews/worlds/DesertPyramids.png`, Insel: `assets/previews/islands/World10_*.jpg`.
+
+**Modelle importieren** (wie bei Atlantis):
+
+- [ ] **Home → Import 3D** → `assets/models/worlds/DesertPyramids.fbx` → *Rig Type* = **No Rig**, *Insert Using Scene Position* = aus → **Import**.
+- [ ] Das Model `DesertPyramids` nach `ReplicatedStorage → GameAssets → Models → Worlds` ziehen. Darin 11 Models: `Date`, `PricklyPear`, `DesertTruffle`, `DateGecko`, `SandScarab`, `CactusFennec`, `OasisCamel`, `PharaohCat`, `SunSphinx`, `ScorpionKing`, `PyramidEgg`. **Namen nicht ändern.** Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.DesertPyramids:GetChildren())` → **11**.
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Output ohne rote Fehler beim Start (Wüsten-Insel wird gebaut, auch ohne Import).
+- [ ] Admin-Panel → **Rebirths setzen** 3 → **Welt freischalten** bis Dschungel-Tempel, dann zum Tor der Wüsten-Pyramiden: Preisschild 20 Mrd.; mit **Münzen geben** kaufen → Tor offen. Mit 2 Rebirths: Tor sagt „Ab 3 Rebirths“.
+- [ ] Insel ansehen: Sandstein-Mauer am Rand, Steinbrücke, hinten links Stufenpyramide mit leuchtender Spitze, dunklem Eingang und Obelisken; Dünen, kleine Pyramiden, 4 Oasen mit Palmen, viele Kakteen (einige mit Blüte). Nichts auf Weg, Feld oder vor Stationen. Dünen, kleine Pyramiden, Kaktus-Stämme und Palmen-Stämme sind fest – prüfen, dass man nirgends hängen bleibt (Dünen lassen sich begehen).
+- [ ] **Wedge-Dünen**: Richtung der Schrägen prüfen (lange flache Seite + kurze steile Seite, Kamm oben). Falls verdreht: notieren.
+- [ ] Belagfeld: Dattel, Kaktusfeige, Wüsten-Trüffel sammeln und verkaufen; Namen in Deutsch und Englisch.
+- [ ] Pyramiden-Ei (ein Ei-Stand): Vorschau mit 6 Pets + Geheim; öffnen. **Geheim-Pet geben** → Welt Wüsten-Pyramiden → Skorpionkönig.
+- [ ] Wüsten-Shop, Portal, Telefon/Lieferwagen mit Wüsten-Belägen.
+- [ ] ⚙️ → Grafik **Niedrig** → Pyramiden-Spitzen, hintere Palmblätter und Kaktusblüten verschwinden; **Hoch** → wieder da.
+- [ ] `GameConfig.features.worldDeco = false` → Insel ohne Dünen/Kakteen/Oasen/kleine Pyramiden (große Pyramide, Mauer, Stationen bleiben).
+- [ ] Musik: im Creator Store eine Wüsten-/Abenteuer-Musik (Creator „Roblox“) wählen und die ID bei `Music_DesertPyramids` eintragen.
