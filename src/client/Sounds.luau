@@ -1,5 +1,6 @@
 --!strict
 -- Sound effects and background music (client only, purely cosmetic).
+-- The list of all sounds (IDs, volume, search terms) lives in shared/SoundList (#112).
 --
 -- IDs come from the Roblox Creator Store (Toolbox → Audio). They could not be
 -- verified from the cloud session, so they start empty; an empty ID simply stays
@@ -21,151 +22,7 @@ local SoundService = game:GetService("SoundService")
 
 local Net = require(ReplicatedStorage.Shared.Net)
 local Settings = require(script.Parent.Settings)
-
--- `search`: Toolbox search terms (documentation only, not used at runtime).
-type Entry = { id: string, volume: number, looped: boolean?, search: { string } }
-
-local SOUNDS: { [string]: Entry } = {
-	-- Short "plop" when a topping lands on the pizza.
-	Collect = { id = "9119669065", volume = 0.5, search = { "pop", "plop", "bubble pop", "click" } },
-	-- Cash register / coins when selling at the oven.
-	Sell = { id = "9113728625", volume = 0.6, search = { "cash register", "coins", "purchase", "ka-ching" } },
-	-- Sparkle / chime for gems.
-	Gem = { id = "9116394545", volume = 0.5, search = { "sparkle", "chime", "magic", "twinkle" } },
-	-- Egg shell cracking in the hatch animation.
-	EggCrack = { id = "9113959343", volume = 0.7, search = { "egg crack", "crack", "shell", "break" } },
-	-- Old phone ringing (delivery service).
-	PhoneRing = { id = "9117304246", volume = 0.6, search = { "phone ring", "telephone", "old phone", "ringing" } },
-	-- Golden topping collected (#94): bright magic shimmer, a bit "richer" than Gem.
-	-- ID still empty: the local session picks one (Creator Store, creator "Roblox").
-	GoldenTopping = {
-		id = "",
-		volume = 0.6,
-		search = { "magic shimmer", "golden sparkle", "treasure", "shine", "glitter chime" },
-	},
-	-- Secret pet hatched (#81): long magical reveal (hatch animation and global banner).
-	-- ID still empty: the local session picks one (Creator Store, creator "Roblox").
-	Secret = {
-		id = "",
-		volume = 0.8,
-		search = { "magic reveal", "mystery", "epic reveal", "choir", "legendary" },
-	},
-	-- Shiny pet hatched and pets merged (#80). IDs still empty: the local session picks
-	-- them (Creator Store, creator "Roblox").
-	Shiny = {
-		id = "",
-		volume = 0.7,
-		search = { "sparkle", "twinkle", "magic chime", "shine", "star" },
-	},
-	Merge = {
-		id = "",
-		volume = 0.7,
-		search = { "power up", "level up", "fusion", "magic whoosh", "upgrade" },
-	},
-	-- An equipped pet reached a new level (#90, toast in Hud). ID still empty.
-	PetLevelUp = {
-		id = "",
-		volume = 0.6,
-		search = { "level up", "ding", "achievement", "power up chime", "success" },
-	},
-	-- Lucky wheel (#98): short click each time a field passes the pointer, and a win jingle
-	-- when it stops. IDs still empty: the local session picks them (Creator Store, creator "Roblox").
-	WheelTick = {
-		id = "",
-		volume = 0.4,
-		search = { "click", "tick", "wheel tick", "ratchet", "clack" },
-	},
-	WheelWin = {
-		id = "",
-		volume = 0.7,
-		search = { "win", "prize", "reward jingle", "success", "slot win" },
-	},
-	-- A quest got done (#97). ID still empty: the local session picks one (Creator Store,
-	-- creator "Roblox").
-	QuestDone = {
-		id = "",
-		volume = 0.6,
-		search = { "quest complete", "success", "achievement", "level complete", "ding" },
-	},
-	-- Short fanfare for the rebirth celebration (#35).
-	Rebirth = { id = "9114898444", volume = 0.7, search = { "fanfare", "victory", "level up", "celebration" } },
-	-- Background music per world, looped (cheerful, light).
-	Music_PizzeriaGarden = {
-		id = "1839408249",
-		volume = 0.25,
-		looped = true,
-		search = { "happy", "cheerful", "ukulele", "italian" },
-	},
-	-- Worlds 2-7 (#16).
-	Music_Farm = {
-		id = "9043699640",
-		volume = 0.25,
-		looped = true,
-		search = { "country", "banjo", "farm", "folk" },
-	},
-	Music_Beach = {
-		id = "9043828544",
-		volume = 0.25,
-		looped = true,
-		search = { "tropical", "beach", "ukulele", "reggae" },
-	},
-	Music_Icebergs = {
-		id = "9041824482",
-		volume = 0.25,
-		looped = true,
-		search = { "winter", "snow", "bells", "calm" },
-	},
-	Music_Volcano = {
-		id = "1839999913",
-		volume = 0.25,
-		looped = true,
-		search = { "volcano", "drums", "adventure", "tribal" },
-	},
-	Music_CandyLand = {
-		id = "1846441369",
-		volume = 0.25,
-		looped = true,
-		search = { "candy", "cute", "bubbly", "playful" },
-	},
-	Music_Space = {
-		id = "1844477817",
-		volume = 0.25,
-		looped = true,
-		search = { "space", "synth", "ambient", "cosmic" },
-	},
-	-- World 8 (#82). ID still empty: the local session picks one (Creator Store, creator
-	-- "Roblox"); calm and a bit mysterious, but still cheerful.
-	Music_Atlantis = {
-		id = "",
-		volume = 0.25,
-		looped = true,
-		search = { "underwater", "ocean", "aquatic", "harp", "dreamy" },
-	},
-	-- World 9 (#83). ID still empty: the local session picks one (Creator Store, creator
-	-- "Roblox"); adventurous but light, with drums and marimba.
-	Music_JungleTemple = {
-		id = "",
-		volume = 0.25,
-		looped = true,
-		search = { "jungle", "tropical", "adventure", "drums", "marimba" },
-	},
-	-- World 10 (#84). ID still empty: the local session picks one (Creator Store, creator
-	-- "Roblox"); warm, adventurous, a bit oriental, but still cheerful.
-	Music_DesertPyramids = {
-		id = "",
-		volume = 0.25,
-		looped = true,
-		search = { "desert", "egypt", "arabian", "oud", "adventure" },
-	},
-	-- World 11 (#85). ID still empty: the local session picks one (Creator Store, creator
-	-- "Roblox"); playfully spooky, not scary (harpsichord, pizzicato, organ).
-	Music_HauntedCastle = {
-		id = "",
-		volume = 0.25,
-		looped = true,
-		search = { "spooky", "halloween", "playful", "harpsichord", "pizzicato" },
-	},
-}
+local SoundList = require(ReplicatedStorage.Shared.SoundList)
 
 -- Several pickups within this time play only one plop.
 local COLLECT_MIN_GAP = 0.06
@@ -201,7 +58,7 @@ Settings.changed:Connect(function(key: string)
 end)
 
 local function soundFor(key: string): Sound?
-	local entry = SOUNDS[key]
+	local entry = SoundList[key]
 	if entry == nil or entry.id == "" then
 		return nil
 	end
@@ -212,7 +69,7 @@ local function soundFor(key: string): Sound?
 		newSound.SoundId = if string.match(entry.id, "^%d+$") then `rbxassetid://{entry.id}` else entry.id
 		newSound.Volume = entry.volume
 		newSound.Looped = entry.looped == true
-		newSound.SoundGroup = if entry.looped then groups.music else groups.effects
+		newSound.SoundGroup = if entry.looped == true then groups.music else groups.effects
 		newSound.Parent = SoundService
 		instances[key] = newSound
 		sound = newSound

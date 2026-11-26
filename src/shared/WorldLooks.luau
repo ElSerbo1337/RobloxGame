@@ -84,6 +84,11 @@ local WorldLooks: { [string]: Look } = {
 	-- mood comes from the island (violet mist, glowing pumpkins and windows, bats) and the
 	-- music.
 	HauntedCastle = day("Music_HauntedCastle"),
+	-- Worlds 12-15 (planned, #72; music prepared in #112).
+	DinoAge = day("Music_DinoAge"),
+	CrystalCave = day("Music_CrystalCave"),
+	CloudCity = day("Music_CloudCity"),
+	PizzaParadise = day("Music_PizzaParadise"),
 }
 
 return WorldLooks

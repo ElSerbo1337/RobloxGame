@@ -1662,7 +1662,7 @@ Handy (**Test → Device** z. B. iPhone SE / iPhone 14 Landscape, und ein Tablet
 
 ## MEGA UPDATE – #94 Goldene Beläge und Gold-Glück-Upgrade
 
-Jeder normale Belag hat einen Gold-Wurf; er ist für dich golden, wenn deine Gold-Chance darüber liegt (1 %, mit Gem-Upgrade **Gold-Glück** bis 2 %). Goldene Beläge glitzern (nur für den Spieler, für den sie golden sind), geben beim Verkaufen den 10-fachen Wert und glitzern auch auf der Pizza in der Hand. Schalter: `GameConfig.features.goldenToppings`. Sound `GoldenTopping` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort) – bitte eine passende „Roblox“-ID eintragen.
+Jeder normale Belag hat einen Gold-Wurf; er ist für dich golden, wenn deine Gold-Chance darüber liegt (1 %, mit Gem-Upgrade **Gold-Glück** bis 2 %). Goldene Beläge glitzern (nur für den Spieler, für den sie golden sind), geben beim Verkaufen den 10-fachen Wert und glitzern auch auf der Pizza in der Hand. Schalter: `GameConfig.features.goldenToppings`. Sound `GoldenTopping` in `src/shared/SoundList.luau` hat noch **keine ID** (Suchbegriffe stehen dort) – bitte eine passende „Roblox“-ID eintragen.
 
 Vorher: `lune run test` → alle grün (u. a. `tests/GoldenToppings.spec.luau`).
 
@@ -1723,7 +1723,7 @@ Studio, Rojo verbinden, **Play** (als Admin):
 
 ## MEGA UPDATE – #81 Seltenheit „Geheim“, Geheim-Pets und globale Nachricht
 
-Neue Seltenheit **Geheim** (türkis) über Mythisch: je Welt 1–7 ein Geheim-Pet (Mozzarella-Geist, Vogelscheuchen-Rabe, Schatz-Oktopus, Polarlicht-Wolf, Obsidian-Drache, Lebkuchen-Golem, Schwarzloch-Katze), eigener Wurf 1 : 20.000 pro Ei, mit Glücks-Trank 1 : 10.000. Beim Schlüpfen: Nachricht auf **allen** Servern (MessagingService, pro Server max. 5 pro Minute). Ab Legendär: Bildschirm-Färbung + Lichtstrahlen; Geheim: lange, dunkle Spannungs-Animation, „🤫 GEHEIM!“. Schalter: `secretPets` (Wurf, Admin-Aktionen), `secretAnnouncement` (Banner/Nachricht). Sound `Secret` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort).
+Neue Seltenheit **Geheim** (türkis) über Mythisch: je Welt 1–7 ein Geheim-Pet (Mozzarella-Geist, Vogelscheuchen-Rabe, Schatz-Oktopus, Polarlicht-Wolf, Obsidian-Drache, Lebkuchen-Golem, Schwarzloch-Katze), eigener Wurf 1 : 20.000 pro Ei, mit Glücks-Trank 1 : 10.000. Beim Schlüpfen: Nachricht auf **allen** Servern (MessagingService, pro Server max. 5 pro Minute). Ab Legendär: Bildschirm-Färbung + Lichtstrahlen; Geheim: lange, dunkle Spannungs-Animation, „🤫 GEHEIM!“. Schalter: `secretPets` (Wurf, Admin-Aktionen), `secretAnnouncement` (Banner/Nachricht). Sound `Secret` in `src/shared/SoundList.luau` hat noch **keine ID** (Suchbegriffe stehen dort).
 
 Vorher: `lune run test` → alle grün (u. a. `tests/SecretPets.spec.luau`, `tests/SecretAnnounce.spec.luau`).
 
@@ -1782,7 +1782,7 @@ Studio, Rojo verbinden, **Play** (PC-Ansicht):
 
 ## MEGA UPDATE – #80 Pets verschmelzen (Gold, Regenbogen) und Shiny
 
-5 gleiche Pets → 1 **Gold** (Bonus ×2,5), 5 gleiche Gold → 1 **Regenbogen** (×6), immer erfolgreich. **Shiny** 1 : 200 pro geschlüpftem Pet (+50 %, auch als Gold/Regenbogen), Glücks-Trank ×2. Schalter: `petMerge` (Verschmelzen, Knöpfe, roter Punkt), `shinyPets` (Wurf, Admin-Shiny-Chance). Sounds `Shiny` und `Merge` in `src/client/Sounds.luau` haben noch **keine ID** (Suchbegriffe stehen dort).
+5 gleiche Pets → 1 **Gold** (Bonus ×2,5), 5 gleiche Gold → 1 **Regenbogen** (×6), immer erfolgreich. **Shiny** 1 : 200 pro geschlüpftem Pet (+50 %, auch als Gold/Regenbogen), Glücks-Trank ×2. Schalter: `petMerge` (Verschmelzen, Knöpfe, roter Punkt), `shinyPets` (Wurf, Admin-Shiny-Chance). Sounds `Shiny` und `Merge` in `src/shared/SoundList.luau` haben noch **keine ID** (Suchbegriffe stehen dort).
 
 Vorher: `lune run test` → alle grün (u. a. `tests/PetVariants.spec.luau`).
 
@@ -1804,7 +1804,7 @@ Studio, Rojo verbinden, **Play** (als Admin; ggf. Admin „Upgrade-Stufe setzen�
 
 ## MEGA UPDATE – #90 Pet-Level
 
-Ausgerüstete Pets sammeln **1 XP pro Sekunde Spielzeit** (Server-Takt alle 10 s), Level 1–10, **+2 % Bonus pro Level über 1** (Lv. 10 = ×1,18 auf den effektiven Bonus, auch mit Gold/Regenbogen/Shiny). Bis Lv. 10 ca. 5,2 h (`GameConfig.petLevels.xpToNext`). Verschmelzen übernimmt das **höchste Level** (und dessen XP). Schalter: `petLevels`. Sound `PetLevelUp` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort).
+Ausgerüstete Pets sammeln **1 XP pro Sekunde Spielzeit** (Server-Takt alle 10 s), Level 1–10, **+2 % Bonus pro Level über 1** (Lv. 10 = ×1,18 auf den effektiven Bonus, auch mit Gold/Regenbogen/Shiny). Bis Lv. 10 ca. 5,2 h (`GameConfig.petLevels.xpToNext`). Verschmelzen übernimmt das **höchste Level** (und dessen XP). Schalter: `petLevels`. Sound `PetLevelUp` in `src/shared/SoundList.luau` hat noch **keine ID** (Suchbegriffe stehen dort).
 
 Vorher: `lune run test` → alle grün (u. a. `tests/PetLevels.spec.luau`).
 
@@ -1841,7 +1841,7 @@ Studio, Rojo verbinden, **Play** (als Admin), zuerst Admin **Upgrade setzen** In
 
 ## MEGA UPDATE – #98 Glücksrad
 
-Neu: 3D-Glücksrad auf dem freien Platz rechts hinten auf der Spawn-Insel (`SpawnIsland/LuckyWheel` am `WheelAnchor`): Holzständer, Goldrand mit 16 blinkenden Lichtern, 8 farbige Felder mit Beschriftung, roter Zeiger oben, Schild „🎡 Glücksrad“. Kachel 🎡 „Glücksrad“ in der Seitenleiste öffnet dasselbe Menü von überall. 1 Gratis-Drehung pro deutschem Tag + 1 nach 30 min Tages-Spielzeit, sonst 25 Gems. Felder: 5/15 min Einkommen als Münzen, 5/10/25 Gems, 1/2 Tränke, Jackpot 100 Gems + 3 Tränke (2 %). Der Server würfelt, Gewinne sind sofort gutgeschrieben. Sounds `WheelTick`/`WheelWin` in `src/client/Sounds.luau` haben noch **keine ID** (Suchbegriffe stehen dort). Schalter: `luckyWheel`.
+Neu: 3D-Glücksrad auf dem freien Platz rechts hinten auf der Spawn-Insel (`SpawnIsland/LuckyWheel` am `WheelAnchor`): Holzständer, Goldrand mit 16 blinkenden Lichtern, 8 farbige Felder mit Beschriftung, roter Zeiger oben, Schild „🎡 Glücksrad“. Kachel 🎡 „Glücksrad“ in der Seitenleiste öffnet dasselbe Menü von überall. 1 Gratis-Drehung pro deutschem Tag + 1 nach 30 min Tages-Spielzeit, sonst 25 Gems. Felder: 5/15 min Einkommen als Münzen, 5/10/25 Gems, 1/2 Tränke, Jackpot 100 Gems + 3 Tränke (2 %). Der Server würfelt, Gewinne sind sofort gutgeschrieben. Sounds `WheelTick`/`WheelWin` in `src/shared/SoundList.luau` haben noch **keine ID** (Suchbegriffe stehen dort). Schalter: `luckyWheel`.
 
 Vorher: `lune run test` → alle grün (u. a. `tests/LuckyWheel.spec.luau`).
 
@@ -1863,7 +1863,7 @@ Studio, Rojo verbinden, **Play** (als Admin):
 
 ## MEGA UPDATE – #97 Tägliche und wöchentliche Quests
 
-Neu: Kachel 📜 „Quests“ in der Seitenleiste (nach Rebirth/Welten) mit rotem Punkt, sobald eine Quest oder die Bonus-Truhe abholbereit ist, und Beschriftung „x/3“. Täglich 3 Quests (neu um 0 Uhr deutsche Zeit), Bonus-Truhe (20 Gems + 1 Trank) für alle 3, 1 Gratis-Neuwürfeln pro Tag (dann 10 Gems), 7 Bonus-Truhen am Stück = Serien-Truhe (100 Gems + Mega-Trank; solange es den Mega-Trank nicht gibt, ein zufälliger Trank). Wöchentlich 3 größere Quests (30 Gems, neu Montag 0 Uhr). Schalter: `GameConfig.features.dailyQuests` / `weeklyQuests`. Glücksrad-Quests („Drehe 2× am Glücksrad“) zählen jede Drehung (#98); Truhen-Quests erscheinen erst, wenn #100 seine Fortschritts-Quelle eingetragen hat. Sound `QuestDone` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort) – bitte eine passende „Roblox“-ID eintragen.
+Neu: Kachel 📜 „Quests“ in der Seitenleiste (nach Rebirth/Welten) mit rotem Punkt, sobald eine Quest oder die Bonus-Truhe abholbereit ist, und Beschriftung „x/3“. Täglich 3 Quests (neu um 0 Uhr deutsche Zeit), Bonus-Truhe (20 Gems + 1 Trank) für alle 3, 1 Gratis-Neuwürfeln pro Tag (dann 10 Gems), 7 Bonus-Truhen am Stück = Serien-Truhe (100 Gems + Mega-Trank; solange es den Mega-Trank nicht gibt, ein zufälliger Trank). Wöchentlich 3 größere Quests (30 Gems, neu Montag 0 Uhr). Schalter: `GameConfig.features.dailyQuests` / `weeklyQuests`. Glücksrad-Quests („Drehe 2× am Glücksrad“) zählen jede Drehung (#98); Truhen-Quests erscheinen erst, wenn #100 seine Fortschritts-Quelle eingetragen hat. Sound `QuestDone` in `src/shared/SoundList.luau` hat noch **keine ID** (Suchbegriffe stehen dort) – bitte eine passende „Roblox“-ID eintragen.
 
 Vorher: `lune run test` → alle grün (u. a. `tests/Quests.spec.luau`).
 
@@ -1885,7 +1885,7 @@ Studio, Rojo verbinden, **Play** (als Admin):
 
 ## MEGA UPDATE – #82 Welt 8 Atlantis
 
-Erste der 8 neuen Welten: versunkene Insel mit Sandboden, Korallen-Riff als Rand, Glasbrücke, versunkenem Tempel mit leuchtender Perle (Wahrzeichen), Korallen, Seetang, Ruinen-Säulen, aufsteigenden Blasen und blauen Lampen (alles per Skript, ~340 Teile, kein Import nötig). 3 Beläge (Seetang, Perlen-Kapern, Tintenfisch-Ringe), Atlantis-Ei mit 6 Pets (Seetang-Schnecke, Blasen-Kugelfisch, Kapern-Clownfisch, Laternen-Anglerfisch, Perlen-Mantarochen, Poseidon-Seedrache), Geheim-Pet Perlenkönig-Otter, Atlantis-Shop. Braucht **2 Rebirths** + 150 Mio Münzen (Preise vorläufig, #108). Wetter „Blasen-Sturm“ steht nur in der Config (#105 baut es). Musik `Music_Atlantis` in `src/client/Sounds.luau` hat noch **keine ID** (Suchbegriffe stehen dort). Vorschau: `assets/previews/worlds/Atlantis.png`, Insel: `assets/previews/islands/World8_*.jpg`.
+Erste der 8 neuen Welten: versunkene Insel mit Sandboden, Korallen-Riff als Rand, Glasbrücke, versunkenem Tempel mit leuchtender Perle (Wahrzeichen), Korallen, Seetang, Ruinen-Säulen, aufsteigenden Blasen und blauen Lampen (alles per Skript, ~340 Teile, kein Import nötig). 3 Beläge (Seetang, Perlen-Kapern, Tintenfisch-Ringe), Atlantis-Ei mit 6 Pets (Seetang-Schnecke, Blasen-Kugelfisch, Kapern-Clownfisch, Laternen-Anglerfisch, Perlen-Mantarochen, Poseidon-Seedrache), Geheim-Pet Perlenkönig-Otter, Atlantis-Shop. Braucht **2 Rebirths** + 150 Mio Münzen (Preise vorläufig, #108). Wetter „Blasen-Sturm“ steht nur in der Config (#105 baut es). Musik `Music_Atlantis` in `src/shared/SoundList.luau` hat noch **keine ID** (Suchbegriffe stehen dort). Vorschau: `assets/previews/worlds/Atlantis.png`, Insel: `assets/previews/islands/World8_*.jpg`.
 
 Vorher: `lune run test` → alle grün (u. a. `tests/WorldDeco.spec.luau`, `tests/WorldModels.spec.luau`, `GameConfig new worlds`).
 
@@ -2137,3 +2137,41 @@ Studio, Rojo verbinden, **Play** (als Admin), zu einem Ei laufen:
 - [ ] Einstellungen → Grafik „Niedrig“: Aura-Lichter und Gold-Leuchten aus, Legendär ohne Funken, Mythisch/Geheim mit deutlich weniger. Zurück auf „Hoch“ stellt alles wieder her.
 - [ ] Volle Pet-Plätze mit Auren: keine spürbaren FPS-Einbrüche (Strg+Shift+F5 / Micro-Profiler).
 - [ ] Schalter `features.petAuras = false`: keine Auren, kein Gold-Puls, keine Drehung (Hüpfen und Regenbogen-Leuchten aus #80 bleiben).
+
+## MEGA UPDATE – #112 Neue Sounds und Musik der neuen Welten
+
+Alle Sounds stehen jetzt in **`src/shared/SoundList.luau`** (vorher `src/client/Sounds.luau`; dort nur noch das Abspielen). Leere ID = stumm, kein Fehler. Alle Sounds laufen über die SoundGroups `Music`/`Effects`, Regler und Stumm aus den Einstellungen (#76) wirken also auf jeden Eintrag. Kein eigener Schalter (rein kosmetisch).
+
+### Sound-IDs suchen (alle auf einmal)
+
+So geht's: Studio → **View → Toolbox → Creator Store → Audio** (Musik: Typ **Music**, sonst **Sound Effects**), Suchbegriff eingeben, Filter **Creator = Roblox**, anhören, **Rechtsklick → Copy Asset ID**. Dann in `src/shared/SoundList.luau` beim Schlüssel `id = ""` die Zahl eintragen (nur Ziffern, nicht in Studio ändern – Rojo überschreibt). Danach `lune run test`, Commit `Add sound IDs (#112)`, pushen, Spalte „Gewählt“ ausfüllen.
+
+| Schlüssel | Wann | Art | Suchbegriffe | Gewählt (Name, ID) |
+|---|---|---|---|---|
+| `Merge` | Pets verschmolzen (Pet-Menü) | kurz, Power-up | *power up*, *level up*, *fusion*, *magic whoosh*, *upgrade* | |
+| `Shiny` | Shiny-Pet geschlüpft (Ei-Animation) | kurz, Glitzern | *sparkle*, *twinkle*, *magic chime*, *shine*, *star* | |
+| `Secret` | Geheim-Pet geschlüpft (Animation + Banner) | länger, magische Enthüllung | *magic reveal*, *mystery*, *epic reveal*, *choir*, *legendary* | |
+| `QuestDone` | Quest geschafft (Toast, Quest-Menü) | kurz, Erfolg | *quest complete*, *success*, *achievement*, *level complete*, *ding* | |
+| `WheelTick` | Glücksrad: jedes Feld am Zeiger | sehr kurz (< 0,1 s), Klick | *click*, *tick*, *wheel tick*, *ratchet*, *clack* | |
+| `WheelWin` | Glücksrad bleibt stehen | kurz, Gewinn-Jingle | *win*, *prize*, *reward jingle*, *success*, *slot win* | |
+| `PetLevelUp` | Pet erreicht neues Level (Toast) | kurz, „Ding“ | *level up*, *ding*, *achievement*, *power up chime*, *success* | |
+| `GoldenTopping` | Goldener Belag eingesammelt | kurz, reicher als Gem | *magic shimmer*, *golden sparkle*, *treasure*, *shine*, *glitter chime* | |
+| `Badge` | Badge erhalten (Abspielen kommt mit #103) | kurz, Fanfare | *achievement*, *unlock*, *badge*, *trophy*, *success fanfare* | |
+| `Music_Atlantis` | Musik Welt 8 | Schleife, ruhig-verträumt | *underwater*, *ocean*, *aquatic*, *harp*, *dreamy* | |
+| `Music_JungleTemple` | Musik Welt 9 | Schleife, Abenteuer leicht | *jungle*, *tropical*, *adventure*, *drums*, *marimba* | |
+| `Music_DesertPyramids` | Musik Welt 10 | Schleife, warm, orientalisch | *desert*, *egypt*, *arabian*, *oud*, *adventure* | |
+| `Music_HauntedCastle` | Musik Welt 11 | Schleife, verspielt-gruselig | *spooky*, *halloween*, *playful*, *harpsichord*, *pizzicato* | |
+| `Music_DinoAge` | Musik Welt 12 (geplant) | Schleife, Urzeit-Abenteuer | *prehistoric*, *dinosaur*, *tribal drums*, *adventure*, *jungle* | |
+| `Music_CrystalCave` | Musik Welt 13 (geplant) | Schleife, glitzernd-magisch | *crystal*, *cave*, *glockenspiel*, *magical*, *chimes* | |
+| `Music_CloudCity` | Musik Welt 14 (geplant) | Schleife, luftig-verträumt | *sky*, *dreamy*, *airy*, *flute*, *light ambient* | |
+| `Music_PizzaParadise` | Musik Welt 15 (geplant) | Schleife, fröhlich-italienisch | *italian*, *mandolin*, *happy*, *festive*, *tarantella* | |
+
+Musik nicht doppelt vergeben (jede Welt eigene Musik), Lautstärke steht schon (Musik 0,25).
+
+### Studio-Prüfpunkte (nach dem Eintragen)
+
+- [ ] Output ohne „Failed to load sound“.
+- [ ] Admin-Panel: Pets/Shiny/Geheim geben bzw. Ei öffnen mit hoher Shiny-Chance → `Shiny`/`Secret` beim Schlüpfen; 5 gleiche verschmelzen → `Merge`.
+- [ ] Glücksrad drehen → Klicks beim Drehen, Jingle am Ende. Quest fertig → `QuestDone`. Pet-Level-Toast → `PetLevelUp`. Goldener Belag → `GoldenTopping`.
+- [ ] Per Admin-Panel in Welt 8–11 teleportieren → jede Welt hat ihre Musik.
+- [ ] Einstellungen: Musik-/Effekt-Regler und Stumm wirken sofort auf alle neuen Sounds.
