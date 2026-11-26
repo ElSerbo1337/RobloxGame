@@ -1960,3 +1960,30 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] ⚙️ → Grafik **Niedrig** → Pyramiden-Spitzen, hintere Palmblätter und Kaktusblüten verschwinden; **Hoch** → wieder da.
 - [ ] `GameConfig.features.worldDeco = false` → Insel ohne Dünen/Kakteen/Oasen/kleine Pyramiden (große Pyramide, Mauer, Stationen bleiben).
 - [ ] Musik: im Creator Store eine Wüsten-/Abenteuer-Musik (Creator „Roblox“) wählen und die ID bei `Music_DesertPyramids` eintragen.
+
+## MEGA UPDATE – #85 Welt 11 Spukschloss
+
+Dritte neue Welt nach dem Atlantis-Muster, kinderfreundlich-gruselig: dämmrig grün-violette Insel mit **schmiedeeisernem Zaun** (Steinpfosten, kleine Kürbisse auf jedem dritten), dunkler Holzsteg-Brücke, **Spukschloss** hinten links (Bergfried mit Zinnen, Tor zum Weg hin, 4 Ecktürme + Mittelturm mit Spitzdächern, leuchtende Fenster, **eine** Laterne über dem Tor, kleiner Geist schwebt über dem Schloss), kahle krumme Bäume (manche mit schlafender Fledermaus), Kürbisse (jeder dritte mit leuchtendem Gesicht), Mauerreste, 3 orange Laternen, **Fledermaus-Schwärme** in der Luft und **violetter Bodennebel** (alles per Skript, ~350 Teile, kein Import nötig). 3 Beläge (Kürbis, Geister-Pilz, Gummi-Fledermausflügel), Spuk-Ei (Muster „Fledermäuse“, leuchtend) mit 6 Pets (Kürbis-Kätzchen, Gespenster-Welpe, Gummi-Fledermaus, Laternen-Rabe, Mondschein-Wolf, Phantom-Drache), Geheim-Pet **Graf Gruselzahn**, Spuk-Shop. Braucht **5 Rebirths** + 90 Mrd. Münzen (vorläufig, #108). Wetter **„Gewitter“** nur in der Config (`lightning = true`; die Effekte baut #105 – Blitze nur, wenn in den Einstellungen „Bildschirm-Blitze“ an ist, #76). Musik `Music_HauntedCastle` hat noch **keine ID**. Geheime Truhe (#100): Anker `SecretChestAnchor` auf der Terrasse **hinter** dem Schloss. Vorschau: `assets/previews/worlds/HauntedCastle.png`, Insel: `assets/previews/islands/World11_*.jpg`.
+
+Vorher: `lune run test` → alle grün (u. a. `WorldDeco.spec` „haunted castle deco (#85)“, `WorldModels.spec`).
+
+**Modelle importieren** (eine Datei für die ganze Welt):
+
+- [ ] **Home → Import 3D** → `assets/models/worlds/HauntedCastle.fbx` → *Rig Type* = **No Rig** → **Import**, das Model `HauntedCastle` nach `ReplicatedStorage → GameAssets → Models → Worlds` ziehen. Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.HauntedCastle:GetChildren())` → **11** (`Pumpkin`, `GhostMushroom`, `GummyBatWings`, `PumpkinKitten`, `GhostPuppy`, `GummyBat`, `LanternRaven`, `MoonlightWolf`, `PhantomDragon`, `CountFangtastic`, `SpookyEgg`).
+
+Ohne Import läuft alles mit Platzhaltern (Scheiben, Kugeln, Platzhalter-Ei).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Output ohne rote Fehler beim Start (Insel 11 wird gebaut, auch ohne Import).
+- [ ] Admin-Panel → **Rebirths setzen** 5 → **Welt freischalten** bis Welt 10 → zum Tor des Spukschlosses: Preisschild 90 Mrd., mit **Münzen geben** kaufen → Tor offen. Mit 4 Rebirths: „Ab 5 Rebirths“.
+- [ ] Insel ansehen: Eisenzaun mit Kürbis-Pfosten, Holzsteg-Brücke, Schloss mit Türmen/Spitzdächern, leuchtenden Fenstern, Laterne am Tor und schwebendem Geist; kahle Bäume (einige mit schlafender Fledermaus), Kürbisse mit Gesichtern, Mauerreste, 3 orange Laternen, Fledermaus-Schwärme hoch oben, leichter violetter Nebel (zu dicht → `Mist`-Rate in `IslandBuilder` senken). Wirkt gruselig-lustig, nicht unheimlich? Nichts auf Weg/Feld/vor Stationen; man bleibt nur an Stämmen, Kürbissen, Säulen und Laternen hängen.
+- [ ] Hinter dem Schloss: `Workspace → … HauntedCastle → Anchors → SecretChestAnchor` liegt auf der Terrasse, frei von Deko (Attribut `ClearRadius` = 5).
+- [ ] Beläge Kürbis/Geister-Pilz/Gummi-Fledermausflügel sammeln, verkaufen; Namen de/en.
+- [ ] Spuk-Ei (ein Stand): 6 Pets + „??? (Geheim)“, öffnen; **Geheim-Pet geben** → Welt Spukschloss → Graf Gruselzahn.
+- [ ] Spuk-Shop, Portal (Teleport), Telefon/Lieferwagen mit Spuk-Belägen.
+- [ ] Grafik **Niedrig** → Zweige, Fledermaus-Flügel, schlafende Fledermäuse, Kürbis-Gesichter/-Rippen, Laternen-Kugeln weg, weniger Nebel; **Hoch** → alles wieder da.
+- [ ] Handy: Bildrate auf der Spuk-Insel ok.
+- [ ] `GameConfig.features.worldDeco = false` → keine Bäume/Kürbisse/Ruinen/Fledermäuse/Nebel (Schloss, Zaun, Stationen bleiben), keine Fehler; danach wieder `true`.
+- [ ] Sobald #105 (Wetter) da ist: Admin → **Wetter starten** Gewitter auf der Spuk-Insel; mit „Bildschirm-Blitze“ **aus** keine Blitze.
+- [ ] Musik: verspielt-gruselige Musik (Creator „Roblox“, z. B. Cembalo/Pizzicato) wählen, ID bei `Music_HauntedCastle` eintragen.
