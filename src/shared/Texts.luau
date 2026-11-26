@@ -18,10 +18,10 @@ Texts.strings = {
 	["hud.pizza"] = { de = "Pizza {count}/{capacity}", en = "Pizza {count}/{capacity}" },
 	["hud.pizzaFull"] = { de = "Pizza VOLL {count}/{capacity}", en = "Pizza FULL {count}/{capacity}" },
 	["hud.friendsBonus"] = {
-		de = "👥 {count} Freunde: +{percent} 💰",
-		en = "👥 {count} friends: +{percent} 💰",
+		de = "👥 {count} Freunde: +{percent} % Münzen",
+		en = "👥 {count} friends: +{percent}% coins",
 	},
-	["hud.friendsBonusOne"] = { de = "👥 1 Freund: +{percent} 💰", en = "👥 1 friend: +{percent} 💰" },
+	["hud.friendsBonusOne"] = { de = "👥 1 Freund: +{percent} % Münzen", en = "👥 1 friend: +{percent}% coins" },
 	["hud.autoCollectOn"] = { de = "Auto-Sammeln: AN", en = "Auto-Collect: ON" },
 	["hud.autoCollectOff"] = { de = "Auto-Sammeln: AUS", en = "Auto-Collect: OFF" },
 

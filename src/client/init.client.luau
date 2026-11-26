@@ -6,6 +6,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 
 local AdminPanel = require(script.AdminPanel)
 local Barriers = require(script.Barriers)
+local BonusPills = require(script.BonusPills)
 local DeliveryMenu = require(script.DeliveryMenu)
 local EggAnimation = require(script.EggAnimation)
 local EggPreview = require(script.EggPreview)
@@ -59,6 +60,8 @@ IndexMenu.start()
 -- "What's new" window (#106): once per player, after the tutorial and the calendar.
 WhatsNewMenu.start()
 DeliveryMenu.start()
+-- Active bonuses top right (#102: friends on the server).
+BonusPills.start()
 -- Settings menu (#76): side bar tile; graphics Low = fewer particles, hidden decoration.
 SettingsMenu.start()
 task.spawn(GraphicsQuality.start)

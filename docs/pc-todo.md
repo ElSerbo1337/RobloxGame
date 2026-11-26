@@ -2062,3 +2062,18 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Handy (Emulator, kleines Querformat): Fenster füllt den Bildschirm, mindestens eine ganze Wochen-Reihe plus Knopf sichtbar, Rest scrollt; Texte lesbar.
 - [ ] Englisch (`Language` = `en`): „⭐ Day 7“, „Come back tomorrow! 29 days to go until Calendar Fox.“, „Calendar Fox + 80 gems + 3 potions“.
 - [ ] Schalter `loginCalendar30 = false` → eine Reihe mit 7 Tagen wie früher, Admin-Aktion weg; danach wieder `true`.
+
+## MEGA UPDATE – #102 Freunde-Bonus
+
+Neu: **+10 % Münzen pro Freund auf demselben Server, max. +30 %** (`GameConfig.friendsBonus`), im Münz-Multiplikator (Verkauf, Lieferung, Einkommen), multipliziert mit Pets × Rebirth × Index. Server prüft die Freundschaft (`FriendsService`, `Player:IsFriendsWith`, pro Paar gecacht) bei jedem Beitritt/Verlassen. Anzeige oben rechts über der Auftragskarte als grüne Pille „👥 2 Freunde: +20 % Münzen“ (nur sichtbar mit Bonus). Schalter: `friendsBonus`.
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Friends.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Allein: keine Pille oben rechts, Output ohne rote Fehler (kein Fehler aus `FriendsService`).
+- [ ] Admin **Freunde-Anzahl simulieren** 1 → Pille „👥 1 Freund: +10 % Münzen“ oben rechts über der Auftragskarte; 3 → „+30 %“; 5 → bleibt bei „+30 %“. Pizza verkaufen → mit 3 ca. 30 % mehr Münzen als mit 0.
+- [ ] Simulation 0 → Pille weg, Verkauf wieder normal. Mit laufendem Auftrag: Pille und Auftragskarte überlappen nicht (auch auf dem Handy-Emulator).
+- [ ] Sprache auf Englisch → „👥 3 friends: +30% coins“.
+- [ ] **Echter Test (veröffentlichte Test-Experience):** mit einem befreundeten Konto auf denselben Server → bei beiden „👥 1 Freund: +10 %“; Freund verlässt den Server → Pille verschwindet innerhalb weniger Sekunden. Nicht befreundetes Konto → kein Bonus.
+- [ ] `GameConfig.features.friendsBonus = false` → keine Pille, Admin-Aktion fehlt, kein Bonus beim Verkauf.

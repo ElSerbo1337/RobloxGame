@@ -13,6 +13,7 @@ local GemService = require(script.GemService)
 local GiftService = require(script.GiftService)
 local LoginCalendarService = require(script.LoginCalendarService)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local FriendsService = require(script.FriendsService)
 local IndexService = require(script.IndexService)
 local OvenService = require(script.OvenService)
 local PetService = require(script.PetService)
@@ -176,5 +177,7 @@ CodeService.start()
 QuestService.start()
 -- Pet index and topping index (#95): replicates the Index attribute.
 IndexService.start()
+
+FriendsService.start()
 
 print(`[{Constants.GAME_NAME}] Server gestartet`)

@@ -210,6 +210,10 @@ Kachel 📖 „Index“ (`index`, order 90, Form `star`, `src/client/IndexMenu.l
 - **Beläge:** Karte 196 × 196 mit Namen und zwei Hälften Normal / ✨ Gold (golden = goldene Tönung `255,215,80` in `COIN`-Kreis), ✓ in Grün; beide gefunden = hellgrüne Karte.
 - **Regeln** (`GameRules`, getestet in `tests/Index.spec.luau`): `indexPets(worldId)` = alle Pets der Ei-Tabellen einer Welt ohne Geheim, `petIndex(state)`, `indexBonus(state)` (`GameConfig.petIndex.worldBonus` pro kompletter Welt, steckt in `coinMultiplier`), `toppingIndex(state)`. Neue Welten brauchen keinen Index-Code. Sterne kommen aus `addPet` (`state.petIndexStars`), Beläge aus dem Einsammeln (`toppingsFound`, `goldenToppingsFound`). Server: `IndexService` (Attribut `Index`, Toast `Notify("IndexWorldComplete", worldId)`).
 
+## Aktive Boni oben rechts (#102)
+
+`src/client/BonusPills.luau` legt oben in der rechten Spalte (`LayoutOrder` 1, über der Auftragskarte) einen gemeinsamen Rahmen an; jeder Bonus bekommt eine Pille mit `BonusPills.pill(id, order, farbe)` (38 px hoch, abgerundet, weißer Text auf Farbe, dicker dunkler Rand, Breite nach Text, versteckt = kein Platz). Heute: Freunde (grün `110,200,90`, „👥 2 Freunde: +20 % Münzen“, aus den Attributen `Friends`/`FriendsBonus` von `FriendsService`). Das Wetter hängt seine Pille hier an (order 2).
+
 ## Quests (#97)
 
 Kachel 📜 „Quests“ (`quests`, order 70, `src/client/QuestMenu.luau`): scrollende Liste mit Tagesquests (Text, Fortschrittsbalken in `GREEN`, Belohnung, Knopf „Abholen“ grün / „🎲 Gratis“ bzw. „🎲 10 💎“ orange / ✓ grau), Bonus-Truhe mit Serie (🔥 x/7) und Wochenquests; Überschriften mit der Zeit bis zu neuen Quests. Fertige Zeilen werden hellgrün. Beschriftung der Kachel „x/3“, roter Punkt bei `readyCount > 0`.
