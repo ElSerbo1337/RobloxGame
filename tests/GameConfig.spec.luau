@@ -1059,6 +1059,28 @@ describe("GameConfig tutorial", function()
 end)
 
 describe("GameConfig potions", function()
+	it("has a shiny, a gold and a mega potion (#96) behind newPotions", function()
+		local rules = GameRules.new(GameConfig)
+		expect(GameConfig.potions.Shiny.shinyChanceMultiplier).toBe(2)
+		expect(GameConfig.potions.Gold.goldenChanceMultiplier).toBe(2)
+		expect(GameConfig.potions.Mega.includes).toEqual({ "Coins", "Luck", "Speed" })
+		local sum = GameConfig.potions.Coins.price + GameConfig.potions.Luck.price + GameConfig.potions.Speed.price
+		expect(GameConfig.potions.Mega.price > sum).toBe(true)
+		for _, potionId in { "Shiny", "Gold", "Mega" } do
+			local potion = GameConfig.potions[potionId]
+			expect(potion.feature).toBe("newPotions")
+			expect(potion.durationSeconds).toBe(600)
+			expect(type(potion.displayNameEn)).toBe("string")
+			expect(type(potion.descriptionEn)).toBe("string")
+		end
+		local state = rules.newPlayerState()
+		state.activePotions = { Mega = 600 }
+		expect(rules.potionCoinMultiplier(state)).toBe(2)
+		expect(rules.isPotionEffectActive(state, "Luck")).toBe(true)
+		state.activePotions = { Shiny = 600 }
+		expect(rules.shinyChance(state)).toBe(GameConfig.shinyPets.chance * 2)
+	end)
+
 	local rules = GameRules.new(GameConfig)
 
 	it("has a coin, a luck and a speed potion that each run for 10 minutes and cost gems", function()
@@ -1090,7 +1112,7 @@ describe("GameConfig potions", function()
 		end
 	end)
 
-	it("sells all three potions at the gem counter of every shop", function()
+	it("sells all six potions at the gem counter of every shop", function()
 		for shopId, shop in GameConfig.shops do
 			local state = rules.newPlayerState()
 			state.gems = 1000
@@ -1098,10 +1120,10 @@ describe("GameConfig potions", function()
 			for _, world in GameConfig.worlds do
 				table.insert(state.unlockedWorlds, world.id)
 			end
-			for _, potionId in { "Coins", "Luck", "Speed" } do
+			for _, potionId in { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" } do
 				expect(rules.buyPotion(state, shopId, potionId).ok).toBe(true)
 			end
-			expect(#shop.potions).toBe(3)
+			expect(#shop.potions).toBe(6)
 		end
 	end)
 end)

@@ -252,13 +252,16 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | PyramidEgg | Pyramiden-Ei | Pyramid Egg | Wüsten-Pyramiden | #84 |
 | SpookyEgg | Spuk-Ei | Spooky Egg | Spukschloss | #85 |
 
-## Tränke (3)
+## Tränke (6)
 
 | Id | Deutsch | Englisch (Vorschlag) | Beschreibung Deutsch | Beschreibung Englisch (Vorschlag) |
 | --- | --- | --- | --- | --- |
 | Coins | Münz-Trank | Coin Potion | Doppelte Münzen beim Verkaufen | Double coins when selling |
 | Luck | Glücks-Trank | Luck Potion | Seltene Pets kommen öfter aus Eiern | Rare pets hatch more often |
 | Speed | Speed-Trank | Speed Potion | Schneller laufen | Walk faster |
+| Shiny | Shiny-Trank | Shiny Potion | Doppelte Shiny-Chance beim Schlüpfen | Double shiny chance when hatching |
+| Gold | Gold-Trank | Gold Potion | Doppelte Chance auf goldene Beläge | Double chance of golden toppings |
+| Mega | Mega-Trank | Mega Potion | Münz-, Glücks- und Speed-Trank in einem | Coin, luck and speed potion in one |
 
 ## Upgrades (8)
 

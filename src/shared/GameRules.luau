@@ -1060,13 +1060,69 @@ function GameRules.new(config: any)
 		return upgradeValue(state, "Magnet")
 	end
 
-	-- Effect setting of a potion while it runs, `default` otherwise (or for unknown potions).
+	-- Potion ids in a fixed order (sorted), so effects are applied deterministically.
+	local sortedPotionIds: { string } = {}
+	for potionId in config.potions or {} do
+		table.insert(sortedPotionIds, potionId)
+	end
+	table.sort(sortedPotionIds)
+
+	-- The potions whose effects a potion carries besides its own (#96: the Mega potion
+	-- works like the coin, luck and speed potion at once). Empty for plain potions.
+	function rules.potionIncludes(potionId: string): { string }
+		local potion = config.potions and config.potions[potionId]
+		return if potion and potion.includes then table.clone(potion.includes) else {}
+	end
+
+	-- The running potion (other than `potionId` itself) that carries the effect of
+	-- `potionId`, e.g. "Mega" for "Coins" (first in sorted order), or nil.
+	function rules.potionCoveredBy(state: PlayerState, potionId: string): string?
+		for _, otherId in sortedPotionIds do
+			local other = config.potions[otherId]
+			if
+				otherId ~= potionId
+				and (state.activePotions[otherId] or 0) > 0
+				and other.includes
+				and table.find(other.includes, potionId)
+			then
+				return otherId
+			end
+		end
+		return nil
+	end
+
+	-- Whether the effect of `potionId` applies now: the potion itself runs, or a running
+	-- potion includes it. An effect counts once (Mega + coin potion = coins x2).
+	function rules.isPotionEffectActive(state: PlayerState, potionId: string): boolean
+		return (state.activePotions[potionId] or 0) > 0 or rules.potionCoveredBy(state, potionId) ~= nil
+	end
+
+	-- Effect setting of a potion while its effect applies, `default` otherwise (or for unknown potions).
 	local function potionEffect(state: PlayerState, potionId: string, key: string, default: any): any
 		local potion = config.potions and config.potions[potionId]
-		if potion == nil or (state.activePotions[potionId] or 0) <= 0 then
+		if potion == nil or not rules.isPotionEffectActive(state, potionId) then
 			return default
 		end
 		return potion[key] or default
+	end
+
+	-- Product of `key` over every potion whose effect applies (each effect once).
+	local function potionProduct(state: PlayerState, key: string): number
+		local product = 1
+		for _, potionId in sortedPotionIds do
+			local value = config.potions[potionId][key]
+			if value and rules.isPotionEffectActive(state, potionId) then
+				product *= value
+			end
+		end
+		return product
+	end
+
+	-- Whether a potion can be bought, drunk and handed out: it exists and its feature
+	-- switch (`feature`, #96: newPotions) is on.
+	function rules.isPotionOffered(potionId: string): boolean
+		local potion = config.potions and config.potions[potionId]
+		return potion ~= nil and featureOn(potion.feature)
 	end
 
 	-- Humanoid walk speed (studs per second): the WalkSpeed upgrade, times the speed potion.
@@ -1104,13 +1160,7 @@ function GameRules.new(config: any)
 		if config.goldenToppings == nil or not featureOn("goldenToppings") then
 			return 0
 		end
-		local chance = upgradeValue(state, "GoldLuck")
-		for potionId, secondsLeft in state.activePotions do
-			local potion = config.potions and config.potions[potionId]
-			if secondsLeft > 0 and potion and potion.goldenChanceMultiplier then
-				chance *= potion.goldenChanceMultiplier
-			end
-		end
+		local chance = upgradeValue(state, "GoldLuck") * potionProduct(state, "goldenChanceMultiplier")
 		chance = math.max(chance, state.adminGoldenChance or 0)
 		return math.clamp(math.round(chance * 1e9) / 1e9, 0, 1)
 	end
@@ -1727,12 +1777,7 @@ function GameRules.new(config: any)
 		end
 		local chance = config.shinyPets.chance
 		if state then
-			for potionId, seconds in state.activePotions do
-				local potion = config.potions and config.potions[potionId]
-				if potion and seconds > 0 and potion.shinyChanceMultiplier then
-					chance *= potion.shinyChanceMultiplier
-				end
-			end
+			chance *= potionProduct(state, "shinyChanceMultiplier")
 			if state.adminShinyChance then
 				chance = math.max(chance, state.adminShinyChance)
 			end
@@ -1949,7 +1994,7 @@ function GameRules.new(config: any)
 		if shop.worldId and not rules.isWorldUnlocked(state, shop.worldId) then
 			return fail(state, "WorldLocked")
 		end
-		if not (shop.potions and table.find(shop.potions, potionId)) then
+		if not (shop.potions and table.find(shop.potions, potionId)) or not rules.isPotionOffered(potionId) then
 			return fail(state, "NotOffered")
 		end
 		if state.gems < potion.price then
@@ -1967,6 +2012,9 @@ function GameRules.new(config: any)
 		local offers = {}
 		for _, potionId in config.shops[shopId].potions or {} do
 			local potion = config.potions[potionId]
+			if not rules.isPotionOffered(potionId) then
+				continue
+			end
 			table.insert(offers, {
 				potionId = potionId,
 				displayName = potion.displayName,
@@ -1989,6 +2037,9 @@ function GameRules.new(config: any)
 		local potion = config.potions[potionId]
 		if potion == nil then
 			return fail(state, "UnknownPotion")
+		end
+		if not featureOn(potion.feature) then
+			return fail(state, "FeatureOff")
 		end
 		if rules.potionCount(state, potionId) <= 0 then
 			return fail(state, "NoPotion")
@@ -2054,13 +2105,15 @@ function GameRules.new(config: any)
 	end
 
 	-- A random potion id, all potions equally likely (one random draw): delivery orders,
-	-- gifts and the login calendar hand out potions this way.
+	-- gifts and the login calendar hand out potions this way. Leaves out potions with
+	-- `randomReward = false` (the expensive Mega potion, #96) and switched-off ones.
 	local function randomPotionId(random: () -> number): string
 		local potionIds = {}
-		for potionId in config.potions do
-			table.insert(potionIds, potionId)
+		for _, potionId in sortedPotionIds do
+			if config.potions[potionId].randomReward ~= false and rules.isPotionOffered(potionId) then
+				table.insert(potionIds, potionId)
+			end
 		end
-		table.sort(potionIds)
 		return potionIds[math.min(#potionIds, 1 + math.floor(random() * #potionIds))]
 	end
 
@@ -2133,7 +2186,8 @@ function GameRules.new(config: any)
 			if reward.kind == "Gems" then
 				newState.gems += reward.amount
 			elseif reward.kind == "Potion" then
-				local potionId = specs[index].potionId or randomPotionId(random)
+				local fixed = specs[index].potionId
+				local potionId = if fixed and rules.isPotionOffered(fixed) then fixed else randomPotionId(random)
 				reward.potionId = potionId
 				newState.potions[potionId] = (newState.potions[potionId] or 0) + reward.amount
 			end
@@ -3309,7 +3363,7 @@ function GameRules.new(config: any)
 		local option = if #options == 1 then options[1] else drawWeighted(options, random)
 		local reward: Reward = { kind = option.kind, amount = option.amount }
 		if option.kind == "Potion" then
-			reward.potionId = if option.potionId and config.potions[option.potionId]
+			reward.potionId = if option.potionId and rules.isPotionOffered(option.potionId)
 				then option.potionId
 				else randomPotionId(random)
 		end

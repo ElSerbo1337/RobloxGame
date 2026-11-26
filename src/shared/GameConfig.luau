@@ -467,7 +467,7 @@ local GameConfig = {
 		freeRerolls = 1,
 		rerollGems = 10,
 		streakDays = 7,
-		-- `potionId`: that potion (Mega, #new potions); a random one while it does not exist.
+		-- `potionId`: that potion (Mega, #96); a random one while it is switched off.
 		streakRewards = { { kind = "Gems", amount = 100 }, { kind = "Potion", amount = 1, potionId = "Mega" } },
 		kinds = {
 			{ id = "CollectToppings", daily = { base = 60, perWorld = 20 }, weekly = { base = 400, perWorld = 120 } },
@@ -549,6 +549,45 @@ local GameConfig = {
 			durationSeconds = 600,
 			-- Multiplies the walk speed (including the WalkSpeed upgrade).
 			walkSpeedMultiplier = 1.5,
+		},
+		-- New potions (#96), behind features.newPotions (`feature`). Prices are provisional
+		-- (balancing #108).
+		Shiny = {
+			displayName = "Shiny-Trank",
+			displayNameEn = "Shiny Potion",
+			description = "Doppelte Shiny-Chance beim Schlüpfen",
+			descriptionEn = "Double shiny chance when hatching",
+			price = 40,
+			durationSeconds = 600,
+			feature = "newPotions",
+			-- Shiny chance (#80) x2 while it runs; stacks with the luck potion (1 in 50).
+			shinyChanceMultiplier = 2,
+		},
+		Gold = {
+			displayName = "Gold-Trank",
+			displayNameEn = "Gold Potion",
+			description = "Doppelte Chance auf goldene Beläge",
+			descriptionEn = "Double chance of golden toppings",
+			price = 40,
+			durationSeconds = 600,
+			feature = "newPotions",
+			-- Golden topping chance (#94) x2 while it runs, on top of Gold Luck.
+			goldenChanceMultiplier = 2,
+		},
+		Mega = {
+			displayName = "Mega-Trank",
+			displayNameEn = "Mega Potion",
+			description = "Münz-, Glücks- und Speed-Trank in einem",
+			descriptionEn = "Coin, luck and speed potion in one",
+			price = 120,
+			durationSeconds = 600,
+			feature = "newPotions",
+			-- Works like these potions at once (each effect counts once, so Mega + coin
+			-- potion is still coins x2).
+			includes = { "Coins", "Luck", "Speed" },
+			-- Never a random potion reward (gifts, wheel, deliveries ...); only where it is
+			-- named (quest streak, merchant).
+			randomReward = false,
 		},
 	},
 
@@ -1408,7 +1447,7 @@ local GameConfig = {
 				{ upgrade = "GoldLuck", maxLevel = 2 },
 			},
 			-- Potions sold at the gem counter.
-			potions = { "Coins", "Luck", "Speed" },
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
 		-- Shop 2: everything from shop 1 plus higher levels, in world 4.
 		World4Shop = {
@@ -1427,7 +1466,7 @@ local GameConfig = {
 				{ upgrade = "GoldLuck", maxLevel = 4 },
 			},
 			-- Potions sold at the gem counter.
-			potions = { "Coins", "Luck", "Speed" },
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
 		-- Shop 3: the biggest shop with every upgrade up to its last level, in world 7.
 		World7Shop = {
@@ -1446,7 +1485,7 @@ local GameConfig = {
 				{ upgrade = "GoldLuck", maxLevel = 5 },
 			},
 			-- Potions sold at the gem counter.
-			potions = { "Coins", "Luck", "Speed" },
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
 		-- Every new world (#82-#89) has its own shop. For now with the levels of shop 3
 		-- (all levels there are); #108 adds higher levels for the new worlds.
@@ -1466,7 +1505,7 @@ local GameConfig = {
 				{ upgrade = "GoldLuck", maxLevel = 5 },
 			},
 			-- Potions sold at the gem counter.
-			potions = { "Coins", "Luck", "Speed" },
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
 		World9Shop = {
 			worldId = "JungleTemple",
@@ -1484,7 +1523,7 @@ local GameConfig = {
 				{ upgrade = "GoldLuck", maxLevel = 5 },
 			},
 			-- Potions sold at the gem counter.
-			potions = { "Coins", "Luck", "Speed" },
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
 		World10Shop = {
 			worldId = "DesertPyramids",
@@ -1502,7 +1541,7 @@ local GameConfig = {
 				{ upgrade = "GoldLuck", maxLevel = 5 },
 			},
 			-- Potions sold at the gem counter.
-			potions = { "Coins", "Luck", "Speed" },
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
 		World11Shop = {
 			worldId = "HauntedCastle",
@@ -1520,7 +1559,7 @@ local GameConfig = {
 				{ upgrade = "GoldLuck", maxLevel = 5 },
 			},
 			-- Potions sold at the gem counter.
-			potions = { "Coins", "Luck", "Speed" },
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
 	},
 
