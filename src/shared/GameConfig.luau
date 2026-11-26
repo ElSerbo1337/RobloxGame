@@ -64,6 +64,17 @@ local GameConfig = {
 		featureHints = true,
 	},
 
+	-- Loading screen (#111): seconds. It stays at least minSeconds (so the first tip can
+	-- be read), goes away once the game has loaded, and always after maxSeconds; from
+	-- skipAfterSeconds on a tap hides it. Switch: features.loadingScreen.
+	loadingScreen = {
+		minSeconds = 2.5,
+		maxSeconds = 15,
+		tipSeconds = 4,
+		skipAfterSeconds = 5,
+		fadeSeconds = 0.6,
+	},
+
 	-- Admin panel (#74): only these Roblox user ids see it and may run its actions
 	-- (checked on the server for every action, in Studio and live).
 	admin = {

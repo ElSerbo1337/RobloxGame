@@ -732,6 +732,64 @@ Texts.strings = {
 		de = "Zu viele Versuche – warte kurz.",
 		en = "Too many tries – wait a moment.",
 	},
+	-- Loading screen (#111, src/first/LoadingScreen.client.luau, tips in LoadingTips).
+	["loading.title"] = { de = "Pizza Topping Simulator", en = "Pizza Topping Simulator" },
+	["loading.subtitle"] = { de = "🍕 MEGA UPDATE 🍕", en = "🍕 MEGA UPDATE 🍕" },
+	["loading.tipLabel"] = { de = "💡 Tipp", en = "💡 Tip" },
+	["loading.loading"] = { de = "Lädt …", en = "Loading …" },
+	["loading.skip"] = { de = "Tippen zum Überspringen", en = "Tap to skip" },
+	["loading.tip.merge"] = {
+		de = "5 gleiche Pets verschmelzen zu einem goldenen – 5 goldene zu einem Regenbogen-Pet!",
+		en = "Merge 5 equal pets into a golden one – and 5 golden ones into a rainbow pet!",
+	},
+	["loading.tip.shiny"] = {
+		de = "Manchmal schlüpft ein Shiny-Pet: Es glitzert und ist stärker als normal.",
+		en = "Sometimes a shiny pet hatches: it sparkles and is stronger than usual.",
+	},
+	["loading.tip.secret"] = {
+		de = "Jede Welt hat ein Geheim-Pet. Wer eins findet, wird allen Servern gezeigt!",
+		en = "Every world hides a Secret pet. Hatch one and every server hears about it!",
+	},
+	["loading.tip.quests"] = {
+		de = "Erledige tägliche und wöchentliche Quests für Gems und Bonus-Truhen.",
+		en = "Finish daily and weekly quests for gems and bonus chests.",
+	},
+	["loading.tip.wheel"] = {
+		de = "Dreh jeden Tag gratis am Glücksrad auf der Spawn-Insel!",
+		en = "Spin the lucky wheel on the spawn island for free every day!",
+	},
+	["loading.tip.codes"] = {
+		de = "Codes löst du in den Optionen ⚙️ ein – halte Ausschau nach neuen!",
+		en = "Redeem codes in the options ⚙️ – keep an eye out for new ones!",
+	},
+	["loading.tip.index"] = {
+		de = "Im Index 📖 siehst du, welche Pets und Beläge du schon gefunden hast.",
+		en = "The index 📖 shows which pets and toppings you have already found.",
+	},
+	["loading.tip.petLevels"] = {
+		de = "Pets sammeln mit dir Erfahrung und werden mit jedem Level stärker.",
+		en = "Pets gain experience with you and get stronger with every level.",
+	},
+	["loading.tip.potions"] = {
+		de = "Neue Tränke: Shiny-, Gold- und Mega-Trank erhöhen dein Glück beim Ausbrüten.",
+		en = "New potions: Shiny, Gold and Mega potions boost your luck when hatching.",
+	},
+	["loading.tip.golden"] = {
+		de = "Goldene Beläge sind viel mehr wert – sammle sie, bevor sie jemand anderes holt!",
+		en = "Golden toppings are worth much more – grab them before someone else does!",
+	},
+	["loading.tip.calendar"] = {
+		de = "Komm jeden Tag wieder: Der 30-Tage-Kalender hat große Belohnungen.",
+		en = "Come back every day: the 30-day calendar has big rewards.",
+	},
+	["loading.tip.worlds"] = {
+		de = "{count} Welten warten auf dich – schaffst du es bis {world}?",
+		en = "{count} worlds are waiting for you – can you make it to {world}?",
+	},
+	["loading.tip.rebirth"] = {
+		de = "Ein Rebirth setzt dich zurück, gibt dir aber dauerhaft mehr Münzen.",
+		en = "A rebirth resets you, but gives you more coins for good.",
+	},
 } :: { [string]: Entry }
 
 -- Locale id ("de-de", "en-us", ...) → language: every German locale is German, all else English.

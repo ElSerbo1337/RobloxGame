@@ -2077,3 +2077,16 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Sprache auf Englisch → „👥 3 friends: +30% coins“.
 - [ ] **Echter Test (veröffentlichte Test-Experience):** mit einem befreundeten Konto auf denselben Server → bei beiden „👥 1 Freund: +10 %“; Freund verlässt den Server → Pille verschwindet innerhalb weniger Sekunden. Nicht befreundetes Konto → kein Bonus.
 - [ ] `GameConfig.features.friendsBonus = false` → keine Pille, Admin-Aktion fehlt, kein Bonus beim Verkauf.
+
+## MEGA UPDATE – #111 Ladebildschirm mit Tipps
+
+Eigener Ladebildschirm in `ReplicatedFirst` (`src/first/LoadingScreen.client.luau`, neu in `default.project.json`): Schriftzug „Pizza Topping Simulator“, „MEGA UPDATE“, drehende Pizza (3D-Modell `Pizza` aus `GameAssets`, sonst eine GUI-Pizza), wechselnde Tipps alle 4 s, Fortschrittsbalken. Regeln in `src/shared/LoadingTips.luau`, Zeiten in `GameConfig.loadingScreen`, Schalter `features.loadingScreen`.
+
+- [ ] Rojo neu verbinden (neuer Dienst `ReplicatedFirst` im Projekt) → im Explorer liegt `ReplicatedFirst.LoadingScreen` (LocalScript).
+- [ ] Play: Statt des Roblox-Ladebildschirms erscheint der orange Bildschirm, die Pizza dreht sich, Tipps wechseln und blenden weich über, der Balken läuft voll; nach mind. 2,5 s gleitet alles nach oben weg. Output: keine Fehler/Warnungen von `LoadingScreen`.
+- [ ] Sprache: `Workspace`-Attribut `Language` = `en` → englische Tipps, Welten-Tipp nennt den englischen Namen der letzten Welt; `de` → deutsch.
+- [ ] Langsames Laden: In Studio **File → Studio Settings → Network → Incoming Replication Lag** z. B. auf 3 setzen → der Bildschirm bleibt, ab 5 s erscheint „Tippen zum Überspringen“ (Tippen/Klicken schließt ihn), spätestens nach 15 s verschwindet er von selbst. Danach den Lag wieder auf 0.
+- [ ] Handy: Device-Emulator (z. B. iPhone SE quer, 950 × 450): Untertitel ausgeblendet, kleinere Pizza, Tipp-Karte vollständig lesbar, nichts ragt aus dem Bild.
+- [ ] 3D-Pizza: Wenn `ReplicatedStorage.GameAssets.Models.Pizza` vorhanden ist, dreht sich das Modell statt der GUI-Pizza. Zum Prüfen der Ersatz-Pizza `GameAssets` kurz umbenennen.
+- [ ] Danach erscheinen „Neu im Update“, Tutorial und Welt-Intro normal (der Ladebildschirm liegt mit `DisplayOrder` 1000 darüber, solange er da ist).
+- [ ] Schalter: `GameConfig.features.loadingScreen = false` → normaler Roblox-Ladebildschirm (nur zum Test, wieder auf `true`; das Admin-Panel kann den Schalter nicht umlegen, weil der Bildschirm vor allem anderen läuft).
