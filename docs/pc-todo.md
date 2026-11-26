@@ -1938,6 +1938,7 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Handy: Bildrate auf der Dschungel-Insel ok.
 - [ ] `GameConfig.features.worldDeco = false` → keine Bäume/Farne/Ruinen/Glühwürmchen/Nebel (Tempel, Rand, Stationen bleiben), keine Fehler; danach wieder `true`.
 - [ ] Musik: Dschungel-/Abenteuer-Musik (Creator „Roblox“) wählen, ID bei `Music_JungleTemple` eintragen.
+
 ## MEGA UPDATE – #84 Welt 10 Wüsten-Pyramiden
 
 Wüsten-Insel nach dem Atlantis-Muster: goldener Sand, Sandstein-Mauer als Rand, Steinbrücke in Sandsteinfarben, große Stufenpyramide mit leuchtender Goldspitze, Eingang und zwei Obelisken (Wahrzeichen), dazu Dünen, kleine Pyramiden, Oasen mit Palmen und Kakteen (alles per Skript, ~360 Teile, kein Import nötig). 3 Beläge (Dattel, Kaktusfeige, Wüsten-Trüffel), Pyramiden-Ei mit 6 Pets (Dattel-Gecko, Sand-Skarabäus, Kaktus-Fennek, Oasen-Kamel, Pharaonen-Katze, Sonnen-Sphinx), Geheim-Pet Skorpionkönig, Wüsten-Shop. Braucht **3 Rebirths** + 20 Mrd. Münzen (Preise vorläufig, #108). Wetter „Sandsturm“ steht nur in der Config (#105 baut es). Musik `Music_DesertPyramids` hat noch **keine ID**. Vorschau: `assets/previews/worlds/DesertPyramids.png`, Insel: `assets/previews/islands/World10_*.jpg`.
