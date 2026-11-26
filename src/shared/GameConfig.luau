@@ -166,6 +166,14 @@ local GameConfig = {
 		Date = { displayName = "Dattel", displayNameEn = "Date", value = 1270000 },
 		PricklyPear = { displayName = "Kaktusfeige", displayNameEn = "Prickly Pear", value = 2200000 },
 		DesertTruffle = { displayName = "Wüsten-Trüffel", displayNameEn = "Desert Truffle", value = 3250000 },
+		-- World 11 (Haunted Castle, #85): about 4.8x world 10 (#84). Provisional, tuned in #108.
+		Pumpkin = { displayName = "Kürbis", displayNameEn = "Pumpkin", value = 6100000 },
+		GhostMushroom = { displayName = "Geister-Pilz", displayNameEn = "Ghost Mushroom", value = 10600000 },
+		GummyBatWings = {
+			displayName = "Gummi-Fledermausflügel",
+			displayNameEn = "Gummy Bat Wings",
+			value = 15400000,
+		},
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -860,6 +868,45 @@ local GameConfig = {
 			bonus = 4.5,
 		},
 		SunSphinx = { displayName = "Sonnen-Sphinx", displayNameEn = "Sun Sphinx", rarity = "Mythic", bonus = 9 },
+		-- World 11 (Spuk-Ei, #85): friendly spooky pets; the Mythic one is the world's best
+		-- (+1040 %, continuing the flat curve after world 10), the others scaled like the
+		-- jungle egg. Provisional (#108). Models: tools/blender/build_world.py HauntedCastle.
+		PumpkinKitten = {
+			displayName = "Kürbis-Kätzchen",
+			displayNameEn = "Pumpkin Kitten",
+			rarity = "Common",
+			bonus = 0.69,
+		},
+		GhostPuppy = {
+			displayName = "Gespenster-Welpe",
+			displayNameEn = "Ghost Puppy",
+			rarity = "Uncommon",
+			bonus = 1.04,
+		},
+		GummyBat = {
+			displayName = "Gummi-Fledermaus",
+			displayNameEn = "Gummy Bat",
+			rarity = "Rare",
+			bonus = 1.74,
+		},
+		LanternRaven = {
+			displayName = "Laternen-Rabe",
+			displayNameEn = "Lantern Raven",
+			rarity = "Epic",
+			bonus = 2.78,
+		},
+		MoonlightWolf = {
+			displayName = "Mondschein-Wolf",
+			displayNameEn = "Moonlight Wolf",
+			rarity = "Legendary",
+			bonus = 5.2,
+		},
+		PhantomDragon = {
+			displayName = "Phantom-Drache",
+			displayNameEn = "Phantom Dragon",
+			rarity = "Mythic",
+			bonus = 10.4,
+		},
 
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
 		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
@@ -1060,6 +1107,12 @@ local GameConfig = {
 			rarity = "Secret",
 			bonus = 18,
 		},
+		CountFangtastic = {
+			displayName = "Graf Gruselzahn",
+			displayNameEn = "Count Fangtastic",
+			rarity = "Secret",
+			bonus = 20.8,
+		},
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -1068,7 +1121,7 @@ local GameConfig = {
 	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
-	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats. `glow` = accent glows (Neon); `fancy` = showier variant
 	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
@@ -1298,6 +1351,21 @@ local GameConfig = {
 				{ pet = "SunSphinx", chance = 0.5 },
 			},
 		},
+		-- World 11 (#85). Price provisional (#108).
+		SpookyEgg = {
+			displayName = "Spuk-Ei",
+			displayNameEn = "Spooky Egg",
+			look = { color = "4B2A6E", accent = "FF8A1E", pattern = "Bats", glow = true },
+			price = 2800000000,
+			pets = {
+				{ pet = "PumpkinKitten", chance = 50 },
+				{ pet = "GhostPuppy", chance = 28 },
+				{ pet = "GummyBat", chance = 15 },
+				{ pet = "LanternRaven", chance = 5.5 },
+				{ pet = "MoonlightWolf", chance = 1 },
+				{ pet = "PhantomDragon", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -1415,6 +1483,24 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed" },
 		},
+		World11Shop = {
+			worldId = "HauntedCastle",
+			displayName = "Spuk-Shop",
+			displayNameEn = "Spooky Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
+			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed" },
+		},
 	},
 
 	-- Flying islands (#27): spawn island, then world 1, 2, ... in a chain along -Z, all at
@@ -1483,10 +1569,12 @@ local GameConfig = {
 		-- Optional per world (defaults = world 1):
 		--   rimStyle     "Hedge" | "Fence" | "Rocks" | "IceEdge" | "Basalt" | "Peppermint" | "Moonbase"
 		--                | "CoralReef" (with `corals` = knob colours) | "MossyStones" (with `moss`)
-		--                | "Sandstone" (low visible rim)
+		--                | "Sandstone" | "IronFence" (with `post` stone and `pumpkin` colours)
+		--                (low visible rim)
 		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
-		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" | "GreatPyramid" (back left
-		--                terrace)
+		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" | "GreatPyramid"
+		--                | "HauntedCastle" (back left terrace; the castle uses ruin/ruinDark,
+		--                `roof`, `ghost`)
 		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
 		--                the bridge leading INTO the world
 		--   trees        tree models scattered along the rim (ModelLibrary names); false = none
@@ -1503,7 +1591,9 @@ local GameConfig = {
 		--                colors? } } } with kits "Coral", "Column", "Kelp", "Bubbles", "Lamp",
 		--                "JungleTree" (trunk, crowns, hanging lianas), "Fern", "Idol" (carved
 		--                stone head), "Fireflies" and "Mist" (invisible emitters), "Dune",
-		--                "Pyramid", "Oasis", "Cactus"
+		--                "Pyramid", "Oasis", "Cactus",
+		--                "SpookyTree" (bare, crooked, sometimes a sleeping bat), "Pumpkin"
+		--                (some carved with a glowing face), "Bats" (a small flying flock)
 		--                (IslandPlan DECO_KITS). Optional bits are hidden on graphics "Low"
 		--                (#76); everything is left out when features.worldDeco is off.
 		--   ruin, ruinDark, shell  stone colours of the SunkenTemple / lamps, clam shell colour
@@ -1898,6 +1988,69 @@ local GameConfig = {
 					},
 				},
 			},
+			-- World 11 (#85): a friendly haunted castle island at dusk - dusky violet-green grass,
+			-- a wrought-iron fence with stone posts and little pumpkins, a dark plank bridge,
+			-- a castle with four towers, glowing windows, a lantern over the gate and a small
+			-- ghost floating above it; spooky bare trees (some with sleeping bats), pumpkins
+			-- (a few carved with glowing faces), crumbled wall pieces, orange lanterns, bat
+			-- flocks and low violet mist (scripted deco, ~400 parts). Hidden chest (#100)
+			-- behind the castle.
+			HauntedCastle = {
+				grass = { 96, 118, 92 },
+				grassLight = { 116, 136, 104 },
+				field = { 150, 160, 120 },
+				cliff = { 96, 88, 104 },
+				cliffDark = { 70, 62, 80 },
+				cliffLight = { 128, 120, 136 },
+				rim = { 58, 54, 70 },
+				rimStyle = "IronFence",
+				post = { 124, 118, 128 },
+				pumpkin = { 255, 140, 40 },
+				path = { 168, 158, 150 },
+				pathDark = { 136, 126, 120 },
+				water = { 96, 84, 160 },
+				waterfall = { 190, 180, 240 },
+				wood = { 84, 66, 70 },
+				woodDark = { 58, 46, 52 },
+				rope = { 110, 96, 90 },
+				glow = { 255, 176, 70 },
+				ruin = { 132, 126, 140 },
+				ruinDark = { 96, 90, 106 },
+				roof = { 86, 52, 120 },
+				ghost = { 236, 240, 255 },
+				flowers = { { 255, 140, 40 }, { 180, 110, 230 }, { 240, 240, 255 }, { 120, 220, 140 } },
+				landmark = "HauntedCastle",
+				bridge = "Boardwalk",
+				trees = false,
+				accents = { { model = "Bush", width = 5 } },
+				secretChest = { -62, -86, 5 },
+				deco = {
+					budget = 400,
+					kits = {
+						{ kit = "Lamp", count = 3, size = { 2.6, 3 }, colors = { { 255, 150, 50 } } },
+						{
+							kit = "SpookyTree",
+							count = 14,
+							size = { 14, 20 },
+							colors = { { 70, 56, 66 }, { 58, 50, 64 } },
+						},
+						{ kit = "Mist", count = 8, size = { 8, 11 }, colors = { { 210, 200, 240 } } },
+						{
+							kit = "Column",
+							count = 8,
+							size = { 5, 8 },
+							colors = { { 132, 126, 140 }, { 96, 90, 106 } },
+						},
+						{
+							kit = "Pumpkin",
+							count = 38,
+							size = { 2.2, 4.2 },
+							colors = { { 255, 140, 40 }, { 240, 110, 30 }, { 255, 170, 60 } },
+						},
+						{ kit = "Bats", count = 6, size = { 6, 9 }, colors = { { 52, 44, 66 } } },
+					},
+				},
+			},
 		},
 	},
 
@@ -1919,6 +2072,15 @@ local GameConfig = {
 			displayName = "Sandsturm",
 			displayNameEn = "Sandstorm",
 			particles = { { 236, 200, 130 }, { 210, 168, 100 } },
+		},
+		-- World 11 (#85). `lightning`: the effect (#105) adds lightning flashes, but only
+		-- when the player's setting "screen flashes" (#76, Settings.screenFlashes()) is on;
+		-- rain and thunder rumble stay either way.
+		Thunderstorm = {
+			displayName = "Gewitter",
+			displayNameEn = "Thunderstorm",
+			particles = { { 160, 170, 200 }, { 210, 215, 240 } },
+			lightning = true,
 		},
 	},
 
@@ -2111,6 +2273,23 @@ local GameConfig = {
 			eggs = { "PyramidEgg" },
 			secretPet = "ScorpionKing",
 			weather = "Sandstorm",
+		},
+		-- World 11 (#85), after world 10 (#84). 5 rebirths (spec #72). Price provisional (#108).
+		{
+			id = "HauntedCastle",
+			requiredRebirths = 5,
+			displayName = "Spukschloss",
+			displayNameEn = "Haunted Castle",
+			unlockPrice = 90000000000,
+			color = { 140, 80, 190 },
+			toppingSpawns = {
+				{ topping = "Pumpkin", weight = 55 },
+				{ topping = "GhostMushroom", weight = 30 },
+				{ topping = "GummyBatWings", weight = 15 },
+			},
+			eggs = { "SpookyEgg" },
+			secretPet = "CountFangtastic",
+			weather = "Thunderstorm",
 		},
 	},
 }

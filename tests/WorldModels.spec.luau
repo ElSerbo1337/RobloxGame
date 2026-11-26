@@ -121,4 +121,25 @@ describe("World model packs (#82)", function()
 			"SunSphinx",
 		})
 	end)
+	it("lists the Haunted Castle assets: 3 toppings, 6 pets, the Secret pet and the egg (#85)", function()
+		local castle
+		for _, world in GameConfig.worlds do
+			if world.id == "HauntedCastle" then
+				castle = world
+			end
+		end
+		expect(WorldPacks.assetsOf(castle)).toEqual({
+			"CountFangtastic",
+			"GhostMushroom",
+			"GhostPuppy",
+			"GummyBat",
+			"GummyBatWings",
+			"LanternRaven",
+			"MoonlightWolf",
+			"PhantomDragon",
+			"Pumpkin",
+			"PumpkinKitten",
+			"SpookyEgg",
+		})
+	end)
 end)

@@ -258,6 +258,44 @@ describe("GameConfig", function()
 		expect(rules.teleport(result.state, "DesertPyramids").ok).toBe(true)
 	end)
 
+	it("lets a player with 5 rebirths unlock world 11 (Haunted Castle) after world 10, but not with 4 (#85)", function()
+		local rules = GameRules.new(GameConfig)
+		local index, castle = 0, nil
+		for i, world in GameConfig.worlds do
+			if world.id == "HauntedCastle" then
+				index, castle = i, world
+			end
+		end
+		expect(index).toBe(11)
+		local state = rules.newPlayerState()
+		state.unlockedWorlds = {}
+		for i = 1, index - 1 do
+			table.insert(state.unlockedWorlds, GameConfig.worlds[i].id)
+		end
+		state.coins = castle.unlockPrice
+		state.rebirths = 4
+		expect(rules.unlockWorld(state, "HauntedCastle").ok).toBe(false)
+		state.rebirths = 5
+		local result = rules.unlockWorld(state, "HauntedCastle")
+		expect(result.ok).toBe(true)
+		expect(result.state.coins).toBe(0)
+		expect(rules.teleport(result.state, "HauntedCastle").ok).toBe(true)
+	end)
+
+	it("gives the Haunted Castle a thunderstorm with lightning (switched off by screen flashes, #76) (#85)", function()
+		local castle
+		for _, world in GameConfig.worlds do
+			if world.id == "HauntedCastle" then
+				castle = world
+			end
+		end
+		expect(castle.weather).toBe("Thunderstorm")
+		local storm = GameConfig.weathers.Thunderstorm
+		expect(storm.displayName).toBe("Gewitter")
+		expect(storm.displayNameEn).toBe("Thunderstorm")
+		expect(storm.lightning).toBe(true)
+	end)
+
 	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
@@ -703,6 +741,7 @@ describe("GameConfig pets and eggs", function()
 			Bubbles = true,
 			Vines = true,
 			Zigzag = true,
+			Bats = true,
 		}
 		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
@@ -758,7 +797,7 @@ describe("GameConfig worlds and eggs", function()
 
 	-- Flat pet curve (#57): best pet of both eggs per world, within 10 %.
 	-- World 8 (#82) continues it with +620 %, world 9 (#83) with +760 %, world 10 (#84)
-	-- with +900 % (provisional, #108).
+	-- with +900 %, world 11 (#85) with +1040 % (provisional, #108).
 	-- By world id, as worlds 8-15 are built in parallel (#82-#89).
 	local PET_CURVE = {
 		PizzeriaGarden = 0.75,
@@ -771,9 +810,10 @@ describe("GameConfig worlds and eggs", function()
 		Atlantis = 6.2,
 		JungleTemple = 7.6,
 		DesertPyramids = 9,
+		HauntedCastle = 10.4,
 	}
 
-	it("makes the best pet of each world follow +75/110/160/230/320/400/500/620/760 % and rise", function()
+	it("makes the best pet of each world follow +75/110/160/230/320/400/500/620/760/900/1040 % and rise", function()
 		local previous = 0
 		for _, world in GameConfig.worlds do
 			local best = 0

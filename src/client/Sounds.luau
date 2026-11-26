@@ -157,6 +157,14 @@ local SOUNDS: { [string]: Entry } = {
 		looped = true,
 		search = { "desert", "egypt", "arabian", "oud", "adventure" },
 	},
+	-- World 11 (#85). ID still empty: the local session picks one (Creator Store, creator
+	-- "Roblox"); playfully spooky, not scary (harpsichord, pizzicato, organ).
+	Music_HauntedCastle = {
+		id = "",
+		volume = 0.25,
+		looped = true,
+		search = { "spooky", "halloween", "playful", "harpsichord", "pizzicato" },
+	},
 }
 
 -- Several pickups within this time play only one plop.

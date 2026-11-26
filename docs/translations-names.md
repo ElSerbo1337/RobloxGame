@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (98)
+## Pets (105)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -145,6 +145,17 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | PharaohCat | Pharaonen-Katze | Pharaoh Cat | Pyramiden-Ei | Legendär | |
 | SunSphinx | Sonnen-Sphinx | Sun Sphinx | Pyramiden-Ei | Mythisch | |
 
+### Welt 11 – Spukschloss (#85)
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| PumpkinKitten | Kürbis-Kätzchen | Pumpkin Kitten | Spuk-Ei | Gewöhnlich | Kürbis-Belag als Thema |
+| GhostPuppy | Gespenster-Welpe | Ghost Puppy | Spuk-Ei | Ungewöhnlich | |
+| GummyBat | Gummi-Fledermaus | Gummy Bat | Spuk-Ei | Selten | Fledermaus-Flügel-Belag als Thema |
+| LanternRaven | Laternen-Rabe | Lantern Raven | Spuk-Ei | Episch | |
+| MoonlightWolf | Mondschein-Wolf | Moonlight Wolf | Spuk-Ei | Legendär | |
+| PhantomDragon | Phantom-Drache | Phantom Dragon | Spuk-Ei | Mythisch | |
+
 ### Geheim-Pets (#81)
 
 Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro Ei).
@@ -161,8 +172,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | PearlKingOtter | Perlenkönig-Otter | Pearl King Otter | Welt 8 (Atlantis-Ei) | Geheim | #82 |
 | GoldenMonkeyKing | Goldener Affenkönig | Golden Monkey King | Welt 9 (Dschungel-Ei) | Geheim | #83 |
 | ScorpionKing | Skorpionkönig | Scorpion King | Welt 10 (Pyramiden-Ei) | Geheim | #84 |
+| CountFangtastic | Graf Gruselzahn | Count Fangtastic | Welt 11 (Spuk-Ei) | Geheim | #85, freundlicher Vampir-Fledermaus-Graf |
 
-## Beläge (31)
+## Beläge (34)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -197,8 +209,11 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | Date | Dattel | Date | Wüsten-Pyramiden | #84 |
 | PricklyPear | Kaktusfeige | Prickly Pear | Wüsten-Pyramiden | #84 |
 | DesertTruffle | Wüsten-Trüffel | Desert Truffle | Wüsten-Pyramiden | #84 |
+| Pumpkin | Kürbis | Pumpkin | Spukschloss | #85 |
+| GhostMushroom | Geister-Pilz | Ghost Mushroom | Spukschloss | #85 |
+| GummyBatWings | Gummi-Fledermausflügel | Gummy Bat Wings | Spukschloss | #85, Ticket: „Fledermaus-Flügel (Gummi)“ |
 
-## Welten (10)
+## Welten (11)
 
 | Id | Deutsch | Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- |
@@ -212,8 +227,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | Atlantis | Atlantis | Atlantis | #82 |
 | JungleTemple | Dschungel-Tempel | Jungle Temple | #83 |
 | DesertPyramids | Wüsten-Pyramiden | Desert Pyramids | #84 |
+| HauntedCastle | Spukschloss | Haunted Castle | #85 |
 
-## Eier (17)
+## Eier (18)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -234,6 +250,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | AtlantisEgg | Atlantis-Ei | Atlantis Egg | Atlantis | #82 |
 | JungleEgg | Dschungel-Ei | Jungle Egg | Dschungel-Tempel | #83 |
 | PyramidEgg | Pyramiden-Ei | Pyramid Egg | Wüsten-Pyramiden | #84 |
+| SpookyEgg | Spuk-Ei | Spooky Egg | Spukschloss | #85 |
 
 ## Tränke (3)
 
@@ -256,7 +273,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | TripleOpen | 3 Eier auf einmal | 3 Eggs at Once | Schaltet „3 öffnen“ an jedem Ei frei | Unlocks “Open 3” at every egg | „Open 3“ muss zum Knopftext im Ei-Menü (#67 ff.) passen |
 | GoldLuck | Gold-Glück | Gold Luck | Mehr goldene Beläge (10-facher Wert) | More golden toppings (10x value) | MEGA UPDATE #94 |
 
-## Shops (6)
+## Shops (7)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -266,8 +283,9 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | World8Shop | Atlantis-Shop | Atlantis Shop | Atlantis | #82 |
 | World9Shop | Dschungel-Shop | Jungle Shop | Dschungel-Tempel | #83 |
 | World10Shop | Wüsten-Shop | Desert Shop | Wüsten-Pyramiden | #84 |
+| World11Shop | Spuk-Shop | Spooky Shop | Spukschloss | #85 |
 
-## Wetter (3)
+## Wetter (4)
 
 Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte kommen mit #105.
 
@@ -276,6 +294,7 @@ Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte kommen mit #1
 | BubbleStorm | Blasen-Sturm | Bubble Storm | Atlantis | #82 |
 | TropicalRain | Tropenregen | Tropical Rain | Dschungel-Tempel | #83 |
 | Sandstorm | Sandsturm | Sandstorm | Wüsten-Pyramiden | #84 |
+| Thunderstorm | Gewitter | Thunderstorm | Spukschloss | #85, Blitze nur mit „Bildschirm-Blitze“ an (#76) |
 
 ## Sonstige: Seltenheiten (7)
 

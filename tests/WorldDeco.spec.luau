@@ -136,6 +136,9 @@ describe("scripted world deco (#82)", function()
 			Pyramid = true,
 			Oasis = true,
 			Cactus = true,
+			SpookyTree = true,
+			Pumpkin = true,
+			Bats = true,
 		}
 		for _, theme in cfg.themes do
 			for _, item in (theme.deco and theme.deco.kits) or {} do
@@ -275,11 +278,100 @@ describe("jungle temple deco (#83)", function()
 		end
 	end)
 
-	it("gives only the jungle a chest spot so far", function()
+	it("gives a chest spot exactly to the worlds whose theme has one (#83, #85)", function()
 		for index, world in GameConfig.worlds do
 			local theme = cfg.themes[world.id]
 			local has = plan.worldIsland(index).stations.SecretChest ~= nil
 			expect(has).toBe(theme ~= nil and theme.secretChest ~= nil)
+		end
+	end)
+end)
+
+describe("haunted castle deco (#85)", function()
+	local castle = indexOf("HauntedCastle")
+	local island = plan.worldIsland(castle)
+
+	it("gives the castle spooky trees, pumpkins (some with faces), ruins, bats, mist and lanterns", function()
+		local roles, names = {}, {}
+		for _, spec in decoParts(castle) do
+			roles[spec.role or ""] = (roles[spec.role or ""] or 0) + 1
+			names[spec.name] = (names[spec.name] or 0) + 1
+		end
+		expect((names.SpookyTrunk or 0) >= 10).toBe(true)
+		expect((names.PumpkinBody or 0) >= 24).toBe(true)
+		expect((names.PumpkinMouth or 0) >= 6).toBe(true)
+		expect((names.Bat or 0) >= 12).toBe(true)
+		expect((names.SleepingBat or 0) >= 2).toBe(true)
+		expect((roles.Mist or 0) >= 5).toBe(true)
+		expect((roles.Ruin or 0) >= 8).toBe(true)
+		expect((roles.Glow or 0) >= 3).toBe(true)
+	end)
+
+	it("keeps the castle deco on the island and off the field and the main path", function()
+		local field = island.field :: any
+		for _, spec in decoParts(castle) do
+			local x, z = spec.cframe[1], spec.cframe[3]
+			expect(IslandPlan.isInsideOutline(island.outline, x, z)).toBe(true)
+			local inField = math.abs(x - field.center[1]) < field.size[1] / 2
+				and math.abs(z - field.center[3]) < field.size[2] / 2
+			expect(inField).toBe(false)
+			expect(math.abs(x - island.center[1]) < cfg.pathWidth / 2).toBe(false)
+		end
+	end)
+
+	it("lets only trunks, pumpkins, standing ruins and lamps collide; bats fly high and never collide", function()
+		for _, spec in decoParts(castle) do
+			if spec.collide then
+				local ok = spec.name == "SpookyTrunk"
+					or spec.name == "PumpkinBody"
+					or spec.role == "Ruin"
+					or spec.role == "Lamp"
+				expect(ok).toBe(true)
+			end
+			if spec.role == "Bat" then
+				expect(spec.collide).toBe(false)
+			end
+			if spec.name == "Bat" then
+				expect(spec.cframe[2] > cfg.groundY + 10).toBe(true)
+			end
+			if spec.material == "Neon" and spec.role ~= "Glow" then
+				expect(spec.detail).toBe(true)
+			end
+		end
+	end)
+
+	it("builds a castle with a keep, four towers and a middle tower, a gate lantern and a ghost", function()
+		local found = {}
+		for _, spec in island.parts do
+			found[spec.name] = (found[spec.name] or 0) + 1
+		end
+		expect(found.CastleKeep).toBe(1)
+		expect(found.CastleTower).toBe(5)
+		expect(found.CastleRoof).toBe(15)
+		expect(found.CastleLantern).toBe(1)
+		expect(found.CastleGhost).toBe(1)
+		expect((found.CastleWindow or 0) >= 6).toBe(true)
+		expect((found.CastleMerlon or 0) >= 12).toBe(true)
+		expect((found.FencePillar or 0) >= 10).toBe(true)
+		expect((found.FencePumpkin or 0) >= 3).toBe(true)
+	end)
+
+	it("keeps a spot for the hidden chest (#100) behind the castle, on the terrace, free of deco", function()
+		local chest = island.stations.SecretChest
+		expect(chest ~= nil).toBe(true)
+		local landmark = island.stations.Landmark.position
+		local p = chest.position
+		expect(math.abs(p[1] - island.center[1]) > math.abs(landmark[1] - island.center[1]) + 8).toBe(true)
+		expect(p[2]).toBe(landmark[2] + cfg.layout.terraces[1][4])
+		for _, spec in decoParts(castle) do
+			local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+			expect(d > chest.clear).toBe(true)
+		end
+		for _, spec in island.parts do
+			if spec.role == "Landmark" and spec.collide then
+				local dx, dz = math.abs(spec.cframe[1] - p[1]), math.abs(spec.cframe[3] - p[3])
+				expect(dx < spec.size[1] / 2 + 1 and dz < spec.size[3] / 2 + 1).toBe(false)
+			end
 		end
 	end)
 end)

@@ -355,6 +355,57 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 				})
 			)
 		end
+	elseif style == "IronFence" then
+		-- Haunted castle (#85): a wrought-iron fence - stone posts (theme.post), every third
+		-- one topped with a little pumpkin (theme.pumpkin), two dark rails and thin spiked
+		-- bars between them (no collision; the rails keep players in).
+		local post = add(p, inset)
+		table.insert(
+			parts,
+			spec("Block", v(1.3, 3.4, 1.3), along(add(post, v(0, 1.7, 0)), dir), {
+				name = "FencePillar",
+				color = theme.post or theme.cliffLight,
+				role = "Rim",
+			})
+		)
+		if i % 3 == 0 then
+			table.insert(
+				parts,
+				spec("Ball", v(1.4, 1.05, 1.4), yawed(add(post, v(0, 3.85, 0)), i), {
+					name = "FencePumpkin",
+					color = theme.pumpkin or { 255, 140, 40 },
+					collide = false,
+					role = "Rim",
+				})
+			)
+		else
+			table.insert(
+				parts,
+				spec("Block", v(1.7, 0.4, 1.7), along(add(post, v(0, 3.6, 0)), dir), {
+					name = "FencePillarCap",
+					color = theme.post or theme.cliffLight,
+					collide = false,
+					role = "Rim",
+				})
+			)
+		end
+		for _, h in { 0.7, 2.6 } do
+			local a, b = add(p, add(inset, v(0, h, 0))), add(q, add(inset, v(0, h, 0)))
+			table.insert(parts, beam(a, b, 0.25, 0.25, { name = "IronRail", color = theme.rim, role = "Rim" }))
+		end
+		local bars = math.clamp(math.floor(len / 2.4), 1, 3)
+		for k = 1, bars do
+			local at = add(add(p, scale(dir, k / (bars + 1))), add(inset, v(0, 1.6, 0)))
+			table.insert(
+				parts,
+				spec("Block", v(0.18, 3.2, 0.18), along(at, dir), {
+					name = "IronBar",
+					color = theme.rim,
+					collide = false,
+					role = "Rim",
+				})
+			)
+		end
 	elseif style == "IceEdge" then
 		local h = 1.8 + noise(i, 3) * 1.4
 		local center = add(scale(add(p, q), 0.5), add(inset, v(0, h / 2, 0)))
@@ -1864,7 +1915,174 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		end
 	end
 
+	-- World 11 landmark (#85): a friendly haunted castle on the terrace - a square keep
+	-- with battlements and a gate facing the path (+X), four round corner towers and a
+	-- middle tower with pointed roofs (stacked discs, theme.roof), small glowing windows
+	-- (Neon without light), one lantern over the gate (the only Glow part) and a little
+	-- ghost floating above the keep. The hidden chest (#100) sits behind it.
+	local function hauntedCastle(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local stone = theme.ruin or theme.cliffLight
+		local stoneDark = theme.ruinDark or theme.cliff
+		local roof = theme.roof or { 86, 52, 120 }
+		local window = { 255, 210, 110 }
+		local keepH = 10
+		local keepW = 12
+		table.insert(
+			parts,
+			spec("Block", v(keepW, keepH, keepW), yawed(v(at[1], baseY + keepH / 2, at[3]), 0), {
+				name = "CastleKeep",
+				color = stone,
+				role = "Landmark",
+			})
+		)
+		-- Battlements: three merlons per side on the keep's top edge.
+		local top = baseY + keepH
+		for side = 0, 3 do
+			local a = side * math.pi / 2
+			local c, sn = math.cos(a), math.sin(a)
+			for m = -1, 1 do
+				local along1 = m * 3.2
+				local x = at[1] + c * (keepW / 2 - 0.7) - sn * along1
+				local z = at[3] + sn * (keepW / 2 - 0.7) + c * along1
+				table.insert(
+					parts,
+					spec("Block", v(1.4, 1.4, 1.8), yawed(v(x, top + 0.7, z), a), {
+						name = "CastleMerlon",
+						color = stoneDark,
+						role = "Landmark",
+					})
+				)
+			end
+		end
+		-- Gate on the +X face: a dark wooden door, the lantern above it.
+		table.insert(
+			parts,
+			spec("Block", v(0.4, 5, 4), yawed(v(at[1] + keepW / 2 + 0.2, baseY + 2.5, at[3]), 0), {
+				name = "CastleGate",
+				color = theme.woodDark or { 58, 46, 52 },
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			ball(v(at[1] + keepW / 2 + 0.9, baseY + 6.2, at[3]), 1.2, {
+				name = "CastleLantern",
+				color = theme.glow or { 255, 176, 70 },
+				material = "Neon",
+				collide = false,
+				role = "Glow",
+			})
+		)
+		for _, dz in { -3.5, 3.5 } do
+			table.insert(
+				parts,
+				spec("Block", v(0.3, 1.6, 1), yawed(v(at[1] + keepW / 2 + 0.15, baseY + 7, at[3] + dz), 0), {
+					name = "CastleWindow",
+					color = window,
+					material = "Neon",
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Pointed roof from three stacked discs and a tip.
+		local function roofOn(x: number, z: number, y: number, d: number)
+			for k, f in { 1.25, 0.85, 0.45 } do
+				table.insert(
+					parts,
+					disc(v(x, y + (k - 0.5) * 1.3, z), d * f, 1.3, {
+						name = "CastleRoof",
+						color = roof,
+						collide = k == 1,
+						role = "Landmark",
+					})
+				)
+			end
+			table.insert(
+				parts,
+				ball(
+					v(x, y + 4.2, z),
+					0.6,
+					{ name = "CastleRoofTip", color = roof, collide = false, role = "Landmark" }
+				)
+			)
+		end
+		for k, c in { { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } } do
+			local x, z = at[1] + c[1] * 6, at[3] + c[2] * 6
+			local h = if c[1] > 0 then 13 else 15
+			table.insert(
+				parts,
+				disc(v(x, baseY + h / 2, z), 4.4, h, { name = "CastleTower", color = stone, role = "Landmark" })
+			)
+			-- A window looking outwards (diagonal), a little below the roof.
+			local a = math.atan2(c[2], c[1])
+			table.insert(
+				parts,
+				spec(
+					"Block",
+					v(0.3, 1.4, 0.8),
+					yawed(v(x + math.cos(a) * 2.2, baseY + h - 2.4 - (k % 2), z + math.sin(a) * 2.2), -a),
+					{ name = "CastleWindow", color = window, material = "Neon", collide = false, role = "Landmark" }
+				)
+			)
+			roofOn(x, z, baseY + h, 4.4)
+		end
+		-- Middle tower on the keep.
+		table.insert(
+			parts,
+			disc(v(at[1] - 1, top + 3, at[3]), 5, 6, { name = "CastleTower", color = stoneDark, role = "Landmark" })
+		)
+		table.insert(
+			parts,
+			spec("Block", v(0.3, 1.6, 1), yawed(v(at[1] + 1.55, top + 3.4, at[3]), 0), {
+				name = "CastleWindow",
+				color = window,
+				material = "Neon",
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		roofOn(at[1] - 1, at[3], top + 6, 5)
+		-- The castle ghost: a round white body with a wavy tail and two dark eyes, floating
+		-- in front of the middle tower (friendly, no collision).
+		local ghost = theme.ghost or { 236, 240, 255 }
+		local g = v(at[1] + 3.5, top + 7, at[3] - 3)
+		table.insert(
+			parts,
+			spec("Ball", v(2.4, 2.8, 2.4), yawed(g, 0), {
+				name = "CastleGhost",
+				color = ghost,
+				collide = false,
+				transparency = 0.15,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			spec("Ball", v(1.6, 1.8, 1.6), yawed(add(g, v(-0.4, -1.6, 0.3)), 0), {
+				name = "CastleGhostTail",
+				color = ghost,
+				collide = false,
+				transparency = 0.15,
+				role = "Landmark",
+			})
+		)
+		for _, dz in { -0.45, 0.45 } do
+			table.insert(
+				parts,
+				ball(add(g, v(1.1, 0.35, dz)), 0.42, {
+					name = "CastleGhostEye",
+					color = { 40, 30, 60 },
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+	end
+
 	local LANDMARKS = {
+		HauntedCastle = hauntedCastle,
 		SteppedTemple = steppedTemple,
 		GiantPizza = giantPizza,
 		Windmill = windmill,
@@ -2821,6 +3039,194 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 					detail = true,
 				})
 			)
+		end
+		return parts
+	end
+
+	-- Haunted castle kits (#85). SpookyTree: a bare, dark trunk (collides) with crooked
+	-- branches reaching up and out, a twig at each branch end (detail) and, on every third
+	-- tree, a little bat sleeping upside down under a branch (detail).
+	function DECO_KITS.SpookyTree(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local bark = colors[(k - 1) % math.max(1, #colors) + 1] or theme.wood
+		local trunkD = size * 0.1
+		local height = size * 0.6
+		table.insert(
+			parts,
+			disc(add(at, v(0, height / 2, 0)), trunkD, height, {
+				name = "SpookyTrunk",
+				color = bark,
+				role = "Tree",
+				deco = true,
+			})
+		)
+		table.insert(
+			parts,
+			disc(add(at, v(0, size * 0.03, 0)), trunkD * 1.9, size * 0.06, {
+				name = "SpookyRoots",
+				color = theme.woodDark or bark,
+				collide = false,
+				role = "Tree",
+				deco = true,
+			})
+		)
+		local branches = 3 + k % 2
+		for b = 1, branches do
+			local angle = yaw + (b - 1) / branches * math.pi * 2 + noise(k, b) * 0.6
+			local dir = v(math.cos(angle), 0, math.sin(angle))
+			local from = add(at, v(0, height * (0.55 + b * 0.1), 0))
+			local reach = size * (0.28 + noise(b, k) * 0.12)
+			local to = add(from, add(scale(dir, reach), v(0, size * (0.12 + noise(b + 3, k) * 0.14), 0)))
+			table.insert(
+				parts,
+				beam(from, to, size * 0.045, size * 0.045, {
+					name = "SpookyBranch",
+					color = bark,
+					collide = false,
+					role = "Tree",
+					deco = true,
+				})
+			)
+			-- Twig: a short crooked end bending the other way.
+			local twig = add(to, add(scale(v(-dir[3], 0, dir[1]), size * 0.08), v(0, size * 0.08, 0)))
+			table.insert(
+				parts,
+				beam(to, twig, size * 0.03, size * 0.03, {
+					name = "SpookyTwig",
+					color = bark,
+					collide = false,
+					role = "Tree",
+					deco = true,
+					detail = true,
+				})
+			)
+			if b == 1 and k % 3 == 0 then
+				local bat = add(scale(add(from, to), 0.5), v(0, -0.9, 0))
+				table.insert(
+					parts,
+					spec("Ball", v(0.7, 1.2, 0.7), yawed(bat, angle), {
+						name = "SleepingBat",
+						color = { 52, 44, 66 },
+						collide = false,
+						role = "Bat",
+						deco = true,
+						detail = true,
+					})
+				)
+			end
+		end
+		return parts
+	end
+
+	-- Pumpkin: a round orange body (collides) with a rib ball on every second one, a green
+	-- stem and on every third a carved face with glowing eyes and mouth (Neon, no light,
+	-- detail) looking along the yaw.
+	function DECO_KITS.Pumpkin(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local color = colors[(k - 1) % math.max(1, #colors) + 1] or theme.pumpkin or { 255, 140, 40 }
+		local h = size * 0.72
+		local parts = {
+			spec("Ball", v(size, h, size), yawed(add(at, v(0, h / 2, 0)), yaw), {
+				name = "PumpkinBody",
+				color = color,
+				role = "Pumpkin",
+				deco = true,
+			}),
+			disc(add(at, v(0, h + size * 0.08, 0)), size * 0.16, size * 0.2, {
+				name = "PumpkinStem",
+				color = { 96, 120, 52 },
+				collide = false,
+				role = "Pumpkin",
+				deco = true,
+			}),
+		}
+		if k % 2 == 0 then
+			table.insert(
+				parts,
+				spec("Ball", v(size * 0.62, h * 0.96, size * 1.04), yawed(add(at, v(0, h / 2, 0)), yaw), {
+					name = "PumpkinRib",
+					color = color,
+					collide = false,
+					role = "Pumpkin",
+					deco = true,
+					detail = true,
+				})
+			)
+		end
+		if k % 3 == 1 then
+			local c, sn = math.cos(yaw), math.sin(yaw)
+			-- Front of the face = local -Z of yawed().
+			local function front(y: number, side: number): V
+				local d = size * 0.49
+				return add(at, v(-sn * d + c * side, y, -c * d - sn * side))
+			end
+			local glow = { 255, 210, 90 }
+			for _, sideX in { -1, 1 } do
+				table.insert(
+					parts,
+					spec("Block", v(size * 0.16, size * 0.14, 0.2), yawed(front(h * 0.62, sideX * size * 0.18), yaw), {
+						name = "PumpkinEye",
+						color = glow,
+						material = "Neon",
+						collide = false,
+						role = "Pumpkin",
+						deco = true,
+						detail = true,
+					})
+				)
+			end
+			table.insert(
+				parts,
+				spec("Block", v(size * 0.4, size * 0.1, 0.2), yawed(front(h * 0.34, 0), yaw), {
+					name = "PumpkinMouth",
+					color = glow,
+					material = "Neon",
+					collide = false,
+					role = "Pumpkin",
+					deco = true,
+					detail = true,
+				})
+			)
+		end
+		return parts
+	end
+
+	-- Bats: a small flock of three bats flying high over the spot (body and two raised
+	-- wings each, no collision; wings are detail).
+	function DECO_KITS.Bats(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local dark = colors[1] or { 52, 44, 66 }
+		for b = 1, 3 do
+			local angle = yaw + b * 2.1
+			local body = add(
+				at,
+				v(math.cos(angle) * size * 0.35, 10 + size * 0.4 + noise(k, b) * 6, math.sin(angle) * size * 0.35)
+			)
+			local heading = yaw + noise(b, k) * 0.8
+			local side = v(-math.sin(heading), 0, math.cos(heading))
+			table.insert(
+				parts,
+				spec("Ball", v(0.8, 0.7, 1), yawed(body, heading), {
+					name = "Bat",
+					color = dark,
+					collide = false,
+					role = "Bat",
+					deco = true,
+				})
+			)
+			for _, s in { -1, 1 } do
+				local tip = add(body, add(scale(side, s * 1.5), v(0, 0.55, 0)))
+				table.insert(
+					parts,
+					beam(body, tip, 0.9, 0.1, {
+						name = "BatWing",
+						color = dark,
+						collide = false,
+						role = "Bat",
+						deco = true,
+						detail = true,
+					})
+				)
+			end
 		end
 		return parts
 	end

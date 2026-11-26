@@ -80,6 +80,10 @@ local WorldLooks: { [string]: Look } = {
 	-- Desert Pyramids (#84): same day look (#45); the warm light comes from the golden sand
 	-- and the glowing capstone of the pyramid.
 	DesertPyramids = day("Music_DesertPyramids"),
+	-- Haunted castle (#85): same day look (#45, kid-friendly, no dark night); the spooky
+	-- mood comes from the island (violet mist, glowing pumpkins and windows, bats) and the
+	-- music.
+	HauntedCastle = day("Music_HauntedCastle"),
 }
 
 return WorldLooks
