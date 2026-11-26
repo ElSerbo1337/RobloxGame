@@ -15,6 +15,7 @@ local features = Features.new({
 	luckyWheel = false,
 	goldenToppings = true,
 	whatsNew = true,
+	petIndex = true,
 	secretPets = true,
 	worldIntro = true,
 	shinyPets = true,
@@ -93,6 +94,7 @@ describe("admin registry", function()
 			"givePetXp",
 			"completeQuest",
 			"rerollQuests",
+			"completePetIndex",
 			"resetProgress",
 		})
 	end)
@@ -433,6 +435,7 @@ describe("admin actions for golden toppings (#94)", function()
 				luckyWheel = true,
 				goldenToppings = false,
 				whatsNew = true,
+				petIndex = true,
 				secretPets = true,
 				worldIntro = true,
 				shinyPets = true,
@@ -514,6 +517,7 @@ describe("admin Secret pet actions (#81)", function()
 				luckyWheel = true,
 				goldenToppings = true,
 				whatsNew = true,
+				petIndex = true,
 				secretPets = false,
 				worldIntro = true,
 				shinyPets = true,
@@ -593,6 +597,7 @@ describe("pet variant admin actions (#80)", function()
 				luckyWheel = true,
 				goldenToppings = true,
 				whatsNew = true,
+				petIndex = true,
 				secretPets = true,
 				shinyPets = false,
 				worldIntro = true,
@@ -650,6 +655,7 @@ describe("pet level admin action (#90)", function()
 				luckyWheel = true,
 				goldenToppings = true,
 				whatsNew = true,
+				petIndex = true,
 				secretPets = true,
 				shinyPets = true,
 				worldIntro = true,
@@ -674,6 +680,7 @@ describe("admin lucky wheel (#98)", function()
 			luckyWheel = true,
 			goldenToppings = true,
 			whatsNew = true,
+			petIndex = true,
 			secretPets = true,
 			worldIntro = true,
 			shinyPets = true,
@@ -774,5 +781,33 @@ describe("admin codes (#99)", function()
 	it("is hidden and refused while codes are switched off", function()
 		local offAdmin = AdminActions.new(rules, TestConfig, withCodes(false))
 		expect(offAdmin.run(ADMIN, player(), "resetCodes", {}, ctx).reason).toBe("FeatureOff")
+	end)
+end)
+
+describe("admin pet index action (#95)", function()
+	it("completePetIndex marks every index pet of the world as found, without giving pets", function()
+		local result = admin.run(ADMIN, player(), "completePetIndex", { "PizzeriaGarden" }, ctx)
+
+		expect(result.ok).toBe(true)
+		expect(#result.state.pets).toBe(0)
+		expect(rules.hasOwnedPet(result.state, "Hamster")).toBe(true)
+		expect(rules.hasOwnedPet(result.state, "Dragon")).toBe(true)
+		expect(rules.petIndex(result.state).worlds[1].complete).toBe(true)
+		expect(admin.run(ADMIN, result.state, "completePetIndex", { "PizzeriaGarden" }, ctx).reason).toBe(
+			"IndexComplete"
+		)
+		expect(admin.run(ADMIN, player(), "completePetIndex", { "Nowhere" }, ctx).reason).toBe("InvalidArgument")
+	end)
+
+	it("is hidden while the pet index is off", function()
+		local map = {}
+		for id in GameConfig.features do
+			map[id] = true
+		end
+		map.petIndex = false
+		local offAdmin = AdminActions.new(rules, TestConfig, Features.new(map))
+
+		expect(table.find(ids(offAdmin.list()), "completePetIndex")).toBeNil()
+		expect(offAdmin.run(ADMIN, player(), "completePetIndex", { "PizzeriaGarden" }, ctx).reason).toBe("FeatureOff")
 	end)
 end)

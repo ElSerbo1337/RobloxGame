@@ -444,6 +444,29 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		id = "completePetIndex",
+		feature = "petIndex",
+		params = { { name = "world", kind = "choice", names = "world", choices = worldIds } },
+		run = function(env, state, args)
+			-- Marks every index pet of the world as found (#95), without giving pets.
+			local petIds = env.rules.indexPets(args[1])
+			local owned = table.clone(state.petsOwnedEver or {})
+			local added = false
+			for _, petId in petIds do
+				if not env.rules.hasOwnedPet(state, petId) then
+					owned[petId] = true
+					added = true
+				end
+			end
+			if not added then
+				return fail(state, "IndexComplete")
+			end
+			local newState = table.clone(state)
+			newState.petsOwnedEver = owned
+			return { ok = true, state = newState }
+		end,
+	},
+	{
 		id = "resetProgress",
 		confirm = true,
 		params = {},

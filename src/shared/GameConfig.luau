@@ -652,6 +652,13 @@ local GameConfig = {
 		xpToNext = { 300, 600, 900, 1200, 1800, 2400, 3000, 3600, 4800 },
 	},
 
+	-- Pet index (#95, switch features.petIndex): finding every egg pet of a world (Secret
+	-- not needed; deleted, auto-deleted and merged pets count) gives a permanent coin
+	-- bonus of `worldBonus` per complete world, multiplied into the coin multiplier.
+	-- Preliminary value, tuned in the balancing ticket (#108). Gold/Rainbow/Shiny stars
+	-- and the topping index (features.toppingIndex) give no reward.
+	petIndex = { worldBonus = 0.04 },
+
 	-- Pet management (#91): saved pet teams, longest custom pet name (characters, filtered
 	-- by TextService on the server) and rarities that can never be auto-deleted.
 	petManagement = {

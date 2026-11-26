@@ -1619,3 +1619,28 @@ describe("GameConfig new worlds (#82)", function()
 		end
 	end)
 end)
+
+describe("GameConfig pet index (#95)", function()
+	local rules = GameRules.new(GameConfig)
+
+	it("gives a preliminary +4 % per complete world", function()
+		expect(GameConfig.petIndex.worldBonus).toBe(0.04)
+	end)
+
+	it("needs at least 6 egg pets in every world and never a Secret pet", function()
+		for _, world in GameConfig.worlds do
+			local pets = rules.indexPets(world.id)
+			expect(#pets >= 6).toBe(true)
+			for _, petId in pets do
+				expect(GameConfig.pets[petId].rarity ~= "Secret").toBe(true)
+				expect(petId ~= world.secretPet).toBe(true)
+			end
+		end
+	end)
+
+	it("lists every world in both indexes", function()
+		local state = rules.newPlayerState()
+		expect(#rules.petIndex(state).worlds).toBe(#GameConfig.worlds)
+		expect(#rules.toppingIndex(state).worlds).toBe(#GameConfig.worlds)
+	end)
+end)

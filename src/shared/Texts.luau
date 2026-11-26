@@ -79,6 +79,7 @@ Texts.strings = {
 	},
 	["admin.action.completeQuest"] = { de = "Quest abschließen", en = "Complete quest" },
 	["admin.action.rerollQuests"] = { de = "Quests neu würfeln", en = "Reroll quests" },
+	["admin.action.completePetIndex"] = { de = "Pet-Index einer Welt füllen", en = "Fill a world's pet index" },
 	["admin.action.resetProgress"] = { de = "Spielstand zurücksetzen", en = "Reset progress" },
 	["admin.param.amount"] = { de = "Menge", en = "Amount" },
 	["admin.param.count"] = { de = "Anzahl", en = "Count" },
@@ -127,6 +128,7 @@ Texts.strings = {
 	["side.calendar"] = { de = "Kalender", en = "Calendar" },
 	["side.worlds"] = { de = "Welten", en = "Worlds" },
 	["side.quests"] = { de = "Quests", en = "Quests" },
+	["side.index"] = { de = "Index", en = "Index" },
 	["side.more"] = { de = "Mehr", en = "More" },
 	["side.moreTitle"] = { de = "Mehr Menüs", en = "More menus" },
 
@@ -303,6 +305,11 @@ Texts.strings = {
 	},
 	["egg.autoDeleted"] = { de = "🗑 Auto-gelöscht", en = "🗑 Auto-deleted" },
 	["notify.PetLocked"] = { de = "Gesperrte Pets kann man nicht löschen!", en = "Locked pets can't be deleted!" },
+	["notify.IndexWorldComplete"] = {
+		de = "📖 Index komplett: {world}! +{percent} % Münzen",
+		en = "📖 Index complete: {world}! +{percent}% coins",
+	},
+	["notify.IndexComplete"] = { de = "Schon alle gefunden.", en = "All found already." },
 	["notify.EmptyTeam"] = {
 		de = "Dieses Team ist leer – erst speichern!",
 		en = "This team is empty – save it first!",
@@ -442,6 +449,29 @@ Texts.strings = {
 	-- Login calendar
 	-- Quests (#97): menu, quest kinds (goal = formatted amount), rule refusals.
 	["quests.title"] = { de = "📜 Quests", en = "📜 Quests" },
+	-- Pet index and topping index (#95)
+	["index.title"] = { de = "📖 Index", en = "📖 Index" },
+	["index.tabPets"] = { de = "🐾 Pets", en = "🐾 Pets" },
+	["index.tabToppings"] = { de = "🍕 Beläge", en = "🍕 Toppings" },
+	["index.found"] = { de = "{found}/{total} gefunden", en = "{found}/{total} found" },
+	["index.bonusTotal"] = { de = "Index-Bonus: +{percent} % Münzen", en = "Index bonus: +{percent}% coins" },
+	["index.worldPage"] = { de = "Welt {number}: {world}", en = "World {number}: {world}" },
+	["index.worldComplete"] = { de = "✅ Komplett: +{percent} % Münzen", en = "✅ Complete: +{percent}% coins" },
+	["index.worldReward"] = { de = "Alle finden: +{percent} % Münzen", en = "Find all: +{percent}% coins" },
+	["index.stars"] = { de = "⭐ {found}/{total}", en = "⭐ {found}/{total}" },
+	["index.petsHint"] = {
+		de = "Sterne für Gold, Regenbogen und Shiny (ohne Belohnung)",
+		en = "Stars for Gold, Rainbow and Shiny (no reward)",
+	},
+	["index.toppingsHint"] = {
+		de = "Sammle jeden Belag normal und golden",
+		en = "Collect every topping normal and golden",
+	},
+	["index.unknown"] = { de = "???", en = "???" },
+	["index.normal"] = { de = "Normal", en = "Normal" },
+	["index.golden"] = { de = "✨ Gold", en = "✨ Golden" },
+	["index.previous"] = { de = "◀", en = "◀" },
+	["index.next"] = { de = "▶", en = "▶" },
 	["quests.hint"] = {
 		de = "Schaff alle 3 Tagesquests für die Bonus-Truhe!",
 		en = "Finish all 3 daily quests for the bonus chest!",

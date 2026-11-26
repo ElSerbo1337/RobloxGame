@@ -112,6 +112,9 @@
 --   calendar window once per value).
 -- Quests (see QuestService, #97): Quests (JSON GameRules.QuestStatus, the seconds left are counted
 --   down locally until the next update).
+-- Index (see IndexService, #95): Index (JSON { pets = rules.petIndex, toppings = rules.toppingIndex,
+--   bonus = rules.indexBonus, worldBonus }); Notify("IndexWorldComplete", worldId) when a world's
+--   pet index becomes complete.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
