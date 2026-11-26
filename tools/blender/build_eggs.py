@@ -386,6 +386,22 @@ def pattern_vines(look):
     return [o for o in objs if o]
 
 
+def pattern_zigzag(look):
+    """Desert Pyramids (#84): two zigzag bands like rows of little pyramids."""
+
+    def tri(x):
+        x = (x / (2 * math.pi)) % 1
+        return 1 - 4 * abs(x - 0.5)
+
+    def keep(t, u):
+        for base, shift in ((-0.3, 0.0), (0.32, math.pi / 6)):
+            if abs(u - (base + 0.14 * tri(6 * t + shift))) < 0.085:
+                return True
+        return False
+
+    return [shell_region(keep, cuts=5)]
+
+
 PATTERNS = {
     "Spots": pattern_spots,
     "Stripes": pattern_stripes,
@@ -396,6 +412,7 @@ PATTERNS = {
     "Stars": pattern_stars,
     "Bubbles": pattern_bubbles,
     "Vines": pattern_vines,
+    "Zigzag": pattern_zigzag,
 }
 
 

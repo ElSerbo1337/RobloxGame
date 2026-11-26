@@ -361,6 +361,10 @@ VIEWS = {
     "World9_Overview": ((150, 150, -1745), (0, -6, -1925), 32, (1600, 900)),
     "World9_Landmark": ((10, 22, -1950), (-40, 12, -2006), 30, (1600, 900)),
     "World9_Player": ((0, 14, -1800), (0, 2, -1900), 30, (1600, 900)),
+    # World 10 Desert Pyramids (#84) at z = -2160: overview, pyramid and the deco from the path.
+    "World10_Overview": ((150, 150, -1985), (0, -6, -2165), 32, (1600, 900)),
+    "World10_Landmark": ((20, 24, -2180), (-40, 10, -2246), 30, (1600, 900)),
+    "World10_Player": ((0, 14, -2040), (0, 2, -2140), 30, (1600, 900)),
     # The whole chain, spawn island (z = +202) to world 7 (z = -1440).
     "Islands_FullChain": ((980, 640, 420), (0, -20, -600), 27, (1920, 820)),
 }
