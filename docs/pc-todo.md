@@ -2118,3 +2118,13 @@ Studio, Rojo verbinden, **Play** (als Admin), zu einem Ei laufen:
 - [ ] **Handy** (Device-Emulator, z. B. iPhone SE quer/hoch): Auto-Delete-Kästchen rechts in jeder normalen Zeile, nicht in Geheim/Shiny; Shiny-Zeile lesbar, Liste scrollt bis zur Shiny-Zeile, Knöpfe „1/3 öffnen“ frei; Titel mit 3 Symbolen passt.
 - [ ] Englisch: „✨ Shiny – per pet – 1 in 200“, Titel „… 🍀 active!“.
 - [ ] Schalter `effectiveEggChances = false` in `GameConfig.features`: keine Shiny-Zeile, mit Glück-Trank alter Titel „… 🍀 Glück!“ und grüne Chancen.
+
+## MEGA UPDATE – #113 Hinweise für neue Features
+
+- [ ] Mit frischem Spieler (Admin-Panel → „Alle Hinweise wieder zeigen“, dann Rejoin): Zahnrad-Kachel pulsiert mit „Einstellungen und Codes“; Antippen stoppt es, nach Rejoin nicht wieder.
+- [ ] Immer nur ein Hinweis gleichzeitig, Reihenfolge Pets → Glücksrad → Quests → Index → Einstellungen.
+- [ ] Pets: per Admin „Pet geben“ 5× das gleiche Pet → Pets-Kachel pulsiert „5 gleiche Pets? Verschmelzen!“.
+- [ ] Glücksrad: mit Gratis-Drehung (Admin „Drehungen zurücksetzen“) pulsiert „Gratis-Drehung bereit!“.
+- [ ] Quests und Index (nach dem ersten Pet) pulsieren je einmal mit kurzem Text.
+- [ ] Kachel hinter „Mehr“: Öffnen über das Mehr-Fenster zählt auch als gesehen (das Pulsieren selbst ist dann nicht sichtbar).
+- [ ] Sprache auf Englisch: Texte englisch. Mit `features.featureHints = false` pulsiert nichts davon.

@@ -33,6 +33,7 @@ local Net = require(ReplicatedStorage.Shared.Net)
 local PetIcon = require(script.Parent.PetIcon)
 local Lang = require(script.Parent.Lang)
 local Settings = require(script.Parent.Settings)
+local FeatureHints = require(script.Parent.FeatureHints)
 local SideBar = require(script.Parent.SideBar)
 local Sounds = require(script.Parent.Sounds)
 local TweenService = game:GetService("TweenService")
@@ -177,6 +178,7 @@ function PetMenu.start()
 			toggle()
 		end,
 	})
+	FeatureHints.attach("Merge", "pets", "hint.merge", 10)
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
@@ -911,6 +913,7 @@ function PetMenu.start()
 		end
 		-- Red dot on the pet tile while a merge is ready (#80).
 		SideBar.setBadge("pets", rules.canMergeAny(pets :: any))
+		FeatureHints.setActive("Merge", rules.canMergeAny(pets :: any))
 		local equippedCount = 0
 		for i, entry in pets do
 			if entry.equipped then

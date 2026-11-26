@@ -18,6 +18,7 @@ local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Lang = require(script.Parent.Lang)
 local Net = require(ReplicatedStorage.Shared.Net)
+local FeatureHints = require(script.Parent.FeatureHints)
 local SideBar = require(script.Parent.SideBar)
 local Sounds = require(script.Parent.Sounds)
 local UiKit = require(script.Parent.UiKit)
@@ -127,6 +128,7 @@ function QuestMenu.start()
 			toggle()
 		end,
 	})
+	FeatureHints.attach("Quests", TILE_ID, "hint.quests", 30)
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
@@ -432,6 +434,7 @@ function QuestMenu.start()
 			showStatus(Lang.t("quests.done"), Color3.fromRGB(40, 150, 60))
 		end
 		SideBar.setBadge(TILE_ID, status ~= nil and status.readyCount > 0)
+		FeatureHints.setActive("Quests", status ~= nil)
 		if status and #status.daily > 0 then
 			local finished = 0
 			for _, entry in status.daily do

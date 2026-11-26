@@ -19,6 +19,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Lang = require(script.Parent.Lang)
 local Settings = require(script.Parent.Settings)
+local FeatureHints = require(script.Parent.FeatureHints)
 local SideBar = require(script.Parent.SideBar)
 local Sounds = require(script.Parent.Sounds)
 local UiKit = require(script.Parent.UiKit)
@@ -63,6 +64,8 @@ function SettingsMenu.start()
 			toggle()
 		end,
 	})
+	FeatureHints.attach("Settings", MENU_ID, "hint.settings", 50)
+	FeatureHints.setActive("Settings", true)
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"

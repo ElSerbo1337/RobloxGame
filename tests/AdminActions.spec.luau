@@ -87,6 +87,7 @@ describe("admin registry", function()
 			"giveGoldenToppings",
 			"setGoldenChance",
 			"resetWhatsNew",
+			"resetHints",
 			"giveSecretPet",
 			"setSecretChance",
 			"resetWorldIntros",
@@ -324,6 +325,17 @@ describe("admin actions", function()
 		expect(rules.hasSeenHint(result.state, hint)).toBe(false)
 		expect(rules.hasSeenHint(seen, hint)).toBe(true)
 		expect(admin.run(ADMIN, result.state, "resetWhatsNew", {}, ctx).reason).toBe("NotSeen")
+	end)
+
+	it("resetHints shows every one-time hint again; refuses when none was seen (#113)", function()
+		local seen = rules.markHintSeen(rules.newPlayerState(), "Gifts").state
+
+		local result = admin.run(ADMIN, seen, "resetHints", {}, ctx)
+
+		expect(result.ok).toBe(true)
+		expect(rules.hasSeenHint(result.state, "Gifts")).toBe(false)
+		expect(rules.hasSeenHint(seen, "Gifts")).toBe(true)
+		expect(admin.run(ADMIN, result.state, "resetHints", {}, ctx).reason).toBe("NotSeen")
 	end)
 
 	it("resetWorldIntros lets every world intro play again; refuses when none was seen (#79)", function()

@@ -492,6 +492,19 @@ function SideBar.setCaption(id: string, text: string?)
 	end
 end
 
+-- Calls `callback` whenever the tile `id` opens (its own button or the More popup).
+function SideBar.onOpen(id: string, callback: () -> ())
+	local tile = tiles[id]
+	if tile == nil then
+		return
+	end
+	local open = tile.spec.open
+	tile.spec.open = function()
+		callback()
+		open()
+	end
+end
+
 -- The tile's button (nil before it registered).
 function SideBar.button(id: string): TextButton?
 	local tile = tiles[id]

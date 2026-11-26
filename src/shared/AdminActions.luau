@@ -310,6 +310,19 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Every one-time hint (#113 feature hints, gifts, rebirth, "What's new") shows again.
+		id = "resetHints",
+		params = {},
+		run = function(_env, state)
+			if #state.seenHints == 0 then
+				return fail(state, "NotSeen")
+			end
+			local newState = table.clone(state)
+			newState.seenHints = {}
+			return { ok = true, state = newState }
+		end,
+	},
+	{
 		-- The Secret pet of a world (#81) straight into the inventory (no hatch, no announcement).
 		id = "giveSecretPet",
 		feature = "secretPets",

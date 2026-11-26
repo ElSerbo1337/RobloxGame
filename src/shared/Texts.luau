@@ -58,6 +58,10 @@ Texts.strings = {
 	},
 	["admin.action.giveGoldenToppings"] = { de = "Goldene Beläge auf die Pizza", en = "Golden toppings on pizza" },
 	["admin.action.setGoldenChance"] = { de = "Gold-Chance testen (%, 0 = aus)", en = "Test gold chance (%, 0 = off)" },
+	["admin.action.resetHints"] = {
+		de = "Alle Hinweise wieder zeigen (Rejoin)",
+		en = "Show all hints again (rejoin)",
+	},
 	["admin.action.resetWhatsNew"] = {
 		de = "„Was ist neu“ wieder zeigen (Rejoin)",
 		en = 'Show "What\'s new" again (rejoin)',
@@ -139,6 +143,12 @@ Texts.strings = {
 	["side.giftsTomorrow"] = { de = "Morgen", en = "Tomorrow" },
 	["side.giftsNote"] = { de = "Neu! Geschenke fürs Spielen", en = "New! Gifts for playing" },
 	["side.rebirthNote"] = { de = "Neu! Mehr Münzen", en = "New! More coins" },
+	-- Feature hints (#113)
+	["hint.merge"] = { de = "5 gleiche Pets? Verschmelzen!", en = "5 equal pets? Merge them!" },
+	["hint.quests"] = { de = "Neu! Quests mit Belohnungen", en = "New! Quests with rewards" },
+	["hint.wheel"] = { de = "Gratis-Drehung bereit!", en = "Free spin ready!" },
+	["hint.index"] = { de = "Neu! Sammle alle Pets", en = "New! Collect every pet" },
+	["hint.settings"] = { de = "Einstellungen und Codes", en = "Settings and codes" },
 	-- Side bar (#75)
 	["side.calendar"] = { de = "Kalender", en = "Calendar" },
 	["side.worlds"] = { de = "Welten", en = "Worlds" },

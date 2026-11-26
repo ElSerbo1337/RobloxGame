@@ -360,7 +360,9 @@ local GameConfig = {
 	-- once; remembered per player (GameRules.markHintSeen): play time gifts (#36) and the
 	-- rebirth button (#35, pulses the first time a rebirth is affordable). Also one-time
 	-- windows: "WhatsNew1" = the "What's new" window of the MEGA UPDATE (#106).
-	hints = { "Gifts", "Rebirth", "WhatsNew1" },
+	-- Feature hints (#113, client FeatureHints, switch features.featureHints): "Merge"
+	-- (first time 5 equal pets), "Quests", "Wheel" (first free spin), "Index", "Settings".
+	hints = { "Gifts", "Rebirth", "WhatsNew1", "Merge", "Quests", "Wheel", "Index", "Settings" },
 
 	-- Spawn island as a marketplace (#106): "Neu im Update!" board and "What's new"
 	-- window (shown once per player: the hint `whatsNewHint` is remembered when the

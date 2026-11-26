@@ -1747,3 +1747,26 @@ describe("GameConfig pet index (#95)", function()
 		expect(#rules.toppingIndex(state).worlds).toBe(#GameConfig.worlds)
 	end)
 end)
+
+describe("feature hints (#113)", function()
+	local ids = { Merge = "merge", Quests = "quests", Wheel = "wheel", Index = "index", Settings = "settings" }
+
+	it("every feature hint is configured and has a German and English text", function()
+		for id, key in ids do
+			expect(table.find(GameConfig.hints, id) ~= nil).toBe(true)
+			local text = Texts.strings[`hint.{key}`]
+			expect(text ~= nil and text.de ~= "" and text.en ~= "").toBe(true)
+		end
+	end)
+
+	it("each hint is remembered once per player", function()
+		local rules = GameRules.new(GameConfig)
+		local state = rules.newPlayerState()
+		for id in ids do
+			local result = rules.markHintSeen(state, id)
+			expect(result.ok).toBe(true)
+			state = result.state
+			expect(rules.markHintSeen(state, id).reason).toBe("HintSeen")
+		end
+	end)
+end)

@@ -18,6 +18,7 @@ local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Lang = require(script.Parent.Lang)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
+local FeatureHints = require(script.Parent.FeatureHints)
 local SideBar = require(script.Parent.SideBar)
 local UiKit = require(script.Parent.UiKit)
 
@@ -162,6 +163,7 @@ function IndexMenu.start()
 			toggle()
 		end,
 	})
+	FeatureHints.attach("Index", TILE_ID, "hint.index", 40)
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
@@ -416,9 +418,11 @@ function IndexMenu.start()
 
 	-- Red dot: more found than when the menu was last open (or at join).
 	local seen = progressCount(current)
+	FeatureHints.setActive("Index", seen > 0)
 	player:GetAttributeChangedSignal("Index"):Connect(function()
 		current = readIndex(player)
 		local count = progressCount(current)
+		FeatureHints.setActive("Index", count > 0)
 		if panel.Visible then
 			seen = count
 			render()
