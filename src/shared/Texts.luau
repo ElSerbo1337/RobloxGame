@@ -340,6 +340,10 @@ Texts.strings = {
 
 	-- Egg panel, egg animation and pet card (#69)
 	["egg.luck"] = { de = "{egg} 🍀 Glück!", en = "{egg} 🍀 Luck!" },
+	-- Effective chances (#93): title with the icons of potions raising a chance, Shiny row.
+	["egg.boosted"] = { de = "{egg} {icons} aktiv!", en = "{egg} {icons} active!" },
+	["egg.shinyName"] = { de = "✨ Shiny", en = "✨ Shiny" },
+	["egg.shinyEvery"] = { de = "je Pet", en = "per pet" },
 	-- Secret pets (#81): hidden row in the egg preview, hatch card and global banner.
 	["egg.secretName"] = { de = "??? (Geheim)", en = "??? (Secret)" },
 	["egg.secretOdds"] = { de = "1 : {odds}", en = "1 in {odds}" },

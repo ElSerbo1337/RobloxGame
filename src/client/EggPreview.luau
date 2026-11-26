@@ -5,8 +5,10 @@
 -- Opens when the player comes close to an egg and closes when leaving. It is a menu
 -- (UiKit.registerMenu "eggPreview"): opening it closes other menus; closed by another
 -- menu, it stays closed until the player leaves the egg and comes back.
--- While the luck potion runs, the chances shown are the lucky ones (from the
--- ActivePotions attribute) and the title says so.
+-- Effective chances (#93, features.effectiveEggChances): all chances come from
+-- rules.eggPreview with the running potions (ActivePotions attribute), the same odds the
+-- server rolls: rarities and Secret (luck, Mega) plus a Shiny row (shiny, luck, Mega).
+-- Raised chances are green, the title shows the icons of the boosting potions.
 -- The button only sends the wish "OpenEgg"; the server decides.
 -- Auto-delete (#91, features.petAutoDelete): tapping a pet row ticks its rarity for
 -- auto-delete when hatching (box with 🗑 on the right, row greyed); the server keeps the
@@ -48,6 +50,30 @@ local EggPreview = {}
 local rules = GameRules.new(GameConfig)
 local features = Features.new(GameConfig.features)
 local AUTO_DELETE = features.enabled("petAutoDelete")
+local EFFECTIVE = features.enabled("effectiveEggChances")
+-- Title icons of potions that raise egg chances (#93); others show a generic flask.
+local BOOST_ICONS: { [string]: string } = { Luck = "🍀", Shiny = "✨", Mega = "🧪" }
+local SHINY_ROW = "__shiny"
+local BOOSTED = Color3.fromRGB(40, 130, 40)
+
+-- Rows of the panel: the egg's pets, then the Secret pet of the egg's world (#81, "???"
+-- with odds like "1 : 20.000"), then the Shiny chance per hatched pet with its bonus (#93).
+local function rowEntries(preview: GameRules.EggPreview): { any }
+	local entries: { any } = table.clone(preview.pets)
+	if preview.secret then
+		table.insert(entries, preview.secret)
+	end
+	if preview.shiny then
+		table.insert(entries, {
+			petId = SHINY_ROW,
+			rarity = SHINY_ROW,
+			chancePercent = preview.shiny.chancePercent,
+			bonus = preview.shiny.bonusMultiplier - 1,
+			boosted = preview.shiny.boosted,
+		})
+	end
+	return entries
+end
 
 type Panel = {
 	gui: ScreenGui,
@@ -150,45 +176,60 @@ local function buildPanel(playerGui: Instance): Panel
 
 	-- Tiny Secret chances as odds ("1 : 20.000"), all others in percent.
 	local function chanceText(entry: { rarity: string, chancePercent: number }): string
-		if entry.rarity == "Secret" and entry.chancePercent > 0 then
+		if (entry.rarity == "Secret" or entry.rarity == SHINY_ROW) and entry.chancePercent > 0 then
 			return Lang.t("egg.secretOdds", { odds = Lang.integer(math.round(100 / entry.chancePercent)) })
 		end
 		return UiKit.chanceText(entry.chancePercent)
 	end
 
-	local function updateLuck()
+	-- The player's running potions as a state for the rules (eggPreview only reads them).
+	local function potionState(): any
+		local ok, active = pcall(HttpService.JSONDecode, HttpService, player:GetAttribute("ActivePotions") or "{}")
+		return { activePotions = if ok and type(active) == "table" then active else {} }
+	end
+
+	local function updateChances()
 		local current = eggId
 		if current == nil then
 			return
 		end
 		local egg = GameConfig.eggs[current]
-		local ok, active = pcall(HttpService.JSONDecode, HttpService, player:GetAttribute("ActivePotions") or "{}")
-		local activePotions = if ok and type(active) == "table" then active else {}
-		-- eggPreview only reads the running potions from the state.
-		local lucky = rules.eggPreview(current, { activePotions = activePotions } :: any)
-		-- The luck effect also runs with the Mega potion (#96).
-		local hasLuck = rules.isPotionEffectActive({ activePotions = activePotions } :: any, "Luck")
-		title.Text = if hasLuck then Lang.t("egg.luck", { egg = Lang.name(egg) }) else Lang.name(egg)
-		local entries = table.clone(lucky.pets)
-		if lucky.secret then
-			table.insert(entries, lucky.secret)
+		local state = potionState()
+		local preview = rules.eggPreview(current, state)
+		-- With effective chances off: only the luck effect as before (#96 incl. Mega).
+		local hasLuck = not EFFECTIVE and rules.isPotionEffectActive(state, "Luck")
+		local icons = {}
+		for _, potionId in preview.boosts do
+			table.insert(icons, BOOST_ICONS[potionId] or "🧪")
 		end
+		title.Text = if #icons > 0
+			then Lang.t("egg.boosted", { egg = Lang.name(egg), icons = table.concat(icons) })
+			elseif hasLuck then Lang.t("egg.luck", { egg = Lang.name(egg) })
+			else Lang.name(egg)
+		local entries = rowEntries(preview)
 		for _, entry in entries do
 			local chance = chanceLabels[entry.petId]
 			if chance then
 				chance.Text = chanceText(entry)
-				chance.TextColor3 = if hasLuck then Color3.fromRGB(40, 130, 40) else UiKit.DARK
+				chance.TextColor3 = if entry.boosted or hasLuck then BOOSTED else UiKit.DARK
 			end
 		end
 	end
-	-- Only re-render when luck switches on or off (the attribute also changes while it counts down).
-	local hadLuck: boolean? = nil
+	-- Only re-render when the set of running potions changes (the attribute also changes
+	-- every second while they count down).
+	local runningKey: string? = nil
 	player:GetAttributeChangedSignal("ActivePotions"):Connect(function()
-		local json = tostring(player:GetAttribute("ActivePotions"))
-		local hasLuck = string.find(json, '"Luck"') ~= nil or string.find(json, '"Mega"') ~= nil
-		if hasLuck ~= hadLuck then
-			hadLuck = hasLuck
-			updateLuck()
+		local running = {}
+		for potionId, seconds in potionState().activePotions do
+			if type(seconds) == "number" and seconds > 0 then
+				table.insert(running, tostring(potionId))
+			end
+		end
+		table.sort(running)
+		local key = table.concat(running, ",")
+		if key ~= runningKey then
+			runningKey = key
+			updateChances()
 		end
 	end)
 
@@ -208,7 +249,9 @@ local function buildPanel(playerGui: Instance): Panel
 
 	local function fill(newEggId: string)
 		eggId = newEggId
-		local preview = rules.eggPreview(newEggId)
+		-- Rows come from the player's preview (same rule as updateChances), so the Secret
+		-- and Shiny rows exist whenever their chance does.
+		local preview = rules.eggPreview(newEggId, potionState())
 		price = preview.price
 		for _, child in list:GetChildren() do
 			if child:IsA("GuiObject") then
@@ -218,15 +261,12 @@ local function buildPanel(playerGui: Instance): Panel
 		table.clear(chanceLabels)
 		table.clear(autoRows)
 
-		-- The Secret pet of the egg's world (#81) as last row: "???" and odds like "1 : 20.000".
-		local entries = table.clone(preview.pets)
-		if preview.secret then
-			table.insert(entries, preview.secret)
-		end
+		local entries = rowEntries(preview)
 		for i, entry in entries do
+			local isShiny = entry.rarity == SHINY_ROW
 			local pet = GameConfig.pets[entry.petId]
 			local hidden = entry.rarity == "Secret"
-			local color = UiKit.rarityColor(entry.rarity)
+			local color = if isShiny then UiKit.COIN else UiKit.rarityColor(entry.rarity)
 			local canTick = AUTO_DELETE and table.find(rules.autoDeleteRarities(), entry.rarity) ~= nil
 			local row: GuiObject
 			if canTick then
@@ -257,7 +297,11 @@ local function buildPanel(playerGui: Instance): Panel
 			UiKit.corner(icon, 16)
 			UiKit.stroke(icon, 2)
 			icon.Parent = row
-			if hidden then
+			if isShiny then
+				local mark = UiKit.label(icon, "✨")
+				mark.Size = UDim2.fromScale(1, 1)
+				icon.BackgroundColor3 = UiKit.CREAM
+			elseif hidden then
 				local mark = UiKit.label(icon, "?")
 				mark.Size = UDim2.fromScale(1, 1)
 				mark.TextColor3 = Color3.new(1, 1, 1)
@@ -266,12 +310,18 @@ local function buildPanel(playerGui: Instance): Panel
 				icon.BackgroundColor3 = UiKit.CREAM
 			end
 
-			local name = UiKit.label(row, if hidden then Lang.t("egg.secretName") else Lang.name(pet))
+			local name = UiKit.label(
+				row,
+				if isShiny then Lang.t("egg.shinyName") elseif hidden then Lang.t("egg.secretName") else Lang.name(pet)
+			)
 			name.Position = UDim2.fromOffset(46, 2)
 			name.Size = UDim2.new(0.5, -46, 0, 22)
 			name.TextXAlignment = Enum.TextXAlignment.Left
 
-			local rarity = UiKit.label(row, Lang.name(GameConfig.rarities[entry.rarity]))
+			local rarity = UiKit.label(
+				row,
+				if isShiny then Lang.t("egg.shinyEvery") else Lang.name(GameConfig.rarities[entry.rarity])
+			)
 			rarity.Position = UDim2.fromOffset(46, 23)
 			rarity.Size = UDim2.new(0.5, -46, 0, 15)
 			rarity.TextXAlignment = Enum.TextXAlignment.Left
@@ -318,7 +368,7 @@ local function buildPanel(playerGui: Instance): Panel
 		-- Narrower on small screens, so it stays readable (HudLayout.eggPreviewSize).
 		local width = UiKit.Layout.eggPreviewSize(UiKit.isSmallScreen()).w
 		resize(Vector2.new(width, HEADER + #entries * ROW_HEIGHT + FOOTER), HEADER + ROW_HEIGHT + FOOTER)
-		updateLuck()
+		updateChances()
 		updateTriple()
 	end
 

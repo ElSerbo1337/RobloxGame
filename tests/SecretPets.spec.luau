@@ -132,7 +132,13 @@ end)
 describe("egg preview with a Secret pet", function()
 	it("adds the Secret pet with its chance and scales the other chances down", function()
 		local preview = rules.eggPreview("TestEgg", rich(rules))
-		expect(preview.secret).toEqual({ petId = "GhostPet", rarity = "Secret", chancePercent = 0.005, bonus = 5 })
+		expect(preview.secret).toEqual({
+			petId = "GhostPet",
+			rarity = "Secret",
+			chancePercent = 0.005,
+			bonus = 5,
+			boosted = false,
+		})
 		expect(preview.pets[1].chancePercent).toBe(69.9965)
 	end)
 

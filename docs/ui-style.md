@@ -202,6 +202,12 @@ Settings.volume("music")    -- 0..1 inkl. Stumm ("music" | "effects")
 - **Namen:** eigene Namen nur über den Server (`RenamePet`, TextService `GetNonChatStringForBroadcastAsync`), im UI über `displayName(entry)` im PetMenu, auf dem Namensschild über `SignText` `sign.name`.
 - **Pet-Index (#95):** „jemals besessen“ steht in `state.petsOwnedEver` (Pet-Id → true, auch auto-gelöschte/gelöschte/verschmolzene), Abfrage `rules.hasOwnedPet(state, petId)`; jedes neue Pet läuft durch `addPet` (setzt auch `foundAt`).
 
+## Echte Ei-Chancen (#93)
+
+- **Ei-Panel** (`EggPreview`): Zeilen = Pets des Eis, dann „??? (Geheim)“, dann **„✨ Shiny · je Pet“** (Kreis `CREAM` mit ✨, Zeile in `COIN`, Chance als „1 : 200“, Bonus „+50 %“, kein Auto-Delete-Kästchen). Chancen, die ein laufender Trank gerade erhöht, sind grün `40,130,40`; der Titel bekommt die Symbole der wirkenden Tränke („Hof-Ei 🍀✨ aktiv!“, 🍀 Glück, ✨ Shiny, 🧪 Mega).
+- **Regel:** alle Zahlen kommen aus `rules.eggPreview(eggId, state)` (`pets`/`secret`/`shiny` mit `boosted`, `boosts` = Trank-Ids). Sie liest dieselbe interne `eggOdds`-Funktion wie `openEggs` – im Client nie selbst rechnen. Ein künftiges Upgrade, das Ei-Chancen ändert, gehört in `eggWeights`/`secretChance`/`shinyChance`, dann zeigt das Panel es automatisch.
+- Schalter `effectiveEggChances` aus: keine Shiny-Zeile, keine Trank-Symbole, nur der alte „🍀 Glück!“-Titel.
+
 ## Index (#95)
 
 Kachel 📖 „Index“ (`index`, order 90, Form `star`, `src/client/IndexMenu.luau`): ein Menü mit zwei Reitern (orange = aktiv, grau = anderer; nur eingeschaltete), darunter eine Welt pro Seite (◀ ▶ orange, startet in der aktuellen Welt) mit „n/m gefunden“ und Kartenraster. Nur die aktuelle Seite hat 3D-Ansichten.

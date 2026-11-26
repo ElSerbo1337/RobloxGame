@@ -207,7 +207,13 @@ describe("luck potion", function()
 	it("shows the shifted chances in the egg preview", function()
 		local preview = rules.eggPreview("TestEgg", drinking(player(0), "Luck"))
 
-		expect(preview.pets[1]).toEqual({ petId = "Hamster", rarity = "Common", chancePercent = 53.6398, bonus = 0.1 })
+		expect(preview.pets[1]).toEqual({
+			petId = "Hamster",
+			rarity = "Common",
+			chancePercent = 53.6398,
+			bonus = 0.1,
+			boosted = true,
+		})
 		expect(preview.pets[2].chancePercent).toBe(45.2107)
 		expect(preview.pets[3].chancePercent).toBe(1.1494)
 		-- Without a state (or without the potion) the configured chances stay.

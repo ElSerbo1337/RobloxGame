@@ -195,8 +195,20 @@ describe("eggPreview", function()
 
 		expect(preview.price).toBe(10)
 		expect(#preview.pets).toBe(3)
-		expect(preview.pets[1]).toEqual({ petId = "Hamster", rarity = "Common", chancePercent = 70, bonus = 0.1 })
-		expect(preview.pets[3]).toEqual({ petId = "Dragon", rarity = "Mythic", chancePercent = 0.5, bonus = 1.5 })
+		expect(preview.pets[1]).toEqual({
+			petId = "Hamster",
+			rarity = "Common",
+			chancePercent = 70,
+			bonus = 0.1,
+			boosted = false,
+		})
+		expect(preview.pets[3]).toEqual({
+			petId = "Dragon",
+			rarity = "Mythic",
+			chancePercent = 0.5,
+			bonus = 1.5,
+			boosted = false,
+		})
 	end)
 end)
 

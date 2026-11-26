@@ -2103,3 +2103,18 @@ Serverseitig über Roblox `AnalyticsService` (`src/server/AnalyticsService.luau`
 - [ ] Creator Hub → Analytics → Funnels: „Onboarding“ zeigt die 5 Schritte, Funnel „WorldUnlocks“ die freigeschalteten Welten; Analytics → Custom Events: `FirstRebirth`, `QuestClaimed`, `WheelSpin`, `PetMerge` (kann einige Stunden dauern).
 - [ ] Studio-Play: Output ohne `[Analytics]`-Warnungen (in Studio loggt Roblox nicht, darf aber auch nicht fehlschlagen).
 - [ ] Zweite Rebirth bzw. Welt 2 nach Rebirth erneut freischalten → keine zweiten `FirstRebirth`/`WorldUnlocks`-Einträge.
+
+## MEGA UPDATE – #93 Ei-Menü mit echten Chancen
+
+Vorher: `lune run test` → alle grün (u. a. `tests/EggChances.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin), zu einem Ei laufen:
+
+- [ ] Ei-Panel ohne Trank: Pets mit %, darunter „??? (Geheim) 1 : 20.000“, ganz unten **„✨ Shiny – je Pet – 1 : 200 – +50 %“**. Titel nur Ei-Name, alles dunkel.
+- [ ] Admin **Trank geben** Glück → trinken: Titel „… 🍀 aktiv!“, alle Pet-Chancen + Geheim „1 : 10.000“ grün, Shiny „1 : 100“ grün.
+- [ ] Shiny-Trank dazu: Titel „🍀✨“, Shiny „1 : 50“. Nur Shiny-Trank: Shiny grün „1 : 100“, Pet-Chancen wieder dunkel.
+- [ ] Mega-Trank allein: Titel „🧪“, Chancen wie mit Glück. Münz-/Speed-Trank allein: keine Änderung im Panel.
+- [ ] Trank läuft während das Panel offen ist ab → Panel springt ohne Neu-Öffnen zurück (Titel, Farben, Zahlen).
+- [ ] **Handy** (Device-Emulator, z. B. iPhone SE quer/hoch): Auto-Delete-Kästchen rechts in jeder normalen Zeile, nicht in Geheim/Shiny; Shiny-Zeile lesbar, Liste scrollt bis zur Shiny-Zeile, Knöpfe „1/3 öffnen“ frei; Titel mit 3 Symbolen passt.
+- [ ] Englisch: „✨ Shiny – per pet – 1 in 200“, Titel „… 🍀 active!“.
+- [ ] Schalter `effectiveEggChances = false` in `GameConfig.features`: keine Shiny-Zeile, mit Glück-Trank alter Titel „… 🍀 Glück!“ und grüne Chancen.

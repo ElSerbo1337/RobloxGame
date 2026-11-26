@@ -284,12 +284,25 @@ export type ShopOffer = {
 	status: string,
 }
 
+export type EggPreviewEntry = {
+	petId: string,
+	rarity: string,
+	chancePercent: number,
+	bonus: number,
+	-- A running potion raises this chance now (#93; false with effectiveEggChances off).
+	boosted: boolean,
+}
+
 export type EggPreview = {
 	price: number,
 	-- Sorted from most common to rarest.
-	pets: { { petId: string, rarity: string, chancePercent: number, bonus: number } },
+	pets: { EggPreviewEntry },
 	-- The Secret pet of the egg's world (#81), with its chance (nil: none or feature off).
-	secret: { petId: string, rarity: string, chancePercent: number, bonus: number }?,
+	secret: EggPreviewEntry?,
+	-- Effective chances (#93): Shiny chance per hatched pet (nil: shiny pets or
+	-- effectiveEggChances off) and the running potions raising a chance (sorted ids).
+	shiny: { chancePercent: number, bonusMultiplier: number, boosted: boolean }?,
+	boosts: { string },
 }
 
 -- One world as shown in the portal menu; locked worlds are greyed out with their price.
@@ -1777,18 +1790,16 @@ function GameRules.new(config: any)
 		return math.min(chance, 1)
 	end
 
-	-- Picks a pet id for one egg. `random` returns a number in [0, 1). With a Secret pet in
-	-- the egg's world, a first roll decides "Secret or not"; the chance table is only
-	-- rolled when it misses.
-	local function drawPet(state: PlayerState, eggId: string, egg: any, random: () -> number): string
-		local secretChance = rules.secretChance(state, eggId)
-		if secretChance > 0 and random() < secretChance then
+	-- Picks a pet id for one egg from its odds (eggOdds). `random` returns a number in
+	-- [0, 1). With a Secret pet in the egg's world, a first roll decides "Secret or not";
+	-- the chance table is only rolled when it misses.
+	local function drawPet(eggId: string, egg: any, odds: EggOdds, random: () -> number): string
+		if odds.secret > 0 and random() < odds.secret then
 			return rules.secretPetOf(eggId) :: string
 		end
-		local weights, total = eggWeights(egg, state)
-		local roll = random() * total
+		local roll = random() * odds.total
 		for i, entry in egg.pets do
-			roll -= weights[i]
+			roll -= odds.weights[i]
 			if roll < 0 then
 				return entry.pet
 			end
@@ -1812,6 +1823,43 @@ function GameRules.new(config: any)
 			end
 		end
 		return math.min(chance, 1)
+	end
+
+	-- Everything that decides what one egg gives this player (#93): the chance weights
+	-- (luck potion), the Secret chance and the Shiny chance. Opening eggs and the egg
+	-- preview both read only this, so the preview always shows the real odds.
+	type EggOdds = { weights: { number }, total: number, secret: number, shiny: number }
+	local function eggOdds(state: PlayerState?, eggId: string): EggOdds
+		local weights, total = eggWeights(config.eggs[eggId], state)
+		return {
+			weights = weights,
+			total = total,
+			secret = rules.secretChance(state, eggId),
+			shiny = rules.shinyChance(state),
+		}
+	end
+
+	-- The running potions that raise a chance of the egg (#93): luck weights, Secret or
+	-- Shiny, directly or as part of another potion (Mega). Sorted potion ids.
+	local function eggBoosts(state: PlayerState): { string }
+		local function raises(potionId: string): boolean
+			local potion = config.potions[potionId]
+			return potion ~= nil and (potion.rarityWeights ~= nil or potion.shinyChanceMultiplier ~= nil)
+		end
+		local boosts = {}
+		for _, potionId in sortedPotionIds do
+			if (state.activePotions[potionId] or 0) <= 0 then
+				continue
+			end
+			local carries = raises(potionId)
+			for _, included in rules.potionIncludes(potionId) do
+				carries = carries or raises(included)
+			end
+			if carries then
+				table.insert(boosts, potionId)
+			end
+		end
+		return boosts
 	end
 
 	-- The one place where pets enter the inventory (hatch, merge, admin), so the pet
@@ -1901,33 +1949,54 @@ function GameRules.new(config: any)
 		return math.round(share * 100 * 1e4) / 1e4
 	end
 
-	-- What the egg can contain, for the floating preview above the egg. With a state,
-	-- the chances include that player's luck potion. With a Secret pet, its chance is
-	-- listed apart (`secret`) and the other chances shrink by it, so all add up to 100 %.
+	-- What the egg can contain, for the egg preview panel. With a state, the chances are
+	-- that player's real ones (eggOdds, the same as openEggs uses: luck potion, Mega). With
+	-- a Secret pet, its chance is listed apart (`secret`) and the other chances shrink by
+	-- it, so all add up to 100 %. Effective chances (#93, features.effectiveEggChances):
+	-- `shiny` = chance per hatched pet, `boosts` = running potions raising a chance, and
+	-- `boosted` on each entry whose chance a potion raises now.
 	function rules.eggPreview(eggId: string, state: PlayerState?): EggPreview
 		local egg = config.eggs[eggId]
-		local weights, total = eggWeights(egg, state)
-		local secretChance = rules.secretChance(state, eggId)
+		local odds = eggOdds(state, eggId)
+		local base = eggOdds(nil, eggId)
+		local effective = featureOn("effectiveEggChances")
+		local luck = state ~= nil and potionEffect(state, "Luck", "rarityWeights", nil) ~= nil
 		local pets = {}
 		for i, entry in egg.pets do
 			local pet = config.pets[entry.pet]
 			table.insert(pets, {
 				petId = entry.pet,
 				rarity = pet.rarity,
-				chancePercent = percent(weights[i] / total * (1 - secretChance)),
+				chancePercent = percent(odds.weights[i] / odds.total * (1 - odds.secret)),
 				bonus = pet.bonus,
+				boosted = effective and luck,
 			})
 		end
 		table.sort(pets, function(a, b)
 			return a.chancePercent > b.chancePercent
 		end)
 		local secret = nil
-		if secretChance > 0 then
+		if odds.secret > 0 then
 			local petId = rules.secretPetOf(eggId) :: string
 			local pet = config.pets[petId]
-			secret = { petId = petId, rarity = pet.rarity, chancePercent = percent(secretChance), bonus = pet.bonus }
+			secret = {
+				petId = petId,
+				rarity = pet.rarity,
+				chancePercent = percent(odds.secret),
+				bonus = pet.bonus,
+				boosted = effective and odds.secret > base.secret,
+			}
 		end
-		return { price = egg.price, pets = pets, secret = secret }
+		local shiny = nil
+		if effective and odds.shiny > 0 then
+			shiny = {
+				chancePercent = percent(odds.shiny),
+				bonusMultiplier = config.shinyPets.bonusMultiplier,
+				boosted = odds.shiny > base.shiny,
+			}
+		end
+		local boosts = if effective and state then eggBoosts(state) else {}
+		return { price = egg.price, pets = pets, secret = secret, shiny = shiny, boosts = boosts }
 	end
 
 	-- Whether `count` eggs per press is a size the multi-open upgrade can unlock at all.
@@ -1976,11 +2045,11 @@ function GameRules.new(config: any)
 		newState.coins = state.coins - egg.price * count
 		newState.pets = table.clone(state.pets)
 		local drawn, autoDeleted = {}, {}
-		local shinyChance = rules.shinyChance(state)
+		local odds = eggOdds(state, eggId)
 		for i = 1, count do
-			local pet: OwnedPet = { uid = newState.nextPetUid, petId = drawPet(state, eggId, egg, random) }
+			local pet: OwnedPet = { uid = newState.nextPetUid, petId = drawPet(eggId, egg, odds, random) }
 			-- Shiny roll per pet after its draw (only when shiny pets exist, #80).
-			if shinyChance > 0 and random() < shinyChance then
+			if odds.shiny > 0 and random() < odds.shiny then
 				pet.shiny = true
 			end
 			if autoDeletes(state, pet) then
