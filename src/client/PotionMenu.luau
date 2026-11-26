@@ -13,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
+local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Lang = require(script.Parent.Lang)
@@ -20,14 +21,64 @@ local SideBar = require(script.Parent.SideBar)
 local UiKit = require(script.Parent.UiKit)
 
 -- Display order and look of each potion (the effects live in GameConfig / GameRules).
-local LOOKS: { { potionId: string, icon: string, color: Color3, effect: string } } = {
-	{ potionId = "Coins", icon = "💰", color = UiKit.COIN, effect = Lang.t("potions.effectCoins") },
-	{ potionId = "Luck", icon = "🍀", color = UiKit.GREEN, effect = Lang.t("potions.effectLuck") },
-	{ potionId = "Speed", icon = "⚡", color = Color3.fromRGB(90, 170, 255), effect = Lang.t("potions.effectSpeed") },
-}
+-- Potions behind a switched-off feature (newPotions, #96) are left out.
+local features = Features.new(GameConfig.features)
+local LOOKS: { { potionId: string, icon: string, color: Color3, effect: string } } = {}
+for _, look in
+	{
+		{ potionId = "Coins", icon = "💰", color = UiKit.COIN, effect = Lang.t("potions.effectCoins") },
+		{ potionId = "Luck", icon = "🍀", color = UiKit.GREEN, effect = Lang.t("potions.effectLuck") },
+		{
+			potionId = "Speed",
+			icon = "⚡",
+			color = Color3.fromRGB(90, 170, 255),
+			effect = Lang.t("potions.effectSpeed"),
+		},
+		{
+			potionId = "Shiny",
+			icon = "✨",
+			color = Color3.fromRGB(255, 140, 200),
+			effect = Lang.t("potions.effectShiny"),
+		},
+		{
+			potionId = "Gold",
+			icon = "🌟",
+			color = Color3.fromRGB(255, 200, 40),
+			effect = Lang.t("potions.effectGold"),
+		},
+		-- The Mega potion has one timer; its effect line lists what it contains.
+		{
+			potionId = "Mega",
+			icon = "🧪",
+			color = Color3.fromRGB(170, 90, 230),
+			effect = Lang.t("potions.effectMega"),
+		},
+	}
+do
+	local potion = GameConfig.potions[look.potionId]
+	if potion and (potion.feature == nil or features.enabled(potion.feature)) then
+		table.insert(LOOKS, look)
+	end
+end
 
--- Subtitle sits below the close button (full width, never covered); the cards follow.
-local PANEL_SIZE = Vector2.new(560, 502)
+-- The running potion that carries this potion's effect (Mega for coins/luck/speed), or nil.
+local function coveredBy(potionId: string, timeLeft: (string) -> number): string?
+	for otherId, potion in GameConfig.potions do
+		if
+			otherId ~= potionId
+			and potion.includes
+			and table.find(potion.includes, potionId)
+			and timeLeft(otherId) > 0
+		then
+			return otherId
+		end
+	end
+	return nil
+end
+
+-- Subtitle sits below the close button (full width, never covered); the cards follow
+-- in a scrolling list (6 potions do not fit at once on a phone).
+local PANEL_SIZE = Vector2.new(560, 620)
 local CARDS_TOP = 132
 local CARD_HEIGHT = 112
 local TIMER_SIZE = Vector2.new(230, 64)
@@ -35,6 +86,7 @@ local TIMER_SIZE = Vector2.new(230, 64)
 local MESSAGES: { [string]: string } = {
 	NoPotion = Lang.t("potions.NoPotion"),
 	UnknownPotion = Lang.t("potions.UnknownPotion"),
+	FeatureOff = Lang.t("potions.FeatureOff"),
 }
 
 local PotionMenu = {}
@@ -153,17 +205,27 @@ function PotionMenu.start()
 	closeButton.Position = UDim2.new(1, -14, 0, 14)
 	closeButton.Size = UDim2.fromOffset(72, 72)
 
+	local list = Instance.new("ScrollingFrame")
+	list.Name = "Cards"
+	list.Position = UDim2.fromOffset(16, CARDS_TOP)
+	list.Size = UDim2.new(1, -32, 1, -(CARDS_TOP + 16))
+	list.BackgroundTransparency = 1
+	list.BorderSizePixel = 0
+	list.ScrollBarThickness = 10
+	list.CanvasSize = UDim2.fromOffset(0, #LOOKS * (CARD_HEIGHT + 10))
+	list.Parent = panel
+
 	local cards: { [string]: { owned: TextLabel, left: TextLabel, button: TextButton } } = {}
 	for index, look in LOOKS do
 		local potion = GameConfig.potions[look.potionId]
 		local card = Instance.new("Frame")
 		card.Name = look.potionId
-		card.Position = UDim2.fromOffset(16, CARDS_TOP + (index - 1) * (CARD_HEIGHT + 10))
-		card.Size = UDim2.new(1, -32, 0, CARD_HEIGHT)
+		card.Position = UDim2.fromOffset(4, (index - 1) * (CARD_HEIGHT + 10))
+		card.Size = UDim2.new(1, -20, 0, CARD_HEIGHT)
 		card.BackgroundColor3 = Color3.fromRGB(255, 236, 200)
 		UiKit.corner(card, 16)
 		UiKit.stroke(card, 2)
-		card.Parent = panel
+		card.Parent = list
 
 		local icon = UiKit.label(card, look.icon)
 		icon.Position = UDim2.fromOffset(12, 20)
@@ -246,8 +308,11 @@ function PotionMenu.start()
 			if running then
 				timer.text.Text = `{look.effect}  {clockText(left)}`
 			end
+			-- Coins/luck/speed while the Mega potion runs: say where the effect comes from.
+			local via = if running then nil else coveredBy(look.potionId, timeLeft)
 			cards[look.potionId].left.Text = if running
 				then Lang.t("potions.running", { time = clockText(left) })
+				elseif via then Lang.t("potions.coveredBy", { potion = Lang.name(GameConfig.potions[via]) })
 				else ""
 		end
 		-- Hidden when empty, so the order card moves up in the right column.

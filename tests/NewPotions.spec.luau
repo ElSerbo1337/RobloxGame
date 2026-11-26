@@ -17,10 +17,20 @@ local function potionConfig(features: { [string]: boolean }?): any
 	config.potions = table.clone(TestConfig.potions)
 	config.potions.Luck = table.clone(TestConfig.potions.Luck)
 	config.potions.Luck.shinyChanceMultiplier = 2
-	config.potions.Shiny =
-		{ displayName = "Shiny-Trank", price = 40, durationSeconds = 600, shinyChanceMultiplier = 2, feature = "newPotions" }
-	config.potions.Gold =
-		{ displayName = "Gold-Trank", price = 40, durationSeconds = 600, goldenChanceMultiplier = 2, feature = "newPotions" }
+	config.potions.Shiny = {
+		displayName = "Shiny-Trank",
+		price = 40,
+		durationSeconds = 600,
+		shinyChanceMultiplier = 2,
+		feature = "newPotions",
+	}
+	config.potions.Gold = {
+		displayName = "Gold-Trank",
+		price = 40,
+		durationSeconds = 600,
+		goldenChanceMultiplier = 2,
+		feature = "newPotions",
+	}
 	config.potions.Mega = {
 		displayName = "Mega-Trank",
 		price = 120,

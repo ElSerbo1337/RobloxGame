@@ -2025,3 +2025,20 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Handy: Menü füllt den Bildschirm, Karten scrollen, ◀ ▶ und Reiter gut zu treffen; Englisch: „Index“, „🍕 Toppings“, „World 1: Pizzeria Garden“, „Index bonus: +4% coins“, „✨ Golden“.
 - [ ] Rejoin → alles bleibt (auch Belag-Index), kein roter Punkt direkt nach dem Beitreten.
 - [ ] Schalter: `petIndex = false` → nur Reiter „Beläge“, Bonus 0 (Verkauf wie ohne Index), Admin-Aktion weg; `toppingIndex = false` → nur Reiter „Pets“; beide aus → keine Kachel. Danach wieder `true`.
+
+## MEGA UPDATE – #96 Neue Tränke (Shiny, Gold, Mega)
+
+Vorher: `lune run test` → alle grün (u. a. `tests/NewPotions.spec.luau`).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Gem-Tresen in jedem Shop: unter den Tränken jetzt 6 Karten – Münz-, Glücks-, Speed-, **Shiny-Trank (40 Gems)**, **Gold-Trank (40)**, **Mega-Trank (120)** mit Beschreibung und „10 Min“. Liste scrollt bis unten. Kaufen mit Admin **Gems geben** → Toast „… gekauft“.
+- [ ] Kachel „Tränke“ → 6 Karten, Liste scrollt (auch auf dem Handy), Anzahl „Im Inventar“. Admin **Trank geben** Mega/Shiny/Gold geht ebenfalls.
+- [ ] **Mega trinken** → unten rechts ein Timer „🧪 Mega 💰🍀⚡ 10:00“ (kein Extra-Timer für Münzen/Glück/Speed). Im Trank-Menü bei Münz-, Glücks- und Speed-Trank grün „Aktiv durch Mega-Trank“. Pizza verkaufen → doppelte Münzen; schneller laufen; Ei-Vorschau grün mit „Glück“-Titel.
+- [ ] Mega + Münz-Trank zusammen → weiterhin nur ×2 Münzen (Effekt zählt einmal), Münz-Karte zeigt „Läuft: …“.
+- [ ] **Shiny trinken** → Timer „✨ Shiny ×2“. Viele Eier öffnen (oder Admin „Shiny-Chance testen“ aus lassen) – Chance laut Regel 1 : 100, mit Glück/Mega 1 : 50.
+- [ ] **Gold trinken** → Timer „🌟 Gold ×2“, sichtbar mehr glitzernde Beläge (Gold-Chance 2 %; mit Gold-Glück 5: 4 %).
+- [ ] Rebirth (Admin **Münzen geben**) → alle laufenden Tränke laufen mit ihrer Restzeit weiter.
+- [ ] Geschenke/Glücksrad/Lieferung: zufällige Trank-Belohnungen können jetzt auch Shiny/Gold sein, **nie Mega** (Mega nur als feste Belohnung, z. B. 7-Tage-Quest-Serie).
+- [ ] Englisch: „Shiny Potion“, „Gold Potion“, „Mega Potion“, „Active via Mega Potion“.
+- [ ] Schalter `newPotions = false` → im Shop und Trank-Menü nur die alten 3 Tränke, keine Zufallsbelohnung Shiny/Gold, Quest-Serie gibt statt Mega einen zufälligen Trank. Danach wieder `true`.

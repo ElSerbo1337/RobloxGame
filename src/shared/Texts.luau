@@ -386,6 +386,14 @@ Texts.strings = {
 	["potions.effectCoins"] = { de = "Münzen ×2", en = "Coins ×2" },
 	["potions.effectLuck"] = { de = "Glück", en = "Luck" },
 	["potions.effectSpeed"] = { de = "Speed", en = "Speed" },
+	["potions.effectShiny"] = { de = "Shiny ×2", en = "Shiny ×2" },
+	["potions.effectGold"] = { de = "Gold ×2", en = "Gold ×2" },
+	["potions.effectMega"] = { de = "Mega 💰🍀⚡", en = "Mega 💰🍀⚡" },
+	["potions.coveredBy"] = { de = "Aktiv durch {potion}", en = "Active via {potion}" },
+	["potions.FeatureOff"] = {
+		de = "Dieser Trank ist gerade nicht verfügbar.",
+		en = "This potion is not available right now.",
+	},
 	["potions.drunk"] = { de = "{potion} getrunken!", en = "{potion} drunk!" },
 	["potions.expired"] = { de = "{potion} ist abgelaufen.", en = "{potion} has run out." },
 	["potions.NoPotion"] = {

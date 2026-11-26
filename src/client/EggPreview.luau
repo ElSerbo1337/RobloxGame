@@ -166,7 +166,8 @@ local function buildPanel(playerGui: Instance): Panel
 		local activePotions = if ok and type(active) == "table" then active else {}
 		-- eggPreview only reads the running potions from the state.
 		local lucky = rules.eggPreview(current, { activePotions = activePotions } :: any)
-		local hasLuck = (activePotions.Luck or 0) > 0
+		-- The luck effect also runs with the Mega potion (#96).
+		local hasLuck = rules.isPotionEffectActive({ activePotions = activePotions } :: any, "Luck")
 		title.Text = if hasLuck then Lang.t("egg.luck", { egg = Lang.name(egg) }) else Lang.name(egg)
 		local entries = table.clone(lucky.pets)
 		if lucky.secret then
@@ -183,7 +184,8 @@ local function buildPanel(playerGui: Instance): Panel
 	-- Only re-render when luck switches on or off (the attribute also changes while it counts down).
 	local hadLuck: boolean? = nil
 	player:GetAttributeChangedSignal("ActivePotions"):Connect(function()
-		local hasLuck = string.find(tostring(player:GetAttribute("ActivePotions")), '"Luck"') ~= nil
+		local json = tostring(player:GetAttribute("ActivePotions"))
+		local hasLuck = string.find(json, '"Luck"') ~= nil or string.find(json, '"Mega"') ~= nil
 		if hasLuck ~= hadLuck then
 			hadLuck = hasLuck
 			updateLuck()
