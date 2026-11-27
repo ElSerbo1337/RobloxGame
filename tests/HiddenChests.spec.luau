@@ -82,7 +82,7 @@ describe("hidden chests (#100)", function()
 
 	it("has a chest spot and a skipDays day field for every chest world of the real config", function()
 		local chests = GameConfig.hiddenChests
-		expect(chests.gems).toBe(10)
+		expect(chests.gems).toBe(5) -- #108: 5 per chest, up to 25 gems a day
 		expect(chests.sparkleDistance).toBe(30)
 		local real = GameRules.new(GameConfig)
 		local expected = { "Beach", "CandyLand", "JungleTemple", "DinoAge", "PizzaParadise" }

@@ -196,71 +196,73 @@ local GameConfig = {
 
 	-- Topping id -> display name and sell value in coins.
 	toppings = {
-		Salami = { displayName = "Salami", displayNameEn = "Salami", value = 1 },
-		Mushroom = { displayName = "Pilz", displayNameEn = "Mushroom", value = 2 },
-		Mozzarella = { displayName = "Mozzarella", displayNameEn = "Mozzarella", value = 5 },
-		-- World 2 (Bauernhof): about 4x world 1.
+		Salami = { displayName = "Salami", displayNameEn = "Salami", value = 2 },
+		Mushroom = { displayName = "Pilz", displayNameEn = "Mushroom", value = 4 },
+		Mozzarella = { displayName = "Mozzarella", displayNameEn = "Mozzarella", value = 10 },
+		-- Values per world (#108): set so a rebirth run takes ~45-90 min (docs/balancing.md);
+		-- the step between two worlds follows the rebirths planned between them (x1.5-x20).
+		-- World 1 values were doubled for a quick start (#108).
+		-- World 2 (Bauernhof).
 		Onion = { displayName = "Zwiebel", displayNameEn = "Onion", value = 4 },
 		BellPepper = { displayName = "Paprika", displayNameEn = "Bell Pepper", value = 8 },
 		Corn = { displayName = "Mais", displayNameEn = "Corn", value = 12 },
 		Ham = { displayName = "Schinken", displayNameEn = "Ham", value = 20 },
-		-- World 3 (Strand): about 4x world 2.
+		-- World 3 (Strand).
 		Tuna = { displayName = "Thunfisch", displayNameEn = "Tuna", value = 25 },
 		Shrimp = { displayName = "Garnele", displayNameEn = "Shrimp", value = 45 },
 		Pineapple = { displayName = "Ananas", displayNameEn = "Pineapple", value = 65 },
-		-- World 4 (Eisberge): about 4x world 3.
+		-- World 4 (Eisberge).
 		FrozenPeas = { displayName = "Gefrorene Erbsen", displayNameEn = "Frozen Peas", value = 100 },
 		Salmon = { displayName = "Lachs", displayNameEn = "Salmon", value = 180 },
 		IcebergLettuce = { displayName = "Eisberg-Salat", displayNameEn = "Iceberg Lettuce", value = 260 },
-		-- World 5 (Vulkan): about 4.8x world 4 (the pizza stays at 12 until shop 3).
-		Chili = { displayName = "Chili", displayNameEn = "Chili", value = 500 },
-		Pepperoni = { displayName = "Peperoni", displayNameEn = "Hot Pepper", value = 850 },
-		Jalapeno = { displayName = "Jalapeño", displayNameEn = "Jalapeño", value = 1250 },
-		-- World 6 (Süßigkeitenland): about 4.8x world 5.
-		ChocolateChips = { displayName = "Schoko-Stücke", displayNameEn = "Choco Chips", value = 2400 },
-		GummyBears = { displayName = "Gummibärchen", displayNameEn = "Gummy Bears", value = 4100 },
-		Marshmallow = { displayName = "Marshmallow", displayNameEn = "Marshmallow", value = 6000 },
-		-- World 7 (Weltraum): about 4.8x world 6.
-		MoonCheese = { displayName = "Mond-Käse", displayNameEn = "Moon Cheese", value = 11500 },
-		StarOlives = { displayName = "Sternen-Oliven", displayNameEn = "Star Olives", value = 20000 },
-		AlienMushroom = { displayName = "Alien-Pilz", displayNameEn = "Alien Mushroom", value = 29000 },
-		-- World 8 (Atlantis, #82): about 4.8x world 7. Provisional, tuned in #108.
-		Seaweed = { displayName = "Seetang", displayNameEn = "Seaweed", value = 55000 },
-		PearlCapers = { displayName = "Perlen-Kapern", displayNameEn = "Pearl Capers", value = 96000 },
-		SquidRings = { displayName = "Tintenfisch-Ringe", displayNameEn = "Squid Rings", value = 140000 },
-		-- World 9 (Jungle Temple, #83): about 4.8x world 8. Provisional, tuned in #108.
-		Mango = { displayName = "Mango", displayNameEn = "Mango", value = 265000 },
-		CocoaBean = { displayName = "Kakaobohne", displayNameEn = "Cocoa Bean", value = 460000 },
-		DragonFruit = { displayName = "Drachenfrucht", displayNameEn = "Dragon Fruit", value = 670000 },
-		-- World 10 (Desert Pyramids, #84): about 4.8x per world after Atlantis (world 9 in
-		-- between). Provisional, tuned in #108.
-		Date = { displayName = "Dattel", displayNameEn = "Date", value = 1270000 },
-		PricklyPear = { displayName = "Kaktusfeige", displayNameEn = "Prickly Pear", value = 2200000 },
-		DesertTruffle = { displayName = "Wüsten-Trüffel", displayNameEn = "Desert Truffle", value = 3250000 },
-		-- World 11 (Haunted Castle, #85): about 4.8x world 10 (#84). Provisional, tuned in #108.
-		Pumpkin = { displayName = "Kürbis", displayNameEn = "Pumpkin", value = 6100000 },
-		GhostMushroom = { displayName = "Geister-Pilz", displayNameEn = "Ghost Mushroom", value = 10600000 },
+		-- World 5 (Vulkan; the pizza stays at 12 until shop 3).
+		Chili = { displayName = "Chili", displayNameEn = "Chili", value = 260 },
+		Pepperoni = { displayName = "Peperoni", displayNameEn = "Hot Pepper", value = 440 },
+		Jalapeno = { displayName = "Jalapeño", displayNameEn = "Jalapeño", value = 650 },
+		-- World 6 (Süßigkeitenland).
+		ChocolateChips = { displayName = "Schoko-Stücke", displayNameEn = "Choco Chips", value = 420 },
+		GummyBears = { displayName = "Gummibärchen", displayNameEn = "Gummy Bears", value = 710 },
+		Marshmallow = { displayName = "Marshmallow", displayNameEn = "Marshmallow", value = 1000 },
+		-- World 7 (Weltraum).
+		MoonCheese = { displayName = "Mond-Käse", displayNameEn = "Moon Cheese", value = 620 },
+		StarOlives = { displayName = "Sternen-Oliven", displayNameEn = "Star Olives", value = 1100 },
+		AlienMushroom = { displayName = "Alien-Pilz", displayNameEn = "Alien Mushroom", value = 1600 },
+		-- World 8 (Atlantis, #82).
+		Seaweed = { displayName = "Seetang", displayNameEn = "Seaweed", value = 1300 },
+		PearlCapers = { displayName = "Perlen-Kapern", displayNameEn = "Pearl Capers", value = 2200 },
+		SquidRings = { displayName = "Tintenfisch-Ringe", displayNameEn = "Squid Rings", value = 3200 },
+		-- World 9 (Jungle Temple, #83).
+		Mango = { displayName = "Mango", displayNameEn = "Mango", value = 4200 },
+		CocoaBean = { displayName = "Kakaobohne", displayNameEn = "Cocoa Bean", value = 7300 },
+		DragonFruit = { displayName = "Drachenfrucht", displayNameEn = "Dragon Fruit", value = 11000 },
+		-- World 10 (Desert Pyramids, #84).
+		Date = { displayName = "Dattel", displayNameEn = "Date", value = 32000 },
+		PricklyPear = { displayName = "Kaktusfeige", displayNameEn = "Prickly Pear", value = 56000 },
+		DesertTruffle = { displayName = "Wüsten-Trüffel", displayNameEn = "Desert Truffle", value = 82000 },
+		-- World 11 (Haunted Castle, #85).
+		Pumpkin = { displayName = "Kürbis", displayNameEn = "Pumpkin", value = 260000 },
+		GhostMushroom = { displayName = "Geister-Pilz", displayNameEn = "Ghost Mushroom", value = 470000 },
 		GummyBatWings = {
 			displayName = "Gummi-Fledermausflügel",
 			displayNameEn = "Gummy Bat Wings",
-			value = 15400000,
+			value = 690000,
 		},
-		-- World 12 (Dino Age, #86): about 4.8x world 11 (#85). Provisional, tuned in #108.
-		FernSpinach = { displayName = "Farn-Spinat", displayNameEn = "Fern Spinach", value = 29300000 },
-		PrehistoricEgg = { displayName = "Urzeit-Ei", displayNameEn = "Prehistoric Egg", value = 50900000 },
-		AmberHoney = { displayName = "Bernstein-Honig", displayNameEn = "Amber Honey", value = 73900000 },
-		-- World 13 (Crystal Cave, #87): about 4.8x world 12 (#86). Provisional, tuned in #108.
-		CrystalSalt = { displayName = "Kristall-Salz", displayNameEn = "Crystal Salt", value = 141000000 },
-		GlowMushroom = { displayName = "Leucht-Pilz", displayNameEn = "Glow Mushroom", value = 244000000 },
-		AmethystOlive = { displayName = "Amethyst-Olive", displayNameEn = "Amethyst Olive", value = 355000000 },
-		-- World 14 (Cloud City, #88): about 4.8x world 13 (#87). Provisional, tuned in #108.
-		CloudMozzarella = { displayName = "Wolken-Mozzarella", displayNameEn = "Cloud Mozzarella", value = 677000000 },
-		SunflowerSeeds = { displayName = "Sonnenblumenkerne", displayNameEn = "Sunflower Seeds", value = 1170000000 },
-		Starfruit = { displayName = "Sternfrucht", displayNameEn = "Starfruit", value = 1700000000 },
-		-- World 15 (Pizza Paradise, #89): about 4.8x world 14 (#88). Provisional, tuned in #108.
-		GoldSalami = { displayName = "Gold-Salami", displayNameEn = "Gold Salami", value = 3250000000 },
-		DiamondCheese = { displayName = "Diamant-Käse", displayNameEn = "Diamond Cheese", value = 5620000000 },
-		RainbowBasil = { displayName = "Regenbogen-Basilikum", displayNameEn = "Rainbow Basil", value = 8160000000 },
+		-- World 12 (Dino Age, #86).
+		FernSpinach = { displayName = "Farn-Spinat", displayNameEn = "Fern Spinach", value = 1400000 },
+		PrehistoricEgg = { displayName = "Urzeit-Ei", displayNameEn = "Prehistoric Egg", value = 2500000 },
+		AmberHoney = { displayName = "Bernstein-Honig", displayNameEn = "Amber Honey", value = 3700000 },
+		-- World 13 (Crystal Cave, #87).
+		CrystalSalt = { displayName = "Kristall-Salz", displayNameEn = "Crystal Salt", value = 6600000 },
+		GlowMushroom = { displayName = "Leucht-Pilz", displayNameEn = "Glow Mushroom", value = 12000000 },
+		AmethystOlive = { displayName = "Amethyst-Olive", displayNameEn = "Amethyst Olive", value = 17000000 },
+		-- World 14 (Cloud City, #88).
+		CloudMozzarella = { displayName = "Wolken-Mozzarella", displayNameEn = "Cloud Mozzarella", value = 120000000 },
+		SunflowerSeeds = { displayName = "Sonnenblumenkerne", displayNameEn = "Sunflower Seeds", value = 200000000 },
+		Starfruit = { displayName = "Sternfrucht", displayNameEn = "Starfruit", value = 290000000 },
+		-- World 15 (Pizza Paradise, #89).
+		GoldSalami = { displayName = "Gold-Salami", displayNameEn = "Gold Salami", value = 420000000 },
+		DiamondCheese = { displayName = "Diamant-Käse", displayNameEn = "Diamond Cheese", value = 730000000 },
+		RainbowBasil = { displayName = "Regenbogen-Basilikum", displayNameEn = "Rainbow Basil", value = 1100000000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -275,7 +277,7 @@ local GameConfig = {
 			descriptionEn = "More toppings per pizza",
 			levels = {
 				-- Shop 1 (world 1)
-				{ price = 12, value = 3 }, -- first upgrade after 3-4 rounds (#23)
+				{ price = 15, value = 3 }, -- first upgrade after ~3 rounds (#23, #108: world 1 values doubled)
 				{ price = 26, value = 4 },
 				{ price = 48, value = 6 },
 				-- Shop 2 (world 4)
@@ -283,8 +285,8 @@ local GameConfig = {
 				{ price = 4500, value = 10 },
 				{ price = 11000, value = 12 },
 				-- Shop 3 (world 7): bought on the way to the first rebirth (below its price).
-				{ price = 16000000, value = 15 },
-				{ price = 40000000, value = 20 },
+				{ price = 860000, value = 15 },
+				{ price = 2200000, value = 20 },
 			},
 		},
 		CollectRange = {
@@ -300,8 +302,8 @@ local GameConfig = {
 				{ price = 7300, value = 30 },
 				{ price = 15000, value = 35 },
 				-- Shop 3 (world 7)
-				{ price = 12000000, value = 40 },
-				{ price = 28000000, value = 45 },
+				{ price = 650000, value = 40 },
+				{ price = 1500000, value = 45 },
 			},
 		},
 		Magnet = {
@@ -314,8 +316,8 @@ local GameConfig = {
 				{ price = 8700, value = 18 },
 				{ price = 20000, value = 25 },
 				-- Shop 3 (world 7)
-				{ price = 14000000, value = 32 },
-				{ price = 34000000, value = 40 },
+				{ price = 750000, value = 32 },
+				{ price = 1800000, value = 40 },
 			},
 		},
 
@@ -328,13 +330,17 @@ local GameConfig = {
 			currency = "Gems",
 			levels = {
 				-- Shop 1 (world 1)
-				{ price = 50, value = 4 },
-				{ price = 150, value = 5 },
+				{ price = 40, value = 4 },
+				{ price = 120, value = 5 },
 				-- Shop 2 (world 4)
-				{ price = 400, value = 6 },
-				{ price = 1000, value = 7 },
+				{ price = 250, value = 6 },
+				{ price = 450, value = 7 },
 				-- Shop 3 (world 7)
-				{ price = 2500, value = 8 },
+				{ price = 700, value = 8 },
+				-- New levels (#108): world 10, 12 and 15 shops.
+				{ price = 750, value = 9 },
+				{ price = 950, value = 10 },
+				{ price = 1200, value = 11 },
 			},
 		},
 		InventorySpace = {
@@ -344,11 +350,16 @@ local GameConfig = {
 			descriptionEn = "More room for pets",
 			currency = "Gems",
 			levels = {
-				{ price = 30, value = 75 },
-				{ price = 100, value = 100 },
-				{ price = 300, value = 150 },
-				{ price = 800, value = 200 },
-				{ price = 2000, value = 300 },
+				-- Base inventory +50 % (#108): every level 1.5x as before.
+				{ price = 30, value = 110 },
+				{ price = 100, value = 150 },
+				{ price = 300, value = 225 },
+				{ price = 800, value = 300 },
+				{ price = 1500, value = 450 },
+				-- New levels (#108): world 10, 12 and 15 shops.
+				{ price = 2200, value = 600 },
+				{ price = 3000, value = 750 },
+				{ price = 4000, value = 900 },
 			},
 		},
 		WalkSpeed = {
@@ -404,8 +415,8 @@ local GameConfig = {
 	},
 
 	inventory = {
-		-- Pets a new player can own. A full inventory blocks opening eggs.
-		start = 50,
+		-- Pets a new player can own. A full inventory blocks opening eggs. +50 % in #108.
+		start = 75,
 	},
 
 	movement = {
@@ -413,12 +424,14 @@ local GameConfig = {
 		walkSpeed = 16,
 	},
 
-	-- Second currency. Target: about 20-40 gems per hour.
+	-- Second currency. Target (#72, #108): about 20-40 gems per hour from regular sources
+	-- (gem toppings, deliveries, play time gifts, calendar), plus quests (~45 a day), wheel
+	-- and hidden chests once a day. Measured by tools/BalanceSim (docs/balancing.md).
 	gems = {
 		-- Id of the gem topping in a ToppingField (not a config.toppings entry: it never goes on the pizza).
 		toppingId = "Gem",
 		-- Chance that a spawning topping is a gem topping instead, and how many gems it gives.
-		toppingChance = 1 / 150,
+		toppingChance = 1 / 600,
 		toppingMin = 1,
 		toppingMax = 3,
 	},
@@ -497,13 +510,14 @@ local GameConfig = {
 	-- server accepts an opening within `reach` studs; the chest sparkles for players within
 	-- `sparkleDistance` studs while it is still closed for them today.
 	hiddenChests = {
-		gems = 10,
+		-- #108: 5 (was 10), so all five chests add at most 25 gems a day.
+		gems = 5,
 		reach = 12,
 		sparkleDistance = 30,
 		worlds = { "Beach", "CandyLand", "JungleTemple", "DinoAge", "PizzaParadise" },
 	},
 	-- Average per spin: ~5.5 gems + 0.4 potions + ~3 minutes of income, so a paid spin
-	-- (25 gems) is a gamble, the two free spins add ~11 gems a day.
+	-- (25 gems) is a gamble, the two free spins add ~11 gems a day (kept in #108).
 	luckyWheel = {
 		spinPrice = 25,
 		freeSpinsPerDay = 1,
@@ -531,15 +545,16 @@ local GameConfig = {
 	-- Play time gifts: reached after `minutes` of play time on a German day (the day's
 	-- play time starts over at midnight German time), each claimable once per day.
 	-- Fixed rewards, independent of progress: Gems / Potion (`amount`; a potion is a random
-	-- one, like delivery orders). No coins. Gifts give 26 gems a day, the calendar about 12
-	-- a day on average: together about 38 for a 60 minute day (20-40 gems/hour target).
+	-- one, like delivery orders). No coins. Gifts give 16 gems a day, the 30-day calendar
+	-- about 8 a day on average (#108): with gem toppings and deliveries ~39 gems an hour
+	-- for a 60 minute day (20-40 gems/hour target, docs/balancing.md).
 	gifts = {
 		{ minutes = 5, rewards = { { kind = "Gems", amount = 3 } } },
-		{ minutes = 10, rewards = { { kind = "Gems", amount = 5 } } },
+		{ minutes = 10, rewards = { { kind = "Gems", amount = 4 } } },
 		{ minutes = 15, rewards = { { kind = "Potion", amount = 1 } } },
 		{ minutes = 25, rewards = { { kind = "Potion", amount = 1 } } },
-		{ minutes = 40, rewards = { { kind = "Gems", amount = 8 } } },
-		{ minutes = 60, rewards = { { kind = "Gems", amount = 10 }, { kind = "Potion", amount = 1 } } },
+		{ minutes = 40, rewards = { { kind = "Gems", amount = 4 } } },
+		{ minutes = 60, rewards = { { kind = "Gems", amount = 5 }, { kind = "Potion", amount = 1 } } },
 	},
 
 	-- Login calendar: one reward per German day (new day at midnight German time). Claimed
@@ -559,44 +574,43 @@ local GameConfig = {
 	-- 30-day login calendar (#101, feature loginCalendar30; replaces loginCalendar while on,
 	-- same series rules: a missed day starts over at day 1, after day 30 back to day 1).
 	-- Big reward days (`big`, highlighted in the menu): 7, 14 and 30; day 30 gives the
-	-- exclusive calendar pet (CalendarFox, in no egg). 384 gems in 30 days = ~12.8 a day
-	-- (the 7-day calendar: ~12.1), so gifts + calendar stay at ~39 for a 60 minute day.
-	-- Preliminary, tuned in the balancing ticket (#108).
+	-- exclusive calendar pet (CalendarFox, in no egg). #108: 250 gems in 30 days = ~8.3 a day
+	-- (was 384), so the regular gem sources stay below 40 an hour for a 60 minute day.
 	loginCalendar30 = {
-		{ rewards = { { kind = "Gems", amount = 5 } } }, -- 1
-		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 2
+		{ rewards = { { kind = "Gems", amount = 3 } } }, -- 1
+		{ rewards = { { kind = "Gems", amount = 6 } } }, -- 2
 		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 3
 		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 4
-		{ rewards = { { kind = "Gems", amount = 15 } } }, -- 5
+		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 5
 		{ rewards = { { kind = "Potion", amount = 2 } } }, -- 6
-		{ big = true, rewards = { { kind = "Gems", amount = 50 }, { kind = "Potion", amount = 3 } } }, -- 7
-		{ rewards = { { kind = "Gems", amount = 8 } } }, -- 8
+		{ big = true, rewards = { { kind = "Gems", amount = 35 }, { kind = "Potion", amount = 3 } } }, -- 7
+		{ rewards = { { kind = "Gems", amount = 5 } } }, -- 8
 		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 9
-		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 10
+		{ rewards = { { kind = "Gems", amount = 6 } } }, -- 10
 		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 11
-		{ rewards = { { kind = "Gems", amount = 12 } } }, -- 12
+		{ rewards = { { kind = "Gems", amount = 8 } } }, -- 12
 		{ rewards = { { kind = "Potion", amount = 2 } } }, -- 13
-		{ big = true, rewards = { { kind = "Gems", amount = 60 }, { kind = "Potion", amount = 3 } } }, -- 14
-		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 15
+		{ big = true, rewards = { { kind = "Gems", amount = 40 }, { kind = "Potion", amount = 3 } } }, -- 14
+		{ rewards = { { kind = "Gems", amount = 6 } } }, -- 15
 		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 16
-		{ rewards = { { kind = "Gems", amount = 12 } } }, -- 17
+		{ rewards = { { kind = "Gems", amount = 8 } } }, -- 17
 		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 18
-		{ rewards = { { kind = "Gems", amount = 15 } } }, -- 19
+		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 19
 		{ rewards = { { kind = "Potion", amount = 2 } } }, -- 20
-		{ rewards = { { kind = "Gems", amount = 20 } } }, -- 21
-		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 22
+		{ rewards = { { kind = "Gems", amount = 13 } } }, -- 21
+		{ rewards = { { kind = "Gems", amount = 6 } } }, -- 22
 		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 23
-		{ rewards = { { kind = "Gems", amount = 12 } } }, -- 24
+		{ rewards = { { kind = "Gems", amount = 8 } } }, -- 24
 		{ rewards = { { kind = "Potion", amount = 1 } } }, -- 25
-		{ rewards = { { kind = "Gems", amount = 15 } } }, -- 26
+		{ rewards = { { kind = "Gems", amount = 10 } } }, -- 26
 		{ rewards = { { kind = "Potion", amount = 2 } } }, -- 27
-		{ rewards = { { kind = "Gems", amount = 25 } } }, -- 28
-		{ rewards = { { kind = "Gems", amount = 15 }, { kind = "Potion", amount = 2 } } }, -- 29
+		{ rewards = { { kind = "Gems", amount = 16 } } }, -- 28
+		{ rewards = { { kind = "Gems", amount = 10 }, { kind = "Potion", amount = 2 } } }, -- 29
 		{
 			big = true,
 			rewards = {
 				{ kind = "Pet", amount = 1, petId = "CalendarFox" },
-				{ kind = "Gems", amount = 80 },
+				{ kind = "Gems", amount = 50 },
 				{ kind = "Potion", amount = 3 },
 			},
 		}, -- 30
@@ -710,14 +724,14 @@ local GameConfig = {
 			-- Multiplies the walk speed (including the WalkSpeed upgrade).
 			walkSpeedMultiplier = 1.5,
 		},
-		-- New potions (#96), behind features.newPotions (`feature`). Prices are provisional
-		-- (balancing #108).
+		-- New potions (#96), behind features.newPotions (`feature`). Prices (#108): Shiny and
+		-- Gold 35, Mega 90 (a bit cheaper than coin + luck + speed = 70 + the convenience).
 		Shiny = {
 			displayName = "Shiny-Trank",
 			displayNameEn = "Shiny Potion",
 			description = "Doppelte Shiny-Chance beim Schlüpfen",
 			descriptionEn = "Double shiny chance when hatching",
-			price = 40,
+			price = 35,
 			durationSeconds = 600,
 			feature = "newPotions",
 			-- Shiny chance (#80) x2 while it runs; stacks with the luck potion (1 in 50).
@@ -728,7 +742,7 @@ local GameConfig = {
 			displayNameEn = "Gold Potion",
 			description = "Doppelte Chance auf goldene Beläge",
 			descriptionEn = "Double chance of golden toppings",
-			price = 40,
+			price = 35,
 			durationSeconds = 600,
 			feature = "newPotions",
 			-- Golden topping chance (#94) x2 while it runs, on top of Gold Luck.
@@ -739,7 +753,7 @@ local GameConfig = {
 			displayNameEn = "Mega Potion",
 			description = "Münz-, Glücks- und Speed-Trank in einem",
 			descriptionEn = "Coin, luck and speed potion in one",
-			price = 120,
+			price = 90,
 			durationSeconds = 600,
 			feature = "newPotions",
 			-- Works like these potions at once (each effect counts once, so Mega + coin
@@ -772,25 +786,27 @@ local GameConfig = {
 		gemsMax = 10,
 		-- Potion reward (a random potion): 1, or 2 when delivered with at least this share of time left.
 		fastPotionShare = 0.5,
-		-- Chance of each reward kind (relative weights). Gems kept low for the 20-40 gems/hour target.
+		-- Chance of each reward kind (relative weights). Gems kept low for the 20-40 gems/hour
+		-- target (#108: gems 20 -> 7, potions 15 -> 20).
 		rewardWeights = {
-			{ reward = "Coins", weight = 65 },
-			{ reward = "Gems", weight = 20 },
-			{ reward = "Potion", weight = 15 },
+			{ reward = "Coins", weight = 73 },
+			{ reward = "Gems", weight = 7 },
+			{ reward = "Potion", weight = 20 },
 		},
 	},
 
 	-- Rebirth: pay coins to start over (coins, coin upgrades and worlds are reset) with a
 	-- permanently higher coin multiplier for selling and delivery coins (not gems).
+	-- Balancing #108 (docs/balancing.md): the price doubles with every rebirth, a world k
+	-- costs about 0.8x the rebirth price of the run it is planned for (world 5: 0.25x), so
+	-- a run takes ~45-90 min and world 15 comes after ~30 rebirths and ~40 h of play.
 	rebirth = {
-		-- Price of the first rebirth: about 28 min of play in world 4, the last world before
-		-- the first rebirth tier (#77; provisional, tuned for 15 worlds in #108).
-		startPrice = 150000,
-		-- Each further rebirth costs this many times the one before: the second run up to
-		-- the next rebirth (worlds 1-6) takes about 47 min (#77, provisional until #108).
-		priceFactor = 60,
-		-- Coin multiplier = 1 + multiplierPerRebirth x rebirths (1 rebirth = x1,5, 2 = x2, ...).
-		multiplierPerRebirth = 0.5,
+		-- Price of the first rebirth: about 50 min of play in world 4 (first run ~80 min).
+		startPrice = 300000,
+		-- Each further rebirth costs this many times the one before.
+		priceFactor = 2,
+		-- Coin multiplier = 1 + multiplierPerRebirth x rebirths (1 rebirth = x1.25, 4 = x2, ...).
+		multiplierPerRebirth = 0.25,
 	},
 
 	-- New-player tutorial: collect toppings -> sell -> buy an upgrade -> open an egg.
@@ -854,7 +870,7 @@ local GameConfig = {
 	-- Pet index (#95, switch features.petIndex): finding every egg pet of a world (Secret
 	-- not needed; deleted, auto-deleted and merged pets count) gives a permanent coin
 	-- bonus of `worldBonus` per complete world, multiplied into the coin multiplier.
-	-- Preliminary value, tuned in the balancing ticket (#108). Gold/Rainbow/Shiny stars
+	-- +4 % per world (#108; spec: 3-5 %), +60 % with all 15 worlds. Gold/Rainbow/Shiny stars
 	-- and the topping index (features.toppingIndex) give no reward.
 	petIndex = { worldBonus = 0.04 },
 
@@ -871,416 +887,417 @@ local GameConfig = {
 	},
 
 	-- Pet id -> display name, rarity and coin bonus (0.1 = +10 % sell value; bonuses add up).
-	-- Flat curve (#57): the best pet of a world (both eggs) gives +75/110/160/230/320/400/500 %
-	-- in worlds 1-7; the other pets of a world are scaled in the same proportion.
+	-- Pet curve (#108, replaces the flat curve of #57): the best pet of a world (both eggs)
+	-- gives +55 % in world 1 and x1.25 per world up to +1250 % in world 15; the other pets of
+	-- a world are scaled in the same proportion, Secret pets stay at 2x the world's best.
 	pets = {
 		DoughHamster = {
 			displayName = "Teig-Hamster",
 			displayNameEn = "Dough Hamster",
 			rarity = "Common",
-			bonus = 0.03,
+			bonus = 0.02,
 		},
 		BasilBunny = {
 			displayName = "Basilikum-Hase",
 			displayNameEn = "Basil Bunny",
 			rarity = "Uncommon",
-			bonus = 0.05,
+			bonus = 0.04,
 		},
-		TomatoCat = { displayName = "Tomaten-Katze", displayNameEn = "Tomato Cat", rarity = "Rare", bonus = 0.08 },
-		CheeseMouse = { displayName = "Käse-Maus", displayNameEn = "Cheese Mouse", rarity = "Epic", bonus = 0.13 },
-		OliveOwl = { displayName = "Oliven-Eule", displayNameEn = "Olive Owl", rarity = "Legendary", bonus = 0.25 },
-		PizzaDragon = { displayName = "Pizza-Drache", displayNameEn = "Pizza Dragon", rarity = "Mythic", bonus = 0.5 },
+		TomatoCat = { displayName = "Tomaten-Katze", displayNameEn = "Tomato Cat", rarity = "Rare", bonus = 0.06 },
+		CheeseMouse = { displayName = "Käse-Maus", displayNameEn = "Cheese Mouse", rarity = "Epic", bonus = 0.1 },
+		OliveOwl = { displayName = "Oliven-Eule", displayNameEn = "Olive Owl", rarity = "Legendary", bonus = 0.18 },
+		PizzaDragon = { displayName = "Pizza-Drache", displayNameEn = "Pizza Dragon", rarity = "Mythic", bonus = 0.37 },
 		-- World 2 (Bauernhof)
-		FarmChick = { displayName = "Hof-Küken", displayNameEn = "Farm Chick", rarity = "Common", bonus = 0.05 },
-		CornPiglet = { displayName = "Mais-Ferkel", displayNameEn = "Corn Piglet", rarity = "Uncommon", bonus = 0.07 },
-		PepperGoat = { displayName = "Paprika-Ziege", displayNameEn = "Pepper Goat", rarity = "Rare", bonus = 0.12 },
-		OnionCow = { displayName = "Zwiebel-Kuh", displayNameEn = "Onion Cow", rarity = "Epic", bonus = 0.2 },
-		HayHorse = { displayName = "Heu-Pferd", displayNameEn = "Hay Horse", rarity = "Legendary", bonus = 0.37 },
+		FarmChick = { displayName = "Hof-Küken", displayNameEn = "Farm Chick", rarity = "Common", bonus = 0.03 },
+		CornPiglet = { displayName = "Mais-Ferkel", displayNameEn = "Corn Piglet", rarity = "Uncommon", bonus = 0.04 },
+		PepperGoat = { displayName = "Paprika-Ziege", displayNameEn = "Pepper Goat", rarity = "Rare", bonus = 0.08 },
+		OnionCow = { displayName = "Zwiebel-Kuh", displayNameEn = "Onion Cow", rarity = "Epic", bonus = 0.13 },
+		HayHorse = { displayName = "Heu-Pferd", displayNameEn = "Hay Horse", rarity = "Legendary", bonus = 0.23 },
 		GoldenRooster = {
 			displayName = "Goldener Hahn",
 			displayNameEn = "Golden Rooster",
 			rarity = "Mythic",
-			bonus = 0.73,
+			bonus = 0.46,
 		},
 		-- World 3 (Strand)
-		SandCrab = { displayName = "Sand-Krabbe", displayNameEn = "Sand Crab", rarity = "Common", bonus = 0.07 },
+		SandCrab = { displayName = "Sand-Krabbe", displayNameEn = "Sand Crab", rarity = "Common", bonus = 0.04 },
 		ShellTurtle = {
 			displayName = "Muschel-Schildkröte",
 			displayNameEn = "Shell Turtle",
 			rarity = "Uncommon",
-			bonus = 0.11,
+			bonus = 0.06,
 		},
-		ShrimpSeal = { displayName = "Garnelen-Robbe", displayNameEn = "Shrimp Seal", rarity = "Rare", bonus = 0.18 },
+		ShrimpSeal = { displayName = "Garnelen-Robbe", displayNameEn = "Shrimp Seal", rarity = "Rare", bonus = 0.1 },
 		PineappleParrot = {
 			displayName = "Ananas-Papagei",
 			displayNameEn = "Pineapple Parrot",
 			rarity = "Epic",
-			bonus = 0.28,
+			bonus = 0.15,
 		},
 		TunaDolphin = {
 			displayName = "Thunfisch-Delfin",
 			displayNameEn = "Tuna Dolphin",
 			rarity = "Legendary",
-			bonus = 0.53,
+			bonus = 0.28,
 		},
 		CoralKraken = {
 			displayName = "Korallen-Krake",
 			displayNameEn = "Coral Kraken",
 			rarity = "Mythic",
-			bonus = 1.07,
+			bonus = 0.57,
 		},
 		-- World 4 (Eisberge)
-		IcePenguin = { displayName = "Eis-Pinguin", displayNameEn = "Ice Penguin", rarity = "Common", bonus = 0.1 },
-		SnowFox = { displayName = "Schnee-Fuchs", displayNameEn = "Snow Fox", rarity = "Uncommon", bonus = 0.15 },
-		PeaWalrus = { displayName = "Erbsen-Walross", displayNameEn = "Pea Walrus", rarity = "Rare", bonus = 0.26 },
-		SalmonBear = { displayName = "Lachs-Bär", displayNameEn = "Salmon Bear", rarity = "Epic", bonus = 0.41 },
-		LettuceYeti = { displayName = "Salat-Yeti", displayNameEn = "Lettuce Yeti", rarity = "Legendary", bonus = 0.77 },
+		IcePenguin = { displayName = "Eis-Pinguin", displayNameEn = "Ice Penguin", rarity = "Common", bonus = 0.05 },
+		SnowFox = { displayName = "Schnee-Fuchs", displayNameEn = "Snow Fox", rarity = "Uncommon", bonus = 0.07 },
+		PeaWalrus = { displayName = "Erbsen-Walross", displayNameEn = "Pea Walrus", rarity = "Rare", bonus = 0.12 },
+		SalmonBear = { displayName = "Lachs-Bär", displayNameEn = "Salmon Bear", rarity = "Epic", bonus = 0.19 },
+		LettuceYeti = { displayName = "Salat-Yeti", displayNameEn = "Lettuce Yeti", rarity = "Legendary", bonus = 0.36 },
 		FrostPhoenix = {
 			displayName = "Frost-Phönix",
 			displayNameEn = "Frost Phoenix",
 			rarity = "Mythic",
-			bonus = 1.53,
+			bonus = 0.71,
 		},
 		-- World 5 (Vulkan)
-		LavaLizard = { displayName = "Lava-Echse", displayNameEn = "Lava Lizard", rarity = "Common", bonus = 0.14 },
+		LavaLizard = { displayName = "Lava-Echse", displayNameEn = "Lava Lizard", rarity = "Common", bonus = 0.06 },
 		ChiliSalamander = {
 			displayName = "Chili-Salamander",
 			displayNameEn = "Chili Salamander",
 			rarity = "Uncommon",
-			bonus = 0.21,
+			bonus = 0.09,
 		},
-		MagmaMole = { displayName = "Magma-Maulwurf", displayNameEn = "Magma Mole", rarity = "Rare", bonus = 0.36 },
+		MagmaMole = { displayName = "Magma-Maulwurf", displayNameEn = "Magma Mole", rarity = "Rare", bonus = 0.15 },
 		JalapenoGolem = {
 			displayName = "Jalapeño-Golem",
 			displayNameEn = "Jalapeño Golem",
 			rarity = "Epic",
-			bonus = 0.57,
+			bonus = 0.24,
 		},
-		FireWolf = { displayName = "Feuer-Wolf", displayNameEn = "Fire Wolf", rarity = "Legendary", bonus = 1.07 },
-		LavaTitan = { displayName = "Lava-Titan", displayNameEn = "Lava Titan", rarity = "Mythic", bonus = 2.13 },
+		FireWolf = { displayName = "Feuer-Wolf", displayNameEn = "Fire Wolf", rarity = "Legendary", bonus = 0.45 },
+		LavaTitan = { displayName = "Lava-Titan", displayNameEn = "Lava Titan", rarity = "Mythic", bonus = 0.89 },
 		-- World 6 (Süßigkeitenland)
-		GummyWorm = { displayName = "Gummi-Wurm", displayNameEn = "Gummy Worm", rarity = "Common", bonus = 0.18 },
+		GummyWorm = { displayName = "Gummi-Wurm", displayNameEn = "Gummy Worm", rarity = "Common", bonus = 0.08 },
 		LollipopPoodle = {
 			displayName = "Lolli-Pudel",
 			displayNameEn = "Lollipop Poodle",
 			rarity = "Uncommon",
-			bonus = 0.27,
+			bonus = 0.11,
 		},
 		MarshmallowSheep = {
 			displayName = "Marshmallow-Schaf",
 			displayNameEn = "Marshmallow Sheep",
 			rarity = "Rare",
-			bonus = 0.44,
+			bonus = 0.18,
 		},
-		ChocoBear = { displayName = "Schoko-Bär", displayNameEn = "Choco Bear", rarity = "Epic", bonus = 0.71 },
+		ChocoBear = { displayName = "Schoko-Bär", displayNameEn = "Choco Bear", rarity = "Epic", bonus = 0.3 },
 		CottonCandyUnicorn = {
 			displayName = "Zuckerwatte-Einhorn",
 			displayNameEn = "Cotton Candy Unicorn",
 			rarity = "Legendary",
-			bonus = 1.33,
+			bonus = 0.56,
 		},
 		CaramelGriffin = {
 			displayName = "Karamell-Greif",
 			displayNameEn = "Caramel Griffin",
 			rarity = "Mythic",
-			bonus = 2.67,
+			bonus = 1.12,
 		},
 		-- World 7 (Weltraum)
-		MoonMouse = { displayName = "Mond-Maus", displayNameEn = "Moon Mouse", rarity = "Common", bonus = 0.22 },
-		StarCat = { displayName = "Sternen-Katze", displayNameEn = "Star Cat", rarity = "Uncommon", bonus = 0.33 },
-		AlienFrog = { displayName = "Alien-Frosch", displayNameEn = "Alien Frog", rarity = "Rare", bonus = 0.56 },
-		RocketDog = { displayName = "Raketen-Hund", displayNameEn = "Rocket Dog", rarity = "Epic", bonus = 0.89 },
-		CometWhale = { displayName = "Kometen-Wal", displayNameEn = "Comet Whale", rarity = "Legendary", bonus = 1.67 },
+		MoonMouse = { displayName = "Mond-Maus", displayNameEn = "Moon Mouse", rarity = "Common", bonus = 0.09 },
+		StarCat = { displayName = "Sternen-Katze", displayNameEn = "Star Cat", rarity = "Uncommon", bonus = 0.14 },
+		AlienFrog = { displayName = "Alien-Frosch", displayNameEn = "Alien Frog", rarity = "Rare", bonus = 0.23 },
+		RocketDog = { displayName = "Raketen-Hund", displayNameEn = "Rocket Dog", rarity = "Epic", bonus = 0.37 },
+		CometWhale = { displayName = "Kometen-Wal", displayNameEn = "Comet Whale", rarity = "Legendary", bonus = 0.7 },
 		GalaxyDragon = {
 			displayName = "Galaxie-Drache",
 			displayNameEn = "Galaxy Dragon",
 			rarity = "Mythic",
-			bonus = 3.33,
+			bonus = 1.4,
 		},
 
 		-- World 8 (Atlantis-Ei, #82): one egg; its Mythic pet is the world's best (+620 %,
-		-- continuing the flat curve), the others scaled like the Space egg. Provisional (#108).
+		-- continuing the flat curve), the others scaled like the Space egg. Bonuses: pet curve of #108 (x1.25 per world).
 		-- Models: tools/blender/build_world.py Atlantis (one FBX for the whole world).
-		KelpSnail = { displayName = "Seetang-Schnecke", displayNameEn = "Kelp Snail", rarity = "Common", bonus = 0.41 },
+		KelpSnail = { displayName = "Seetang-Schnecke", displayNameEn = "Kelp Snail", rarity = "Common", bonus = 0.17 },
 		BubblePufferfish = {
 			displayName = "Blasen-Kugelfisch",
 			displayNameEn = "Bubble Pufferfish",
 			rarity = "Uncommon",
-			bonus = 0.62,
+			bonus = 0.26,
 		},
 		CaperClownfish = {
 			displayName = "Kapern-Clownfisch",
 			displayNameEn = "Caper Clownfish",
 			rarity = "Rare",
-			bonus = 1.04,
+			bonus = 0.44,
 		},
 		LanternAnglerfish = {
 			displayName = "Laternen-Anglerfisch",
 			displayNameEn = "Lantern Anglerfish",
 			rarity = "Epic",
-			bonus = 1.66,
+			bonus = 0.7,
 		},
 		PearlMantaRay = {
 			displayName = "Perlen-Mantarochen",
 			displayNameEn = "Pearl Manta Ray",
 			rarity = "Legendary",
-			bonus = 3.1,
+			bonus = 1.31,
 		},
 		PoseidonSeaDragon = {
 			displayName = "Poseidon-Seedrache",
 			displayNameEn = "Poseidon Sea Dragon",
 			rarity = "Mythic",
-			bonus = 6.2,
+			bonus = 2.62,
 		},
 
 		-- World 9 (Dschungel-Ei, #83): one egg; its Mythic pet is the world's best (+760 %,
-		-- continuing the flat curve), the others scaled like the Atlantis egg. Provisional
-		-- (#108). Models: tools/blender/build_world.py JungleTemple.
-		CocoaFrog = { displayName = "Kakao-Frosch", displayNameEn = "Cocoa Frog", rarity = "Common", bonus = 0.5 },
+		-- continuing the flat curve), the others scaled like the Atlantis egg. Bonuses: pet
+		-- curve of #108 (x1.25 per world). Models: tools/blender/build_world.py JungleTemple.
+		CocoaFrog = { displayName = "Kakao-Frosch", displayNameEn = "Cocoa Frog", rarity = "Common", bonus = 0.22 },
 		MangoToucan = {
 			displayName = "Mango-Tukan",
 			displayNameEn = "Mango Toucan",
 			rarity = "Uncommon",
-			bonus = 0.76,
+			bonus = 0.33,
 		},
 		VineSloth = {
 			displayName = "Lianen-Faultier",
 			displayNameEn = "Vine Sloth",
 			rarity = "Rare",
-			bonus = 1.28,
+			bonus = 0.55,
 		},
 		FireflyChameleon = {
 			displayName = "Glühwürmchen-Chamäleon",
 			displayNameEn = "Firefly Chameleon",
 			rarity = "Epic",
-			bonus = 2.04,
+			bonus = 0.88,
 		},
 		DragonFruitJaguar = {
 			displayName = "Drachenfrucht-Jaguar",
 			displayNameEn = "Dragon Fruit Jaguar",
 			rarity = "Legendary",
-			bonus = 3.8,
+			bonus = 1.64,
 		},
 		JadeTempleSerpent = {
 			displayName = "Jade-Tempelschlange",
 			displayNameEn = "Jade Temple Serpent",
 			rarity = "Mythic",
-			bonus = 7.6,
+			bonus = 3.28,
 		},
 
 		-- World 10 (Pyramiden-Ei, #84): one egg; the Mythic pet continues the flat curve
-		-- (+900 %), the others scaled like the Atlantis egg. Provisional (#108).
+		-- (+900 %), the others scaled like the Atlantis egg. Bonuses: pet curve of #108 (x1.25 per world).
 		-- Models: tools/blender/build_world.py DesertPyramids.
-		DateGecko = { displayName = "Dattel-Gecko", displayNameEn = "Date Gecko", rarity = "Common", bonus = 0.6 },
+		DateGecko = { displayName = "Dattel-Gecko", displayNameEn = "Date Gecko", rarity = "Common", bonus = 0.27 },
 		SandScarab = {
 			displayName = "Sand-Skarabäus",
 			displayNameEn = "Sand Scarab",
 			rarity = "Uncommon",
-			bonus = 0.9,
+			bonus = 0.41,
 		},
 		CactusFennec = {
 			displayName = "Kaktus-Fennek",
 			displayNameEn = "Cactus Fennec",
 			rarity = "Rare",
-			bonus = 1.5,
+			bonus = 0.68,
 		},
-		OasisCamel = { displayName = "Oasen-Kamel", displayNameEn = "Oasis Camel", rarity = "Epic", bonus = 2.4 },
+		OasisCamel = { displayName = "Oasen-Kamel", displayNameEn = "Oasis Camel", rarity = "Epic", bonus = 1.09 },
 		PharaohCat = {
 			displayName = "Pharaonen-Katze",
 			displayNameEn = "Pharaoh Cat",
 			rarity = "Legendary",
-			bonus = 4.5,
+			bonus = 2.05,
 		},
-		SunSphinx = { displayName = "Sonnen-Sphinx", displayNameEn = "Sun Sphinx", rarity = "Mythic", bonus = 9 },
+		SunSphinx = { displayName = "Sonnen-Sphinx", displayNameEn = "Sun Sphinx", rarity = "Mythic", bonus = 4.1 },
 		-- World 11 (Spuk-Ei, #85): friendly spooky pets; the Mythic one is the world's best
 		-- (+1040 %, continuing the flat curve after world 10), the others scaled like the
-		-- jungle egg. Provisional (#108). Models: tools/blender/build_world.py HauntedCastle.
+		-- jungle egg. Bonuses: pet curve of #108 (x1.25 per world). Models: tools/blender/build_world.py HauntedCastle.
 		PumpkinKitten = {
 			displayName = "Kürbis-Kätzchen",
 			displayNameEn = "Pumpkin Kitten",
 			rarity = "Common",
-			bonus = 0.69,
+			bonus = 0.34,
 		},
 		GhostPuppy = {
 			displayName = "Gespenster-Welpe",
 			displayNameEn = "Ghost Puppy",
 			rarity = "Uncommon",
-			bonus = 1.04,
+			bonus = 0.51,
 		},
 		GummyBat = {
 			displayName = "Gummi-Fledermaus",
 			displayNameEn = "Gummy Bat",
 			rarity = "Rare",
-			bonus = 1.74,
+			bonus = 0.86,
 		},
 		LanternRaven = {
 			displayName = "Laternen-Rabe",
 			displayNameEn = "Lantern Raven",
 			rarity = "Epic",
-			bonus = 2.78,
+			bonus = 1.37,
 		},
 		MoonlightWolf = {
 			displayName = "Mondschein-Wolf",
 			displayNameEn = "Moonlight Wolf",
 			rarity = "Legendary",
-			bonus = 5.2,
+			bonus = 2.56,
 		},
 		PhantomDragon = {
 			displayName = "Phantom-Drache",
 			displayNameEn = "Phantom Dragon",
 			rarity = "Mythic",
-			bonus = 10.4,
+			bonus = 5.12,
 		},
 		-- World 12 (Fossil-Ei, #86): friendly baby dinos; the Mythic one is the world's best
 		-- (+1180 %, the flat curve +140 % per world after world 11), the others scaled like
-		-- the spooky egg. Provisional (#108). Models: tools/blender/build_world.py DinoAge.
-		FernRaptor = { displayName = "Farn-Raptor", displayNameEn = "Fern Raptor", rarity = "Common", bonus = 0.78 },
+		-- the spooky egg. Bonuses: pet curve of #108 (x1.25 per world). Models: tools/blender/build_world.py DinoAge.
+		FernRaptor = { displayName = "Farn-Raptor", displayNameEn = "Fern Raptor", rarity = "Common", bonus = 0.42 },
 		MiniTriceratops = {
 			displayName = "Mini-Triceratops",
 			displayNameEn = "Mini Triceratops",
 			rarity = "Uncommon",
-			bonus = 1.18,
+			bonus = 0.64,
 		},
 		AmberStegosaurus = {
 			displayName = "Bernstein-Stegosaurus",
 			displayNameEn = "Amber Stegosaurus",
 			rarity = "Rare",
-			bonus = 1.97,
+			bonus = 1.07,
 		},
 		VolcanoPterodactyl = {
 			displayName = "Vulkan-Flugsaurier",
 			displayNameEn = "Volcano Pterodactyl",
 			rarity = "Epic",
-			bonus = 3.15,
+			bonus = 1.71,
 		},
 		LavaAnkylosaurus = {
 			displayName = "Lava-Ankylosaurus",
 			displayNameEn = "Lava Ankylosaurus",
 			rarity = "Legendary",
-			bonus = 5.9,
+			bonus = 3.2,
 		},
 		PrimalTRex = {
 			displayName = "Urzeit-T-Rex",
 			displayNameEn = "Primal T-Rex",
 			rarity = "Mythic",
-			bonus = 11.8,
+			bonus = 6.4,
 		},
 		-- World 13 (Kristall-Ei, #87): cave critters with crystals; the Mythic one is the
 		-- world's best (+1320 %, the flat curve +140 % per world), the others scaled like the
-		-- fossil egg. Provisional (#108). Models: tools/blender/build_world.py CrystalCave.
+		-- fossil egg. Bonuses: pet curve of #108 (x1.25 per world). Models: tools/blender/build_world.py CrystalCave.
 		CrystalBat = {
 			displayName = "Kristall-Fledermaus",
 			displayNameEn = "Crystal Bat",
 			rarity = "Common",
-			bonus = 0.87,
+			bonus = 0.53,
 		},
 		GlowshroomSnail = {
 			displayName = "Leuchtpilz-Schnecke",
 			displayNameEn = "Glowshroom Snail",
 			rarity = "Uncommon",
-			bonus = 1.32,
+			bonus = 0.8,
 		},
 		AmethystHedgehog = {
 			displayName = "Amethyst-Igel",
 			displayNameEn = "Amethyst Hedgehog",
 			rarity = "Rare",
-			bonus = 2.2,
+			bonus = 1.33,
 		},
 		CaveAxolotl = {
 			displayName = "Höhlen-Axolotl",
 			displayNameEn = "Cave Axolotl",
 			rarity = "Epic",
-			bonus = 3.52,
+			bonus = 2.13,
 		},
 		GeodeGolem = {
 			displayName = "Geoden-Golem",
 			displayNameEn = "Geode Golem",
 			rarity = "Legendary",
-			bonus = 6.6,
+			bonus = 4,
 		},
 		PrismDragon = {
 			displayName = "Prisma-Drache",
 			displayNameEn = "Prism Dragon",
 			rarity = "Mythic",
-			bonus = 13.2,
+			bonus = 8,
 		},
 		-- World 14 (Wolken-Ei, #88): sky critters; the Mythic one is the world's best
 		-- (+1460 %, the flat curve +140 % per world), the others scaled like the crystal egg.
-		-- Provisional (#108). Models: tools/blender/build_world.py CloudCity.
+		-- Bonuses: pet curve of #108 (x1.25 per world). Models: tools/blender/build_world.py CloudCity.
 		CloudLamb = {
 			displayName = "Wolken-Lamm",
 			displayNameEn = "Cloud Lamb",
 			rarity = "Common",
-			bonus = 0.96,
+			bonus = 0.66,
 		},
 		SunflowerFinch = {
 			displayName = "Sonnenblumen-Fink",
 			displayNameEn = "Sunflower Finch",
 			rarity = "Uncommon",
-			bonus = 1.46,
+			bonus = 1,
 		},
 		StarfruitBunny = {
 			displayName = "Sternfrucht-Hase",
 			displayNameEn = "Starfruit Bunny",
 			rarity = "Rare",
-			bonus = 2.43,
+			bonus = 1.67,
 		},
 		RainbowHummingbird = {
 			displayName = "Regenbogen-Kolibri",
 			displayNameEn = "Rainbow Hummingbird",
 			rarity = "Epic",
-			bonus = 3.89,
+			bonus = 2.67,
 		},
 		SkyWhale = {
 			displayName = "Himmelswal",
 			displayNameEn = "Sky Whale",
 			rarity = "Legendary",
-			bonus = 7.3,
+			bonus = 5,
 		},
 		SunPegasus = {
 			displayName = "Sonnen-Pegasus",
 			displayNameEn = "Sun Pegasus",
 			rarity = "Mythic",
-			bonus = 14.6,
+			bonus = 10,
 		},
 		-- World 15 (Götter-Ei, #89): the pizza gods; the Mythic one is the world's best
 		-- (+1600 %, the flat curve +140 % per world), the others scaled like the cloud egg.
-		-- Provisional (#108). Models: tools/blender/build_world.py PizzaParadise.
+		-- Bonuses: pet curve of #108 (x1.25 per world). Models: tools/blender/build_world.py PizzaParadise.
 		GoldSalamiPiglet = {
 			displayName = "Gold-Salami-Ferkel",
 			displayNameEn = "Gold Salami Piglet",
 			rarity = "Common",
-			bonus = 1.05,
+			bonus = 0.82,
 		},
 		DiamondCheeseMouse = {
 			displayName = "Diamant-Käse-Maus",
 			displayNameEn = "Diamond Cheese Mouse",
 			rarity = "Uncommon",
-			bonus = 1.6,
+			bonus = 1.25,
 		},
 		RainbowBasilChameleon = {
 			displayName = "Regenbogen-Chamäleon",
 			displayNameEn = "Rainbow Chameleon",
 			rarity = "Rare",
-			bonus = 2.66,
+			bonus = 2.08,
 		},
 		PizzaPhoenix = {
 			displayName = "Pizza-Phönix",
 			displayNameEn = "Pizza Phoenix",
 			rarity = "Epic",
-			bonus = 4.26,
+			bonus = 3.33,
 		},
 		OvenTitan = {
 			displayName = "Ofen-Titan",
 			displayNameEn = "Oven Titan",
 			rarity = "Legendary",
-			bonus = 8,
+			bonus = 6.25,
 		},
 		OlympusPizzaDragon = {
 			displayName = "Olymp-Pizzadrache",
 			displayNameEn = "Olympus Pizza Dragon",
 			rarity = "Mythic",
-			bonus = 16,
+			bonus = 12.51,
 		},
 
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
@@ -1290,135 +1307,140 @@ local GameConfig = {
 			displayName = "Rucola-Igel",
 			displayNameEn = "Arugula Hedgehog",
 			rarity = "Rare",
-			bonus = 0.12,
+			bonus = 0.09,
 		},
 		ParmesanRaccoon = {
 			displayName = "Parmesan-Waschbär",
 			displayNameEn = "Parmesan Raccoon",
 			rarity = "Epic",
-			bonus = 0.2,
+			bonus = 0.15,
 		},
 		TruffleFox = {
 			displayName = "Trüffel-Fuchs",
 			displayNameEn = "Truffle Fox",
 			rarity = "Legendary",
-			bonus = 0.38,
+			bonus = 0.28,
 		},
 		StoneOvenPhoenix = {
 			displayName = "Steinofen-Phönix",
 			displayNameEn = "Stone Oven Phoenix",
 			rarity = "Mythic",
-			bonus = 0.75,
+			bonus = 0.55,
 		},
 		-- World 2 (Scheunen-Ei)
-		PumpkinCat = { displayName = "Kürbis-Katze", displayNameEn = "Pumpkin Cat", rarity = "Rare", bonus = 0.18 },
-		ButterDonkey = { displayName = "Butter-Esel", displayNameEn = "Butter Donkey", rarity = "Epic", bonus = 0.29 },
-		HoneyBear = { displayName = "Honig-Bär", displayNameEn = "Honey Bear", rarity = "Legendary", bonus = 0.55 },
+		PumpkinCat = { displayName = "Kürbis-Katze", displayNameEn = "Pumpkin Cat", rarity = "Rare", bonus = 0.11 },
+		ButterDonkey = { displayName = "Butter-Esel", displayNameEn = "Butter Donkey", rarity = "Epic", bonus = 0.18 },
+		HoneyBear = { displayName = "Honig-Bär", displayNameEn = "Honey Bear", rarity = "Legendary", bonus = 0.34 },
 		GoldGrainBull = {
 			displayName = "Goldkorn-Stier",
 			displayNameEn = "Gold Grain Bull",
 			rarity = "Mythic",
-			bonus = 1.1,
+			bonus = 0.69,
 		},
 		-- World 3 (Muschel-Ei)
-		CoconutMonkey = { displayName = "Kokos-Affe", displayNameEn = "Coconut Monkey", rarity = "Rare", bonus = 0.27 },
+		CoconutMonkey = { displayName = "Kokos-Affe", displayNameEn = "Coconut Monkey", rarity = "Rare", bonus = 0.15 },
 		ShellSeahorse = {
 			displayName = "Muschel-Seepferdchen",
 			displayNameEn = "Shell Seahorse",
 			rarity = "Epic",
-			bonus = 0.43,
+			bonus = 0.23,
 		},
 		SardineShark = {
 			displayName = "Sardinen-Hai",
 			displayNameEn = "Sardine Shark",
 			rarity = "Legendary",
-			bonus = 0.8,
+			bonus = 0.43,
 		},
 		PearlSeaSerpent = {
 			displayName = "Perlen-Seeschlange",
 			displayNameEn = "Pearl Sea Serpent",
 			rarity = "Mythic",
-			bonus = 1.6,
+			bonus = 0.86,
 		},
 		-- World 4 (Gletscher-Ei)
-		MintReindeer = { displayName = "Minz-Rentier", displayNameEn = "Mint Reindeer", rarity = "Rare", bonus = 0.38 },
+		MintReindeer = { displayName = "Minz-Rentier", displayNameEn = "Mint Reindeer", rarity = "Rare", bonus = 0.18 },
 		SundaePolarBear = {
 			displayName = "Eisbecher-Eisbär",
 			displayNameEn = "Sundae Polar Bear",
 			rarity = "Epic",
-			bonus = 0.61,
+			bonus = 0.28,
 		},
 		VanillaMammoth = {
 			displayName = "Vanille-Mammut",
 			displayNameEn = "Vanilla Mammoth",
 			rarity = "Legendary",
-			bonus = 1.15,
+			bonus = 0.54,
 		},
 		SorbetNarwhal = {
 			displayName = "Sorbet-Narwal",
 			displayNameEn = "Sorbet Narwhal",
 			rarity = "Mythic",
-			bonus = 2.3,
+			bonus = 1.07,
 		},
 		-- World 5 (Magma-Ei)
 		PepperScorpion = {
 			displayName = "Pfeffer-Skorpion",
 			displayNameEn = "Pepper Scorpion",
 			rarity = "Rare",
-			bonus = 0.53,
+			bonus = 0.22,
 		},
 		HabaneroRhino = {
 			displayName = "Habanero-Nashorn",
 			displayNameEn = "Habanero Rhino",
 			rarity = "Epic",
-			bonus = 0.85,
+			bonus = 0.36,
 		},
-		CurryTiger = { displayName = "Curry-Tiger", displayNameEn = "Curry Tiger", rarity = "Legendary", bonus = 1.6 },
+		CurryTiger = { displayName = "Curry-Tiger", displayNameEn = "Curry Tiger", rarity = "Legendary", bonus = 0.67 },
 		CalzoneHydra = {
 			displayName = "Calzone-Hydra",
 			displayNameEn = "Calzone Hydra",
 			rarity = "Mythic",
-			bonus = 3.2,
+			bonus = 1.34,
 		},
 		-- World 6 (Bonbon-Ei)
 		DonutDachshund = {
 			displayName = "Donut-Dackel",
 			displayNameEn = "Donut Dachshund",
 			rarity = "Rare",
-			bonus = 0.67,
+			bonus = 0.28,
 		},
-		PuddingPanda = { displayName = "Pudding-Panda", displayNameEn = "Pudding Panda", rarity = "Epic", bonus = 1.07 },
+		PuddingPanda = { displayName = "Pudding-Panda", displayNameEn = "Pudding Panda", rarity = "Epic", bonus = 0.45 },
 		LicoricePanther = {
 			displayName = "Lakritz-Panther",
 			displayNameEn = "Licorice Panther",
 			rarity = "Legendary",
-			bonus = 2,
+			bonus = 0.84,
 		},
-		CakePegasus = { displayName = "Torten-Pegasus", displayNameEn = "Cake Pegasus", rarity = "Mythic", bonus = 4 },
+		CakePegasus = {
+			displayName = "Torten-Pegasus",
+			displayNameEn = "Cake Pegasus",
+			rarity = "Mythic",
+			bonus = 1.68,
+		},
 		-- World 7 (Nebula-Ei)
 		MooncakeBunny = {
 			displayName = "Mondkuchen-Hase",
 			displayNameEn = "Mooncake Bunny",
 			rarity = "Rare",
-			bonus = 0.83,
+			bonus = 0.35,
 		},
 		StarfruitJellyfish = {
 			displayName = "Sternfrucht-Qualle",
 			displayNameEn = "Starfruit Jellyfish",
 			rarity = "Epic",
-			bonus = 1.33,
+			bonus = 0.56,
 		},
 		StardustLion = {
 			displayName = "Sternenstaub-Löwe",
 			displayNameEn = "Stardust Lion",
 			rarity = "Legendary",
-			bonus = 2.5,
+			bonus = 1.05,
 		},
 		GalaxyPizzaLeviathan = {
 			displayName = "Galaxie-Pizza-Leviathan",
 			displayNameEn = "Galaxy Pizza Leviathan",
 			rarity = "Mythic",
-			bonus = 5,
+			bonus = 2.1,
 		},
 		-- Secret pets (#81): one per world, twice the bonus of the world's best pet.
 		-- Models: tools/blender/build_secret_pets.py.
@@ -1426,43 +1448,43 @@ local GameConfig = {
 			displayName = "Mozzarella-Geist",
 			displayNameEn = "Mozzarella Ghost",
 			rarity = "Secret",
-			bonus = 1.5,
+			bonus = 1.1,
 		},
 		ScarecrowRaven = {
 			displayName = "Vogelscheuchen-Rabe",
 			displayNameEn = "Scarecrow Raven",
 			rarity = "Secret",
-			bonus = 2.2,
+			bonus = 1.38,
 		},
 		TreasureOctopus = {
 			displayName = "Schatz-Oktopus",
 			displayNameEn = "Treasure Octopus",
 			rarity = "Secret",
-			bonus = 3.2,
+			bonus = 1.72,
 		},
 		AuroraWolf = {
 			displayName = "Polarlicht-Wolf",
 			displayNameEn = "Aurora Wolf",
 			rarity = "Secret",
-			bonus = 4.6,
+			bonus = 2.15,
 		},
 		ObsidianDragon = {
 			displayName = "Obsidian-Drache",
 			displayNameEn = "Obsidian Dragon",
 			rarity = "Secret",
-			bonus = 6.4,
+			bonus = 2.69,
 		},
 		GingerbreadGolem = {
 			displayName = "Lebkuchen-Golem",
 			displayNameEn = "Gingerbread Golem",
 			rarity = "Secret",
-			bonus = 8,
+			bonus = 3.36,
 		},
 		BlackHoleCat = {
 			displayName = "Schwarzloch-Katze",
 			displayNameEn = "Black Hole Cat",
 			rarity = "Secret",
-			bonus = 10,
+			bonus = 4.2,
 		},
 		-- Login calendar pet (#101): only from day 30 of the 30-day calendar, in no egg (and so
 		-- not needed for the pet index). Fixed bonus like the Mythic pets of worlds 4-5.
@@ -1470,7 +1492,8 @@ local GameConfig = {
 			displayName = "Kalender-Fuchs",
 			displayNameEn = "Calendar Fox",
 			rarity = "Mythic",
-			bonus = 1.5,
+			-- #108: like the best egg pets around day 30 (world ~12), so the reward stays useful.
+			bonus = 5,
 			calendarPet = true,
 		},
 		-- Travelling merchant pet (#107): only from the merchant on some visits, in no egg
@@ -1486,49 +1509,49 @@ local GameConfig = {
 			displayName = "Perlenkönig-Otter",
 			displayNameEn = "Pearl King Otter",
 			rarity = "Secret",
-			bonus = 12.4,
+			bonus = 5.25,
 		},
 		GoldenMonkeyKing = {
 			displayName = "Goldener Affenkönig",
 			displayNameEn = "Golden Monkey King",
 			rarity = "Secret",
-			bonus = 15.2,
+			bonus = 6.56,
 		},
 		ScorpionKing = {
 			displayName = "Skorpionkönig",
 			displayNameEn = "Scorpion King",
 			rarity = "Secret",
-			bonus = 18,
+			bonus = 8.2,
 		},
 		CountFangtastic = {
 			displayName = "Graf Gruselzahn",
 			displayNameEn = "Count Fangtastic",
 			rarity = "Secret",
-			bonus = 20.8,
+			bonus = 10.24,
 		},
 		PizzasaurusRex = {
 			displayName = "Pizzasaurus Rex",
 			displayNameEn = "Pizzasaurus Rex",
 			rarity = "Secret",
-			bonus = 23.6,
+			bonus = 12.81,
 		},
 		DiamondMoleKing = {
 			displayName = "Diamant-Maulwurfkönig",
 			displayNameEn = "Diamond Mole King",
 			rarity = "Secret",
-			bonus = 26.4,
+			bonus = 16.01,
 		},
 		CloudKingGriffin = {
 			displayName = "Wolkenkönig-Greif",
 			displayNameEn = "Cloud King Griffin",
 			rarity = "Secret",
-			bonus = 29.2,
+			bonus = 20.01,
 		},
 		PizzaZeus = {
 			displayName = "Pizza-Zeus",
 			displayNameEn = "Pizza Zeus",
 			rarity = "Secret",
-			bonus = 32,
+			bonus = 25.01,
 		},
 	},
 
@@ -1649,7 +1672,7 @@ local GameConfig = {
 			displayName = "Vulkan-Ei",
 			displayNameEn = "Volcano Egg",
 			look = { color = "5A2A24", accent = "FF7A1A", pattern = "Cracks", glow = true },
-			price = 20000,
+			price = 10000,
 			pets = {
 				{ pet = "LavaLizard", chance = 50 },
 				{ pet = "ChiliSalamander", chance = 28 },
@@ -1663,7 +1686,7 @@ local GameConfig = {
 			displayName = "Magma-Ei",
 			displayNameEn = "Magma Egg",
 			look = { color = "2A1A1A", accent = "FF3A1A", pattern = "Waves", glow = true, fancy = true },
-			price = 100000,
+			price = 52000,
 			pets = {
 				{ pet = "PepperScorpion", chance = 68 },
 				{ pet = "HabaneroRhino", chance = 25 },
@@ -1675,7 +1698,7 @@ local GameConfig = {
 			displayName = "Süßigkeiten-Ei",
 			displayNameEn = "Candy Egg",
 			look = { color = "FF8CC6", accent = "FFFFFF", pattern = "Swirl" },
-			price = 82000,
+			price = 14000,
 			pets = {
 				{ pet = "GummyWorm", chance = 50 },
 				{ pet = "LollipopPoodle", chance = 28 },
@@ -1689,7 +1712,7 @@ local GameConfig = {
 			displayName = "Bonbon-Ei",
 			displayNameEn = "Sweets Egg",
 			look = { color = "9B6BFF", accent = "FFE14A", pattern = "Stripes", fancy = true },
-			price = 410000,
+			price = 71000,
 			pets = {
 				{ pet = "DonutDachshund", chance = 68 },
 				{ pet = "PuddingPanda", chance = 25 },
@@ -1701,7 +1724,7 @@ local GameConfig = {
 			displayName = "Weltraum-Ei",
 			displayNameEn = "Space Egg",
 			look = { color = "3B2A7A", accent = "FFD84A", pattern = "Stars", glow = true },
-			price = 390000,
+			price = 21000,
 			pets = {
 				{ pet = "MoonMouse", chance = 50 },
 				{ pet = "StarCat", chance = 28 },
@@ -1715,7 +1738,7 @@ local GameConfig = {
 			displayName = "Nebula-Ei",
 			displayNameEn = "Nebula Egg",
 			look = { color = "14163A", accent = "C86BFF", pattern = "Spots", glow = true, fancy = true },
-			price = 2000000,
+			price = 110000,
 			pets = {
 				{ pet = "MooncakeBunny", chance = 68 },
 				{ pet = "StarfruitJellyfish", chance = 25 },
@@ -1723,12 +1746,12 @@ local GameConfig = {
 				{ pet = "GalaxyPizzaLeviathan", chance = 1 },
 			},
 		},
-		-- World 8 (#82): the new worlds have one egg with 6 pets. Price provisional (#108).
+		-- World 8 (#82): the new worlds have one egg with 6 pets. Price: balancing #108.
 		AtlantisEgg = {
 			displayName = "Atlantis-Ei",
 			displayNameEn = "Atlantis Egg",
 			look = { color = "1E8FB8", accent = "FFE9A8", pattern = "Bubbles", glow = true },
-			price = 4800000,
+			price = 110000,
 			pets = {
 				{ pet = "KelpSnail", chance = 50 },
 				{ pet = "BubblePufferfish", chance = 28 },
@@ -1738,12 +1761,12 @@ local GameConfig = {
 				{ pet = "PoseidonSeaDragon", chance = 0.5 },
 			},
 		},
-		-- World 9 (#83). Price provisional (#108).
+		-- World 9 (#83). Price: balancing #108.
 		JungleEgg = {
 			displayName = "Dschungel-Ei",
 			displayNameEn = "Jungle Egg",
 			look = { color = "2E8B3A", accent = "FFC83A", pattern = "Vines", glow = false },
-			price = 22000000,
+			price = 350000,
 			pets = {
 				{ pet = "CocoaFrog", chance = 50 },
 				{ pet = "MangoToucan", chance = 28 },
@@ -1753,12 +1776,12 @@ local GameConfig = {
 				{ pet = "JadeTempleSerpent", chance = 0.5 },
 			},
 		},
-		-- World 10 (#84): one egg with 6 pets. Price provisional (#108).
+		-- World 10 (#84): one egg with 6 pets. Price: balancing #108.
 		PyramidEgg = {
 			displayName = "Pyramiden-Ei",
 			displayNameEn = "Pyramid Egg",
 			look = { color = "E8B860", accent = "2E6FB0", pattern = "Zigzag", glow = true },
-			price = 600000000,
+			price = 14000000,
 			pets = {
 				{ pet = "DateGecko", chance = 50 },
 				{ pet = "SandScarab", chance = 28 },
@@ -1768,12 +1791,12 @@ local GameConfig = {
 				{ pet = "SunSphinx", chance = 0.5 },
 			},
 		},
-		-- World 11 (#85). Price provisional (#108).
+		-- World 11 (#85). Price: balancing #108.
 		SpookyEgg = {
 			displayName = "Spuk-Ei",
 			displayNameEn = "Spooky Egg",
 			look = { color = "4B2A6E", accent = "FF8A1E", pattern = "Bats", glow = true },
-			price = 2800000000,
+			price = 130000000,
 			pets = {
 				{ pet = "PumpkinKitten", chance = 50 },
 				{ pet = "GhostPuppy", chance = 28 },
@@ -1783,12 +1806,12 @@ local GameConfig = {
 				{ pet = "PhantomDragon", chance = 0.5 },
 			},
 		},
-		-- World 12 (#86). Price provisional (#108).
+		-- World 12 (#86). Price: balancing #108.
 		FossilEgg = {
 			displayName = "Fossil-Ei",
 			displayNameEn = "Fossil Egg",
 			look = { color = "C8A872", accent = "5E4530", pattern = "Footprints" },
-			price = 13000000000,
+			price = 660000000,
 			pets = {
 				{ pet = "FernRaptor", chance = 50 },
 				{ pet = "MiniTriceratops", chance = 28 },
@@ -1798,12 +1821,12 @@ local GameConfig = {
 				{ pet = "PrimalTRex", chance = 0.5 },
 			},
 		},
-		-- World 13 (#87). Price provisional (#108).
+		-- World 13 (#87). Price: balancing #108.
 		CrystalEgg = {
 			displayName = "Kristall-Ei",
 			displayNameEn = "Crystal Egg",
 			look = { color = "5A3C8C", accent = "7FF0FF", pattern = "Crystals", glow = true },
-			price = 60000000000,
+			price = 2800000000,
 			pets = {
 				{ pet = "CrystalBat", chance = 50 },
 				{ pet = "GlowshroomSnail", chance = 28 },
@@ -1813,12 +1836,12 @@ local GameConfig = {
 				{ pet = "PrismDragon", chance = 0.5 },
 			},
 		},
-		-- World 14 (#88). Price provisional (#108).
+		-- World 14 (#88). Price: balancing #108.
 		CloudEgg = {
 			displayName = "Wolken-Ei",
 			displayNameEn = "Cloud Egg",
 			look = { color = "9FD4FF", accent = "FFE27A", pattern = "Clouds", glow = true },
-			price = 290000000000,
+			price = 49000000000,
 			pets = {
 				{ pet = "CloudLamb", chance = 50 },
 				{ pet = "SunflowerFinch", chance = 28 },
@@ -1828,12 +1851,12 @@ local GameConfig = {
 				{ pet = "SunPegasus", chance = 0.5 },
 			},
 		},
-		-- World 15 (#89), the golden last world. Price provisional (#108).
+		-- World 15 (#89), the golden last world. Price: balancing #108.
 		DivineEgg = {
 			displayName = "Götter-Ei",
 			displayNameEn = "Divine Egg",
 			look = { color = "FFD24A", accent = "E8443A", pattern = "Slices", glow = true },
-			price = 1400000000000,
+			price = 180000000000,
 			pets = {
 				{ pet = "GoldSalamiPiglet", chance = 50 },
 				{ pet = "DiamondCheeseMouse", chance = 28 },
@@ -1904,8 +1927,9 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
-		-- Every new world (#82-#89) has its own shop. For now with the levels of shop 3
-		-- (all levels there are); #108 adds higher levels for the new worlds.
+		-- Every new world (#82-#89) has its own shop with the levels of shop 3; the new pet
+		-- slot and inventory levels (#108) come in the shops of worlds 10 (6), 12 (7) and 15 (8).
+		-- Pizza space stays at 20: more toppings would not fit into the same round time.
 		World8Shop = {
 			worldId = "Atlantis",
 			displayName = "Atlantis-Shop",
@@ -1951,8 +1975,8 @@ local GameConfig = {
 				{ upgrade = "CollectRange", maxLevel = 8 },
 				{ upgrade = "Magnet", maxLevel = 5 },
 				-- Gem counter
-				{ upgrade = "PetSlots", maxLevel = 5 },
-				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "PetSlots", maxLevel = 6 },
+				{ upgrade = "InventorySpace", maxLevel = 6 },
 				{ upgrade = "WalkSpeed", maxLevel = 5 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 				{ upgrade = "GoldLuck", maxLevel = 5 },
@@ -1969,8 +1993,8 @@ local GameConfig = {
 				{ upgrade = "CollectRange", maxLevel = 8 },
 				{ upgrade = "Magnet", maxLevel = 5 },
 				-- Gem counter
-				{ upgrade = "PetSlots", maxLevel = 5 },
-				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "PetSlots", maxLevel = 6 },
+				{ upgrade = "InventorySpace", maxLevel = 6 },
 				{ upgrade = "WalkSpeed", maxLevel = 5 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 				{ upgrade = "GoldLuck", maxLevel = 5 },
@@ -1987,8 +2011,8 @@ local GameConfig = {
 				{ upgrade = "CollectRange", maxLevel = 8 },
 				{ upgrade = "Magnet", maxLevel = 5 },
 				-- Gem counter
-				{ upgrade = "PetSlots", maxLevel = 5 },
-				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "PetSlots", maxLevel = 7 },
+				{ upgrade = "InventorySpace", maxLevel = 7 },
 				{ upgrade = "WalkSpeed", maxLevel = 5 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 				{ upgrade = "GoldLuck", maxLevel = 5 },
@@ -2005,8 +2029,8 @@ local GameConfig = {
 				{ upgrade = "CollectRange", maxLevel = 8 },
 				{ upgrade = "Magnet", maxLevel = 5 },
 				-- Gem counter
-				{ upgrade = "PetSlots", maxLevel = 5 },
-				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "PetSlots", maxLevel = 7 },
+				{ upgrade = "InventorySpace", maxLevel = 7 },
 				{ upgrade = "WalkSpeed", maxLevel = 5 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 				{ upgrade = "GoldLuck", maxLevel = 5 },
@@ -2023,8 +2047,8 @@ local GameConfig = {
 				{ upgrade = "CollectRange", maxLevel = 8 },
 				{ upgrade = "Magnet", maxLevel = 5 },
 				-- Gem counter
-				{ upgrade = "PetSlots", maxLevel = 5 },
-				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "PetSlots", maxLevel = 7 },
+				{ upgrade = "InventorySpace", maxLevel = 7 },
 				{ upgrade = "WalkSpeed", maxLevel = 5 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 				{ upgrade = "GoldLuck", maxLevel = 5 },
@@ -2041,8 +2065,8 @@ local GameConfig = {
 				{ upgrade = "CollectRange", maxLevel = 8 },
 				{ upgrade = "Magnet", maxLevel = 5 },
 				-- Gem counter
-				{ upgrade = "PetSlots", maxLevel = 5 },
-				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "PetSlots", maxLevel = 8 },
+				{ upgrade = "InventorySpace", maxLevel = 8 },
 				{ upgrade = "WalkSpeed", maxLevel = 5 },
 				{ upgrade = "TripleOpen", maxLevel = 1 },
 				{ upgrade = "GoldLuck", maxLevel = 5 },
@@ -3155,7 +3179,7 @@ local GameConfig = {
 			id = "Farm",
 			displayName = "Bauernhof",
 			displayNameEn = "Farm",
-			unlockPrice = 26,
+			unlockPrice = 75,
 			color = { 250, 210, 70 },
 			toppingSpawns = {
 				{ topping = "Onion", weight = 45 },
@@ -3205,7 +3229,7 @@ local GameConfig = {
 			requiredRebirths = 1,
 			displayName = "Vulkan",
 			displayNameEn = "Volcano",
-			unlockPrice = 35000,
+			unlockPrice = 150000,
 			color = { 255, 80, 30 },
 			toppingSpawns = {
 				{ topping = "Chili", weight = 55 },
@@ -3222,7 +3246,7 @@ local GameConfig = {
 			requiredRebirths = 1,
 			displayName = "Süßigkeitenland",
 			displayNameEn = "Candy Land",
-			unlockPrice = 900000,
+			unlockPrice = 1900000,
 			color = { 255, 110, 200 },
 			toppingSpawns = {
 				{ topping = "ChocolateChips", weight = 55 },
@@ -3239,7 +3263,7 @@ local GameConfig = {
 			requiredRebirths = 2,
 			displayName = "Weltraum",
 			displayNameEn = "Space",
-			unlockPrice = 12000000,
+			unlockPrice = 7700000,
 			color = { 150, 100, 255 },
 			toppingSpawns = {
 				{ topping = "MoonCheese", weight = 55 },
@@ -3254,13 +3278,13 @@ local GameConfig = {
 		-- World 8 (#82), the pattern for worlds 9-15: toppings, one egg with 6 pets, a Secret
 		-- pet, a shop (shops.World8Shop), weather, island theme (islands.themes.Atlantis,
 		-- incl. scripted `deco`), look and music (WorldLooks), models in one FBX per world
-		-- (tools/blender/build_world.py). Price provisional (#108).
+		-- (tools/blender/build_world.py). Price: balancing #108.
 		{
 			id = "Atlantis",
 			requiredRebirths = 2,
 			displayName = "Atlantis",
 			displayNameEn = "Atlantis",
-			unlockPrice = 150000000,
+			unlockPrice = 31000000,
 			color = { 40, 170, 230 },
 			toppingSpawns = {
 				{ topping = "Seaweed", weight = 55 },
@@ -3271,13 +3295,13 @@ local GameConfig = {
 			secretPet = "PearlKingOtter",
 			weather = "BubbleStorm",
 		},
-		-- World 9 (#83), built after the pattern of world 8. Price provisional (#108).
+		-- World 9 (#83), built after the pattern of world 8. Price: balancing #108.
 		{
 			id = "JungleTemple",
 			requiredRebirths = 3,
 			displayName = "Dschungel-Tempel",
 			displayNameEn = "Jungle Temple",
-			unlockPrice = 700000000,
+			unlockPrice = 120000000,
 			color = { 60, 160, 70 },
 			toppingSpawns = {
 				{ topping = "Mango", weight = 55 },
@@ -3288,13 +3312,13 @@ local GameConfig = {
 			secretPet = "GoldenMonkeyKing",
 			weather = "TropicalRain",
 		},
-		-- World 10 (#84), after world 9 (#83): same pattern as Atlantis. Price provisional (#108).
+		-- World 10 (#84), after world 9 (#83): same pattern as Atlantis. Price: balancing #108.
 		{
 			id = "DesertPyramids",
 			requiredRebirths = 3,
 			displayName = "Wüsten-Pyramiden",
 			displayNameEn = "Desert Pyramids",
-			unlockPrice = 20000000000,
+			unlockPrice = 980000000,
 			color = { 232, 184, 96 },
 			toppingSpawns = {
 				{ topping = "Date", weight = 55 },
@@ -3305,13 +3329,13 @@ local GameConfig = {
 			secretPet = "ScorpionKing",
 			weather = "Sandstorm",
 		},
-		-- World 11 (#85), after world 10 (#84). 5 rebirths (spec #72). Price provisional (#108).
+		-- World 11 (#85), after world 10 (#84). 5 rebirths (spec #72). Price: balancing #108.
 		{
 			id = "HauntedCastle",
 			requiredRebirths = 5,
 			displayName = "Spukschloss",
 			displayNameEn = "Haunted Castle",
-			unlockPrice = 90000000000,
+			unlockPrice = 7900000000,
 			color = { 140, 80, 190 },
 			toppingSpawns = {
 				{ topping = "Pumpkin", weight = 55 },
@@ -3322,13 +3346,13 @@ local GameConfig = {
 			secretPet = "CountFangtastic",
 			weather = "Thunderstorm",
 		},
-		-- World 12 (#86), after world 11 (#85). 5 rebirths (spec #72). Price provisional (#108).
+		-- World 12 (#86), after world 11 (#85). 5 rebirths (spec #72). Price: balancing #108.
 		{
 			id = "DinoAge",
 			requiredRebirths = 5,
 			displayName = "Dino-Urzeit",
 			displayNameEn = "Dino Age",
-			unlockPrice = 400000000000,
+			unlockPrice = 63000000000,
 			color = { 120, 170, 60 },
 			toppingSpawns = {
 				{ topping = "FernSpinach", weight = 55 },
@@ -3339,13 +3363,13 @@ local GameConfig = {
 			secretPet = "PizzasaurusRex",
 			weather = "AshRain",
 		},
-		-- World 13 (#87), after world 12 (#86). 7 rebirths (spec #72). Price provisional (#108).
+		-- World 13 (#87), after world 12 (#86). 7 rebirths (spec #72). Price: balancing #108.
 		{
 			id = "CrystalCave",
 			requiredRebirths = 7,
 			displayName = "Kristallhöhle",
 			displayNameEn = "Crystal Cave",
-			unlockPrice = 1800000000000,
+			unlockPrice = 500000000000,
 			color = { 150, 100, 230 },
 			toppingSpawns = {
 				{ topping = "CrystalSalt", weight = 55 },
@@ -3356,13 +3380,13 @@ local GameConfig = {
 			secretPet = "DiamondMoleKing",
 			weather = "CrystalGlitter",
 		},
-		-- World 14 (#88), after world 13 (#87). 7 rebirths (spec #72). Price provisional (#108).
+		-- World 14 (#88), after world 13 (#87). 7 rebirths (spec #72). Price: balancing #108.
 		{
 			id = "CloudCity",
 			requiredRebirths = 7,
 			displayName = "Wolkenstadt",
 			displayNameEn = "Cloud City",
-			unlockPrice = 8000000000000,
+			unlockPrice = 8100000000000,
 			color = { 255, 214, 120 },
 			toppingSpawns = {
 				{ topping = "CloudMozzarella", weight = 55 },
@@ -3374,13 +3398,13 @@ local GameConfig = {
 			weather = "RainbowSky",
 		},
 		-- World 15 (#89), the last world after world 14 (#88). 10 rebirths (spec #72).
-		-- Price provisional (#108).
+		-- Price: balancing #108.
 		{
 			id = "PizzaParadise",
 			requiredRebirths = 10,
 			displayName = "Pizza-Paradies",
 			displayNameEn = "Pizza Paradise",
-			unlockPrice = 40000000000000,
+			unlockPrice = 260000000000000,
 			color = { 255, 196, 56 },
 			toppingSpawns = {
 				{ topping = "GoldSalami", weight = 55 },

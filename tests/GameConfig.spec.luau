@@ -52,11 +52,11 @@ describe("GameConfig", function()
 		end
 	end)
 
-	it("puts world 2 (Bauernhof) behind a 26 coin barrier with its own four toppings", function()
+	it("puts world 2 (Bauernhof) behind a 75 coin barrier with its own four toppings", function()
 		local farm = GameConfig.worlds[2]
 
 		expect(farm.id).toBe("Farm")
-		expect(farm.unlockPrice).toBe(26)
+		expect(farm.unlockPrice).toBe(75)
 		local toppings = {}
 		for _, spawn in farm.toppingSpawns do
 			table.insert(toppings, GameConfig.toppings[spawn.topping].displayName)
@@ -92,35 +92,35 @@ describe("GameConfig", function()
 		expect(toppingNames(icebergs)).toEqual({ "Eisberg-Salat", "Gefrorene Erbsen", "Lachs" })
 	end)
 
-	it("puts world 5 (Vulkan) behind a 35.000 coin barrier with chili, pepperoni and jalapeño", function()
+	it("puts world 5 (Vulkan) behind a 150.000 coin barrier with chili, pepperoni and jalapeño", function()
 		local volcano = GameConfig.worlds[5]
 
 		expect(volcano.id).toBe("Volcano")
 		expect(volcano.displayName).toBe("Vulkan")
-		expect(volcano.unlockPrice).toBe(35000)
+		expect(volcano.unlockPrice).toBe(150000)
 		expect(toppingNames(volcano)).toEqual({ "Chili", "Jalapeño", "Peperoni" })
 	end)
 
 	it(
-		"puts world 6 (Süßigkeitenland) behind a 900.000 coin barrier with chocolate chips, gummy bears and marshmallow",
+		"puts world 6 (Süßigkeitenland) behind a 1,9 Mio coin barrier with chocolate chips, gummy bears and marshmallow",
 		function()
 			local candy = GameConfig.worlds[6]
 
 			expect(candy.id).toBe("CandyLand")
 			expect(candy.displayName).toBe("Süßigkeitenland")
-			expect(candy.unlockPrice).toBe(900000)
+			expect(candy.unlockPrice).toBe(1900000)
 			expect(toppingNames(candy)).toEqual({ "Gummibärchen", "Marshmallow", "Schoko-Stücke" })
 		end
 	)
 
 	it(
-		"puts world 7 (Weltraum) behind a 12 Mio coin barrier with moon cheese, star olives and alien mushroom",
+		"puts world 7 (Weltraum) behind a 7,7 Mio coin barrier with moon cheese, star olives and alien mushroom",
 		function()
 			local space = GameConfig.worlds[7]
 
 			expect(space.id).toBe("Space")
 			expect(space.displayName).toBe("Weltraum")
-			expect(space.unlockPrice).toBe(12000000)
+			expect(space.unlockPrice).toBe(7700000)
 			expect(toppingNames(space)).toEqual({ "Alien-Pilz", "Mond-Käse", "Sternen-Oliven" })
 		end
 	)
@@ -445,7 +445,7 @@ describe("GameConfig", function()
 		end
 	end)
 
-	it("makes toppings of a later world worth about 4x those of the world before", function()
+	it("makes toppings of a later world worth 1.5x-20x those of the world before (#108)", function()
 		local function averageValue(world): number
 			local total = 0
 			for _, spawn in world.toppingSpawns do
@@ -480,7 +480,8 @@ describe("GameConfig", function()
 		for i = 2, #GameConfig.worlds do
 			local ratio = averageValue(GameConfig.worlds[i]) / averageValue(GameConfig.worlds[i - 1])
 			local steps = slots[GameConfig.worlds[i].id] - slots[GameConfig.worlds[i - 1].id]
-			expect(ratio >= 3 ^ steps and ratio <= 5 ^ steps).toBe(true)
+			-- #108: the step follows the rebirths between two worlds (x1.5 early, up to x20 late).
+			expect(ratio >= 1.5 ^ steps and ratio <= 20 ^ steps).toBe(true)
 		end
 	end)
 end)
@@ -495,16 +496,41 @@ describe("GameConfig balancing", function()
 		return rules.rebirthOffer(state).price
 	end
 
-	it("prices every rebirth above the barrier of the last world reachable before it (#77)", function()
-		for done = 0, 2 do
-			local lastPrice = 0
-			for _, world in GameConfig.worlds do
-				if (world.requiredRebirths or 0) <= done then
-					lastPrice = world.unlockPrice
-				end
-			end
-			expect(rebirthPrice(done) > lastPrice).toBe(true)
+	-- Rebirths done when the model player (tools/BalanceSim) first buys the world: the first
+	-- run whose rebirth costs at least the world (#108), never before its rebirth tier.
+	local function plannedRun(world: any): number
+		local done = world.requiredRebirths or 0
+		while rebirthPrice(done) < world.unlockPrice do
+			done += 1
 		end
+		return done
+	end
+
+	it("prices every rebirth above the barrier of the last world reachable before it (#77)", function()
+		local lastPrice = 0
+		for _, world in GameConfig.worlds do
+			if (world.requiredRebirths or 0) == 0 then
+				lastPrice = world.unlockPrice
+			end
+		end
+		expect(rebirthPrice(0) > lastPrice).toBe(true)
+	end)
+
+	it("puts every later world above the rebirth price of the run before its planned run (#108)", function()
+		-- Otherwise the world would be bought a run earlier than planned (docs/balancing.md).
+		local lastRun = 0
+		for index = 5, #GameConfig.worlds do
+			local world = GameConfig.worlds[index]
+			local run = plannedRun(world)
+			expect(run >= lastRun).toBe(true)
+			if run > (world.requiredRebirths or 0) then
+				expect(world.unlockPrice > rebirthPrice(run - 1)).toBe(true)
+			end
+			lastRun = run
+		end
+		-- World 15 comes after about 30 rebirths (#108: ~40 h with a rebirth every ~45-90 min).
+		local last = plannedRun(GameConfig.worlds[#GameConfig.worlds])
+		expect(last >= 25 and last <= 35).toBe(true)
 	end)
 
 	it("makes every later rebirth cost more than the one before", function()
@@ -512,8 +538,8 @@ describe("GameConfig balancing", function()
 	end)
 
 	it("prices the coin levels only shop 3 sells above shop 2 and below the rebirth of its run", function()
-		-- Shop 3 stands in world 7, which needs 2 rebirths: the next rebirth there is the third.
-		local rebirthOfRun = rebirthPrice(GameConfig.worlds[7].requiredRebirths)
+		-- Shop 3 stands in world 7: the run in which the player first buys world 7 (#108).
+		local rebirthOfRun = rebirthPrice(plannedRun(GameConfig.worlds[7]))
 		local shop2Max = {}
 		for _, offer in GameConfig.shops.World4Shop.offers do
 			shop2Max[offer.upgrade] = offer.maxLevel
@@ -612,6 +638,8 @@ describe("GameConfig shops", function()
 	end)
 
 	it("shop 3 in world 7 sells every upgrade up to its last level, with pizza space up to 20", function()
+		-- Except the pet slot and inventory levels of the later shops (#108).
+		local LATER = { PetSlots = 5, InventorySpace = 5 }
 		local shop3 = GameConfig.shops.World7Shop
 		local state = rules.newPlayerState()
 		state.coins = 1e15
@@ -626,11 +654,30 @@ describe("GameConfig shops", function()
 				state = result.state
 				reason = result.reason
 			until not result.ok
-			expect(reason).toBe("MaxLevel")
-			expect(rules.upgradeLevel(state, upgradeId)).toBe(#upgrade.levels)
+			expect(reason).toBe(if LATER[upgradeId] then "ShopLevelLimit" else "MaxLevel")
+			expect(rules.upgradeLevel(state, upgradeId)).toBe(LATER[upgradeId] or #upgrade.levels)
 		end
 		expect(rules.pizzaCapacity(state)).toBe(20)
 		expect(rules.petSlots(state)).toBe(8)
+	end)
+
+	it("sells the new pet slot and inventory levels in the shops of worlds 10, 12 and 15 (#108)", function()
+		local state = rules.newPlayerState()
+		state.gems = 1e9
+		state.rebirths = 10
+		for index = 2, #GameConfig.worlds do
+			table.insert(state.unlockedWorlds, GameConfig.worlds[index].id)
+		end
+		for _, step in { { "World10Shop", 9, 600 }, { "World12Shop", 10, 750 }, { "World15Shop", 11, 900 } } do
+			for _, upgradeId in { "PetSlots", "InventorySpace" } do
+				repeat
+					local result = rules.buyUpgrade(state, step[1], upgradeId)
+					state = result.state
+				until not result.ok
+			end
+			expect(rules.petSlots(state)).toBe(step[2])
+			expect(rules.inventorySlots(state)).toBe(step[3])
+		end
 	end)
 
 	it("gives shop 3 higher range and magnet levels than shop 2", function()
@@ -806,9 +853,9 @@ describe("GameConfig pets and eggs", function()
 		expect(rules.petSlots(rules.newPlayerState())).toBe(3)
 	end)
 
-	it("starts players with 50 inventory slots", function()
+	it("starts players with 75 inventory slots (+50 %, #108)", function()
 		local rules = GameRules.new(GameConfig)
-		expect(rules.inventorySlots(rules.newPlayerState())).toBe(50)
+		expect(rules.inventorySlots(rules.newPlayerState())).toBe(75)
 	end)
 
 	it("gives world 1 an egg", function()
@@ -909,47 +956,44 @@ describe("GameConfig worlds and eggs", function()
 		end
 	end)
 
-	-- Flat pet curve (#57): best pet of both eggs per world, within 10 %.
-	-- World 8 (#82) continues it with +620 %, world 9 (#83) with +760 %, world 10 (#84)
-	-- with +900 %, world 11 (#85) with +1040 % (provisional, #108).
+	-- Pet curve (#108, after the flat curve of #57): the best pet of both eggs per world grows
+	-- x1.25 per world from +55 % (world 1) to +1250 % (world 15), within 10 %. Pets grow
+	-- evenly instead of jumping early, so a rebirth run keeps its ~45-90 min.
 	-- By world id, as worlds 8-15 are built in parallel (#82-#89).
 	local PET_CURVE = {
-		PizzeriaGarden = 0.75,
-		Farm = 1.1,
-		Beach = 1.6,
-		Icebergs = 2.3,
-		Volcano = 3.2,
-		CandyLand = 4,
-		Space = 5,
-		Atlantis = 6.2,
-		JungleTemple = 7.6,
-		DesertPyramids = 9,
-		HauntedCastle = 10.4,
-		DinoAge = 11.8,
-		CrystalCave = 13.2,
-		CloudCity = 14.6,
-		PizzaParadise = 16,
+		PizzeriaGarden = 0.55,
+		Farm = 0.69,
+		Beach = 0.86,
+		Icebergs = 1.07,
+		Volcano = 1.34,
+		CandyLand = 1.68,
+		Space = 2.1,
+		Atlantis = 2.62,
+		JungleTemple = 3.28,
+		DesertPyramids = 4.1,
+		HauntedCastle = 5.12,
+		DinoAge = 6.4,
+		CrystalCave = 8,
+		CloudCity = 10,
+		PizzaParadise = 12.5,
 	}
 
-	it(
-		"makes the best pet of each world follow +75/110/160/230/320/400/500/620/760/900/1040/1180/1320/1460/1600 % and rise",
-		function()
-			local previous = 0
-			for _, world in GameConfig.worlds do
-				local best = 0
-				for _, eggId in world.eggs do
-					for _, entry in GameConfig.eggs[eggId].pets do
-						best = math.max(best, GameConfig.pets[entry.pet].bonus)
-					end
+	it("makes the best pet of each world follow +55 % x1.25 per world up to +1250 % and rise (#108)", function()
+		local previous = 0
+		for _, world in GameConfig.worlds do
+			local best = 0
+			for _, eggId in world.eggs do
+				for _, entry in GameConfig.eggs[eggId].pets do
+					best = math.max(best, GameConfig.pets[entry.pet].bonus)
 				end
-				if PET_CURVE[world.id] == nil or math.abs(best / PET_CURVE[world.id] - 1) > 0.1 then
-					error(`{world.id}: best pet +{math.round(best * 100)} %`)
-				end
-				expect(best > previous).toBe(true)
-				previous = best
 			end
+			if PET_CURVE[world.id] == nil or math.abs(best / PET_CURVE[world.id] - 1) > 0.1 then
+				error(`{world.id}: best pet +{math.round(best * 100)} %`)
+			end
+			expect(best > previous).toBe(true)
+			previous = best
 		end
-	)
+	end)
 
 	it("makes a later world's first egg pricier", function()
 		for i = 2, #GameConfig.worlds do
@@ -1057,8 +1101,8 @@ end)
 describe("GameConfig gems", function()
 	local rules = GameRules.new(GameConfig)
 
-	it("makes about 1 in 150 toppings a gem topping worth 1-3 gems", function()
-		expect(math.abs(GameConfig.gems.toppingChance - 1 / 150) < 1e-9).toBe(true)
+	it("makes about 1 in 600 toppings a gem topping worth 1-3 gems (#108)", function()
+		expect(math.abs(GameConfig.gems.toppingChance - 1 / 600) < 1e-9).toBe(true)
 		expect(GameConfig.gems.toppingMin).toBe(1)
 		expect(GameConfig.gems.toppingMax).toBe(3)
 		expect(GameConfig.toppings[GameConfig.gems.toppingId]).toBeNil()
@@ -1077,7 +1121,7 @@ describe("GameConfig gems", function()
 		end
 	end)
 
-	it("sells pet slots 3 -> 8 for about 50 / 150 / 400 / 1.000 gems, staged per shop", function()
+	it("sells pet slots 3 -> 11 for 40 / 120 / 250 / 450 / 700 / 750 / 950 / 1.200 gems, staged per shop", function()
 		local levels = GameConfig.upgrades.PetSlots.levels
 		local prices, slots = {}, {}
 		for _, level in levels do
@@ -1086,11 +1130,8 @@ describe("GameConfig gems", function()
 		end
 
 		expect(GameConfig.petSlots.start).toBe(3)
-		expect(slots).toEqual({ 4, 5, 6, 7, 8 })
-		expect(prices[1]).toBe(50)
-		expect(prices[2]).toBe(150)
-		expect(prices[3]).toBe(400)
-		expect(prices[4]).toBe(1000)
+		expect(slots).toEqual({ 4, 5, 6, 7, 8, 9, 10, 11 })
+		expect(prices).toEqual({ 40, 120, 250, 450, 700, 750, 950, 1200 })
 
 		local state = rules.newPlayerState()
 		state.gems = 1e9
@@ -1140,12 +1181,12 @@ describe("GameConfig tutorial", function()
 		expect(rules.tutorial(state).goal <= rules.pizzaCapacity(state)).toBe(true)
 	end)
 
-	it("prices the first pizza space upgrade at 12 coins, the garden egg stays at 25", function()
-		expect(GameConfig.upgrades.PizzaSpace.levels[1].price).toBe(12)
+	it("prices the first pizza space upgrade at 15 coins, the garden egg stays at 25 (#108)", function()
+		expect(GameConfig.upgrades.PizzaSpace.levels[1].price).toBe(15)
 		expect(GameConfig.eggs.GardenEgg.price).toBe(25)
 	end)
 
-	it("lets new players afford the first upgrade after 3-4 rounds on average", function()
+	it("lets new players afford the first upgrade after about 3 rounds on average (#108)", function()
 		local world = GameConfig.worlds[1]
 		local totalWeight, weightedValue = 0, 0
 		for _, spawn in world.toppingSpawns do
@@ -1155,25 +1196,25 @@ describe("GameConfig tutorial", function()
 		local coinsPerRound = weightedValue / totalWeight * GameConfig.pizza.startCapacity
 		local rounds = math.ceil(GameConfig.upgrades.PizzaSpace.levels[1].price / coinsPerRound)
 
-		expect(rounds >= 3 and rounds <= 4).toBe(true)
+		expect(rounds).toBe(3)
 	end)
 
 	it("reaches the 'buy an upgrade' step and finishes it with the first pizza space upgrade", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
-		-- Four average rounds: salami + mushroom (1 + 2 coins) each.
-		for _ = 1, 4 do
+		-- Three average rounds: salami + mushroom (2 + 4 coins, doubled in #108) each.
+		for _ = 1, 3 do
 			state = rules.collectTopping(state, "Salami", 1).state
 			state = rules.collectTopping(state, "Mushroom", 1).state
 			state = rules.sellPizza(state).state
 		end
 		expect(rules.tutorial(state).step).toBe("BuyUpgrade")
-		expect(state.coins).toBe(12)
+		expect(state.coins).toBe(18)
 
 		local result = rules.buyUpgrade(state, "World1Shop", "PizzaSpace")
 
 		expect(result.ok).toBe(true)
-		expect(result.state.coins).toBe(0)
+		expect(result.state.coins).toBe(3)
 		expect(rules.pizzaCapacity(result.state)).toBe(3)
 		expect(rules.tutorial(result.state).step).toBe("OpenEgg")
 	end)
@@ -1320,9 +1361,9 @@ describe("GameConfig save", function()
 end)
 
 describe("GameConfig rebirth", function()
-	it("gives +50 % coins per rebirth and makes every rebirth pricier than the one before", function()
-		expect(GameConfig.rebirth.multiplierPerRebirth).toBe(0.5)
-		expect(GameConfig.rebirth.priceFactor > 1).toBe(true)
+	it("gives +25 % coins per rebirth and doubles the price with every rebirth (#108)", function()
+		expect(GameConfig.rebirth.multiplierPerRebirth).toBe(0.25)
+		expect(GameConfig.rebirth.priceFactor).toBe(2)
 	end)
 
 	it("remembers per player that the rebirth button was opened, like the gifts button", function()
@@ -1361,13 +1402,13 @@ describe("GameConfig play time gifts", function()
 		end
 	end)
 
-	it("gives 3 gems, 5 gems, 1 potion, 1 potion, 8 gems, 10 gems + 1 potion", function()
+	it("gives 3 gems, 4 gems, 1 potion, 1 potion, 4 gems, 5 gems + 1 potion (#108)", function()
 		local gifts = {}
 		for _, gift in GameConfig.gifts do
 			table.insert(gifts, kinds(gift))
 		end
 
-		expect(gifts).toEqual({ "Gems 3", "Gems 5", "Potion 1", "Potion 1", "Gems 8", "Gems 10 + Potion 1" })
+		expect(gifts).toEqual({ "Gems 3", "Gems 4", "Potion 1", "Potion 1", "Gems 4", "Gems 5 + Potion 1" })
 	end)
 
 	it("only gives fixed amounts of gems and potions, never coins", function()

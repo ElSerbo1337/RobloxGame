@@ -1048,8 +1048,17 @@ function Texts.render(language: Language, key: string, args: SignArgs?): string
 end
 
 local SEPARATORS = {
-	de = { thousands = ".", decimal = ",", units = { { 1e12, " Bio" }, { 1e9, " Mrd" }, { 1e6, " Mio" } } },
-	en = { thousands = ",", decimal = ".", units = { { 1e12, "T" }, { 1e9, "B" }, { 1e6, "M" } } },
+	-- Up to 1e18 (#108: world 15 and late rebirths cost several hundred trillion coins).
+	de = {
+		thousands = ".",
+		decimal = ",",
+		units = { { 1e18, " Trio" }, { 1e15, " Brd" }, { 1e12, " Bio" }, { 1e9, " Mrd" }, { 1e6, " Mio" } },
+	},
+	en = {
+		thousands = ",",
+		decimal = ".",
+		units = { { 1e18, "Qi" }, { 1e15, "Qa" }, { 1e12, "T" }, { 1e9, "B" }, { 1e6, "M" } },
+	},
 }
 
 -- Whole number with thousands separators: "1.234.567" / "1,234,567".
