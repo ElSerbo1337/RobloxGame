@@ -1988,6 +1988,33 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Sobald #105 (Wetter) da ist: Admin → **Wetter starten** Gewitter auf der Spuk-Insel; mit „Bildschirm-Blitze“ **aus** keine Blitze.
 - [ ] Musik: verspielt-gruselige Musik (Creator „Roblox“, z. B. Cembalo/Pizzicato) wählen, ID bei `Music_HauntedCastle` eintragen.
 
+## MEGA UPDATE – #86 Welt 12 Dino-Urzeit
+
+Vierte neue Welt nach dem Atlantis-Muster: farngrüne Urzeit-Insel mit **Knochen-Rand** (niedrige Lava-Gesteinsmauer, aus jedem Stück ragt ein gebogener Rippen-Knochen), Basalt-Brücke, **Dino-Fossil** hinten links auf der Terrasse (Wirbelsäule, 4 Rippenpaare, Beine, Schädel Richtung Weg, ein **Bernstein** unter den Rippen) und **zwei rauchende Vulkane** dahinter am Inselrand; Farne, Urzeit-Bäume, herumliegende Knochen/Rippenkörbe/Schädel, Basaltfelsen, 4 Bernstein-Laternen und Glut-Funken (alles per Skript, ~300 Teile, kein Import nötig). **Nacht (#105):** Laternen, Bernstein und Vulkan-Lava tragen `NightLight` und leuchten nachts auf. 3 Beläge (Farn-Spinat, Urzeit-Ei, Bernstein-Honig), **Fossil-Ei** (Muster „Fußspuren“) mit 6 Pets (Farn-Raptor, Mini-Triceratops, Bernstein-Stegosaurus, Vulkan-Flugsaurier, Lava-Ankylosaurus, Urzeit-T-Rex), Geheim-Pet **Pizzasaurus Rex**, Dino-Shop. Braucht **5 Rebirths** + 400 Mrd. Münzen (vorläufig, #108). Wetter **„Ascheregen“** (Eintrag aus #105). Musik `Music_DinoAge` (aus #112) hat noch **keine ID**. Geheime Truhe (#100): Anker `SecretChestAnchor` auf der **rechten** Terrasse. Vorschau: `assets/previews/worlds/DinoAge.png`, Insel: `assets/previews/islands/World12_Overview.jpg`.
+
+Vorher: `lune run test` → alle grün (u. a. `WorldDeco.spec` „dino age deco (#86)“, `WorldModels.spec`).
+
+**Modelle importieren** (eine Datei für die ganze Welt):
+
+- [ ] **Home → Import 3D** → `assets/models/worlds/DinoAge.fbx` → *Rig Type* = **No Rig** → **Import**, das Model `DinoAge` nach `ReplicatedStorage → GameAssets → Models → Worlds` ziehen. Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.DinoAge:GetChildren())` → **11** (`FernSpinach`, `PrehistoricEgg`, `AmberHoney`, `FernRaptor`, `MiniTriceratops`, `AmberStegosaurus`, `VolcanoPterodactyl`, `LavaAnkylosaurus`, `PrimalTRex`, `PizzasaurusRex`, `FossilEgg`).
+
+Ohne Import läuft alles mit Platzhaltern (Scheiben, Kugeln, Platzhalter-Ei).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Output ohne rote Fehler beim Start (Insel 12 wird gebaut, auch ohne Import).
+- [ ] Admin-Panel → **Rebirths setzen** 5 → **Welt freischalten** bis Welt 11 → zum Tor der Dino-Urzeit: Preisschild 400 Mrd., mit **Münzen geben** kaufen → Tor offen. Mit 4 Rebirths: „Ab 5 Rebirths“.
+- [ ] Insel ansehen: Knochen-Rand (Mauer hält Spieler, Rippen nicht im Weg), Basalt-Brücke, Fossil mit Schädel und Bernstein, 2 Vulkane mit Rauch dahinter (stehen am Boden, nicht schwebend/abgeschnitten am Rand?), Farne, Urzeit-Bäume, Knochen, Felsen, Laternen, Glut-Funken. Nichts auf Weg/Feld/vor Stationen.
+- [ ] Nacht abwarten (oder Admin-Zeit, falls vorhanden): Laternen, Bernstein und Vulkan-Lava leuchten auf, morgens wieder aus.
+- [ ] Wetter „Ascheregen“ erscheint auf der Dino-Insel (dunkle Flocken mit Glut).
+- [ ] Rechte Terrasse: `Workspace → … DinoAge → Anchors → SecretChestAnchor` liegt auf der Terrasse, frei von Deko (Attribut `ClearRadius` = 5).
+- [ ] Beläge Farn-Spinat/Urzeit-Ei/Bernstein-Honig sammeln, verkaufen; Namen de/en.
+- [ ] Fossil-Ei (ein Stand): 6 Pets + „??? (Geheim)“, öffnen; **Geheim-Pet geben** → Welt Dino-Urzeit → Pizzasaurus Rex.
+- [ ] Dino-Shop, Portal (Teleport), Telefon/Lieferwagen mit Dino-Belägen.
+- [ ] Grafik **Niedrig** → Farnblätter (teilweise), Knochen-Knubbel, äußere Rippen, Augenhöhlen, Lianen weg; **Hoch** → alles wieder da. `worldDeco` aus → keine Skript-Deko.
+- [ ] Musik-ID für `Music_DinoAge` eintragen (Suchbegriffe in `SoundList.luau`).
+- [ ] Handy: Bildrate auf der Dino-Insel ok.
+
 ## MEGA UPDATE – #99 Codes
 
 Neu: Codes im Einstellungs-Menü (Feld aus #76) werden jetzt vom Server geprüft (`src/server/CodeService.luau`, Regeln `rules.redeemCode`). Codes in `GameConfig.codes`: `WELCOME` = 50 Gems, `PIZZA` = 2 Glücks-Tränke, beide bis 31.12.2026 23:59 deutscher Zeit, einmal pro Spieler. Schalter: `GameConfig.features.codes`.
