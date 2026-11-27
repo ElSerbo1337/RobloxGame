@@ -2355,3 +2355,12 @@ Vorher: `lune run test` → alle grün (u. a. `tests/Profile.spec.luau`). **Badg
 - [ ] Quest „Öffne geheime Truhe(n)“ (ab Welt 3) zählt beim Öffnen hoch.
 - [ ] Grafik „Niedrig“: Funkeln deutlich schwächer, aber sichtbar.
 - [ ] Feature-Schalter `hiddenChests = false`: keine Truhen, keine Truhen-Quests.
+
+## MEGA UPDATE – #115 Icon, Thumbnails und Spielbeschreibung
+
+Nicht in Studio, sondern im Creator Hub – erst beim öffentlichen Start des Updates (nichts vorher veröffentlichen). Alles steht in `docs/store/mega-update.md`.
+- [ ] Bilder ansehen (`docs/store/mega/`): Passt der Look? Ist der Text auf dem Handy-Kachelformat noch lesbar? Bei Änderungswünschen: `python tools/blender/render_mega.py <szene> --preview`.
+- [ ] Icon `Icon.png` hochladen (Configure → Icon). Die Thumbnails in der Reihenfolge 1–4 hochladen, die deutschen als Hauptbilder. Die englischen kommen unter Localization → Englisch.
+- [ ] Titel und Beschreibung (de) unter Basic Info eintragen, die englische Fassung unter Localization → Englisch → Experience Information.
+- [ ] Vor dem Eintragen prüfen, ob nach #108 noch alles stimmt (die Texte nennen absichtlich keine Preise/Chancen, nur „8 neue Welten / 15 Welten“).
+- [ ] Spielseite im Browser (Desktop + Handy-App) ansehen: Icon, Thumbnails, Emojis korrekt dargestellt.
