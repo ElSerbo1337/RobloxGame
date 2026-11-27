@@ -2069,6 +2069,33 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Musik-ID für `Music_CloudCity` eintragen (Suchbegriffe in `SoundList.luau`).
 - [ ] Handy: Bildrate auf der Wolken-Insel ok.
 
+## MEGA UPDATE – #89 Welt 15 Pizza-Paradies
+
+Goldene **Endwelt** nach dem Atlantis-Muster: goldener Kruste-Boden, **Goldkruste-Rand** (niedrige Krustenwand, die Spieler hält, mit Krustenrolle obendrauf, Salamischeibe an jedem zweiten Stück, jedes fünfte Stück ein Goldpfosten mit Leuchtkugel), Leuchtbrücke in Gold, **riesige goldene Pizza-Statue** hinten links auf der Terrasse (Marmorsockel, Goldsäule, schräg gestellte Gold-Pizza mit Salami, Diamant-Käse-Steinen und Regenbogen-Basilikum, leuchtende Kugel darüber) mit **goldenem Ofen** daneben (leuchtende Öffnung zur Inselmitte); Teich und Bach sind **Käse**, dazu **Salami-Berge**, flache **Käse-Flüsse**, **schwebende Pizzastücke**, goldene Leuchtkugeln und Funkeln (alles per Skript, ~340 Teile, kein Import nötig). 3 Beläge (Gold-Salami, Diamant-Käse, Regenbogen-Basilikum), **Götter-Ei** (Muster „Pizzastücke“) mit 6 Pets (Gold-Salami-Ferkel, Diamant-Käse-Maus, Regenbogen-Chamäleon, Pizza-Phönix, Ofen-Titan, Olymp-Pizzadrache), Geheim-Pet **Pizza-Zeus**, Götter-Shop. Braucht **10 Rebirths** + 40 Bio. Münzen (vorläufig, #108). Wetter **„Käseregen“** (Eintrag `CheeseRain` aus #105). Musik `Music_PizzaParadise` (Eintrag schon vorhanden) hat noch **keine ID**. Geheime Truhe (#100): Anker `SecretChestAnchor` auf der **rechten** Terrasse. Vorschau: `assets/previews/worlds/PizzaParadise.png`, Insel: `assets/previews/islands/World15_Overview.jpg`.
+
+Vorher: `lune run test` → alle grün (u. a. `WorldDeco.spec` „pizza paradise deco (#89)“, `WorldModels.spec`).
+
+**Modelle importieren** (eine Datei für die ganze Welt):
+
+- [ ] **Home → Import 3D** → `assets/models/worlds/PizzaParadise.fbx` → *Rig Type* = **No Rig** → **Import**, das Model `PizzaParadise` nach `ReplicatedStorage → GameAssets → Models → Worlds` ziehen. Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.PizzaParadise:GetChildren())` → **11** (`GoldSalami`, `DiamondCheese`, `RainbowBasil`, `GoldSalamiPiglet`, `DiamondCheeseMouse`, `RainbowBasilChameleon`, `PizzaPhoenix`, `OvenTitan`, `OlympusPizzaDragon`, `PizzaZeus`, `DivineEgg`).
+
+Ohne Import läuft alles mit Platzhaltern (Scheiben, Kugeln, Platzhalter-Ei).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Output ohne rote Fehler beim Start (Insel 15 wird gebaut, auch ohne Import).
+- [ ] Admin-Panel → **Rebirths setzen** 10 → **Welt freischalten** bis Welt 14 → zum Tor des Pizza-Paradieses: Preisschild 40 Bio., mit **Münzen geben** kaufen → Tor offen. Mit 9 Rebirths: „Ab 10 Rebirths“.
+- [ ] **Kamerafahrt** beim ersten Betreten (#79; vorher Admin „Welt-Intros zurücksetzen“): Die Fahrt beginnt hinten links – die Gold-Pizza-Statue muss am Anfang groß im Bild sein.
+- [ ] Insel ansehen: Goldkruste-Rand (hält Spieler), Statue (Pizza sitzt auf der Säule, Salami/Diamanten/Basilikum liegen auf der Pizza), goldener Ofen daneben, Käse-Teich/-Bach, Salami-Berge, Käse-Flüsse (flach, kein Flackern mit dem Boden – in der Blender-Vorschau wirkten sie dunkel gemustert, bitte ansehen), schwebende Pizzastücke (nicht im Weg). Nichts auf Weg/Feld/vor Stationen.
+- [ ] Wetter „Käseregen“ erscheint auf der Insel (gelbe Flocken).
+- [ ] Rechte Terrasse: `Workspace → … PizzaParadise → Anchors → SecretChestAnchor` liegt auf der Terrasse, frei von Deko (Attribut `ClearRadius` = 5).
+- [ ] Beläge Gold-Salami/Diamant-Käse/Regenbogen-Basilikum sammeln, verkaufen; Namen de/en.
+- [ ] Götter-Ei (ein Stand): 6 Pets + „??? (Geheim)“, öffnen; **Geheim-Pet geben** → Welt Pizza-Paradies → Pizza-Zeus.
+- [ ] Götter-Shop, Portal (Teleport), Telefon/Lieferwagen mit den neuen Belägen. Letzte Welt: hinten keine Brücke/kein Tor.
+- [ ] Grafik **Niedrig** → Krustenrollen, Salami-Fettflecken, Salami auf den Pizzastücken, Schornstein, Leuchtkugeln weg; **Hoch** → alles wieder da. `worldDeco` aus → keine Skript-Deko.
+- [ ] Musik-ID für `Music_PizzaParadise` eintragen (Suchbegriffe in `SoundList.luau`, festlich).
+- [ ] Handy: Bildrate auf der Pizza-Insel ok.
+
 ## MEGA UPDATE – #99 Codes
 
 Neu: Codes im Einstellungs-Menü (Feld aus #76) werden jetzt vom Server geprüft (`src/server/CodeService.luau`, Regeln `rules.redeemCode`). Codes in `GameConfig.codes`: `WELCOME` = 50 Gems, `PIZZA` = 2 Glücks-Tränke, beide bis 31.12.2026 23:59 deutscher Zeit, einmal pro Spieler. Schalter: `GameConfig.features.codes`.
@@ -2245,7 +2272,7 @@ So geht's: Studio → **View → Toolbox → Creator Store → Audio** (Musik: T
 | `Music_DinoAge` | Musik Welt 12 (geplant) | Schleife, Urzeit-Abenteuer | *prehistoric*, *dinosaur*, *tribal drums*, *adventure*, *jungle* | |
 | `Music_CrystalCave` | Musik Welt 13 (geplant) | Schleife, glitzernd-magisch | *crystal*, *cave*, *glockenspiel*, *magical*, *chimes* | |
 | `Music_CloudCity` | Musik Welt 14 (geplant) | Schleife, luftig-verträumt | *sky*, *dreamy*, *airy*, *flute*, *light ambient* | |
-| `Music_PizzaParadise` | Musik Welt 15 (geplant) | Schleife, fröhlich-italienisch | *italian*, *mandolin*, *happy*, *festive*, *tarantella* | |
+| `Music_PizzaParadise` | Musik Welt 15 Pizza-Paradies (#89) | Schleife, fröhlich-italienisch | *italian*, *mandolin*, *happy*, *festive*, *tarantella* | |
 
 Musik nicht doppelt vergeben (jede Welt eigene Musik), Lautstärke steht schon (Musik 0,25).
 
