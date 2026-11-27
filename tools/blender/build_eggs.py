@@ -476,6 +476,22 @@ def pattern_crystals(look):
     return objs
 
 
+def pattern_clouds(look):
+    """Cloud City (#88): little puffy clouds around the egg - three flattened balls each,
+    the middle one bigger, in two staggered rings."""
+    objs = []
+    spots = [(-2.6, -0.35), (-1.3, -0.4), (0.0, -0.3), (1.3, -0.45), (2.6, -0.3),
+             (-1.95, 0.35), (-0.65, 0.4), (0.65, 0.3), (1.95, 0.42)]
+    for i, (theta, u) in enumerate(spots):
+        for k, (dt, r) in enumerate(((-0.13, 0.1), (0.0, 0.14), (0.13, 0.1))):
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=7, radius=r)
+            puff = bpy.context.active_object
+            puff.scale = (1, 1, 0.45)
+            bpy.ops.object.transform_apply(scale=True)
+            objs.append(on_surface(puff, theta + dt, u + (0.03 if k == 1 else 0.0), lift=0.0, spin=i))
+    return objs
+
+
 PATTERNS = {
     "Spots": pattern_spots,
     "Stripes": pattern_stripes,
@@ -490,6 +506,7 @@ PATTERNS = {
     "Bats": pattern_bats,
     "Footprints": pattern_footprints,
     "Crystals": pattern_crystals,
+    "Clouds": pattern_clouds,
 }
 
 
