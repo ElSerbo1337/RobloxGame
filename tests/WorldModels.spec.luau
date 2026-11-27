@@ -142,4 +142,25 @@ describe("World model packs (#82)", function()
 			"SpookyEgg",
 		})
 	end)
+	it("lists the Dino Age assets: 3 toppings, 6 pets, the Secret pet and the egg (#86)", function()
+		local dino
+		for _, world in GameConfig.worlds do
+			if world.id == "DinoAge" then
+				dino = world
+			end
+		end
+		expect(WorldPacks.assetsOf(dino)).toEqual({
+			"AmberHoney",
+			"AmberStegosaurus",
+			"FernRaptor",
+			"FernSpinach",
+			"FossilEgg",
+			"LavaAnkylosaurus",
+			"MiniTriceratops",
+			"PizzasaurusRex",
+			"PrehistoricEgg",
+			"PrimalTRex",
+			"VolcanoPterodactyl",
+		})
+	end)
 end)

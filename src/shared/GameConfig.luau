@@ -245,6 +245,10 @@ local GameConfig = {
 			displayNameEn = "Gummy Bat Wings",
 			value = 15400000,
 		},
+		-- World 12 (Dino Age, #86): about 4.8x world 11 (#85). Provisional, tuned in #108.
+		FernSpinach = { displayName = "Farn-Spinat", displayNameEn = "Fern Spinach", value = 29300000 },
+		PrehistoricEgg = { displayName = "Urzeit-Ei", displayNameEn = "Prehistoric Egg", value = 50900000 },
+		AmberHoney = { displayName = "Bernstein-Honig", displayNameEn = "Amber Honey", value = 73900000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -1105,6 +1109,40 @@ local GameConfig = {
 			rarity = "Mythic",
 			bonus = 10.4,
 		},
+		-- World 12 (Fossil-Ei, #86): friendly baby dinos; the Mythic one is the world's best
+		-- (+1180 %, the flat curve +140 % per world after world 11), the others scaled like
+		-- the spooky egg. Provisional (#108). Models: tools/blender/build_world.py DinoAge.
+		FernRaptor = { displayName = "Farn-Raptor", displayNameEn = "Fern Raptor", rarity = "Common", bonus = 0.78 },
+		MiniTriceratops = {
+			displayName = "Mini-Triceratops",
+			displayNameEn = "Mini Triceratops",
+			rarity = "Uncommon",
+			bonus = 1.18,
+		},
+		AmberStegosaurus = {
+			displayName = "Bernstein-Stegosaurus",
+			displayNameEn = "Amber Stegosaurus",
+			rarity = "Rare",
+			bonus = 1.97,
+		},
+		VolcanoPterodactyl = {
+			displayName = "Vulkan-Flugsaurier",
+			displayNameEn = "Volcano Pterodactyl",
+			rarity = "Epic",
+			bonus = 3.15,
+		},
+		LavaAnkylosaurus = {
+			displayName = "Lava-Ankylosaurus",
+			displayNameEn = "Lava Ankylosaurus",
+			rarity = "Legendary",
+			bonus = 5.9,
+		},
+		PrimalTRex = {
+			displayName = "Urzeit-T-Rex",
+			displayNameEn = "Primal T-Rex",
+			rarity = "Mythic",
+			bonus = 11.8,
+		},
 
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
 		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
@@ -1329,6 +1367,12 @@ local GameConfig = {
 			rarity = "Secret",
 			bonus = 20.8,
 		},
+		PizzasaurusRex = {
+			displayName = "Pizzasaurus Rex",
+			displayNameEn = "Pizzasaurus Rex",
+			rarity = "Secret",
+			bonus = 23.6,
+		},
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -1337,7 +1381,7 @@ local GameConfig = {
 	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
-	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats, Footprints. `glow` = accent glows (Neon); `fancy` = showier variant
 	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
@@ -1582,6 +1626,21 @@ local GameConfig = {
 				{ pet = "PhantomDragon", chance = 0.5 },
 			},
 		},
+		-- World 12 (#86). Price provisional (#108).
+		FossilEgg = {
+			displayName = "Fossil-Ei",
+			displayNameEn = "Fossil Egg",
+			look = { color = "C8A872", accent = "5E4530", pattern = "Footprints" },
+			price = 13000000000,
+			pets = {
+				{ pet = "FernRaptor", chance = 50 },
+				{ pet = "MiniTriceratops", chance = 28 },
+				{ pet = "AmberStegosaurus", chance = 15 },
+				{ pet = "VolcanoPterodactyl", chance = 5.5 },
+				{ pet = "LavaAnkylosaurus", chance = 1 },
+				{ pet = "PrimalTRex", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -1717,6 +1776,24 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
+		World12Shop = {
+			worldId = "DinoAge",
+			displayName = "Dino-Shop",
+			displayNameEn = "Dino Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
+			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
+		},
 	},
 
 	-- Flying islands (#27): spawn island, then world 1, 2, ... in a chain along -Z, all at
@@ -1786,11 +1863,13 @@ local GameConfig = {
 		--   rimStyle     "Hedge" | "Fence" | "Rocks" | "IceEdge" | "Basalt" | "Peppermint" | "Moonbase"
 		--                | "CoralReef" (with `corals` = knob colours) | "MossyStones" (with `moss`)
 		--                | "Sandstone" | "IronFence" (with `post` stone and `pumpkin` colours)
+		--                | "BoneFence" (lava-rock wall with rib bones in `bone`)
 		--                (low visible rim)
 		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
 		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" | "GreatPyramid"
 		--                | "HauntedCastle" (back left terrace; the castle uses ruin/ruinDark,
-		--                `roof`, `ghost`)
+		--                `roof`, `ghost`) | "DinoSkeleton" (fossil in `bone` with an `amber`
+		--                stone, two volcanoes in `basalt`/`basaltDark`/`glow` behind it)
 		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
 		--                the bridge leading INTO the world
 		--   trees        tree models scattered along the rim (ModelLibrary names); false = none
@@ -1810,6 +1889,7 @@ local GameConfig = {
 		--                "Pyramid", "Oasis", "Cactus",
 		--                "SpookyTree" (bare, crooked, sometimes a sleeping bat), "Pumpkin"
 		--                (some carved with a glowing face), "Bats" (a small flying flock),
+		--                "Bones" (lying bones, rib cages and skulls in `bone`, #86),
 		--                old worlds (#104): "Lantern" (lamp marked `night` for #105),
 		--                "FlowerBed", "FenceRow", "HayStack", "Shell", "Driftwood", "Starfish",
 		--                "IceSpike", "SnowPile", "BasaltCluster", "Lolli", "CandyStick",
@@ -2376,6 +2456,73 @@ local GameConfig = {
 					},
 				},
 			},
+			-- World 12 (#86): a prehistoric island - lush fern-green grass, a low wall of dark
+			-- lava rock with curved rib bones, a basalt bridge, a big dino fossil skeleton on
+			-- the terrace with an amber stone and two smoking volcanoes behind it; ferns,
+			-- prehistoric trees, scattered bones and skulls, basalt rocks, amber lanterns
+			-- (light up at night, #105) and drifting embers (scripted deco, ~400 parts).
+			-- Hidden chest (#100) on the right terrace among the ferns.
+			DinoAge = {
+				grass = { 112, 150, 62 },
+				grassLight = { 134, 168, 78 },
+				field = { 160, 176, 104 },
+				cliff = { 120, 96, 76 },
+				cliffDark = { 88, 70, 58 },
+				cliffLight = { 150, 126, 100 },
+				rim = { 72, 62, 58 },
+				rimStyle = "BoneFence",
+				bone = { 236, 224, 196 },
+				path = { 176, 150, 112 },
+				pathDark = { 146, 122, 92 },
+				water = { 84, 150, 130 },
+				waterfall = { 180, 230, 210 },
+				wood = { 110, 80, 56 },
+				woodDark = { 78, 58, 42 },
+				rope = { 120, 100, 70 },
+				moss = { 90, 130, 50 },
+				glow = { 255, 120, 40 },
+				amber = { 255, 170, 50 },
+				basalt = { { 70, 62, 60 }, { 88, 78, 72 } },
+				basaltDark = { 52, 46, 46 },
+				ruinDark = { 88, 78, 72 },
+				flowers = { { 255, 170, 50 }, { 230, 90, 60 }, { 250, 230, 140 }, { 140, 200, 90 } },
+				landmark = "DinoSkeleton",
+				bridge = "Basalt",
+				trees = false,
+				accents = { { model = "Bush", width = 5 } },
+				secretChest = { 54, -88, 5 },
+				deco = {
+					budget = 400,
+					kits = {
+						{
+							kit = "Lantern",
+							count = 4,
+							size = { 2.6, 3 },
+							colors = { { 255, 170, 50 }, { 78, 58, 42 } },
+						},
+						{
+							kit = "JungleTree",
+							count = 8,
+							size = { 14, 18 },
+							colors = { { 70, 120, 50 }, { 96, 140, 56 } },
+						},
+						{
+							kit = "Fern",
+							count = 30,
+							size = { 4, 7 },
+							colors = { { 70, 130, 50 }, { 96, 156, 60 }, { 60, 110, 44 } },
+						},
+						{ kit = "Bones", count = 14, size = { 3.5, 5.5 }, colors = { { 236, 224, 196 } } },
+						{
+							kit = "BasaltCluster",
+							count = 6,
+							size = { 3, 5 },
+							colors = { { 70, 62, 60 }, { 88, 78, 72 } },
+						},
+						{ kit = "Embers", count = 3, size = { 10, 14 }, colors = { { 255, 120, 40 } } },
+					},
+				},
+			},
 		},
 	},
 
@@ -2401,8 +2548,8 @@ local GameConfig = {
 	-- colours (RGB) of the weather particles; `style`: how they move (client/WeatherFx):
 	-- "rain" (fast streaks), "snow" (slow flakes), "dust" (drifting sideways),
 	-- "bubbles" (rising), "sparkle" (twinkling in the air).
-	-- Worlds 12-15 are not built yet: AshRain, CrystalGlitter, RainbowSky and CheeseRain
-	-- wait here for their world entries.
+	-- AshRain is used by world 12 (#86); worlds 13-15 are not built yet: CrystalGlitter,
+	-- RainbowSky and CheeseRain wait here for their world entries.
 	weathers = {
 		Rain = {
 			displayName = "Regen",
@@ -2707,6 +2854,23 @@ local GameConfig = {
 			eggs = { "SpookyEgg" },
 			secretPet = "CountFangtastic",
 			weather = "Thunderstorm",
+		},
+		-- World 12 (#86), after world 11 (#85). 5 rebirths (spec #72). Price provisional (#108).
+		{
+			id = "DinoAge",
+			requiredRebirths = 5,
+			displayName = "Dino-Urzeit",
+			displayNameEn = "Dino Age",
+			unlockPrice = 400000000000,
+			color = { 120, 170, 60 },
+			toppingSpawns = {
+				{ topping = "FernSpinach", weight = 55 },
+				{ topping = "PrehistoricEgg", weight = 30 },
+				{ topping = "AmberHoney", weight = 15 },
+			},
+			eggs = { "FossilEgg" },
+			secretPet = "PizzasaurusRex",
+			weather = "AshRain",
 		},
 	},
 }

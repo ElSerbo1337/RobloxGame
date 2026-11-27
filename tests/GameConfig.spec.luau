@@ -296,6 +296,31 @@ describe("GameConfig", function()
 		expect(storm.lightning).toBe(true)
 	end)
 
+	it("lets a player with 5 rebirths unlock world 12 (Dino Age) after world 11, with ash rain (#86)", function()
+		local rules = GameRules.new(GameConfig)
+		local index, dino = 0, nil
+		for i, world in GameConfig.worlds do
+			if world.id == "DinoAge" then
+				index, dino = i, world
+			end
+		end
+		expect(index).toBe(12)
+		expect(dino.weather).toBe("AshRain")
+		expect(GameConfig.weathers.AshRain.displayName).toBe("Ascheregen")
+		local state = rules.newPlayerState()
+		state.unlockedWorlds = {}
+		for i = 1, index - 1 do
+			table.insert(state.unlockedWorlds, GameConfig.worlds[i].id)
+		end
+		state.coins = dino.unlockPrice
+		state.rebirths = 4
+		expect(rules.unlockWorld(state, "DinoAge").ok).toBe(false)
+		state.rebirths = 5
+		local result = rules.unlockWorld(state, "DinoAge")
+		expect(result.ok).toBe(true)
+		expect(rules.teleport(result.state, "DinoAge").ok).toBe(true)
+	end)
+
 	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
@@ -742,6 +767,7 @@ describe("GameConfig pets and eggs", function()
 			Vines = true,
 			Zigzag = true,
 			Bats = true,
+			Footprints = true,
 		}
 		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
@@ -811,24 +837,28 @@ describe("GameConfig worlds and eggs", function()
 		JungleTemple = 7.6,
 		DesertPyramids = 9,
 		HauntedCastle = 10.4,
+		DinoAge = 11.8,
 	}
 
-	it("makes the best pet of each world follow +75/110/160/230/320/400/500/620/760/900/1040 % and rise", function()
-		local previous = 0
-		for _, world in GameConfig.worlds do
-			local best = 0
-			for _, eggId in world.eggs do
-				for _, entry in GameConfig.eggs[eggId].pets do
-					best = math.max(best, GameConfig.pets[entry.pet].bonus)
+	it(
+		"makes the best pet of each world follow +75/110/160/230/320/400/500/620/760/900/1040/1180 % and rise",
+		function()
+			local previous = 0
+			for _, world in GameConfig.worlds do
+				local best = 0
+				for _, eggId in world.eggs do
+					for _, entry in GameConfig.eggs[eggId].pets do
+						best = math.max(best, GameConfig.pets[entry.pet].bonus)
+					end
 				end
+				if PET_CURVE[world.id] == nil or math.abs(best / PET_CURVE[world.id] - 1) > 0.1 then
+					error(`{world.id}: best pet +{math.round(best * 100)} %`)
+				end
+				expect(best > previous).toBe(true)
+				previous = best
 			end
-			if PET_CURVE[world.id] == nil or math.abs(best / PET_CURVE[world.id] - 1) > 0.1 then
-				error(`{world.id}: best pet +{math.round(best * 100)} %`)
-			end
-			expect(best > previous).toBe(true)
-			previous = best
 		end
-	end)
+	)
 
 	it("makes a later world's first egg pricier", function()
 		for i = 2, #GameConfig.worlds do

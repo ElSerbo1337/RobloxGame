@@ -486,6 +486,7 @@ describe("world themes (worlds 2-7, #31, #32)", function()
 		"JungleTemple",
 		"DesertPyramids",
 		"HauntedCastle",
+		"DinoAge",
 	}
 
 	it("builds every world as an island, worlds 2-8 with their own theme", function()

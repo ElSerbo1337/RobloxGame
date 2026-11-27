@@ -410,6 +410,30 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 				})
 			)
 		end
+	elseif style == "BoneFence" then
+		-- Dino age (#86): a low wall of dark lava rock along the edge (collides, keeps players
+		-- in) with a curved rib bone (theme.bone) rising from each piece, bending inwards like
+		-- the ribs of a giant fossil, a knob at its foot and on every fourth tip.
+		local bone = theme.bone or { 236, 224, 196 }
+		local center = add(scale(add(p, q), 0.5), add(inset, v(0, 0.8, 0)))
+		table.insert(
+			parts,
+			spec("Block", v(1.8, 1.6 + noise(i, 5) * 0.5, len + 0.3), along(center, dir), {
+				name = "LavaRockWall",
+				color = if i % 3 == 0 then theme.cliffDark else theme.rim,
+				role = "Rim",
+			})
+		)
+		local foot = add(add(p, scale(dir, 0.5)), add(scale(inward, 1.2), v(0, 1.5, 0)))
+		local bend = add(foot, add(v(0, 2.4, 0), scale(inward, -0.5)))
+		local tip = add(bend, add(v(0, 1.1, 0), scale(inward, 1.1)))
+		local boneProps = { name = "RibBone", color = bone, collide = false, role = "Rim" }
+		table.insert(parts, beam(foot, bend, 0.5, 0.5, boneProps))
+		table.insert(parts, beam(bend, tip, 0.42, 0.42, boneProps))
+		table.insert(parts, ball(foot, 0.85, { name = "RibKnob", color = bone, collide = false, role = "Rim" }))
+		if i % 4 == 0 then
+			table.insert(parts, ball(tip, 0.6, { name = "RibKnob", color = bone, collide = false, role = "Rim" }))
+		end
 	elseif style == "IceEdge" then
 		local h = 1.8 + noise(i, 3) * 1.4
 		local center = add(scale(add(p, q), 0.5), add(inset, v(0, h / 2, 0)))
@@ -2085,7 +2109,187 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		end
 	end
 
+	-- World 12 landmark (#86): a big dino fossil on a rock slab on the terrace - a spine
+	-- from the tail tip up to the neck, rib pairs, hind legs (collide) and small arms, a
+	-- skull facing the path (+X) with dark eye sockets, an amber stone lying under the ribs
+	-- (lights up at night, #105) and two smoking volcanoes behind it with glowing craters
+	-- and a lava stream each. The hidden chest (#100) sits on the right terrace.
+	local function dinoSkeleton(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local bone = theme.bone or { 236, 224, 196 }
+		local dark = theme.basaltDark or theme.cliffDark
+		local function p3(dx: number, dy: number, dz: number): V
+			return v(at[1] + dx, baseY + dy, at[3] + dz)
+		end
+		table.insert(
+			parts,
+			disc(p3(0, 0.4, 0), 21, 0.8, { name = "FossilSlab", color = theme.cliffLight, role = "Landmark" })
+		)
+		-- Spine: tail tip -> hips -> shoulders -> neck, thinner towards the tail.
+		local spine =
+			{ { -10, 1.6 }, { -7.5, 3.4 }, { -4.5, 5.4 }, { -2, 6.4 }, { 1, 6.8 }, { 3.5, 6.6 }, { 5.5, 8.2 } }
+		for k = 1, #spine - 1 do
+			local a, b = spine[k], spine[k + 1]
+			local w = 0.5 + k * 0.12
+			table.insert(
+				parts,
+				beam(p3(a[1], a[2], 0), p3(b[1], b[2], 0), w, w, {
+					name = "DinoSpine",
+					color = bone,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+			table.insert(
+				parts,
+				ball(p3(b[1], b[2], 0), w + 0.35, {
+					name = "DinoVertebra",
+					color = bone,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Ribs: four pairs curving down and in under the back.
+		for r = 0, 3 do
+			local x = -1.5 + r * 1.4
+			local span = 2.4 - math.abs(r - 1.5) * 0.4
+			for _, s in { -1, 1 } do
+				local top = p3(x, 6.5, s * 0.3)
+				local out = p3(x + 0.3, 4.6, s * span)
+				local low = p3(x + 0.6, 3, s * (span - 1))
+				local props = { name = "DinoRib", color = bone, collide = false, role = "Landmark" }
+				table.insert(parts, beam(top, out, 0.32, 0.32, props))
+				table.insert(parts, beam(out, low, 0.28, 0.28, props))
+			end
+		end
+		-- Hind legs (thigh, shin, foot; the shins collide) and small arms.
+		for _, s in { -1, 1 } do
+			local hip, knee, ankle = p3(-2.5, 6, s * 1.1), p3(-1, 3.4, s * 1.4), p3(-2.6, 1.1, s * 1.4)
+			table.insert(
+				parts,
+				beam(hip, knee, 0.8, 0.8, { name = "DinoLegBone", color = bone, collide = false, role = "Landmark" })
+			)
+			table.insert(parts, beam(knee, ankle, 0.7, 0.7, { name = "DinoLegBone", color = bone, role = "Landmark" }))
+			table.insert(
+				parts,
+				spec("Block", v(2.2, 0.5, 1), yawed(p3(-2, 1, s * 1.4), 0), {
+					name = "DinoFoot",
+					color = bone,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+			table.insert(
+				parts,
+				beam(p3(3.5, 6, s * 0.7), p3(4.6, 4.8, s * 0.9), 0.3, 0.3, {
+					name = "DinoArm",
+					color = bone,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Skull with jaw and two dark eye sockets, looking towards the path.
+		table.insert(
+			parts,
+			spec("Block", v(4, 2.4, 2.4), yawed(p3(7.4, 9, 0), 0), {
+				name = "DinoSkull",
+				color = bone,
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			spec("Block", v(3.6, 0.7, 2), yawed(p3(7.8, 7.4, 0), 0), {
+				name = "DinoJaw",
+				color = bone,
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		for _, s in { -1, 1 } do
+			table.insert(
+				parts,
+				ball(p3(6.6, 9.5, s * 1.15), 0.8, {
+					name = "DinoEyeSocket",
+					color = dark,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Amber stone under the ribs: glass by day, glows at night (#105).
+		table.insert(
+			parts,
+			spec("Ball", v(1.8, 1.5, 1.6), yawed(p3(0.8, 1.6, 0), 0.4), {
+				name = "AmberStone",
+				color = theme.amber or { 255, 170, 50 },
+				material = "Glass",
+				transparency = 0.15,
+				collide = false,
+				role = "Landmark",
+				night = true,
+			})
+		)
+		-- Two volcanoes behind the skull at the back edge (background), standing on the
+		-- ground beside the terrace, each with a glowing crater, a lava stream down the front
+		-- and smoke (VolcanoSmoke, emitter by the island builder).
+		local function g3(dx: number, dy: number, dz: number): V
+			return v(at[1] + dx, at[2] + dy, at[3] + dz)
+		end
+		local tones = theme.basalt or { theme.cliff, theme.cliffDark }
+		for n, vol in { { 19, -3.5, 4.6, 12 }, { 12.5, -1, 3.5, 8 } } do
+			local dx, dz, r, h = vol[1], vol[2], vol[3], vol[4]
+			local layers = 5
+			for k = 1, layers do
+				local radius = r * (1 - (k - 1) / layers * 0.62)
+				table.insert(
+					parts,
+					disc(g3(dx, (k - 0.5) * h / layers, dz), 2 * radius, h / layers, {
+						name = "BackVolcanoRock",
+						color = tones[(k + n) % #tones + 1],
+						role = "Landmark",
+					})
+				)
+			end
+			local craterR = r * 0.38
+			table.insert(
+				parts,
+				disc(g3(dx, h + 0.15, dz), 2 * craterR, 0.3, {
+					name = "BackVolcanoLava",
+					color = theme.glow or { 255, 120, 40 },
+					material = "Neon",
+					collide = false,
+					role = "Landmark",
+					night = true,
+				})
+			)
+			table.insert(
+				parts,
+				beam(g3(dx + craterR * 0.7, h + 0.1, dz + 0.3), g3(dx + r + 0.4, 0.3, dz + 0.8), 0.9, 0.25, {
+					name = "BackVolcanoLavaStream",
+					color = theme.glow or { 255, 120, 40 },
+					material = "Neon",
+					collide = false,
+					role = "Landmark",
+				})
+			)
+			table.insert(
+				parts,
+				spec("Block", v(1.6, 0.4, 1.6), yawed(g3(dx, h + 1.6, dz), 0), {
+					name = "VolcanoSmoke",
+					color = { 90, 86, 86 },
+					collide = false,
+					transparency = 1,
+					role = "Smoke",
+				})
+			)
+		end
+	end
+
 	local LANDMARKS = {
+		DinoSkeleton = dinoSkeleton,
 		HauntedCastle = hauntedCastle,
 		SteppedTemple = steppedTemple,
 		GiantPizza = giantPizza,
@@ -3226,6 +3430,93 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 						color = dark,
 						collide = false,
 						role = "Bat",
+						deco = true,
+						detail = true,
+					})
+				)
+			end
+		end
+		return parts
+	end
+
+	-- Dino age kit (#86). Bones: one of three fossil finds lying in the grass - a single
+	-- bone with knobbed ends, a small rib cage (spine and arching ribs, the outer pair
+	-- optional) or a skull with dark eye sockets. Nothing collides (they lie flat).
+	function DECO_KITS.Bones(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local bone = colors[1] or theme.bone or { 236, 224, 196 }
+		local dir = v(math.cos(yaw), 0, math.sin(yaw))
+		local side = v(-math.sin(yaw), 0, math.cos(yaw))
+		local kind = k % 3
+		if kind == 0 then
+			local a = add(at, add(scale(dir, -size * 0.4), v(0, 0.3, 0)))
+			local b = add(at, add(scale(dir, size * 0.4), v(0, 0.3, 0)))
+			table.insert(
+				parts,
+				beam(a, b, 0.4, 0.4, { name = "BoneShaft", color = bone, collide = false, role = "Bone", deco = true })
+			)
+			for _, e in { a, b } do
+				for _, s in { -1, 1 } do
+					table.insert(
+						parts,
+						ball(add(e, scale(side, s * 0.25)), 0.6, {
+							name = "BoneKnob",
+							color = bone,
+							collide = false,
+							role = "Bone",
+							deco = true,
+							detail = s > 0,
+						})
+					)
+				end
+			end
+		elseif kind == 1 then
+			local a = add(at, add(scale(dir, -size * 0.45), v(0, 0.3, 0)))
+			local b = add(at, add(scale(dir, size * 0.45), v(0, 0.3, 0)))
+			table.insert(
+				parts,
+				beam(a, b, 0.4, 0.4, { name = "BoneSpine", color = bone, collide = false, role = "Bone", deco = true })
+			)
+			for r = 1, 3 do
+				local root = add(a, scale(sub(b, a), r / 4))
+				for _, s in { -1, 1 } do
+					local arc = add(root, add(scale(side, s * size * 0.28), v(0, size * 0.32, 0)))
+					local low = add(root, add(scale(side, s * size * 0.36), v(0, 0.1, 0)))
+					table.insert(
+						parts,
+						beam(arc, low, 0.24, 0.24, {
+							name = "BoneRib",
+							color = bone,
+							collide = false,
+							role = "Bone",
+							deco = true,
+							detail = r ~= 2,
+						})
+					)
+				end
+			end
+		else
+			local c = add(at, v(0, size * 0.18, 0))
+			table.insert(
+				parts,
+				spec("Block", v(size * 0.55, size * 0.34, size * 0.36), yawed(c, yaw), {
+					name = "BoneSkull",
+					color = bone,
+					collide = false,
+					role = "Bone",
+					deco = true,
+				})
+			)
+			for _, s in { -1, 1 } do
+				local eye =
+					add(c, add(add(scale(dir, -size * 0.08), scale(side, s * size * 0.19)), v(0, size * 0.05, 0)))
+				table.insert(
+					parts,
+					ball(eye, size * 0.12, {
+						name = "BoneEyeSocket",
+						color = theme.basaltDark or { 52, 46, 46 },
+						collide = false,
+						role = "Bone",
 						deco = true,
 						detail = true,
 					})

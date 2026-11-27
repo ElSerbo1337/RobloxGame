@@ -157,6 +157,7 @@ describe("scripted world deco (#82)", function()
 			Snowfall = true,
 			Embers = true,
 			Stars = true,
+			Bones = true,
 		}
 		for _, theme in cfg.themes do
 			for _, item in (theme.deco and theme.deco.kits) or {} do
@@ -389,6 +390,80 @@ describe("haunted castle deco (#85)", function()
 			if spec.role == "Landmark" and spec.collide then
 				local dx, dz = math.abs(spec.cframe[1] - p[1]), math.abs(spec.cframe[3] - p[3])
 				expect(dx < spec.size[1] / 2 + 1 and dz < spec.size[3] / 2 + 1).toBe(false)
+			end
+		end
+	end)
+end)
+
+describe("dino age deco (#86)", function()
+	local dino = indexOf("DinoAge")
+	local island = plan.worldIsland(dino)
+
+	it("gives the dino age ferns, prehistoric trees, bones, basalt rocks, amber lanterns and embers", function()
+		local roles, names = {}, {}
+		for _, spec in decoParts(dino) do
+			roles[spec.role or ""] = (roles[spec.role or ""] or 0) + 1
+			names[spec.name] = (names[spec.name] or 0) + 1
+		end
+		expect((names.FernLeaf or 0) >= 60).toBe(true)
+		expect((names.JungleTrunk or 0) >= 5).toBe(true)
+		expect((names.BoneShaft or 0) >= 2).toBe(true)
+		expect((names.BoneRib or 0) >= 6).toBe(true)
+		expect((names.BoneSkull or 0) >= 2).toBe(true)
+		expect((roles.Basalt or 0) >= 4).toBe(true)
+		expect((roles.Embers or 0) >= 2).toBe(true)
+		expect((names.LanternLamp or 0) >= 3).toBe(true)
+	end)
+
+	it("lets no bone collide and marks the lantern lamps to light up at night (#105)", function()
+		for _, spec in decoParts(dino) do
+			if spec.role == "Bone" then
+				expect(spec.collide).toBe(false)
+			end
+			if spec.name == "LanternLamp" then
+				expect(spec.night).toBe(true)
+			end
+		end
+	end)
+
+	it("builds a fossil with spine, ribs, legs, skull, a night-glowing amber stone and two volcanoes", function()
+		local found, night = {}, {}
+		for _, spec in island.parts do
+			found[spec.name] = (found[spec.name] or 0) + 1
+			if spec.night then
+				night[spec.name] = true
+			end
+			if spec.role == "Landmark" then
+				expect(IslandPlan.isInsideOutline(island.outline, spec.cframe[1], spec.cframe[3])).toBe(true)
+			end
+		end
+		expect(found.DinoSkull).toBe(1)
+		expect(found.DinoRib).toBe(16)
+		expect(found.DinoLegBone).toBe(4)
+		expect((found.DinoSpine or 0) >= 5).toBe(true)
+		expect(found.AmberStone).toBe(1)
+		expect(found.BackVolcanoLava).toBe(2)
+		expect(found.VolcanoSmoke).toBe(2)
+		expect(night.AmberStone).toBe(true)
+		expect(night.BackVolcanoLava).toBe(true)
+		expect((found.RibBone or 0) >= 20).toBe(true)
+		expect((found.LavaRockWall or 0) >= 10).toBe(true)
+	end)
+
+	it("keeps a spot for the hidden chest (#100) on the right terrace, free of deco and landmark", function()
+		local chest = island.stations.SecretChest
+		expect(chest ~= nil).toBe(true)
+		local p = chest.position
+		expect(p[1] > island.center[1]).toBe(true)
+		expect(p[2]).toBe(cfg.groundY + cfg.layout.terraces[2][4])
+		for _, spec in decoParts(dino) do
+			local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+			expect(d > chest.clear).toBe(true)
+		end
+		for _, spec in island.parts do
+			if spec.role == "Landmark" then
+				local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+				expect(d > chest.clear + 5).toBe(true)
 			end
 		end
 	end)
