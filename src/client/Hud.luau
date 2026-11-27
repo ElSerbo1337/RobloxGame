@@ -314,6 +314,11 @@ function Hud.start(): GuiObject
 			Sounds.play("Badge")
 		elseif kind == "Gems" and amount then
 			showToast(Lang.t("notify.gems", { amount = formatNumber(amount) }), GEM)
+		elseif kind == "SecretChest" and amount then
+			-- Hidden chests (#100).
+			showToast(Lang.t("notify.SecretChest", { amount = formatNumber(amount) }), GEM)
+		elseif kind == "SecretChestOpened" then
+			showToast(Lang.t("notify.SecretChestOpened"), FULL)
 		elseif MESSAGE_KINDS[kind] then
 			local color = if kind == "PizzaFull"
 					or kind == "NotEnoughCoins"

@@ -2346,3 +2346,12 @@ Vorher: `lune run test` → alle grün (u. a. `tests/Profile.spec.luau`). **Badg
 - [ ] Englisch (Attribut `Language = en`): Anzeige „Rain: +20% toppings“, Admin-Aktion „Start weather now“.
 - [ ] Schalter `weather` bzw. `dayNight` in `GameConfig.features` aus: kein Wetter/kein Bonus bzw. festes Tageslicht.
 - [ ] Sound-ID für `Thunder` in `src/shared/SoundList.luau` eintragen (Suchbegriffe dort).
+
+## MEGA UPDATE – #100 Geheime Truhen (Welt 3, 6, 9, 12, 15)
+
+- [ ] Truhen stehen versteckt: Welt 3 Strand hinter dem Leuchtturm, Welt 6 Candy-Land hinter dem Kuchen (beide linke Terrasse), Welt 9 hinter dem Tempel, Welt 12 und 15 auf der rechten Terrasse. Nicht im Weg, vom Hauptweg aus verdeckt? Holzkiste mit Goldbändern sieht ok aus und steht nicht in der Luft/im Boden?
+- [ ] Admin-Panel: Welten per Rebirths/Freischalten öffnen, zur Truhe laufen: ab ~30 Studs funkelt sie, Prompt „Öffnen“ (en: „Open“), Toast „Geheime Truhe gefunden! +10 Gems“, Gem-Sound, Gems +10.
+- [ ] Danach: kein Funkeln, kein Prompt mehr an dieser Truhe; andere Truhen gehen weiter. Admin „Tage vorspulen“ (1) → nach max. 1 Minute funkelt sie wieder und lässt sich öffnen.
+- [ ] Quest „Öffne geheime Truhe(n)“ (ab Welt 3) zählt beim Öffnen hoch.
+- [ ] Grafik „Niedrig“: Funkeln deutlich schwächer, aber sichtbar.
+- [ ] Feature-Schalter `hiddenChests = false`: keine Truhen, keine Truhen-Quests.

@@ -35,6 +35,7 @@ local TutorialService = require(script.TutorialService)
 local IslandBuilder = require(script.IslandBuilder)
 local LeaderboardService = require(script.LeaderboardService)
 local WheelService = require(script.WheelService)
+local ChestService = require(script.ChestService)
 local MerchantService = require(script.MerchantService)
 local WeatherService = require(script.WeatherService)
 local WorldMap = require(script.WorldMap)
@@ -169,6 +170,8 @@ GiftService.start()
 LoginCalendarService.start()
 -- Lucky wheel (#98): 3D wheel on the reserved spot of the spawn island, spins drawn here.
 WheelService.start(spawnIsland)
+-- Hidden chests (#100): one per chest world, 10 gems per German day each.
+ChestService.start(worlds)
 -- Travelling merchant (#107): every 2 h for 10 min on the reserved spot of the spawn island.
 MerchantService.start(spawnIsland)
 PotionService.start()

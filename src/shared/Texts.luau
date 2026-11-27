@@ -252,6 +252,17 @@ Texts.strings = {
 		en = "✨ Golden topping: {topping}! 10x value",
 	},
 	["notify.gems"] = { de = "+{amount} Gems!", en = "+{amount} gems!" },
+	-- Hidden chests (#100).
+	["notify.SecretChest"] = {
+		de = "🗝️ Geheime Truhe gefunden! +{amount} Gems",
+		en = "🗝️ Secret chest found! +{amount} gems",
+	},
+	["notify.SecretChestOpened"] = {
+		de = "Diese Truhe hast du heute schon geöffnet. Morgen wieder!",
+		en = "You already opened this chest today. Come back tomorrow!",
+	},
+	["sign.secretChest"] = { de = "Geheime Truhe", en = "Secret chest" },
+	["sign.secretChestPrompt"] = { de = "Öffnen", en = "Open" },
 	["notify.deliveredCoins"] = { de = "Geliefert! +{amount} Münzen", en = "Delivered! +{amount} coins" },
 	["notify.deliveredGems"] = { de = "Geliefert! +{amount} Gems", en = "Delivered! +{amount} gems" },
 	["notify.deliveredPotion"] = { de = "Geliefert! +{amount}× {potion}", en = "Delivered! +{amount}× {potion}" },

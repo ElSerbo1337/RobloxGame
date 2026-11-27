@@ -118,7 +118,7 @@ function Sounds.start()
 	Net.event("Notify").OnClientEvent:Connect(function(kind: string)
 		if kind == "Sold" or kind == "Delivered" then
 			Sounds.play("Sell")
-		elseif kind == "Gems" then
+		elseif kind == "Gems" or kind == "SecretChest" then
 			Sounds.play("Gem")
 		elseif kind == "GoldenTopping" then
 			Sounds.play("GoldenTopping")
