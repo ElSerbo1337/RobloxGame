@@ -3976,7 +3976,7 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 	-- first four orbs carry a light).
 	function DECO_KITS.FloatingIsle(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
 		local parts = {}
-		local hover = 6 + noise(k, 21) * 6
+		local hover = 10 + noise(k, 21) * 6
 		local top = add(at, v(0, hover, 0))
 		table.insert(
 			parts,
@@ -3988,10 +3988,10 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 				deco = true,
 			})
 		)
-		local tip = add(top, v(math.cos(yaw) * 0.3, -size * 0.75, math.sin(yaw) * 0.3))
+		-- Rock underside: a squashed ball hanging below the grass top, well off the ground.
 		table.insert(
 			parts,
-			beam(add(top, v(0, -size * 0.09, 0)), tip, size * 0.75, size * 0.75, {
+			spec("Ball", v(size * 0.85, size * 0.6, size * 0.85), yawed(add(top, v(0, -size * 0.28, 0)), yaw), {
 				name = "IsleRock",
 				color = colors[2] or theme.cliff,
 				collide = false,

@@ -2042,6 +2042,33 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Musik-ID für `Music_CrystalCave` eintragen (Suchbegriffe in `SoundList.luau`).
 - [ ] Handy: Bildrate auf der Kristall-Insel ok.
 
+## MEGA UPDATE – #88 Welt 14 Wolkenstadt
+
+Sechste neue Welt nach dem Atlantis-Muster: goldgrüne Himmelswiese mit **Wolken-Rand** (niedrige weiße Wolkenbank, die Spieler hält, Wolkenbälle obendrauf, jedes vierte Stück ein goldener Pfosten mit Sonnenlampe), Leuchtbrücke, **Regenbogen-Bogen** hinten links auf der Terrasse (6 leuchtende Farbbänder über zwei Wolkenhaufen, goldene Sonne mit Strahlen darunter, kleine Wolke darüber); **schwebende Mini-Inseln** (teils mit Bäumchen, teils mit Wolke), Wolkenbälle, goldene **Sonnenkugeln** auf Goldsäulen (die ersten 4 mit Licht = goldenes Licht), Lichtpünktchen und Dunst (alles per Skript, ~310 Teile, kein Import nötig). **Kein Tag-Nacht-Wechsel** (`dayNight.skipWorlds.CloudCity`, schon aus #105) – nichts ist `NightLight`. 3 Beläge (Wolken-Mozzarella, Sonnenblumenkerne, Sternfrucht), **Wolken-Ei** (Muster „Wolken“) mit 6 Pets (Wolken-Lamm, Sonnenblumen-Fink, Sternfrucht-Hase, Regenbogen-Kolibri, Himmelswal, Sonnen-Pegasus), Geheim-Pet **Wolkenkönig-Greif**, Wolken-Shop. Braucht **7 Rebirths** + 8 Bio. Münzen (vorläufig, #108). Wetter **„Regenbogen“** (Eintrag `RainbowSky` aus #105). Musik `Music_CloudCity` hat noch **keine ID**. Geheime Truhe (#100): Anker `SecretChestAnchor` auf der **rechten** Terrasse. Vorschau: `assets/previews/worlds/CloudCity.png`, Insel: `assets/previews/islands/World14_Overview.jpg`.
+
+Vorher: `lune run test` → alle grün (u. a. `WorldDeco.spec` „cloud city deco (#88)“, `WorldModels.spec`).
+
+**Modelle importieren** (eine Datei für die ganze Welt):
+
+- [ ] **Home → Import 3D** → `assets/models/worlds/CloudCity.fbx` → *Rig Type* = **No Rig** → **Import**, das Model `CloudCity` nach `ReplicatedStorage → GameAssets → Models → Worlds` ziehen. Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.CloudCity:GetChildren())` → **11** (`CloudMozzarella`, `SunflowerSeeds`, `Starfruit`, `CloudLamb`, `SunflowerFinch`, `StarfruitBunny`, `RainbowHummingbird`, `SkyWhale`, `SunPegasus`, `CloudKingGriffin`, `CloudEgg`).
+
+Ohne Import läuft alles mit Platzhaltern (Scheiben, Kugeln, Platzhalter-Ei).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Output ohne rote Fehler beim Start (Insel 14 wird gebaut, auch ohne Import).
+- [ ] Admin-Panel → **Rebirths setzen** 7 → **Welt freischalten** bis Welt 13 → zum Tor der Wolkenstadt: Preisschild 8 Bio., mit **Münzen geben** kaufen → Tor offen. Mit 6 Rebirths: „Ab 7 Rebirths“.
+- [ ] Insel ansehen: Wolken-Rand (hält Spieler, Wolkenbälle nicht im Weg), Leuchtbrücke, Regenbogen mit Sonne (Wolkenhaufen-Fuß fest, Bänder ohne Lücken), schwebende Mini-Inseln (nicht im Weg, kein Hängenbleiben), Wolkenbälle, Sonnenkugeln. Nichts auf Weg/Feld/vor Stationen.
+- [ ] Tag-Nacht: Während es auf anderen Inseln Nacht ist, bleibt die Wolkenstadt im Tageslicht (beim Betreten/Verlassen wechselt das Licht).
+- [ ] Wetter „Regenbogen“ erscheint auf der Wolken-Insel (bunte funkelnde Pünktchen).
+- [ ] Rechte Terrasse: `Workspace → … CloudCity → Anchors → SecretChestAnchor` liegt auf der Terrasse, frei von Deko (Attribut `ClearRadius` = 5).
+- [ ] Beläge Wolken-Mozzarella/Sonnenblumenkerne/Sternfrucht sammeln, verkaufen; Namen de/en.
+- [ ] Wolken-Ei (ein Stand): 6 Pets + „??? (Geheim)“, öffnen; **Geheim-Pet geben** → Welt Wolkenstadt → Wolkenkönig-Greif.
+- [ ] Wolken-Shop, Portal (Teleport), Telefon/Lieferwagen mit Wolken-Belägen.
+- [ ] Grafik **Niedrig** → zweite Wolkenbälle am Rand, Bäumchen/Wolken auf Mini-Inseln, kleine Wolkenbälle, Sonnenkugeln weg; **Hoch** → alles wieder da. `worldDeco` aus → keine Skript-Deko.
+- [ ] Musik-ID für `Music_CloudCity` eintragen (Suchbegriffe in `SoundList.luau`).
+- [ ] Handy: Bildrate auf der Wolken-Insel ok.
+
 ## MEGA UPDATE – #99 Codes
 
 Neu: Codes im Einstellungs-Menü (Feld aus #76) werden jetzt vom Server geprüft (`src/server/CodeService.luau`, Regeln `rules.redeemCode`). Codes in `GameConfig.codes`: `WELCOME` = 50 Gems, `PIZZA` = 2 Glücks-Tränke, beide bis 31.12.2026 23:59 deutscher Zeit, einmal pro Spieler. Schalter: `GameConfig.features.codes`.
