@@ -152,6 +152,11 @@ export type PlayerState = {
 	-- the "WeeklyChampion" title is held (#109 grants it).
 	selectedTitle: string,
 	weeklyChampionUntil: number,
+	-- Weekly boards (#109): the week (GameRules.weekNumber) the baselines belong to and the
+	-- lifetime eggs/toppings at its start (weekly score = lifetime - baseline).
+	statsWeek: number,
+	statsWeekEggs: number,
+	statsWeekToppings: number,
 }
 
 -- Lifetime stats (#103) for the profile.
@@ -265,7 +270,15 @@ export type OwnedPet = {
 	foundAt: number?,
 }
 
-export type LeaderboardScores = { Playtime: number, CoinsEarned: number, Rebirths: number }
+export type LeaderboardScores = {
+	Playtime: number,
+	CoinsEarned: number,
+	Rebirths: number,
+	EggsOpened: number,
+	ToppingsCollected: number,
+}
+-- Scores of the weekly boards (#109) since the start of `week` (0 = no week rolled yet).
+export type WeeklyScores = { week: number, EggsOpened: number, ToppingsCollected: number }
 
 export type Result = {
 	ok: boolean,
@@ -665,6 +678,48 @@ function GameRules.germanTime(
 	return wallClock - 3600
 end
 
+-- Weeks in German time (#109): a week starts on Monday 00:00 (day 0 = Thursday, so
+-- week 0 started on day -3).
+function GameRules.weekNumber(unixSeconds: number): number
+	return (GameRules.dayNumber(unixSeconds) + 3) // 7
+end
+
+-- Unix time of 00:00 German time on the German day `day` (see dayNumber).
+function GameRules.dayStart(day: number): number
+	local wallClock = day * DAY_SECONDS
+	local year = yearOfDays(day)
+	local summer = wallClock - 2 * 3600
+	if summer >= clockChange(year, 3) and summer < clockChange(year, 10) then
+		return summer
+	end
+	return wallClock - 3600
+end
+
+-- Unix time of Monday 00:00 German time that starts week `week`.
+function GameRules.weekStart(week: number): number
+	return GameRules.dayStart(week * 7 - 3)
+end
+
+-- Weekly Champion (#109): last week's champions hold the title until the end of this week.
+function GameRules.championUntil(now: number): number
+	return GameRules.weekStart(GameRules.weekNumber(now) + 1)
+end
+
+-- User ids among the first `count` entries (with a score above 0) of every weekly board
+-- page (best first, keys = user ids as text).
+function GameRules.weeklyChampions(pages: { { { key: string, value: number } } }, count: number): { [number]: boolean }
+	local champions = {}
+	for _, page in pages do
+		for rank, entry in page do
+			local userId = tonumber(entry.key)
+			if rank <= count and entry.value > 0 and userId then
+				champions[userId] = true
+			end
+		end
+	end
+	return champions
+end
+
 -- Longest code a player can type (the settings menu cuts at the same length).
 GameRules.CODE_MAX_LENGTH = 32
 
@@ -807,6 +862,9 @@ function GameRules.new(config: any)
 			badgesAwarded = {},
 			selectedTitle = "",
 			weeklyChampionUntil = 0,
+			statsWeek = 0,
+			statsWeekEggs = 0,
+			statsWeekToppings = 0,
 		}
 	end
 
@@ -3054,7 +3112,38 @@ function GameRules.new(config: any)
 			Playtime = math.floor(state.totalPlaytimeSeconds),
 			CoinsEarned = math.floor(state.totalCoinsEarned),
 			Rebirths = math.floor(state.rebirths),
+			EggsOpened = math.floor(state.eggsOpened or 0),
+			ToppingsCollected = math.floor(state.toppingsCollected or 0),
 		}
+	end
+
+	-- Weekly boards (#109): eggs/toppings since the start of the player's stats week.
+	function rules.weeklyScores(state: PlayerState): WeeklyScores
+		local week = state.statsWeek or 0
+		if week == 0 then
+			return { week = 0, EggsOpened = 0, ToppingsCollected = 0 }
+		end
+		return {
+			week = week,
+			EggsOpened = math.max(0, math.floor((state.eggsOpened or 0) - (state.statsWeekEggs or 0))),
+			ToppingsCollected = math.max(
+				0,
+				math.floor((state.toppingsCollected or 0) - (state.statsWeekToppings or 0))
+			),
+		}
+	end
+
+	-- Starts the weekly scores over when the German week of `now` is a new one.
+	function rules.rollStatsWeek(state: PlayerState, now: number): Result
+		local week = GameRules.weekNumber(now)
+		if state.statsWeek == week then
+			return fail(state, "SameWeek")
+		end
+		local newState = table.clone(state)
+		newState.statsWeek = week
+		newState.statsWeekEggs = state.eggsOpened or 0
+		newState.statsWeekToppings = state.toppingsCollected or 0
+		return { ok = true, state = newState }
 	end
 
 	-- Rebirth -------------------------------------------------------------------

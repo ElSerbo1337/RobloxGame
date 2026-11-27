@@ -2212,3 +2212,10 @@ Vorher: `lune run test` → alle grün (u. a. `tests/Profile.spec.luau`). **Badg
 - [ ] Zwei Spieler (Team-Test oder Studio „2 Players“): anderen Spieler anklicken/antippen → dessen Profil („👤 Name“), Tab Titel nur ansehen („Nur ansehen“, keine Wählen-Knöpfe). Beide sehen die Kopf-Titel des anderen.
 - [ ] Englisch: Menü, Badges, Titel und Kopf-Titel auf Englisch; Handy-Layout.
 - [ ] Schalter `features.profile = false` → keine Kachel; `titles = false` → keine Kopf-Titel, kein Titel-Tab; `badges = false` → keine Vergabe.
+
+## MEGA UPDATE – #109 Neue Bestenlisten und Wochen-Champion
+- [ ] Spawn-Insel: Tafeln „🥚 Eier geöffnet“ (links) und „🍕 Beläge gesammelt“ (rechts) neben der mittleren Bestenliste, Vorderseite zur Inselmitte, nichts überlappt (Bäume, Wege, Bänke).
+- [ ] Spalten „Platz / Spieler / Eier bzw. Beläge“ und Hinweis „👑 Top 3 der Woche werden Wochen-Champion!“ lesbar, Sprache in den Einstellungen auf Englisch umstellen → Texte wechseln.
+- [ ] Veröffentlichtes Spiel (Studio-Spieler mit UserId ≤ 0 werden nie eingetragen): ein paar Eier öffnen/Beläge sammeln, nach dem nächsten Speichern + max. 2 Min. erscheinen die Werte auf den Tafeln.
+- [ ] Wochen-Champion ansehen ohne eine Woche zu warten: Admin-Panel → „Titel Wochen-Champion geben“ → goldener Titel über dem Kopf. Echte Vergabe: Montag 0 Uhr (deutsche Zeit) bekommen die Top 3 der Vorwoche jeder Liste den Titel bis zum nächsten Montag (beim nächsten Beitritt, Prüfung alle 10 s). Wochen-Stores: `Leaderboard_EggsOpened_week<N>_mega1` / `Leaderboard_ToppingsCollected_week<N>_mega1`.
+- [ ] Schalter `newLeaderboards` aus → beide Tafeln fehlen; `weeklyChampion` aus → keine Wochen-Stores, kein Hinweis, keine Vergabe.

@@ -1413,7 +1413,7 @@ end)
 
 describe("GameConfig leaderboards", function()
 	it(
-		"has three boards (play time, coins earned, rebirths) with the top 10, refreshed about every 2 minutes",
+		"has five boards (play time, coins earned, rebirths, eggs, toppings) with the top 10, refreshed about every 2 minutes",
 		function()
 			local leaderboards = GameConfig.leaderboards
 			local ids = {}
@@ -1421,7 +1421,8 @@ describe("GameConfig leaderboards", function()
 				table.insert(ids, board.id)
 			end
 
-			expect(ids).toEqual({ "Playtime", "CoinsEarned", "Rebirths" })
+			expect(ids).toEqual({ "Playtime", "CoinsEarned", "Rebirths", "EggsOpened", "ToppingsCollected" })
+			expect(leaderboards.championTop).toBe(3)
 			expect(leaderboards.top).toBe(10)
 			expect(leaderboards.refreshSeconds).toBe(120)
 		end
@@ -1435,6 +1436,7 @@ describe("GameConfig leaderboards", function()
 			expect(scores[board.id]).toBe(0)
 			expect(stores[board.store]).toBeNil()
 			stores[board.store] = true
+			expect(string.sub(board.store, -6)).toBe("_mega1")
 		end
 	end)
 

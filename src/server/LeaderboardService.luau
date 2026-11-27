@@ -11,6 +11,12 @@
 -- shows them on the panels of the spawn island (rank, display name, value in German
 -- format, see Shared.Leaderboard).
 --
+-- New boards (#109, switch newLeaderboards): eggs opened and toppings collected stand on
+-- the reserved spots Board4/Board5 (#106 anchors); the panels are built here. They also
+-- write a weekly store per German week (switch weeklyChampion); the top 3 of last week's
+-- weekly stores get the Weekly Champion title until the end of this week (checked for
+-- every player on this server every few seconds, so offline champions get it on join).
+--
 -- Every DataStore call is wrapped in pcall: on errors a board keeps its last rows (or
 -- shows a loading text), the game goes on.
 
@@ -19,9 +25,12 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserService = game:GetService("UserService")
 
+local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Leaderboard = require(ReplicatedStorage.Shared.Leaderboard)
 local PlayerStates = require(script.Parent.PlayerStates)
+local ProfileService = require(script.Parent.ProfileService)
 local SignText = require(script.Parent.SignText)
 
 local CONFIG = GameConfig.leaderboards
@@ -30,7 +39,15 @@ local DARK = Color3.fromRGB(60, 35, 20)
 local ORANGE = Color3.fromRGB(240, 130, 60)
 local MEDALS = { Color3.fromRGB(230, 170, 30), Color3.fromRGB(150, 150, 160), Color3.fromRGB(190, 110, 60) }
 
-type Board = { id: string, store: string, title: string, format: Leaderboard.Format }
+type Board = {
+	id: string,
+	store: string,
+	title: string,
+	format: Leaderboard.Format,
+	weeklyStore: string?,
+	anchor: string?,
+	feature: string?,
+}
 type Page = { { key: string, value: number } }
 
 local LeaderboardService = {}
@@ -39,9 +56,49 @@ local LeaderboardService = {}
 local stores: { [string]: OrderedDataStore } = {}
 -- User id -> display name, cached for the whole server.
 local names: { [number]: string } = {}
+-- Weekly store name -> ordered DataStore (opened on first use).
+local weeklyStores: { [string]: OrderedDataStore } = {}
+
+local features = Features.new(GameConfig.features)
+local CHAMPION_CHECK_SECONDS = 10
+
+local function boardOn(board: Board): boolean
+	return board.feature == nil or features.enabled(board.feature)
+end
+
+local function weeklyOn(board: Board): boolean
+	return board.weeklyStore ~= nil and boardOn(board) and features.enabled("weeklyChampion")
+end
+
+local function weeklyStore(board: Board, week: number): OrderedDataStore?
+	local name = Leaderboard.weeklyStore(board.weeklyStore :: string, week)
+	if weeklyStores[name] == nil then
+		local ok, store = pcall(function()
+			return DataStoreService:GetOrderedDataStore(name)
+		end)
+		if not ok then
+			warn(`[Bestenliste] {name} nicht verfügbar: {store}`)
+			return nil
+		end
+		weeklyStores[name] = store
+	end
+	return weeklyStores[name]
+end
+
+local function write(store: OrderedDataStore, key: string, score: number, what: string)
+	local ok, err = pcall(function()
+		store:SetAsync(key, score)
+	end)
+	if not ok then
+		warn(`[Bestenliste] Schreiben von {what} für {key} fehlgeschlagen: {err}`)
+	end
+end
 
 local function openStores()
 	for _, board in CONFIG.boards do
+		if not boardOn(board) then
+			continue
+		end
 		local ok, store = pcall(function()
 			return DataStoreService:GetOrderedDataStore(board.store)
 		end)
@@ -61,16 +118,19 @@ function LeaderboardService.submit(userId: number, state: any)
 		return
 	end
 	local scores = PlayerStates.rules.leaderboardScores(state)
+	local weekly = PlayerStates.rules.weeklyScores(state)
 	local key = tostring(userId)
 	for _, board in CONFIG.boards do
 		local store = stores[board.id]
 		local score = (scores :: any)[board.id] :: number
 		if store and score > 0 then
-			local ok, err = pcall(function()
-				store:SetAsync(key, score)
-			end)
-			if not ok then
-				warn(`[Bestenliste] Schreiben von {board.id} für {userId} fehlgeschlagen: {err}`)
+			write(store, key, score, board.id)
+		end
+		local weekScore = (weekly :: any)[board.id]
+		if weeklyOn(board) and weekly.week > 0 and weekScore and weekScore > 0 then
+			local week = weeklyStore(board, weekly.week)
+			if week then
+				write(week, key, weekScore, `{board.id} (Woche {weekly.week})`)
 			end
 		end
 	end
@@ -158,11 +218,38 @@ local function buildPanel(gui: SurfaceGui, board: Board): ({ Frame }, TextLabel)
 	stroke.Thickness = 2
 	stroke.Parent = title
 
+	-- New boards (#109): column header under the title and the champion hint at the bottom.
+	local top, bottom = 0.04 + titleHeight, 0.02
+	if board.anchor then
+		local headHeight = titleHeight * 0.45
+		local valueKey = if board.id == "EggsOpened" then "board.colEggs" else "board.colToppings"
+		for _, column in
+			{
+				{ "board.colRank", 0, 0.14, "Center" },
+				{ "board.colPlayer", 0.14, 0.5, "Left" },
+				{ valueKey, 0.64, 0.34, "Right" },
+			}
+		do
+			local head = text(gui, "Column", "", ORANGE, (Enum.TextXAlignment :: any)[column[4]])
+			SignText.set(head, column[1] :: string)
+			head.Size = UDim2.fromScale(0.9 * (column[3] :: number), headHeight)
+			head.Position = UDim2.fromScale(0.05 + 0.9 * (column[2] :: number), top)
+		end
+		top += headHeight
+		if weeklyOn(board) then
+			local hint = text(gui, "WeeklyHint", "", DARK, Enum.TextXAlignment.Center)
+			SignText.set(hint, "board.weeklyHint")
+			hint.Size = UDim2.fromScale(0.9, headHeight)
+			hint.Position = UDim2.fromScale(0.05, 0.99 - headHeight)
+			bottom += headHeight
+		end
+	end
+
 	local list = Instance.new("Frame")
 	list.Name = "Rows"
 	list.BackgroundTransparency = 1
-	list.Position = UDim2.fromScale(0.05, 0.04 + titleHeight)
-	list.Size = UDim2.fromScale(0.9, 0.94 - titleHeight)
+	list.Position = UDim2.fromScale(0.05, top)
+	list.Size = UDim2.fromScale(0.9, 1 - top - bottom)
 	list.Parent = gui
 
 	local status = text(list, "Status", "", DARK, Enum.TextXAlignment.Center)
@@ -211,12 +298,119 @@ local function show(rows: { Frame }, status: TextLabel, entries: { Leaderboard.R
 	SignText.set(status, "board.empty")
 end
 
+-- Builds the panel of a new board (#109) on its reserved anchor: two posts, a cream
+-- panel facing the anchor's front (local -Z) and an orange title strip.
+local function buildAnchoredPanel(island: Instance, board: Board, index: number)
+	local anchors = island:FindFirstChild("Anchors")
+	local anchor = anchors and anchors:FindFirstChild(`{board.anchor}Anchor`)
+	if not (anchor and anchor:IsA("BasePart")) then
+		warn(`[Bestenliste] Anker {board.anchor}Anchor fehlt auf der Spawn-Insel`)
+		return
+	end
+	local model = Instance.new("Model")
+	model.Name = `Board_{board.id}`
+	local function block(name: string, size: Vector3, offset: CFrame, color: Color3): Part
+		local p = Instance.new("Part")
+		p.Name = name
+		p.Anchored = true
+		p.Size = size
+		p.CFrame = anchor.CFrame * offset
+		p.Color = color
+		p.Material = Enum.Material.SmoothPlastic
+		p.TopSurface = Enum.SurfaceType.Smooth
+		p.BottomSurface = Enum.SurfaceType.Smooth
+		p.Parent = model
+		return p
+	end
+	for _, side in { -1, 1 } do
+		block("BoardPost", Vector3.new(1.2, 10, 1.2), CFrame.new(side * 6.2, 5, 0), Color3.fromRGB(150, 100, 60))
+	end
+	local panel = block("BoardPanel", Vector3.new(12, 7.5, 0.8), CFrame.new(0, 6.2, 0), CREAM)
+	block("BoardTitle", Vector3.new(13.2, 1.8, 1.2), CFrame.new(0, 10.6, 0), ORANGE)
+	local gui = Instance.new("SurfaceGui")
+	gui.Name = "Leaderboard"
+	gui.Face = Enum.NormalId.Front
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = 40
+	gui.LightInfluence = 0.2
+	gui.MaxDistance = 150
+	gui:SetAttribute("Board", index)
+	gui.Parent = panel
+	model.Parent = island
+end
+
+-- Weekly Champion (#109): user ids of last week's champions, read once per week.
+local championWeek = -1
+local champions: { [number]: boolean } = {}
+
+local function lastWeeksChampions(now: number): { [number]: boolean }
+	local week = GameRules.weekNumber(now)
+	if championWeek == week then
+		return champions
+	end
+	local pages = {}
+	for _, board in CONFIG.boards do
+		if weeklyOn(board) then
+			local store = weeklyStore(board, week - 1)
+			if store == nil then
+				return champions
+			end
+			local ok, page = pcall(function()
+				return store:GetSortedAsync(false, CONFIG.championTop):GetCurrentPage()
+			end)
+			if not ok then
+				warn(`[Bestenliste] Wochen-Champions von {board.id} nicht lesbar: {page}`)
+				return champions -- retried on the next check
+			end
+			table.insert(pages, page)
+		end
+	end
+	championWeek = week
+	champions = GameRules.weeklyChampions(pages, CONFIG.championTop)
+	return champions
+end
+
+-- Rolls every player's stats week and hands out the title to last week's champions.
+local function checkWeeks()
+	local now = os.time()
+	local rules = PlayerStates.rules
+	local winners = lastWeeksChampions(now)
+	local untilTime = GameRules.championUntil(now)
+	for _, player in Players:GetPlayers() do
+		local state = PlayerStates.get(player)
+		if state == nil then
+			continue
+		end
+		local rolled = rules.rollStatsWeek(state, now)
+		if rolled.ok then
+			PlayerStates.set(player, rolled.state)
+			state = rolled.state
+		end
+		if winners[player.UserId] and (state.weeklyChampionUntil or 0) < untilTime then
+			ProfileService.grantWeeklyChampion(player, untilTime)
+		end
+	end
+end
+
 -- Starts writing (after saves) and the refresh loop for the boards on the spawn island.
 -- `island` holds the panels' SurfaceGuis (name "Leaderboard", attribute Board = index
 -- into GameConfig.leaderboards.boards).
 function LeaderboardService.start(island: Instance)
 	openStores()
 	PlayerStates.onSaved(LeaderboardService.submit)
+	for index, board in CONFIG.boards do
+		if board.anchor and boardOn(board) then
+			buildAnchoredPanel(island, board, index)
+		end
+	end
+	if features.enabled("weeklyChampion") and features.enabled("newLeaderboards") then
+		task.spawn(function()
+			while true do
+				checkWeeks()
+				task.wait(CHAMPION_CHECK_SECONDS)
+			end
+		end)
+	end
 
 	local panels: { { board: Board, rows: { Frame }, status: TextLabel } } = {}
 	for _, gui in island:GetDescendants() do

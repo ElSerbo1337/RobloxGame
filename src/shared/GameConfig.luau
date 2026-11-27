@@ -150,7 +150,29 @@ local GameConfig = {
 				format = "Number",
 			},
 			{ id = "Rebirths", store = "Leaderboard_Rebirths_mega1", title = "🔁 Rebirths", format = "Number" },
+			-- New boards (#109) on the reserved spots Board4/Board5 of the spawn island (#106):
+			-- lifetime top 10, plus a weekly store per week (weeklyStore .. week .. "_mega1");
+			-- last week's top `championTop` of each get the Weekly Champion title (#103).
+			{
+				id = "EggsOpened",
+				store = "Leaderboard_EggsOpened_mega1",
+				weeklyStore = "Leaderboard_EggsOpened_week",
+				title = "🥚 Eier geöffnet",
+				format = "Number",
+				anchor = "Board4",
+				feature = "newLeaderboards",
+			},
+			{
+				id = "ToppingsCollected",
+				store = "Leaderboard_ToppingsCollected_mega1",
+				weeklyStore = "Leaderboard_ToppingsCollected_week",
+				title = "🍕 Beläge gesammelt",
+				format = "Number",
+				anchor = "Board5",
+				feature = "newLeaderboards",
+			},
 		},
+		championTop = 3,
 	},
 
 	pizza = {

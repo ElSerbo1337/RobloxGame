@@ -45,6 +45,11 @@ function Leaderboard.valueText(format: Format, value: number): (string, { [strin
 	return "board.number", { value = { integer = value } }
 end
 
+-- Name of a weekly board's store (#109): prefix + week number + fresh-start suffix.
+function Leaderboard.weeklyStore(prefix: string, week: number): string
+	return `{prefix}{week}_mega1`
+end
+
 -- Entries in rank order (best first) -> rows numbered from 1.
 function Leaderboard.rows(entries: { Entry }, format: Format): { Row }
 	local rows = {}

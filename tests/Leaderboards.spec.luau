@@ -101,7 +101,13 @@ describe("leaderboard scores", function()
 		state.totalCoinsEarned = 98765
 		state.rebirths = 3
 
-		expect(rules.leaderboardScores(state)).toEqual({ Playtime = 3725, CoinsEarned = 98765, Rebirths = 3 })
+		expect(rules.leaderboardScores(state)).toEqual({
+			Playtime = 3725,
+			CoinsEarned = 98765,
+			Rebirths = 3,
+			EggsOpened = 0,
+			ToppingsCollected = 0,
+		})
 	end)
 end)
 
