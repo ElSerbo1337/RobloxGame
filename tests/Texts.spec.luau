@@ -185,4 +185,42 @@ describe("Texts.render (3D signs, #71)", function()
 			})
 		end
 	end)
+	it("has a text for every key the game code asks for (#72 review)", function()
+		local fs = require("@lune/fs")
+		local missing = {}
+		local function scan(dir: string)
+			for _, name in fs.readDir(dir) do
+				local path = `{dir}/{name}`
+				if fs.isDir(path) then
+					scan(path)
+				elseif string.sub(name, -5) == ".luau" then
+					local source = fs.readFile(path)
+					for _, call in { "Lang%.t", "SignText%.set", "Texts%.render" } do
+						for key in string.gmatch(source, call .. '%(%s*"(%a[%w_]*%.[%w_.]*[%w_])"') do
+							if Texts.strings[key] == nil then
+								table.insert(missing, `{path}: {key}`)
+							end
+						end
+					end
+				end
+			end
+		end
+		scan("src")
+		local GameConfig = require("../src/shared/GameConfig")
+		for _, badge in GameConfig.badges do
+			for _, key in { `badge.{badge.id}.name`, `badge.{badge.id}.desc` } do
+				if Texts.strings[key] == nil then
+					table.insert(missing, key)
+				end
+			end
+		end
+		for _, title in GameConfig.titles do
+			for _, key in { `title.{title.id}`, `title.{title.id}.how` } do
+				if Texts.strings[key] == nil then
+					table.insert(missing, key)
+				end
+			end
+		end
+		expect(missing).toEqual({})
+	end)
 end)
