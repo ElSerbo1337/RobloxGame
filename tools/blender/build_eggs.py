@@ -461,6 +461,21 @@ def pattern_footprints(look):
     return objs
 
 
+def pattern_crystals(look):
+    """Crystal Cave (#87): clusters of small faceted crystals sprouting from the shell -
+    three leaning six-sided points per cluster, in rings around the egg."""
+    objs = []
+    spots = [(-2.5, -0.5), (-1.3, -0.15), (0.0, -0.5), (1.3, -0.2), (2.6, -0.45),
+             (-1.9, 0.35), (-0.6, 0.55), (0.7, 0.3), (2.0, 0.5)]
+    for i, (theta, u) in enumerate(spots):
+        for k in (-1, 0, 1):
+            bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=0.07, radius2=0.0, depth=0.24 - abs(k) * 0.06)
+            shard = bpy.context.active_object
+            bpy.ops.object.transform_apply(scale=True)
+            objs.append(on_surface(shard, theta + k * 0.1, u + abs(k) * 0.04, lift=0.08, spin=i * 0.7 + k))
+    return objs
+
+
 PATTERNS = {
     "Spots": pattern_spots,
     "Stripes": pattern_stripes,
@@ -474,6 +489,7 @@ PATTERNS = {
     "Zigzag": pattern_zigzag,
     "Bats": pattern_bats,
     "Footprints": pattern_footprints,
+    "Crystals": pattern_crystals,
 }
 
 
