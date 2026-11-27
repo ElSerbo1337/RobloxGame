@@ -132,9 +132,18 @@ local DAY_FIELDS = {
 	"questDay",
 	"questStreakDay",
 	"questWeekDay",
+	-- Hidden chests (#100): GameRules secretChestField of every GameConfig.hiddenChests world.
+	"chestDayBeach",
+	"chestDayCandyLand",
+	"chestDayJungleTemple",
+	"chestDayDinoAge",
+	"chestDayPizzaParadise",
 }
 
 local AdminActions = {}
+
+-- Read by the tests (every hidden chest world has its day field here).
+AdminActions.DAY_FIELDS = DAY_FIELDS
 
 -- Built-in actions in panel order. Only for features that exist; later tickets
 -- (quests, weather, merchant, pet variants, ...) add their own entries here.

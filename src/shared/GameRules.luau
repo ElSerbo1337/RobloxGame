@@ -105,6 +105,10 @@ export type PlayerState = {
 	wheelDay: number,
 	wheelFreeUsed: number,
 	wheelSpins: number,
+	-- Hidden chests (#100): chests opened in total; the German day of the last opening per
+	-- chest lives in the field `rules.secretChestField(worldId)` ("chestDay<WorldId>",
+	-- 0 = never), one per world in config.hiddenChests.worlds.
+	secretChestsOpened: number,
 	-- Travelling merchant (#107): buys per offer id during visit `merchantVisit`
 	-- (GameRules.merchantStatus().visit) and the time the admin last called it (0 = never).
 	merchantVisit: number,
@@ -745,6 +749,7 @@ GameRules.QUEST_SOURCES = {
 	GoldenToppings = true,
 	UnlockWorld = true,
 	SpinWheel = true, -- lucky wheel (#98): rules.spinWheel
+	OpenChest = true, -- hidden chests (#100): rules.openSecretChest
 } :: { [string]: boolean }
 
 function GameRules.new(config: any)
@@ -797,8 +802,14 @@ function GameRules.new(config: any)
 		return teams
 	end
 
+	-- Name of the PlayerState field holding the German day a hidden chest (#100) was last
+	-- opened (AdminActions DAY_FIELDS lists them for skipDays).
+	function rules.secretChestField(worldId: string): string
+		return "chestDay" .. worldId
+	end
+
 	function rules.newPlayerState(): PlayerState
-		return {
+		local state: PlayerState = {
 			version = STATE_VERSION,
 			coins = 0,
 			pizza = {},
@@ -838,6 +849,7 @@ function GameRules.new(config: any)
 			wheelDay = 0,
 			wheelFreeUsed = 0,
 			wheelSpins = 0,
+			secretChestsOpened = 0,
 			merchantVisit = 0,
 			merchantBought = {},
 			merchantForcedAt = 0,
@@ -866,6 +878,13 @@ function GameRules.new(config: any)
 			statsWeekEggs = 0,
 			statsWeekToppings = 0,
 		}
+		-- Hidden chests (#100): one day field per chest world.
+		if type(config.hiddenChests) == "table" then
+			for _, worldId in config.hiddenChests.worlds do
+				(state :: any)[rules.secretChestField(worldId)] = 0
+			end
+		end
+		return state
 	end
 
 	-- Tutorial steps in order; each one is finished by a successful real action.
@@ -3926,6 +3945,46 @@ function GameRules.new(config: any)
 				(newState :: any)[field] = changed
 			end
 		end
+	end
+
+	-- Hidden chests (#100) ---------------------------------------------------------
+	-- One chest in each world of config.hiddenChests.worlds, `gems` gems once per German day
+	-- and chest. The server checks that the player stands at the chest.
+	local function chestWorld(worldId: string): boolean
+		local chests = config.hiddenChests
+		return type(chests) == "table" and featureOn("hiddenChests") and table.find(chests.worlds, worldId) ~= nil
+	end
+
+	-- True while the chest of `worldId` can be opened today by this player.
+	function rules.secretChestReady(state: PlayerState, worldId: string, now: number): boolean
+		if not chestWorld(worldId) or not rules.isWorldUnlocked(state, worldId) then
+			return false
+		end
+		return ((state :: any)[rules.secretChestField(worldId)] or 0) < rules.dayNumber(now)
+	end
+
+	-- Opens the chest of `worldId`: refused with NoChest (no chest there / feature off),
+	-- WorldLocked or AlreadyOpened (today). Counts for "OpenChest" quests.
+	function rules.openSecretChest(state: PlayerState, worldId: string, now: number): RewardsResult
+		local function reject(reason: string): RewardsResult
+			return { ok = false, reason = reason, state = state, rewards = {} }
+		end
+		if not chestWorld(worldId) then
+			return reject("NoChest")
+		end
+		if not rules.isWorldUnlocked(state, worldId) then
+			return reject("WorldLocked")
+		end
+		if not rules.secretChestReady(state, worldId, now) then
+			return reject("AlreadyOpened")
+		end
+		local gems = config.hiddenChests.gems
+		local newState = table.clone(state);
+		(newState :: any)[rules.secretChestField(worldId)] = rules.dayNumber(now)
+		newState.secretChestsOpened = (state.secretChestsOpened or 0) + 1
+		newState.gems = state.gems + gems
+		addQuestProgress(newState, "OpenChest", 1)
+		return { ok = true, state = newState, rewards = { { kind = "Gems", amount = gems } } }
 	end
 
 	-- Progress for a quest kind from outside the built-in actions (lucky wheel #98,

@@ -492,6 +492,16 @@ local GameConfig = {
 		pet = { petId = "MerchantCamel", price = 750, chance = 0.35, limit = 1 },
 	},
 
+	-- Hidden chests (#100, feature "hiddenChests"): one hidden chest per listed world (spot =
+	-- islands.themes[world].secretChest), `gems` gems once per German day and chest. The
+	-- server accepts an opening within `reach` studs; the chest sparkles for players within
+	-- `sparkleDistance` studs while it is still closed for them today.
+	hiddenChests = {
+		gems = 10,
+		reach = 12,
+		sparkleDistance = 30,
+		worlds = { "Beach", "CandyLand", "JungleTemple", "DinoAge", "PizzaParadise" },
+	},
 	-- Average per spin: ~5.5 gems + 0.4 potions + ~3 minutes of income, so a paid spin
 	-- (25 gems) is a gamble, the two free spins add ~11 gems a day.
 	luckyWheel = {
@@ -2259,6 +2269,8 @@ local GameConfig = {
 				flowers = { { 255, 170, 180 }, { 255, 246, 236 }, { 255, 190, 120 }, { 240, 120, 120 } },
 				flowerStems = false,
 				landmark = "Lighthouse",
+				-- Hidden chest (#100): on the left terrace behind the lighthouse (seen from the path).
+				secretChest = { -62, -86, 5 },
 				bridge = "Boardwalk",
 				trees = { "PalmTree" },
 				accents = { { model = "BeachUmbrella", width = 8 }, { model = "BeachRock", width = 4 } },
@@ -2404,6 +2416,8 @@ local GameConfig = {
 				},
 				flowerStems = false,
 				landmark = "Cake",
+				-- Hidden chest (#100): on the left terrace behind the cake (seen from the path).
+				secretChest = { -62, -86, 5 },
 				bridge = "CandyCane",
 				trees = { "Lollipop" },
 				treeScale = 0.55,

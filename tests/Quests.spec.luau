@@ -203,13 +203,14 @@ describe("quest pool and feature switches", function()
 		local farm = rules.newPlayerState()
 		farm.unlockedWorlds = { "Farm" }
 
+		-- Registered by #100 (rules.openSecretChest); without the source it is not drawn.
+		GameRules.QUEST_SOURCES.OpenChest = nil
 		expect(table.find(rules.questPool(farm, "Daily"), "OpenChest")).toBeNil()
-
 		GameRules.QUEST_SOURCES.OpenChest = true
+
 		local registered = rules.questPool(farm, "Daily")
 		local chestsOff = rulesWith(nil, { hiddenChests = false }).questPool(farm, "Daily")
 		local world1 = rules.questPool(rules.newPlayerState(), "Daily")
-		GameRules.QUEST_SOURCES.OpenChest = nil
 
 		expect(table.find(registered, "OpenChest") ~= nil).toBe(true)
 		expect(table.find(chestsOff, "OpenChest")).toBeNil()

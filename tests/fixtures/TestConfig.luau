@@ -168,6 +168,8 @@ return {
 		}
 		return days
 	end)(),
+	-- Hidden chests (#100): 10 gems a day per chest.
+	hiddenChests = { gems = 10, reach = 12, sparkleDistance = 30, worlds = { "Farm", "Beach" } },
 	-- Lucky wheel (#98): free spins per German day (+1 after bonusSpinMinutes of play time
 	-- that day), more for spinPrice gems. Fields drawn by weight; "Coins" pays `minutes` of
 	-- income (incomePerMinute, at least minCoins).
