@@ -49,6 +49,8 @@ function ProfileService.start()
 	local rules = PlayerStates.rules
 	local notify = Net.event("Notify")
 
+	local TITLE_COOLDOWN = 0.5
+	local lastTitleChange: { [Player]: number } = {}
 	local dirty: { [Player]: boolean } = {}
 	local lastJson: { [Player]: string } = {}
 	-- Badge ids tried this session (running or failed), so a failing id is not spammed.
@@ -148,14 +150,21 @@ function ProfileService.start()
 		dirty[player] = nil
 		lastJson[player] = nil
 		tried[player] = nil
+		lastTitleChange[player] = nil
 	end)
 
 	if titlesOn then
 		Net.event("SetTitle").OnServerEvent:Connect(function(player: Player, titleId: any)
 			local state = PlayerStates.get(player)
-			if state == nil or type(titleId) ~= "string" then
+			if state == nil or type(titleId) ~= "string" or #titleId > 64 then
 				return
 			end
+			-- Every change replicates Profile/TitleId to all players: at most a few per second.
+			local clock = os.clock()
+			if lastTitleChange[player] and clock - lastTitleChange[player] < TITLE_COOLDOWN then
+				return
+			end
+			lastTitleChange[player] = clock
 			local result = rules.setTitle(state, titleId, os.time())
 			if result.ok then
 				PlayerStates.set(player, result.state)
