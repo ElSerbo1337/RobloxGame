@@ -181,6 +181,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
 | --- | --- | --- | --- | --- | --- |
 | CalendarFox | Kalender-Fuchs | Calendar Fox | – (Login-Kalender Tag 30) | Mythisch | #101 |
+| MerchantCamel | Händler-Kamel | Merchant Camel | – (Reisender Händler) | Mythisch | #107 |
 
 ## Beläge (34)
 

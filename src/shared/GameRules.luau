@@ -105,6 +105,11 @@ export type PlayerState = {
 	wheelDay: number,
 	wheelFreeUsed: number,
 	wheelSpins: number,
+	-- Travelling merchant (#107): buys per offer id during visit `merchantVisit`
+	-- (GameRules.merchantStatus().visit) and the time the admin last called it (0 = never).
+	merchantVisit: number,
+	merchantBought: { [string]: number },
+	merchantForcedAt: number,
 	-- Quests (#97). Daily: the German day the daily quests were made for (0 = never),
 	-- the quests, rerolls used on that day, whether the bonus chest was claimed. Streak:
 	-- bonus chests claimed on days in a row (`questStreak`, last one on `questStreakDay`).
@@ -471,6 +476,35 @@ export type LoginClaimResult = RewardsResult & { day: number }
 -- player (potions not drawn yet), and the chance to land on it (0-1).
 export type WheelField = { id: string, jackpot: boolean, chance: number, rewards: { Reward } }
 
+-- Travelling merchant (#107), see rules.merchantStatus / merchantOffers.
+export type MerchantStatus = {
+	active: boolean,
+	visit: number,
+	startsAt: number,
+	endsAt: number,
+	announce: boolean,
+	pet: boolean,
+}
+
+export type MerchantOffer = {
+	id: string,
+	price: number,
+	limit: number,
+	left: number,
+	potionId: string?,
+	eggId: string?,
+	secretChance: number?,
+	petId: string?,
+}
+
+export type MerchantBuyResult = {
+	ok: boolean,
+	reason: string?,
+	state: PlayerState,
+	pet: OwnedPet?,
+	autoDeleted: boolean?,
+}
+
 export type WheelStatus = {
 	-- Free spins left today, and today's free spins in total (incl. the play time bonus once reached).
 	freeSpins: number,
@@ -720,6 +754,9 @@ function GameRules.new(config: any)
 			wheelDay = 0,
 			wheelFreeUsed = 0,
 			wheelSpins = 0,
+			merchantVisit = 0,
+			merchantBought = {},
+			merchantForcedAt = 0,
 			questDay = 0,
 			dailyQuests = {},
 			questRerolls = 0,
@@ -2563,6 +2600,183 @@ function GameRules.new(config: any)
 	function rules.resetWheelSpins(state: PlayerState): Result
 		local newState = table.clone(state)
 		newState.wheelFreeUsed = 0
+		return { ok = true, state = newState }
+	end
+
+	-- Travelling merchant (#107) -------------------------------------------------
+
+	-- Whether visit `visit` brings the exclusive pet: a fixed hash of the visit number,
+	-- so every server agrees without talking to the others.
+	local function merchantPetVisit(visit: number): boolean
+		local pet = config.travelingMerchant.pet
+		return pet ~= nil and ((visit * 7919) % 997) / 997 < pet.chance
+	end
+
+	-- Where the merchant is at `now` (seconds, UTC): every periodSeconds for
+	-- durationSeconds, counted from the clock (same on all servers). `visit` = number of
+	-- the running visit, or of the next one while away; `announce` = the next one starts
+	-- within announceSeconds. `forcedAt` (the player's merchantForcedAt, admin): a visit
+	-- of its own from that time on, always with the pet.
+	function rules.merchantStatus(now: number, forcedAt: number?): MerchantStatus
+		local merchant = config.travelingMerchant
+		if merchant == nil or not featureOn("travelingMerchant") then
+			return { active = false, visit = 0, startsAt = 0, endsAt = 0, announce = false, pet = false }
+		end
+		local duration = merchant.durationSeconds
+		if forcedAt and forcedAt > 0 and now >= forcedAt and now < forcedAt + duration then
+			return {
+				active = true,
+				visit = forcedAt,
+				startsAt = forcedAt,
+				endsAt = forcedAt + duration,
+				announce = false,
+				pet = merchant.pet ~= nil,
+			}
+		end
+		local period = merchant.periodSeconds
+		local index = math.floor(now / period)
+		local active = now - index * period < duration
+		local visit = if active then index else index + 1
+		local startsAt = visit * period
+		return {
+			active = active,
+			visit = visit,
+			startsAt = startsAt,
+			endsAt = startsAt + duration,
+			announce = not active and startsAt - now <= merchant.announceSeconds,
+			pet = merchantPetVisit(visit),
+		}
+	end
+
+	-- The egg the merchant sells: the first egg of the last unlocked world with eggs.
+	local function merchantEggId(state: PlayerState): string?
+		for index = #config.worlds, 1, -1 do
+			local world = config.worlds[index]
+			if world.eggs and world.eggs[1] and rules.isWorldUnlocked(state, world.id) then
+				return world.eggs[1]
+			end
+		end
+		return nil
+	end
+
+	-- What the merchant sells this player at `now` (empty while away): "Potion" (the Mega
+	-- potion at priceFactor of its price), "Egg" (with secretMultiplier x the Secret
+	-- chance) and, on some visits, "Pet" (the exclusive merchant pet). `left` = buys left
+	-- in this visit.
+	function rules.merchantOffers(state: PlayerState, now: number): { MerchantOffer }
+		local status = rules.merchantStatus(now, state.merchantForcedAt)
+		local offers = {}
+		if not status.active then
+			return offers
+		end
+		local merchant = config.travelingMerchant
+		local bought = if state.merchantVisit == status.visit then state.merchantBought or {} else {}
+		local function add(entry: MerchantOffer)
+			entry.left = math.max(0, entry.limit - (bought[entry.id] or 0))
+			table.insert(offers, entry)
+		end
+		local potion = merchant.potion
+		if potion and config.potions[potion.potionId] and rules.isPotionOffered(potion.potionId) then
+			local price = math.ceil(config.potions[potion.potionId].price * potion.priceFactor - 1e-9)
+			add({ id = "Potion", price = price, limit = potion.limit, left = 0, potionId = potion.potionId })
+		end
+		local eggId = merchantEggId(state)
+		if merchant.egg and eggId then
+			add({
+				id = "Egg",
+				price = merchant.egg.price,
+				limit = merchant.egg.limit,
+				left = 0,
+				eggId = eggId,
+				secretChance = math.min(1, rules.secretChance(state, eggId) * merchant.egg.secretMultiplier),
+			})
+		end
+		local pet = merchant.pet
+		if pet and status.pet and config.pets[pet.petId] then
+			add({ id = "Pet", price = pet.price, limit = pet.limit, left = 0, petId = pet.petId })
+		end
+		return offers
+	end
+
+	-- Buys one of the merchant's offers for gems. Refused while the merchant is away
+	-- (MerchantAway), for offers he does not have (NotOffered), after the visit's limit
+	-- (SoldOut), without gems (NotEnoughGems) or, for egg and pet, without a free
+	-- inventory slot (InventoryFull). `pet` = the hatched or bought pet.
+	function rules.buyFromMerchant(
+		state: PlayerState,
+		offerId: string,
+		now: number,
+		random: () -> number
+	): MerchantBuyResult
+		local function reject(reason: string): MerchantBuyResult
+			return { ok = false, reason = reason, state = state }
+		end
+		local status = rules.merchantStatus(now, state.merchantForcedAt)
+		if not status.active then
+			return reject("MerchantAway")
+		end
+		local chosen: MerchantOffer? = nil
+		for _, entry in rules.merchantOffers(state, now) do
+			if entry.id == offerId then
+				chosen = entry
+			end
+		end
+		if chosen == nil then
+			return reject("NotOffered")
+		end
+		if chosen.left <= 0 then
+			return reject("SoldOut")
+		end
+		if state.gems < chosen.price then
+			return reject("NotEnoughGems")
+		end
+		if chosen.id ~= "Potion" and #state.pets >= rules.inventorySlots(state) then
+			return reject("InventoryFull")
+		end
+		local newState = table.clone(state)
+		newState.gems = state.gems - chosen.price
+		local bought = if state.merchantVisit == status.visit then table.clone(state.merchantBought or {}) else {}
+		bought[chosen.id] = (bought[chosen.id] or 0) + 1
+		newState.merchantVisit = status.visit
+		newState.merchantBought = bought
+		local result: MerchantBuyResult = { ok = true, state = newState }
+		if chosen.potionId then
+			newState.potions = table.clone(state.potions)
+			newState.potions[chosen.potionId] = rules.potionCount(state, chosen.potionId) + 1
+		elseif chosen.eggId then
+			local eggId = chosen.eggId
+			local odds = table.clone(eggOdds(state, eggId))
+			odds.secret = chosen.secretChance or 0
+			newState.pets = table.clone(state.pets)
+			local pet: OwnedPet = {
+				uid = newState.nextPetUid,
+				petId = drawPet(eggId, config.eggs[eggId], odds, random),
+			}
+			if odds.shiny > 0 and random() < odds.shiny then
+				pet.shiny = true
+			end
+			if autoDeletes(state, pet) then
+				newState.nextPetUid += 1
+				recordOwned(newState, pet.petId)
+				result.autoDeleted = true
+			else
+				addPet(newState, pet, now)
+			end
+			addQuestProgress(newState, "OpenEggs", 1)
+			result.pet = pet
+		elseif chosen.petId then
+			newState.pets = table.clone(state.pets)
+			local pet: OwnedPet = { uid = newState.nextPetUid, petId = chosen.petId }
+			addPet(newState, pet, now)
+			result.pet = pet
+		end
+		return result
+	end
+
+	-- Admin panel: the merchant comes for this player right now (a visit of its own).
+	function rules.forceMerchant(state: PlayerState, now: number): Result
+		local newState = table.clone(state)
+		newState.merchantForcedAt = now
 		return { ok = true, state = newState }
 	end
 

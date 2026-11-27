@@ -425,6 +425,16 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Travelling merchant (#107): comes for this admin right now for one visit (with the
+		-- exclusive pet), whatever the clock says.
+		id = "spawnMerchant",
+		feature = "travelingMerchant",
+		params = {},
+		run = function(env, state, _args, ctx)
+			return env.rules.forceMerchant(state, ctx.now)
+		end,
+	},
+	{
 		-- Login calendar (#101): makes the chosen day claimable today (e.g. 30 = calendar pet).
 		id = "setCalendarDay",
 		feature = "loginCalendar30",

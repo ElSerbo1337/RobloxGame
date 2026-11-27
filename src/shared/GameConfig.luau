@@ -401,6 +401,21 @@ local GameConfig = {
 	-- bonusSpinMinutes of play time that day, further spins for spinPrice gems. The server
 	-- draws the field by weight (sum 100 = percent). "Coins" pays `minutes` of the player's
 	-- income (rules.incomePerMinute, at least minCoins); potions are random ones like gifts.
+	-- Travelling merchant (#107, feature "travelingMerchant"): stand on the reserved spot of
+	-- the spawn island (Anchors.MerchantAnchor). Comes every periodSeconds (counted from the
+	-- clock in UTC, so at even UTC hours on every server) for durationSeconds, announced
+	-- announceSeconds before. Pays in gems; `limit` = buys per visit and player.
+	-- Pet: on about `chance` of the visits (fixed per visit number, the same everywhere).
+	travelingMerchant = {
+		periodSeconds = 2 * 3600,
+		durationSeconds = 600,
+		announceSeconds = 120,
+		potion = { potionId = "Mega", priceFactor = 0.5, limit = 3 },
+		-- The first egg of the player's best unlocked world, x10 Secret chance.
+		egg = { price = 60, secretMultiplier = 10, limit = 3 },
+		pet = { petId = "MerchantCamel", price = 750, chance = 0.35, limit = 1 },
+	},
+
 	-- Average per spin: ~5.5 gems + 0.4 potions + ~3 minutes of income, so a paid spin
 	-- (25 gems) is a gamble, the two free spins add ~11 gems a day.
 	luckyWheel = {
@@ -1220,6 +1235,15 @@ local GameConfig = {
 			rarity = "Mythic",
 			bonus = 1.5,
 			calendarPet = true,
+		},
+		-- Travelling merchant pet (#107): only from the merchant on some visits, in no egg
+		-- (not needed for the pet index). Model: tools/blender/build_merchant_pet.py.
+		MerchantCamel = {
+			displayName = "Händler-Kamel",
+			displayNameEn = "Merchant Camel",
+			rarity = "Mythic",
+			bonus = 2,
+			merchantPet = true,
 		},
 		PearlKingOtter = {
 			displayName = "Perlenkönig-Otter",

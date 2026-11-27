@@ -24,6 +24,7 @@ local features = Features.new({
 	petLevels = true,
 	dailyQuests = true,
 	weeklyQuests = true,
+	travelingMerchant = true,
 })
 local admin = AdminActions.new(rules, TestConfig, features)
 
@@ -95,6 +96,7 @@ describe("admin registry", function()
 			"setShinyChance",
 			"setPetLevel",
 			"givePetXp",
+			"spawnMerchant",
 			"setCalendarDay",
 			"completeQuest",
 			"rerollQuests",
@@ -445,6 +447,7 @@ describe("admin actions for golden toppings (#94)", function()
 			rules,
 			TestConfig,
 			Features.new({
+				travelingMerchant = true,
 				adminPanel = true,
 				loginCalendar30 = true,
 				codes = false,
@@ -529,6 +532,7 @@ describe("admin Secret pet actions (#81)", function()
 			secretRules,
 			config,
 			Features.new({
+				travelingMerchant = true,
 				adminPanel = true,
 				loginCalendar30 = true,
 				codes = false,
@@ -612,6 +616,7 @@ describe("pet variant admin actions (#80)", function()
 			variantRules,
 			config,
 			Features.new({
+				travelingMerchant = true,
 				adminPanel = true,
 				loginCalendar30 = true,
 				codes = false,
@@ -672,6 +677,7 @@ describe("pet level admin action (#90)", function()
 			levelRules,
 			config,
 			Features.new({
+				travelingMerchant = true,
 				adminPanel = true,
 				loginCalendar30 = true,
 				codes = false,
@@ -698,6 +704,7 @@ describe("admin lucky wheel (#98)", function()
 		rules,
 		TestConfig,
 		Features.new({
+			travelingMerchant = true,
 			adminPanel = true,
 			loginCalendar30 = true,
 			codes = false,
