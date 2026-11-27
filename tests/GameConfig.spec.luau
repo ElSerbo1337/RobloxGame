@@ -349,6 +349,35 @@ describe("GameConfig", function()
 		end
 	)
 
+	it("lets a player with 10 rebirths unlock world 15 (Pizza Paradise) last, with the cheese rain (#89)", function()
+		local rules = GameRules.new(GameConfig)
+		local index, paradise = 0, nil
+		for i, world in GameConfig.worlds do
+			if world.id == "PizzaParadise" then
+				index, paradise = i, world
+			end
+		end
+		expect(index).toBe(15)
+		expect(index).toBe(#GameConfig.worlds)
+		expect(paradise.weather).toBe("CheeseRain")
+		expect(GameConfig.weathers.CheeseRain.displayName).toBe("Käseregen")
+		expect(paradise.eggs).toEqual({ "DivineEgg" })
+		expect(GameConfig.pets[paradise.secretPet].rarity).toBe("Secret")
+		expect(GameConfig.shops.World15Shop.worldId).toBe("PizzaParadise")
+		local state = rules.newPlayerState()
+		state.unlockedWorlds = {}
+		for i = 1, index - 1 do
+			table.insert(state.unlockedWorlds, GameConfig.worlds[i].id)
+		end
+		state.coins = paradise.unlockPrice
+		state.rebirths = 9
+		expect(rules.unlockWorld(state, "PizzaParadise").ok).toBe(false)
+		state.rebirths = 10
+		local result = rules.unlockWorld(state, "PizzaParadise")
+		expect(result.ok).toBe(true)
+		expect(rules.teleport(result.state, "PizzaParadise").ok).toBe(true)
+	end)
+
 	it(
 		"lets a player with 7 rebirths unlock world 14 (Cloud City) after world 13, with the rainbow weather (#88)",
 		function()
@@ -826,6 +855,7 @@ describe("GameConfig pets and eggs", function()
 			Footprints = true,
 			Crystals = true,
 			Clouds = true,
+			Slices = true,
 		}
 		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
@@ -898,10 +928,11 @@ describe("GameConfig worlds and eggs", function()
 		DinoAge = 11.8,
 		CrystalCave = 13.2,
 		CloudCity = 14.6,
+		PizzaParadise = 16,
 	}
 
 	it(
-		"makes the best pet of each world follow +75/110/160/230/320/400/500/620/760/900/1040/1180/1320/1460 % and rise",
+		"makes the best pet of each world follow +75/110/160/230/320/400/500/620/760/900/1040/1180/1320/1460/1600 % and rise",
 		function()
 			local previous = 0
 			for _, world in GameConfig.worlds do

@@ -205,4 +205,26 @@ describe("World model packs (#82)", function()
 			"SunflowerSeeds",
 		})
 	end)
+
+	it("lists the Pizza Paradise assets: 3 toppings, 6 pets, the Secret pet and the egg (#89)", function()
+		local paradise
+		for _, world in GameConfig.worlds do
+			if world.id == "PizzaParadise" then
+				paradise = world
+			end
+		end
+		expect(WorldPacks.assetsOf(paradise)).toEqual({
+			"DiamondCheese",
+			"DiamondCheeseMouse",
+			"DivineEgg",
+			"GoldSalami",
+			"GoldSalamiPiglet",
+			"OlympusPizzaDragon",
+			"OvenTitan",
+			"PizzaPhoenix",
+			"PizzaZeus",
+			"RainbowBasil",
+			"RainbowBasilChameleon",
+		})
+	end)
 end)

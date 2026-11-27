@@ -257,6 +257,10 @@ local GameConfig = {
 		CloudMozzarella = { displayName = "Wolken-Mozzarella", displayNameEn = "Cloud Mozzarella", value = 677000000 },
 		SunflowerSeeds = { displayName = "Sonnenblumenkerne", displayNameEn = "Sunflower Seeds", value = 1170000000 },
 		Starfruit = { displayName = "Sternfrucht", displayNameEn = "Starfruit", value = 1700000000 },
+		-- World 15 (Pizza Paradise, #89): about 4.8x world 14 (#88). Provisional, tuned in #108.
+		GoldSalami = { displayName = "Gold-Salami", displayNameEn = "Gold Salami", value = 3250000000 },
+		DiamondCheese = { displayName = "Diamant-Käse", displayNameEn = "Diamond Cheese", value = 5620000000 },
+		RainbowBasil = { displayName = "Regenbogen-Basilikum", displayNameEn = "Rainbow Basil", value = 8160000000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -1229,6 +1233,45 @@ local GameConfig = {
 			rarity = "Mythic",
 			bonus = 14.6,
 		},
+		-- World 15 (Götter-Ei, #89): the pizza gods; the Mythic one is the world's best
+		-- (+1600 %, the flat curve +140 % per world), the others scaled like the cloud egg.
+		-- Provisional (#108). Models: tools/blender/build_world.py PizzaParadise.
+		GoldSalamiPiglet = {
+			displayName = "Gold-Salami-Ferkel",
+			displayNameEn = "Gold Salami Piglet",
+			rarity = "Common",
+			bonus = 1.05,
+		},
+		DiamondCheeseMouse = {
+			displayName = "Diamant-Käse-Maus",
+			displayNameEn = "Diamond Cheese Mouse",
+			rarity = "Uncommon",
+			bonus = 1.6,
+		},
+		RainbowBasilChameleon = {
+			displayName = "Regenbogen-Chamäleon",
+			displayNameEn = "Rainbow Chameleon",
+			rarity = "Rare",
+			bonus = 2.66,
+		},
+		PizzaPhoenix = {
+			displayName = "Pizza-Phönix",
+			displayNameEn = "Pizza Phoenix",
+			rarity = "Epic",
+			bonus = 4.26,
+		},
+		OvenTitan = {
+			displayName = "Ofen-Titan",
+			displayNameEn = "Oven Titan",
+			rarity = "Legendary",
+			bonus = 8,
+		},
+		OlympusPizzaDragon = {
+			displayName = "Olymp-Pizzadrache",
+			displayNameEn = "Olympus Pizza Dragon",
+			rarity = "Mythic",
+			bonus = 16,
+		},
 
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
 		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
@@ -1471,6 +1514,12 @@ local GameConfig = {
 			rarity = "Secret",
 			bonus = 29.2,
 		},
+		PizzaZeus = {
+			displayName = "Pizza-Zeus",
+			displayNameEn = "Pizza Zeus",
+			rarity = "Secret",
+			bonus = 32,
+		},
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -1479,7 +1528,7 @@ local GameConfig = {
 	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
-	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats, Footprints, Crystals, Clouds. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats, Footprints, Crystals, Clouds, Slices. `glow` = accent glows (Neon); `fancy` = showier variant
 	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
@@ -1769,6 +1818,21 @@ local GameConfig = {
 				{ pet = "SunPegasus", chance = 0.5 },
 			},
 		},
+		-- World 15 (#89), the golden last world. Price provisional (#108).
+		DivineEgg = {
+			displayName = "Götter-Ei",
+			displayNameEn = "Divine Egg",
+			look = { color = "FFD24A", accent = "E8443A", pattern = "Slices", glow = true },
+			price = 1400000000000,
+			pets = {
+				{ pet = "GoldSalamiPiglet", chance = 50 },
+				{ pet = "DiamondCheeseMouse", chance = 28 },
+				{ pet = "RainbowBasilChameleon", chance = 15 },
+				{ pet = "PizzaPhoenix", chance = 5.5 },
+				{ pet = "OvenTitan", chance = 1 },
+				{ pet = "OlympusPizzaDragon", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -1958,6 +2022,24 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
+		World15Shop = {
+			worldId = "PizzaParadise",
+			displayName = "Götter-Shop",
+			displayNameEn = "Divine Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
+			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
+		},
 	},
 
 	-- Flying islands (#27): spawn island, then world 1, 2, ... in a chain along -Z, all at
@@ -2030,6 +2112,8 @@ local GameConfig = {
 		--                | "BoneFence" (lava-rock wall with rib bones in `bone`)
 		--                | "CrystalRim" (cave-rock wall with crystal spikes in `crystals`)
 		--                | "CloudRim" (cloud bank with puffs in `rim`/`cloudShade`, gold sun lamps)
+		--                | "GoldCrust" (golden pizza-crust wall in `rim`/`rimDark`, salami knobs in
+		--                `salami`, a gold post with a light ball on every fifth piece)
 		--                (low visible rim)
 		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
 		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" | "GreatPyramid"
@@ -2039,6 +2123,8 @@ local GameConfig = {
 		--                | "CrystalGrotto" (rock arch over a glowing lake in `water`, crystal
 		--                cluster in `crystals` with an `amethyst` heart crystal)
 		--                | "RainbowArch" (rainbow in `rainbow` bands over cloud piles, a `glow` sun)
+		--                | "GoldenPizzaStatue" (giant golden pizza in `gold` on a marble `stone`
+		--                pedestal, with diamond cheese, rainbow basil and a golden oven beside it)
 		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
 		--                the bridge leading INTO the world
 		--   trees        tree models scattered along the rim (ModelLibrary names); false = none
@@ -2063,6 +2149,8 @@ local GameConfig = {
 		--                (rock spikes), "CavePool" (small glowing pool, `night`, #87),
 		--                "FloatingIsle" (small hovering island), "CloudPuff" (cloud balls),
 		--                "SunOrb" (golden glowing orb on a gold column, #88),
+		--                "SalamiHill" (salami mountain with fat spots), "CheeseRiver" (winding
+		--                flat cheese stream), "FloatingSlice" (hovering pizza slice, #89),
 		--                old worlds (#104): "Lantern" (lamp marked `night` for #105),
 		--                "FlowerBed", "FenceRow", "HayStack", "Shell", "Driftwood", "Starfish",
 		--                "IceSpike", "SnowPile", "BasaltCluster", "Lolli", "CandyStick",
@@ -2822,6 +2910,72 @@ local GameConfig = {
 					},
 				},
 			},
+			-- World 15 (#89), the golden last world: a pizza paradise of the pizza gods - golden
+			-- crust ground, a golden crust wall with salami knobs, a glowing light bridge, a giant
+			-- golden pizza statue on a marble pedestal with a golden oven beside it on the
+			-- terrace; salami mountains, winding cheese rivers, floating pizza slices, golden
+			-- orbs and sparkles (scripted deco, ~400 parts). The pond and its stream are cheese.
+			-- Hidden chest (#100) on the right terrace.
+			PizzaParadise = {
+				grass = { 236, 196, 104 },
+				grassLight = { 248, 214, 128 },
+				field = { 255, 230, 160 },
+				cliff = { 196, 124, 64 },
+				cliffDark = { 156, 92, 46 },
+				cliffLight = { 224, 164, 96 },
+				rim = { 232, 172, 76 },
+				rimDark = { 192, 128, 52 },
+				salami = { 178, 40, 52 },
+				rimStyle = "GoldCrust",
+				gold = { 255, 196, 56 },
+				glow = { 255, 226, 120 },
+				stone = { 246, 240, 228 },
+				diamond = { 200, 240, 255 },
+				rainbow = {
+					{ 255, 90, 90 },
+					{ 255, 160, 70 },
+					{ 255, 220, 80 },
+					{ 110, 220, 110 },
+					{ 90, 160, 255 },
+					{ 170, 110, 255 },
+				},
+				path = { 252, 238, 206 },
+				pathDark = { 228, 202, 150 },
+				water = { 255, 204, 70 },
+				waterfall = { 255, 216, 100 },
+				wood = { 196, 136, 70 },
+				woodDark = { 150, 96, 48 },
+				rope = { 255, 214, 120 },
+				ice = { 255, 220, 120 },
+				iceDark = { 230, 176, 70 },
+				snow = { 255, 248, 230 },
+				flowers = { { 255, 200, 60 }, { 230, 60, 60 }, { 90, 190, 90 }, { 255, 255, 255 } },
+				landmark = "GoldenPizzaStatue",
+				bridge = "Light",
+				trees = false,
+				accents = { { model = "Bush", width = 5 } },
+				secretChest = { 54, -88, 5 },
+				deco = {
+					budget = 400,
+					kits = {
+						{ kit = "Fireflies", count = 3, size = { 14, 18 }, colors = { { 255, 220, 120 } } },
+						{
+							kit = "SalamiHill",
+							count = 18,
+							size = { 9, 15 },
+							colors = { { 178, 40, 52 }, { 250, 226, 214 } },
+						},
+						{ kit = "CheeseRiver", count = 12, size = { 10, 16 }, colors = { { 255, 206, 70 } } },
+						{
+							kit = "FloatingSlice",
+							count = 40,
+							size = { 4, 7 },
+							colors = { { 214, 150, 70 }, { 255, 214, 92 }, { 178, 40, 52 } },
+						},
+						{ kit = "SunOrb", count = 14, size = { 3, 4.5 }, colors = { { 255, 226, 120 } } },
+					},
+				},
+			},
 		},
 	},
 
@@ -2848,7 +3002,7 @@ local GameConfig = {
 	-- "rain" (fast streaks), "snow" (slow flakes), "dust" (drifting sideways),
 	-- "bubbles" (rising), "sparkle" (twinkling in the air).
 	-- AshRain is used by world 12 (#86), CrystalGlitter by world 13 (#87), RainbowSky by
-	-- world 14 (#88); world 15 is not built yet: CheeseRain waits here for its world entry.
+	-- world 14 (#88), CheeseRain by world 15 (#89).
 	weathers = {
 		Rain = {
 			displayName = "Regen",
@@ -3204,6 +3358,24 @@ local GameConfig = {
 			eggs = { "CloudEgg" },
 			secretPet = "CloudKingGriffin",
 			weather = "RainbowSky",
+		},
+		-- World 15 (#89), the last world after world 14 (#88). 10 rebirths (spec #72).
+		-- Price provisional (#108).
+		{
+			id = "PizzaParadise",
+			requiredRebirths = 10,
+			displayName = "Pizza-Paradies",
+			displayNameEn = "Pizza Paradise",
+			unlockPrice = 40000000000000,
+			color = { 255, 196, 56 },
+			toppingSpawns = {
+				{ topping = "GoldSalami", weight = 55 },
+				{ topping = "DiamondCheese", weight = 30 },
+				{ topping = "RainbowBasil", weight = 15 },
+			},
+			eggs = { "DivineEgg" },
+			secretPet = "PizzaZeus",
+			weather = "CheeseRain",
 		},
 	},
 }

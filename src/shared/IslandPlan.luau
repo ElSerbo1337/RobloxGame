@@ -527,6 +527,65 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 				})
 			)
 		end
+	elseif style == "GoldCrust" then
+		-- Pizza paradise (#89): a low wall of golden pizza crust along the edge (collides,
+		-- keeps players in) with a rounded crust roll on top, a salami slice on the inner
+		-- face of every second piece and a gold post with a glowing ball on every fifth.
+		local center = add(scale(add(p, q), 0.5), add(inset, v(0, 0.8, 0)))
+		table.insert(
+			parts,
+			spec("Block", v(2, 1.6, len + 0.3), along(center, dir), {
+				name = "CrustWall",
+				color = if i % 3 == 0 then theme.rimDark or theme.cliffDark else theme.rim,
+				role = "Rim",
+			})
+		)
+		local right = unit(dir)
+		local up = v(0, 1, 0)
+		table.insert(
+			parts,
+			spec("Cylinder", v(len + 0.5, 2.3, 2.3), matrix(add(center, v(0, 0.9, 0)), right, up, cross(right, up)), {
+				name = "CrustRoll",
+				color = theme.rim,
+				collide = false,
+				role = "Rim",
+				detail = true,
+			})
+		)
+		if i % 2 == 0 then
+			local face = add(add(center, scale(inward, 1.05)), v(0, 0.1, 0))
+			table.insert(
+				parts,
+				spec("Cylinder", v(0.25, 1.3, 1.3), matrix(face, inward, up, cross(inward, up)), {
+					name = "CrustSalami",
+					color = theme.salami or { 178, 40, 52 },
+					collide = false,
+					role = "Rim",
+				})
+			)
+		end
+		if i % 5 == 0 then
+			local foot = add(p, add(inset, v(0, 1.6, 0)))
+			table.insert(
+				parts,
+				disc(add(foot, v(0, 1.2, 0)), 0.5, 2.4, {
+					name = "GoldPost",
+					color = theme.gold or { 255, 200, 60 },
+					collide = false,
+					role = "Rim",
+				})
+			)
+			table.insert(
+				parts,
+				ball(add(foot, v(0, 2.7, 0)), 0.9, {
+					name = "GoldLamp",
+					color = theme.glow or { 255, 226, 120 },
+					material = "Neon",
+					collide = false,
+					role = "Rim",
+				})
+			)
+		end
 	elseif style == "IceEdge" then
 		local h = 1.8 + noise(i, 3) * 1.4
 		local center = add(scale(add(p, q), 0.5), add(inset, v(0, h / 2, 0)))
@@ -2589,8 +2648,135 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		end
 	end
 
+	-- World 15 landmark (#89): a giant golden pizza statue on a marble pedestal - a gold
+	-- column carries a tilted golden pizza (crust, cheese, salami slices, diamond cheese
+	-- gems, rainbow basil leaves) facing the middle of the island, with a glowing gold ball
+	-- above it; a golden dome oven with a glowing mouth stands beside the pedestal.
+	local function goldenPizzaStatue(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local gold = theme.gold or { 255, 196, 56 }
+		local stone = theme.stone or { 246, 240, 228 }
+		local towards = if at[1] < 0 then 1 else -1
+		local function p3(dx: number, dy: number, dz: number): V
+			return v(at[1] + dx, baseY + dy, at[3] + dz)
+		end
+		table.insert(parts, disc(p3(0, 1.5, 0), 15, 3, { name = "StatuePedestal", color = stone, role = "Landmark" }))
+		table.insert(parts, disc(p3(0, 3.5, 0), 11.5, 1, { name = "StatueStep", color = gold, role = "Landmark" }))
+		table.insert(parts, disc(p3(0, 9, 0), 3.2, 10, { name = "StatueColumn", color = gold, role = "Landmark" }))
+		-- The pizza, tilted 35 degrees around Z towards the middle of the island.
+		local tilt = math.rad(35) * -towards
+		local c, s = math.cos(tilt), math.sin(tilt)
+		local axis = { -s, c, 0 }
+		local across = { -c, -s, 0 }
+		local hub = p3(0, 21, 0)
+		local function layer(offset: number, diameter: number, thickness: number, color: { number }, name: string)
+			table.insert(
+				parts,
+				spec(
+					"Cylinder",
+					v(thickness, diameter, diameter),
+					matrix(add(hub, scale(axis, offset)), axis, across, { 0, 0, 1 }),
+					{ name = name, color = color, role = "Landmark" }
+				)
+			)
+		end
+		layer(0, 22, 1.6, { 230, 160, 40 }, "StatueCrust")
+		layer(0.6, 19.5, 0.8, gold, "StatuePizza")
+		local function onTop(angle: number, r: number, lift: number): V
+			local inPlane = add(scale(across, math.cos(angle) * r), scale({ 0, 0, 1 }, math.sin(angle) * r))
+			return add(add(hub, scale(axis, lift)), inPlane)
+		end
+		for k = 1, 7 do
+			local a = k / 7 * math.pi * 2
+			table.insert(
+				parts,
+				spec(
+					"Cylinder",
+					v(0.4, 3.2, 3.2),
+					matrix(onTop(a, if k % 2 == 0 then 6.2 else 3.4, 1.15), axis, across, { 0, 0, 1 }),
+					{ name = "StatueSalami", color = theme.salami or { 178, 40, 52 }, role = "Landmark" }
+				)
+			)
+		end
+		for k = 1, 5 do
+			table.insert(
+				parts,
+				ball(onTop(k / 5 * math.pi * 2 + 0.6, 7.6, 1.2), 1.6, {
+					name = "StatueDiamond",
+					color = theme.diamond or { 200, 240, 255 },
+					material = "Glass",
+					transparency = 0.15,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		local bands = theme.rainbow or { { 110, 220, 110 } }
+		for k = 1, 6 do
+			table.insert(
+				parts,
+				spec(
+					"Ball",
+					v(0.5, 1.4, 2.6),
+					matrix(onTop(k / 6 * math.pi * 2 + 0.3, 1.8 + (k % 2) * 3.4, 1.3), axis, across, { 0, 0, 1 }),
+					{
+						name = "StatueBasil",
+						color = bands[(k - 1) % #bands + 1],
+						material = "Neon",
+						collide = false,
+						role = "Landmark",
+					}
+				)
+			)
+		end
+		table.insert(
+			parts,
+			ball(add(hub, v(0, 11.5, 0)), 3, {
+				name = "StatueGlow",
+				color = theme.glow or { 255, 226, 120 },
+				material = "Neon",
+				collide = false,
+				role = "Glow",
+			})
+		)
+		-- Golden oven beside the pedestal, its mouth facing the middle of the island.
+		local oven = p3(towards * 2, 0, 10)
+		table.insert(
+			parts,
+			disc(add(oven, v(0, 0.5, 0)), 8, 1, { name = "GoldOvenBase", color = stone, role = "Landmark" })
+		)
+		table.insert(
+			parts,
+			spec("Ball", v(7, 6, 7), yawed(add(oven, v(0, 2.6, 0)), 0), {
+				name = "GoldOvenDome",
+				color = gold,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			spec("Block", v(0.6, 2, 2.6), yawed(add(oven, v(towards * 3.3, 2, 0)), 0), {
+				name = "GoldOvenMouth",
+				color = { 255, 140, 40 },
+				material = "Neon",
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		table.insert(
+			parts,
+			disc(add(oven, v(-towards * 1.2, 6.2, 0)), 1.2, 2.6, {
+				name = "GoldOvenChimney",
+				color = gold,
+				collide = false,
+				role = "Landmark",
+				detail = true,
+			})
+		)
+	end
+
 	local LANDMARKS = {
 		RainbowArch = rainbowArch,
+		GoldenPizzaStatue = goldenPizzaStatue,
 		CrystalGrotto = crystalGrotto,
 		DinoSkeleton = dinoSkeleton,
 		HauntedCastle = hauntedCastle,
@@ -4099,6 +4285,118 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 			role = role,
 			deco = true,
 		})
+	end
+
+	-- Pizza paradise kits (#89). SalamiHill: a salami mountain (a squashed salami ball with
+	-- pale fat spots, every second one with a smaller hill beside it). CheeseRiver: a
+	-- winding flat stream of melted cheese on the ground (nothing collides). FloatingSlice: a
+	-- pizza slice hovering in the air (cheese triangle, crust edge, a salami on top).
+	function DECO_KITS.SalamiHill(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local meat = colors[1] or theme.salami
+		local fat = colors[2] or { 250, 226, 214 }
+		local hills = { { 0, 0, size } }
+		if k % 2 == 0 then
+			table.insert(hills, { math.cos(yaw) * size * 0.45, math.sin(yaw) * size * 0.45, size * 0.6 })
+		end
+		for h, hill in hills do
+			local d = hill[3]
+			local center = add(at, v(hill[1] * 0.6, d * 0.2, hill[2] * 0.6))
+			table.insert(
+				parts,
+				spec("Ball", v(d * 0.8, d * 0.75, d * 0.8), yawed(center, yaw), {
+					name = "SalamiHill",
+					color = meat,
+					role = "SalamiHill",
+					deco = true,
+				})
+			)
+			for f = 1, (if h == 1 then 3 else 2) do
+				local a = yaw + f * 2.1
+				local spot = add(center, v(math.cos(a) * d * 0.28, d * 0.22, math.sin(a) * d * 0.28))
+				table.insert(
+					parts,
+					ball(spot, d * 0.12, {
+						name = "SalamiFat",
+						color = fat,
+						collide = false,
+						role = "SalamiHill",
+						deco = true,
+						detail = true,
+					})
+				)
+			end
+		end
+		return parts
+	end
+
+	function DECO_KITS.CheeseRiver(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local dx, dz = math.cos(yaw), math.sin(yaw)
+		local function point(t: number, side: number): V
+			local along = (t - 0.5) * size * 0.8
+			local off = side * size * 0.12
+			return v(at[1] + dx * along - dz * off, groundY + 0.12, at[3] + dz * along + dx * off)
+		end
+		local previous = point(0, 0)
+		for s = 1, 4 do
+			local nextPoint = point(s / 4, if s == 4 then 0 elseif s % 2 == 1 then 1 else -1)
+			local dir = unit(sub(nextPoint, previous))
+			table.insert(
+				parts,
+				beam(add(previous, scale(dir, -0.6)), add(nextPoint, scale(dir, 0.6)), 2.4, 0.2, {
+					name = "CheeseRiver",
+					color = colors[1] or theme.water,
+					collide = false,
+					role = "CheeseRiver",
+					deco = true,
+				})
+			)
+			previous = nextPoint
+		end
+		return parts
+	end
+
+	function DECO_KITS.FloatingSlice(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local hover = 8 + noise(k, 31) * 8
+		local dx, dz = math.cos(yaw), math.sin(yaw)
+		local center = add(at, v(0, hover, 0))
+		local tip = add(center, v(dx * size * 0.6, -size * 0.15, dz * size * 0.6))
+		local left =
+			add(center, v(-dx * size * 0.4 - dz * size * 0.35, size * 0.1, -dz * size * 0.4 + dx * size * 0.35))
+		local right =
+			add(center, v(-dx * size * 0.4 + dz * size * 0.35, size * 0.1, -dz * size * 0.4 - dx * size * 0.35))
+		local props = {
+			name = "SliceCheese",
+			color = colors[2] or { 255, 214, 92 },
+			collide = false,
+			role = "FloatingSlice",
+			deco = true,
+		}
+		triangle(parts, tip, left, right, 0.4, props)
+		table.insert(
+			parts,
+			beam(left, right, size * 0.18, size * 0.16, {
+				name = "SliceCrust",
+				color = colors[1] or { 214, 150, 70 },
+				collide = false,
+				role = "FloatingSlice",
+				deco = true,
+			})
+		)
+		table.insert(
+			parts,
+			spec("Ball", v(size * 0.22, size * 0.06, size * 0.22), yawed(add(center, v(0, 0.3, 0)), yaw), {
+				name = "SliceSalami",
+				color = colors[3] or theme.salami,
+				collide = false,
+				role = "FloatingSlice",
+				deco = true,
+				detail = true,
+			})
+		)
+		return parts
 	end
 
 	function DECO_KITS.Lantern(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)

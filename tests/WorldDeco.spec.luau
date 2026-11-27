@@ -164,6 +164,9 @@ describe("scripted world deco (#82)", function()
 			FloatingIsle = true,
 			CloudPuff = true,
 			SunOrb = true,
+			SalamiHill = true,
+			CheeseRiver = true,
+			FloatingSlice = true,
 		}
 		for _, theme in cfg.themes do
 			for _, item in (theme.deco and theme.deco.kits) or {} do
@@ -713,6 +716,85 @@ describe("environment upgrade of the first seven worlds (#104)", function()
 		for index = 1, 7 do
 			for _, spec in decoParts(index) do
 				expect(spec.role == "Glow").toBe(false)
+			end
+		end
+	end)
+end)
+
+describe("pizza paradise deco (#89)", function()
+	local paradise = indexOf("PizzaParadise")
+	local island = plan.worldIsland(paradise)
+
+	it("gives the pizza paradise salami hills, cheese rivers, floating slices, golden orbs and sparkles", function()
+		local roles, names = {}, {}
+		for _, spec in decoParts(paradise) do
+			roles[spec.role or ""] = (roles[spec.role or ""] or 0) + 1
+			names[spec.name] = (names[spec.name] or 0) + 1
+		end
+		expect((names.SalamiHill or 0) >= 6).toBe(true)
+		expect((names.CheeseRiver or 0) >= 12).toBe(true)
+		expect((names.SliceCheese or 0) >= 12).toBe(true)
+		expect((names.SunOrb or 0) >= 6).toBe(true)
+		expect((roles.Fireflies or 0) >= 2).toBe(true)
+	end)
+
+	it("lets the pizza slices float without colliding and keeps the cheese rivers flat on the ground", function()
+		for _, spec in island.parts do
+			if spec.role == "FloatingSlice" then
+				expect(spec.collide).toBe(false)
+				expect(spec.cframe[2] > cfg.groundY + 5).toBe(true)
+			end
+			if spec.name == "CheeseRiver" then
+				expect(spec.collide).toBe(false)
+				expect(spec.size[2] < 0.5).toBe(true)
+				expect(math.abs(spec.cframe[2] - cfg.groundY) < 0.5).toBe(true)
+			end
+		end
+	end)
+
+	it("builds a giant golden pizza statue with a golden oven beside it, inside the island and tall enough", function()
+		local found, top = {}, cfg.groundY
+		for _, spec in island.parts do
+			if spec.role == "Landmark" then
+				found[spec.name] = (found[spec.name] or 0) + 1
+				expect(IslandPlan.isInsideOutline(island.outline, spec.cframe[1], spec.cframe[3])).toBe(true)
+				top = math.max(top, spec.cframe[2])
+			end
+		end
+		expect(found.StatuePizza).toBe(1)
+		expect(found.StatueCrust).toBe(1)
+		expect((found.StatueSalami or 0) >= 6).toBe(true)
+		expect((found.StatueDiamond or 0) >= 4).toBe(true)
+		expect(found.StatueBasil).toBe(6)
+		expect(found.GoldOvenDome).toBe(1)
+		expect(found.GoldOvenMouth).toBe(1)
+		-- Well above the terrace, so the camera flight on the first visit (#79) shows it.
+		expect(top > cfg.groundY + 24).toBe(true)
+	end)
+
+	it("puts a golden crust wall with salami knobs round the island", function()
+		local found = {}
+		for _, spec in island.parts do
+			found[spec.name] = (found[spec.name] or 0) + 1
+		end
+		expect((found.CrustWall or 0) >= 10).toBe(true)
+		expect((found.CrustSalami or 0) >= 10).toBe(true)
+		expect((found.GoldLamp or 0) >= 3).toBe(true)
+	end)
+
+	it("keeps a spot for the hidden chest (#100) on the right terrace, free of deco and landmark", function()
+		local chest = island.stations.SecretChest
+		expect(chest ~= nil).toBe(true)
+		local p = chest.position
+		expect(p[1] > island.center[1]).toBe(true)
+		for _, spec in decoParts(paradise) do
+			local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+			expect(d > chest.clear).toBe(true)
+		end
+		for _, spec in island.parts do
+			if spec.role == "Landmark" then
+				local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+				expect(d > chest.clear + 5).toBe(true)
 			end
 		end
 	end)

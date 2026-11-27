@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (127)
+## Pets (134)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -189,6 +189,17 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | SkyWhale | Himmelswal | Sky Whale | Wolken-Ei | Legendär | |
 | SunPegasus | Sonnen-Pegasus | Sun Pegasus | Wolken-Ei | Mythisch | goldenes Licht |
 
+### Welt 15 – Pizza-Paradies (#89)
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| GoldSalamiPiglet | Gold-Salami-Ferkel | Gold Salami Piglet | Götter-Ei | Gewöhnlich | Gold-Salami-Belag als Thema |
+| DiamondCheeseMouse | Diamant-Käse-Maus | Diamond Cheese Mouse | Götter-Ei | Ungewöhnlich | Diamant-Käse-Belag als Thema |
+| RainbowBasilChameleon | Regenbogen-Chamäleon | Rainbow Chameleon | Götter-Ei | Selten | Regenbogen-Basilikum-Blätter als Kamm |
+| PizzaPhoenix | Pizza-Phönix | Pizza Phoenix | Götter-Ei | Episch | Feuervogel aus Ofenglut |
+| OvenTitan | Ofen-Titan | Oven Titan | Götter-Ei | Legendär | goldener Ofen-Golem |
+| OlympusPizzaDragon | Olymp-Pizzadrache | Olympus Pizza Dragon | Götter-Ei | Mythisch | Pizza-Götter |
+
 ### Geheim-Pets (#81)
 
 Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro Ei).
@@ -209,6 +220,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | PizzasaurusRex | Pizzasaurus Rex | Pizzasaurus Rex | Welt 12 (Fossil-Ei) | Geheim | #86, T-Rex mit Pizza-Krone, in beiden Sprachen gleich |
 | DiamondMoleKing | Diamant-Maulwurfkönig | Diamond Mole King | Welt 13 (Kristall-Ei) | Geheim | #87, Maulwurf mit Grubenhelm-Lampe und Diamant-Krone |
 | CloudKingGriffin | Wolkenkönig-Greif | Cloud King Griffin | Welt 14 (Wolken-Ei) | Geheim | #88, Greif mit Wolkenmähne und goldener Krone |
+| PizzaZeus | Pizza-Zeus | Pizza Zeus | Welt 15 (Götter-Ei) | Geheim | #89, Pizza-Gott mit Blitz aus Käse und Lorbeerkranz aus Basilikum |
 
 ### Kalender-Pet (#101)
 
@@ -219,7 +231,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | CalendarFox | Kalender-Fuchs | Calendar Fox | – (Login-Kalender Tag 30) | Mythisch | #101 |
 | MerchantCamel | Händler-Kamel | Merchant Camel | – (Reisender Händler) | Mythisch | #107 |
 
-## Beläge (43)
+## Beläge (46)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -266,8 +278,11 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | CloudMozzarella | Wolken-Mozzarella | Cloud Mozzarella | Wolkenstadt | #88 |
 | SunflowerSeeds | Sonnenblumenkerne | Sunflower Seeds | Wolkenstadt | #88 |
 | Starfruit | Sternfrucht | Starfruit | Wolkenstadt | #88 |
+| GoldSalami | Gold-Salami | Gold Salami | Pizza-Paradies | #89 |
+| DiamondCheese | Diamant-Käse | Diamond Cheese | Pizza-Paradies | #89 |
+| RainbowBasil | Regenbogen-Basilikum | Rainbow Basil | Pizza-Paradies | #89 |
 
-## Welten (14)
+## Welten (15)
 
 | Id | Deutsch | Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- |
@@ -285,8 +300,9 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | DinoAge | Dino-Urzeit | Dino Age | #86 |
 | CrystalCave | Kristallhöhle | Crystal Cave | #87 |
 | CloudCity | Wolkenstadt | Cloud City | #88 |
+| PizzaParadise | Pizza-Paradies | Pizza Paradise | #89, Endwelt |
 
-## Eier (21)
+## Eier (22)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -311,6 +327,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | FossilEgg | Fossil-Ei | Fossil Egg | Dino-Urzeit | #86 |
 | CrystalEgg | Kristall-Ei | Crystal Egg | Kristallhöhle | #87 |
 | CloudEgg | Wolken-Ei | Cloud Egg | Wolkenstadt | #88 |
+| DivineEgg | Götter-Ei | Divine Egg | Pizza-Paradies | #89 |
 
 ## Tränke (6)
 
@@ -336,7 +353,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | TripleOpen | 3 Eier auf einmal | 3 Eggs at Once | Schaltet „3 öffnen“ an jedem Ei frei | Unlocks “Open 3” at every egg | „Open 3“ muss zum Knopftext im Ei-Menü (#67 ff.) passen |
 | GoldLuck | Gold-Glück | Gold Luck | Mehr goldene Beläge (10-facher Wert) | More golden toppings (10x value) | MEGA UPDATE #94 |
 
-## Shops (10)
+## Shops (11)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -350,6 +367,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | World12Shop | Dino-Shop | Dino Shop | Dino-Urzeit | #86 |
 | World13Shop | Kristall-Shop | Crystal Shop | Kristallhöhle | #87 |
 | World14Shop | Wolken-Shop | Cloud Shop | Wolkenstadt | #88 |
+| World15Shop | Götter-Shop | Divine Shop | Pizza-Paradies | #89 |
 
 ## Wetter (14)
 
@@ -370,7 +388,7 @@ Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte seit #105. Di
 | AshRain | Ascheregen | Ash Rain | Dino-Urzeit | #105, #86 |
 | CrystalGlitter | Kristall-Glitzern | Crystal Glitter | Kristallhöhle | #105, #87 |
 | RainbowSky | Regenbogen | Rainbow | Wolkenstadt | #105, #88 |
-| CheeseRain | Käseregen | Cheese Rain | Welt 15 | #105, Welt folgt |
+| CheeseRain | Käseregen | Cheese Rain | Pizza-Paradies | #105, #89 |
 
 ## Sonstige: Seltenheiten (7)
 
