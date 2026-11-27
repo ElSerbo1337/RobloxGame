@@ -15,6 +15,8 @@ local GoldenGlitter = require(script.GoldenGlitter)
 local GraphicsQuality = require(script.GraphicsQuality)
 local Hud = require(script.Hud)
 local IndexMenu = require(script.IndexMenu)
+local ProfileMenu = require(script.ProfileMenu)
+local TitleTags = require(script.TitleTags)
 local Juice = require(script.Juice)
 local Lang = require(script.Lang)
 local LoginCalendarMenu = require(script.LoginCalendarMenu)
@@ -63,6 +65,10 @@ MerchantMenu.start()
 QuestMenu.start()
 -- Pet index and topping index (#95): side bar tile, one menu with two tabs.
 IndexMenu.start()
+-- Profile (#103): side bar tile, stats/badges/titles; tap another player for theirs.
+ProfileMenu.start()
+-- Titles over the head with the rebirth level (#103).
+task.spawn(TitleTags.start)
 -- "What's new" window (#106): once per player, after the tutorial and the calendar.
 WhatsNewMenu.start()
 DeliveryMenu.start()

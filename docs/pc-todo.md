@@ -2198,3 +2198,17 @@ Vorher: `lune run test` → alle grün (u. a. `tests/Merchant.spec.luau`). **Mod
 - [ ] Regulärer Zeitplan: alle 2 h zu geraden UTC-Stunden (01:00, 03:00 … deutscher Winterzeit) für 10 min; 2 min vorher Banner „kommt in 2 Min.“ – auf zwei Servern gleichzeitig.
 - [ ] Englisch: Banner, Menü, Schild und Prompt auf Englisch; Handy-Layout des Menüs.
 - [ ] Schalter `features.travelingMerchant = false`: kein Stand, kein Menü, Admin-Aktion ausgeblendet.
+
+## MEGA UPDATE – #103 Statistiken, 16 Badges, Profil und Titel
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Profile.spec.luau`). **Badges anlegen:** die 16 Badges aus `docs/store/badges.md` im Creator Hub erstellen und die IDs in `GameConfig.badges` (`badgeId`) eintragen – bis dahin werden sie ohne Fehler übersprungen. Badges funktionieren nur im veröffentlichten Spiel bzw. Team-Test, nicht im reinen Studio-Play (Output zeigt dann evtl. eine Warnung `[Badges] …`).
+
+- [ ] Play: Kachel **„Profil“** in der Seitenleiste (nach Index). Tab „Statistiken“: Münzen verdient, Beläge gesammelt, Eier geöffnet, Spielzeit, Rebirths, höchste Welt, Pet-/Belag-Index. Beläge sammeln / Ei öffnen → Zahlen steigen nach ≤ 2 s.
+- [ ] Admin-Panel → **„Lebenszeit-Zähler erhöhen“** (z. B. Eier geöffnet 100): Tab „Badges“ zeigt Eier-Neuling/Eier-Fan als erreicht (🏅, grün), die anderen mit Fortschritt „100/1K“. Mit eingetragener ID: Toast „🏅 Badge erhalten: …“ + Badge-Sound (#112), Badge im Roblox-Profil.
+- [ ] Rejoin mit erreichten Badges → werden nachträglich vergeben (nur die noch nicht vergebenen).
+- [ ] Titel über dem Kopf: „Pizza-Neuling“; Admin „Rebirths setzen“ 1 → „Pizza-Chef“ und darunter „🔁 1“. Admin „Welt freischalten“ (Welt 5) → Titel Ofen-Profi im Tab „Titel“ freigeschaltet.
+- [ ] Tab „Titel“: „Wählen“ bei einem freigeschalteten Titel → Kopf-Titel wechselt; „Automatisch“ → bester Titel. Gesperrte zeigen „🔒 Welt 3 erreichen“ usw.
+- [ ] Admin **„Titel Wochen-Champion geben“** (7 Tage) → goldener Titel „Wochen-Champion“ über dem Kopf.
+- [ ] Zwei Spieler (Team-Test oder Studio „2 Players“): anderen Spieler anklicken/antippen → dessen Profil („👤 Name“), Tab Titel nur ansehen („Nur ansehen“, keine Wählen-Knöpfe). Beide sehen die Kopf-Titel des anderen.
+- [ ] Englisch: Menü, Badges, Titel und Kopf-Titel auf Englisch; Handy-Layout.
+- [ ] Schalter `features.profile = false` → keine Kachel; `titles = false` → keine Kopf-Titel, kein Titel-Tab; `badges = false` → keine Vergabe.
