@@ -1809,7 +1809,11 @@ local GameConfig = {
 		--                stone head), "Fireflies" and "Mist" (invisible emitters), "Dune",
 		--                "Pyramid", "Oasis", "Cactus",
 		--                "SpookyTree" (bare, crooked, sometimes a sleeping bat), "Pumpkin"
-		--                (some carved with a glowing face), "Bats" (a small flying flock)
+		--                (some carved with a glowing face), "Bats" (a small flying flock),
+		--                old worlds (#104): "Lantern" (lamp marked `night` for #105),
+		--                "FlowerBed", "FenceRow", "HayStack", "Shell", "Driftwood", "Starfish",
+		--                "IceSpike", "SnowPile", "BasaltCluster", "Lolli", "CandyStick",
+		--                "Gumdrop", "Crystal", "Crater", emitters "Snowfall", "Embers", "Stars"
 		--                (IslandPlan DECO_KITS). Optional bits are hidden on graphics "Low"
 		--                (#76); everything is left out when features.worldDeco is off.
 		--   ruin, ruinDark, shell  stone colours of the SunkenTemple / lamps, clam shell colour
@@ -1833,6 +1837,20 @@ local GameConfig = {
 				wood = { 160, 104, 58 },
 				rope = { 222, 196, 140 },
 				flowers = { { 255, 110, 150 }, { 255, 220, 70 }, { 160, 130, 255 }, { 255, 255, 255 } },
+				-- #104: lanterns along the meadow, flower beds and fireflies.
+				deco = {
+					budget = 300,
+					kits = {
+						{ kit = "Fireflies", count = 10, size = { 10, 14 }, colors = { { 220, 255, 120 } } },
+						{
+							kit = "Lantern",
+							count = 8,
+							size = { 2.4, 3 },
+							colors = { { 255, 226, 150 }, { 70, 64, 60 } },
+						},
+						{ kit = "FlowerBed", count = 40, size = { 3, 4.5 } },
+					},
+				},
 			},
 			-- World 2: meadow with a ploughed field, white fence, windmill and red barn.
 			Farm = {
@@ -1858,6 +1876,26 @@ local GameConfig = {
 				accents = { { model = "HayBale", width = 6 }, { model = "Sunflower", width = 4 } },
 				terraceProps = {
 					{ terrace = 2, model = "Barn", width = 20, at = { 0, -1 }, yaw = 200, collide = true },
+				},
+				-- #104: short fence pieces, round hay bales, lanterns and fireflies.
+				deco = {
+					budget = 300,
+					kits = {
+						{ kit = "Fireflies", count = 8, size = { 10, 14 }, colors = { { 230, 255, 130 } } },
+						{ kit = "FenceRow", count = 34, size = { 4.5, 6 } },
+						{
+							kit = "HayStack",
+							count = 44,
+							size = { 3, 4 },
+							colors = { { 236, 200, 98 }, { 220, 182, 84 } },
+						},
+						{
+							kit = "Lantern",
+							count = 6,
+							size = { 2.4, 3 },
+							colors = { { 255, 220, 140 }, { 128, 82, 48 } },
+						},
+					},
 				},
 			},
 			-- World 3: sandy island with palms, a turquoise lagoon, boulder rim and lighthouse.
@@ -1886,6 +1924,30 @@ local GameConfig = {
 				terraceProps = {
 					{ terrace = 2, model = "BeachUmbrella", width = 9, at = { -4, 2 } },
 					{ terrace = 2, model = "BeachRock", width = 5, at = { 5, -4 }, collide = true },
+				},
+				-- #104: shells, driftwood and starfish on the sand.
+				deco = {
+					budget = 300,
+					kits = {
+						{
+							kit = "Shell",
+							count = 40,
+							size = { 1.6, 2.4 },
+							colors = { { 255, 206, 222 }, { 255, 246, 236 }, { 255, 190, 150 } },
+						},
+						{
+							kit = "Driftwood",
+							count = 22,
+							size = { 4, 6 },
+							colors = { { 196, 176, 150 }, { 170, 150, 126 } },
+						},
+						{
+							kit = "Starfish",
+							count = 20,
+							size = { 1.6, 2.2 },
+							colors = { { 255, 140, 90 }, { 255, 110, 130 }, { 255, 200, 90 } },
+						},
+					},
 				},
 			},
 			-- World 4: snowy island with pines, ice-block rim, frozen pond and an ice peak.
@@ -1917,6 +1979,15 @@ local GameConfig = {
 				terraceProps = {
 					{ terrace = 2, model = "Snowman", width = 5, at = { -3, 1 }, yaw = 160, collide = true },
 					{ terrace = 2, model = "IceCrystal", width = 6, at = { 5, -3 }, yaw = 30, collide = true },
+				},
+				-- #104: ice spikes, snow piles and falling snow.
+				deco = {
+					budget = 300,
+					kits = {
+						{ kit = "Snowfall", count = 10, size = { 12, 16 } },
+						{ kit = "IceSpike", count = 36, size = { 2.5, 4 } },
+						{ kit = "SnowPile", count = 40, size = { 2.5, 4 } },
+					},
 				},
 			},
 			-- World 5: warm basalt island with a lava pond, basalt-column rim and a volcano.
@@ -1953,6 +2024,16 @@ local GameConfig = {
 					{ terrace = 2, model = "DeadTree", width = 6, at = { 5, -4 }, yaw = 120 },
 				},
 				cracks = { { -78, -30, 12, 20 }, { 80, -40, 12, -15 }, { 18, -90, 12, 80 }, { -70, 20, 10, -25 } },
+				cracks = { { -78, -30, 12, 20 }, { 80, -40, 12, -15 }, { 18, -90, 12, 80 }, { -70, 20, 10, -25 } },
+				-- #104: basalt pillar clusters, lava sparks and a bit of ash smoke.
+				deco = {
+					budget = 300,
+					kits = {
+						{ kit = "Mist", count = 5, size = { 10, 14 }, colors = { { 150, 140, 140 } } },
+						{ kit = "Embers", count = 10, size = { 4, 6 } },
+						{ kit = "BasaltCluster", count = 60, size = { 2.5, 4 } },
+					},
+				},
 			},
 			-- World 6: pink candy island with a chocolate lake, peppermint rim and a layer cake.
 			CandyLand = {
@@ -1990,6 +2071,20 @@ local GameConfig = {
 					{ terrace = 2, model = "Cupcake", width = 9, at = { -3, 2 }, collide = true },
 					{ terrace = 2, model = "Lollipop", width = 5, at = { 6, -3 }, yaw = 30 },
 				},
+				-- #104: lollipops, candy canes and gumdrops.
+				deco = {
+					budget = 300,
+					kits = {
+						{ kit = "Lolli", count = 36, size = { 2, 3 } },
+						{
+							kit = "CandyStick",
+							count = 24,
+							size = { 2, 3 },
+							colors = { { 232, 42, 62 }, { 255, 246, 250 } },
+						},
+						{ kit = "Gumdrop", count = 50, size = { 1.2, 2 } },
+					},
+				},
 			},
 			-- World 7: moon island at night with a starlight pond, a moon-base rim, a rocket on
 			-- its launch pad and a planet floating above the right terrace. Ground kept light;
@@ -2020,6 +2115,20 @@ local GameConfig = {
 				terraceProps = {
 					{ terrace = 2, model = "Planet", width = 12, at = { 0, 0 }, yaw = 20, lift = 14 },
 					{ terrace = 2, model = "SpaceCrystal", width = 4, at = { 5, -4 }, yaw = 60 },
+				},
+				-- #104: crystal clusters, small craters and twinkling stars.
+				deco = {
+					budget = 300,
+					kits = {
+						{ kit = "Stars", count = 12, size = { 10, 14 } },
+						{
+							kit = "Crystal",
+							count = 64,
+							size = { 1.8, 3 },
+							colors = { { 120, 255, 210 }, { 190, 150, 255 }, { 150, 200, 255 } },
+						},
+						{ kit = "Crater", count = 40, size = { 3, 5 } },
+					},
 				},
 			},
 			-- World 8 (#82): sunken island on the sea floor - pale sand, turquoise water,

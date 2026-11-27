@@ -32,6 +32,8 @@ export type PartSpec = {
 	deco: boolean?,
 	-- Optional detail: hidden on graphics "Low" (tag GraphicsDetail, #76). Never collides.
 	detail: boolean?,
+	-- Lights up at night (#104 lanterns): tag "NightLight" + attribute, switched by #105.
+	night: boolean?,
 }
 
 export type ModelSpec = { model: string, width: number, position: { number }, yaw: number, collide: boolean }
@@ -162,6 +164,7 @@ type Props = {
 	role: string?,
 	deco: boolean?,
 	detail: boolean?,
+	night: boolean?,
 }
 
 local function spec(shape: string, size: V, cframe: { number }, props: Props): PartSpec
@@ -177,6 +180,7 @@ local function spec(shape: string, size: V, cframe: { number }, props: Props): P
 		role = props.role,
 		deco = props.deco,
 		detail = props.detail,
+		night = props.night,
 	}
 end
 
@@ -3231,6 +3235,414 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		return parts
 	end
 
+	-- Old-world kits (#104), all script-built and cheap (2-6 parts each):
+	-- "Lantern" (post with a lamp; the lamp is marked `night` = lights up at night, #105),
+	-- "FlowerBed", "FenceRow", "HayStack", "Shell", "Driftwood", "Starfish", "IceSpike",
+	-- "SnowPile", "BasaltCluster", "Lolli", "CandyStick", "Gumdrop", "Crystal", "Crater",
+	-- and the invisible emitters "Snowfall", "Embers" and "Stars" (IslandBuilder adds the
+	-- particles, throttled on graphics "Low" by GraphicsQuality).
+	local function emitter(role: string, at: V, size: number, height: number, lift: number, color: { number }): PartSpec
+		return spec("Block", v(size, height, size), yawed(add(at, v(0, lift, 0)), 0), {
+			name = role .. "Emitter",
+			color = color,
+			transparency = 1,
+			collide = false,
+			role = role,
+			deco = true,
+		})
+	end
+
+	function DECO_KITS.Lantern(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local height = size * 1.6
+		local wood = theme.woodDark or theme.wood
+		return {
+			disc(add(at, v(0, height / 2, 0)), 0.45, height, {
+				name = "LanternPost",
+				color = colors[2] or wood,
+				role = "Lantern",
+				deco = true,
+			}),
+			spec("Block", v(1.1, 1.1, 1.1), yawed(add(at, v(0, height + 0.55, 0)), yaw), {
+				name = "LanternLamp",
+				color = colors[1] or { 255, 226, 150 },
+				material = "Glass",
+				transparency = 0.2,
+				collide = false,
+				role = "Lantern",
+				deco = true,
+				night = true,
+			}),
+			spec("Block", v(1.5, 0.3, 1.5), yawed(add(at, v(0, height + 1.25, 0)), yaw), {
+				name = "LanternCap",
+				color = colors[2] or wood,
+				role = "Lantern",
+				deco = true,
+				detail = true,
+			}),
+		}
+	end
+
+	function DECO_KITS.FlowerBed(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {
+			disc(add(at, v(0, 0.2, 0)), size, 0.4, {
+				name = "FlowerBedSoil",
+				color = theme.cliffDark or { 120, 84, 60 },
+				collide = false,
+				role = "FlowerBed",
+				deco = true,
+			}),
+		}
+		local flowers = if #colors > 0 then colors else theme.flowers
+		for b = 1, 5 do
+			local angle = yaw + b * 1.256
+			local r = size * 0.28 * (b == 5 and 0 or 1)
+			table.insert(
+				parts,
+				ball(add(at, v(math.cos(angle) * r, 0.9, math.sin(angle) * r)), size * 0.26, {
+					name = "FlowerBlossom",
+					color = flowers[(k + b) % #flowers + 1],
+					collide = false,
+					role = "FlowerBed",
+					deco = true,
+					detail = b > 2,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.FenceRow(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local paint = colors[1] or theme.rim
+		local c, s = math.cos(yaw), math.sin(yaw)
+		local side = v(c * size / 2, 0, -s * size / 2)
+		local parts = {}
+		for _, sx in { -1, 1 } do
+			table.insert(
+				parts,
+				spec("Block", v(0.5, 2.6, 0.5), yawed(add(add(at, scale(side, sx)), v(0, 1.3, 0)), yaw), {
+					name = "FencePost",
+					color = paint,
+					role = "Fence",
+					deco = true,
+				})
+			)
+		end
+		for i, y in { 1.0, 2.0 } do
+			table.insert(
+				parts,
+				beam(add(add(at, scale(side, -1)), v(0, y, 0)), add(add(at, side), v(0, y, 0)), 0.25, 0.35, {
+					name = "FenceRail",
+					color = paint,
+					role = "Fence",
+					deco = true,
+					detail = i == 2,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.HayStack(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local hay = colors[1] or { 236, 200, 98 }
+		local d = size * 0.5
+		local c, s = math.cos(yaw), math.sin(yaw)
+		local parts = {}
+		local spots = { { 0, 0, d / 2 }, { d * 1.05, 0, d / 2 }, { d * 0.52, 0, d * 1.4 } }
+		for b, o in spots do
+			if b <= 1 + k % 3 then
+				local p = add(at, v(o[1] * c, o[3], -o[1] * s))
+				table.insert(
+					parts,
+					spec("Cylinder", v(d * 1.2, d, d), yawed(p, yaw + math.pi / 2), {
+						name = "HayBaleRound",
+						color = if b == 2 then colors[2] or hay else hay,
+						role = "Hay",
+						deco = true,
+						detail = b > 1,
+					})
+				)
+			end
+		end
+		return parts
+	end
+
+	function DECO_KITS.Shell(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local shells = if #colors > 0 then colors else theme.flowers
+		local parts = {}
+		for b = 1, 3 do
+			local angle = yaw + b * 2.2
+			local r = size * 0.35 * (b - 1)
+			table.insert(
+				parts,
+				disc(add(at, v(math.cos(angle) * r, 0.1, math.sin(angle) * r)), size * (0.45 - b * 0.08), 0.2, {
+					name = "Seashell",
+					color = shells[(k + b) % #shells + 1],
+					collide = false,
+					role = "Shell",
+					deco = true,
+					detail = b > 1,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.Driftwood(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local wood = colors[1] or { 190, 170, 146 }
+		local c, s = math.cos(yaw), math.sin(yaw)
+		local dir = v(c * size / 2, 0, -s * size / 2)
+		local a, b = add(at, scale(dir, -1)), add(at, dir)
+		return {
+			beam(add(a, v(0, 0.35, 0)), add(b, v(0, 0.45, 0)), 0.7, 0.7, {
+				name = "DriftwoodLog",
+				color = wood,
+				collide = false,
+				role = "Driftwood",
+				deco = true,
+			}),
+			beam(add(at, v(0, 0.5, 0)), add(at, v(-s * size * 0.3, 1.1, -c * size * 0.3)), 0.35, 0.35, {
+				name = "DriftwoodBranch",
+				color = colors[2] or wood,
+				collide = false,
+				role = "Driftwood",
+				deco = true,
+				detail = true,
+			}),
+		}
+	end
+
+	function DECO_KITS.Starfish(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local color = colors[(k - 1) % math.max(#colors, 1) + 1] or { 255, 140, 90 }
+		local parts = {
+			disc(add(at, v(0, 0.12, 0)), size * 0.3, 0.24, {
+				name = "StarfishBody",
+				color = color,
+				collide = false,
+				role = "Starfish",
+				deco = true,
+			}),
+		}
+		for b = 1, 5 do
+			local angle = yaw + b * math.pi * 0.4
+			local tip = add(at, v(math.cos(angle) * size / 2, 0.12, math.sin(angle) * size / 2))
+			table.insert(
+				parts,
+				beam(add(at, v(0, 0.12, 0)), tip, size * 0.14, 0.2, {
+					name = "StarfishArm",
+					color = color,
+					collide = false,
+					role = "Starfish",
+					deco = true,
+					detail = true,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.IceSpike(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local ice = colors[1] or theme.ice or { 170, 222, 255 }
+		local parts = {}
+		for b = 1, 3 do
+			local angle = yaw + b * 2.1
+			local base = add(at, v(math.cos(angle) * size * 0.2 * (b - 1), 0, math.sin(angle) * size * 0.2 * (b - 1)))
+			local height = size * (1.4 - b * 0.3)
+			local tip = add(
+				base,
+				v(math.cos(angle) * size * 0.15 * (b - 0.8), height, math.sin(angle) * size * 0.15 * (b - 0.8))
+			)
+			table.insert(
+				parts,
+				beam(base, tip, size * (0.36 - b * 0.06), size * (0.36 - b * 0.06), {
+					name = "IceSpike",
+					color = if b == 2 then colors[2] or ice else ice,
+					material = "Glass",
+					transparency = 0.15,
+					role = "IceSpike",
+					deco = true,
+					detail = b > 1,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.SnowPile(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local snow = colors[1] or theme.snow or { 248, 252, 255 }
+		local parts = {}
+		for b = 1, 3 do
+			local angle = yaw + b * 2.1
+			local r = size * 0.3 * (b - 1)
+			local d = size * (1 - b * 0.2)
+			table.insert(
+				parts,
+				disc(add(at, v(math.cos(angle) * r * 0.5, 0.25 + (b - 1) * 0.45, math.sin(angle) * r * 0.5)), d, 0.5, {
+					name = "SnowPile",
+					color = snow,
+					collide = false,
+					role = "Snow",
+					deco = true,
+					detail = b > 1,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.BasaltCluster(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local stones = if #colors > 0 then colors else theme.basalt or { theme.cliffDark }
+		local parts = {}
+		local count = 3 + k % 3
+		for b = 1, count do
+			local angle = yaw + b * 1.9
+			local r = if b == 1 then 0 else size * 0.28
+			local d = size * 0.34
+			local height = size * (1.5 - b * 0.22) * (0.8 + noise(k, b) * 0.4)
+			table.insert(
+				parts,
+				disc(add(at, v(math.cos(angle) * r, height / 2, math.sin(angle) * r)), d, height, {
+					name = "BasaltPillar",
+					color = stones[(k + b) % #stones + 1],
+					role = "Basalt",
+					deco = true,
+					detail = b > 2,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.Lolli(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local candy = if #colors > 0 then colors else theme.candy or theme.flowers
+		local height = size * 1.3
+		local c, s = math.cos(yaw), math.sin(yaw)
+		local head = add(at, v(0, height + size * 0.3, 0))
+		return {
+			disc(add(at, v(0, height / 2, 0)), 0.3, height, {
+				name = "LolliStick",
+				color = theme.frosting or { 255, 246, 250 },
+				role = "Lolli",
+				deco = true,
+			}),
+			spec("Cylinder", v(0.35, size * 0.7, size * 0.7), yawed(head, yaw), {
+				name = "LolliCandy",
+				color = candy[(k - 1) % #candy + 1],
+				collide = false,
+				role = "Lolli",
+				deco = true,
+			}),
+			spec("Cylinder", v(0.4, size * 0.36, size * 0.36), yawed(add(head, v(c * 0.03, 0, -s * 0.03)), yaw), {
+				name = "LolliSwirl",
+				color = candy[k % #candy + 1],
+				collide = false,
+				role = "Lolli",
+				deco = true,
+				detail = true,
+			}),
+		}
+	end
+
+	function DECO_KITS.CandyStick(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local red, white = colors[1] or theme.rim, colors[2] or theme.frosting or { 255, 246, 250 }
+		local seg = size * 0.4
+		local parts = {}
+		for b = 1, 4 do
+			table.insert(
+				parts,
+				disc(add(at, v(0, seg * (b - 0.5), 0)), 0.6, seg, {
+					name = "CandyStickStripe",
+					color = if b % 2 == 1 then red else white,
+					role = "CandyStick",
+					deco = true,
+					detail = b > 2,
+				})
+			)
+		end
+		local top = add(at, v(0, seg * 4, 0))
+		local c, s = math.cos(yaw), math.sin(yaw)
+		table.insert(
+			parts,
+			beam(top, add(top, v(c * size * 0.4, size * 0.2, -s * size * 0.4)), 0.55, 0.55, {
+				name = "CandyStickHook",
+				color = red,
+				role = "CandyStick",
+				deco = true,
+				detail = true,
+			})
+		)
+		return parts
+	end
+
+	function DECO_KITS.Gumdrop(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local candy = if #colors > 0 then colors else theme.candy or theme.flowers
+		return {
+			ball(add(at, v(0, size * 0.3, 0)), size, {
+				name = "Gumdrop",
+				color = candy[(k - 1) % #candy + 1],
+				material = "Glass",
+				transparency = 0.1,
+				collide = false,
+				role = "Gumdrop",
+				deco = true,
+			}),
+		}
+	end
+
+	function DECO_KITS.Crystal(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		for b = 1, 3 do
+			local angle = yaw + b * 2.1
+			-- Never exactly upright: a vertical beam has no defined orientation.
+			local lean = size * 0.25 * (b - 0.8)
+			local base = add(at, v(math.cos(angle) * size * 0.15 * (b - 1), 0, math.sin(angle) * size * 0.15 * (b - 1)))
+			local tip = add(base, v(math.cos(angle) * lean, size * (1.3 - b * 0.25), math.sin(angle) * lean))
+			table.insert(
+				parts,
+				beam(base, tip, size * (0.34 - b * 0.06), size * (0.34 - b * 0.06), {
+					name = "SpaceCrystalShard",
+					color = colors[(k + b) % math.max(#colors, 1) + 1] or theme.glow,
+					-- Neon without role Glow: glows, but no PointLight (few lights per island).
+					material = if b == 1 then "Neon" else "Glass",
+					role = "Crystal",
+					deco = true,
+					detail = b > 1,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.Crater(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return {
+			disc(add(at, v(0, 0.15, 0)), size, 0.3, {
+				name = "CraterRim",
+				color = colors[1] or theme.cliffLight,
+				collide = false,
+				role = "Crater",
+				deco = true,
+			}),
+			disc(add(at, v(0, 0.2, 0)), size * 0.7, 0.32, {
+				name = "CraterFloor",
+				color = colors[2] or theme.cliffDark,
+				collide = false,
+				role = "Crater",
+				deco = true,
+			}),
+		}
+	end
+
+	function DECO_KITS.Snowfall(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return { emitter("Snowfall", at, size, 1, 24, colors[1] or { 255, 255, 255 }) }
+	end
+
+	function DECO_KITS.Embers(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return { emitter("Embers", at, size, 0.4, 0.5, colors[1] or theme.glow or { 255, 128, 36 }) }
+	end
+
+	function DECO_KITS.Stars(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return { emitter("Stars", at, size, size * 0.3, 8, colors[1] or { 255, 250, 220 }) }
+	end
+
 	-- Places theme.deco on a world island (after the trees, sharing their keep-out rules).
 	local function scatterDeco(
 		island: Island,
@@ -3288,6 +3700,19 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 			for _, other in placed do
 				if math.sqrt((other.x - x) ^ 2 + (other.z - z) ^ 2) < other.r + r + 0.5 then
 					return false
+				end
+			end
+			-- Camera corridor behind the player at a station (#104): from where the player
+			-- stands (9 studs in front) to where the camera hangs (~14 studs further out).
+			for name, station in island.stations do
+				if name ~= "Landmark" then
+					local fx, fz = -math.sin(station.yaw), -math.cos(station.yaw)
+					local px, pz = x - station.position[1], z - station.position[3]
+					local t = math.clamp(px * fx + pz * fz, 9, 24)
+					local dx, dz = px - fx * t, pz - fz * t
+					if math.sqrt(dx * dx + dz * dz) < r + 3 then
+						return false
+					end
 				end
 			end
 			return true

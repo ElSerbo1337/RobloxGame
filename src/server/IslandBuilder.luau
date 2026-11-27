@@ -98,6 +98,82 @@ local function mist(p: BasePart)
 	emitter.Parent = p
 end
 
+-- Particles of the old-world deco (#104). Like all emitters they run at 30 % on
+-- graphics "Low" (GraphicsQuality). Snowfall: slow flakes drifting down from high up.
+local function snowfall(p: BasePart)
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "Snowfall"
+	emitter.Color = ColorSequence.new(p.Color)
+	emitter.LightEmission = 0.3
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.1, 0.15),
+		NumberSequenceKeypoint.new(0.85, 0.3),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Size = NumberSequence.new(0.3)
+	emitter.Rate = 8
+	emitter.Lifetime = NumberRange.new(8, 11)
+	emitter.Speed = NumberRange.new(2, 3)
+	emitter.SpreadAngle = Vector2.new(15, 15)
+	emitter.EmissionDirection = Enum.NormalId.Bottom
+	emitter.Acceleration = Vector3.new(0.3, 0, 0)
+	emitter.RotSpeed = NumberRange.new(-30, 30)
+	emitter.Shape = Enum.ParticleEmitterShape.Box
+	emitter.Parent = p
+end
+
+-- Lava sparks: small glowing dots shooting up and falling back, fading out.
+local function embers(p: BasePart)
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "Embers"
+	emitter.Color = ColorSequence.new(p.Color, Color3.fromRGB(255, 220, 120))
+	emitter.LightEmission = 1
+	emitter.Brightness = 2
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(0.7, 0.3),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Size = NumberSequence.new(0.25, 0.05)
+	emitter.Rate = 5
+	emitter.Lifetime = NumberRange.new(1.5, 2.5)
+	emitter.Speed = NumberRange.new(6, 10)
+	emitter.SpreadAngle = Vector2.new(25, 25)
+	emitter.EmissionDirection = Enum.NormalId.Top
+	emitter.Acceleration = Vector3.new(0, -6, 0)
+	emitter.Shape = Enum.ParticleEmitterShape.Box
+	emitter.Parent = p
+end
+
+-- Twinkling stars hanging in the air above the moon island.
+local function stars(p: BasePart)
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "Stars"
+	emitter.Color = ColorSequence.new(p.Color)
+	emitter.LightEmission = 1
+	emitter.Brightness = 2
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.3, 0),
+		NumberSequenceKeypoint.new(0.5, 0.5),
+		NumberSequenceKeypoint.new(0.7, 0),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Size = NumberSequence.new(0.35)
+	emitter.Rate = 3
+	emitter.Lifetime = NumberRange.new(3, 5)
+	emitter.Speed = NumberRange.new(0, 0.2)
+	emitter.RotSpeed = NumberRange.new(-20, 20)
+	emitter.Shape = Enum.ParticleEmitterShape.Box
+	emitter.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	emitter.Parent = p
+end
+
+-- Lamps that light up at night (PartSpec.night, #104): tag + attribute for the day/night
+-- cycle (#105) and a PointLight that stays off until then.
+IslandBuilder.NIGHT_TAG = "NightLight"
+
 local SHAPES: { [string]: Enum.PartType } = {
 	Block = Enum.PartType.Block,
 	Ball = Enum.PartType.Ball,
@@ -191,6 +267,15 @@ function IslandBuilder.part(spec: IslandPlan.PartSpec, parent: Instance): BasePa
 	elseif spec.role == "Mist" then
 		p.CastShadow = false
 		mist(p)
+	elseif spec.role == "Snowfall" then
+		p.CastShadow = false
+		snowfall(p)
+	elseif spec.role == "Embers" then
+		p.CastShadow = false
+		embers(p)
+	elseif spec.role == "Stars" then
+		p.CastShadow = false
+		stars(p)
 	elseif spec.name == "FountainSpout" then
 		local spray = Instance.new("ParticleEmitter")
 		spray.Color = ColorSequence.new(Color3.fromRGB(190, 235, 255))
@@ -208,6 +293,17 @@ function IslandBuilder.part(spec: IslandPlan.PartSpec, parent: Instance): BasePa
 		light.Color = p.Color
 		light.Range = 10
 		light.Brightness = 1.2
+		light.Parent = p
+	end
+	if spec.night then
+		p:SetAttribute("NightLight", true)
+		CollectionService:AddTag(p, IslandBuilder.NIGHT_TAG)
+		local light = Instance.new("PointLight")
+		light.Name = "NightLight"
+		light.Color = p.Color
+		light.Range = 12
+		light.Brightness = 1.5
+		light.Enabled = false
 		light.Parent = p
 	end
 	if spec.detail then

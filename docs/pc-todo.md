@@ -2219,3 +2219,10 @@ Vorher: `lune run test` → alle grün (u. a. `tests/Profile.spec.luau`). **Badg
 - [ ] Veröffentlichtes Spiel (Studio-Spieler mit UserId ≤ 0 werden nie eingetragen): ein paar Eier öffnen/Beläge sammeln, nach dem nächsten Speichern + max. 2 Min. erscheinen die Werte auf den Tafeln.
 - [ ] Wochen-Champion ansehen ohne eine Woche zu warten: Admin-Panel → „Titel Wochen-Champion geben“ → goldener Titel über dem Kopf. Echte Vergabe: Montag 0 Uhr (deutsche Zeit) bekommen die Top 3 der Vorwoche jeder Liste den Titel bis zum nächsten Montag (beim nächsten Beitritt, Prüfung alle 10 s). Wochen-Stores: `Leaderboard_EggsOpened_week<N>_mega1` / `Leaderboard_ToppingsCollected_week<N>_mega1`.
 - [ ] Schalter `newLeaderboards` aus → beide Tafeln fehlen; `weeklyChampion` aus → keine Wochen-Stores, kein Hinweis, keine Vergabe.
+
+## MEGA UPDATE – #104 Umgebungs-Upgrade der 7 bestehenden Welten
+- [ ] Admin-Panel → Welt freischalten/teleportieren durch Welten 1–7: neue Skript-Deko sichtbar – Pizzeria-Garten: Laternen, Blumenbeete, Glühwürmchen; Farm: Zaunstücke, Rundballen, Laternen, Glühwürmchen; Strand: Muscheln, Treibholz, Seesterne; Eisberge: Eisspitzen, Schneehaufen, fallender Schnee; Vulkan: Basaltsäulen, Lava-Funken, Ascherauch; Candy Land: Lollis, Zuckerstangen, Gummibonbons; Weltraum: Kristalle, Krater, funkelnde Sterne.
+- [ ] Nichts steht auf Feld, Hauptweg, vor Stationen oder im Kamerabereich beim Benutzen von Ofen/Shop/Ei/Telefon/Van/Portal; nirgends hängenbleiben (nur Laternenpfosten, Zaunpfosten, Ballen, Basalt, Lolli-/Zuckerstangen, eine Eisspitze/Kristall pro Gruppe sind fest).
+- [ ] FPS am PC (Strg+Shift+F5) in jeder Welt ~60; Handy mit Grafik „Niedrig“ flüssig (Partikel auf 30 %, Kappen/Blüten/Nebenteile ausgeblendet).
+- [ ] Laternen-Gläser haben Tag `NightLight` + Attribut `NightLight` und ein ausgeschaltetes PointLight „NightLight“ (für Tag/Nacht #105) – tagsüber leuchten sie nicht.
+- [ ] Schalter `worldDeco` aus → keine Skript-Deko in allen Welten.

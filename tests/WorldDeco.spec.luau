@@ -139,6 +139,24 @@ describe("scripted world deco (#82)", function()
 			SpookyTree = true,
 			Pumpkin = true,
 			Bats = true,
+			Lantern = true,
+			FlowerBed = true,
+			FenceRow = true,
+			HayStack = true,
+			Shell = true,
+			Driftwood = true,
+			Starfish = true,
+			IceSpike = true,
+			SnowPile = true,
+			BasaltCluster = true,
+			Lolli = true,
+			CandyStick = true,
+			Gumdrop = true,
+			Crystal = true,
+			Crater = true,
+			Snowfall = true,
+			Embers = true,
+			Stars = true,
 		}
 		for _, theme in cfg.themes do
 			for _, item in (theme.deco and theme.deco.kits) or {} do
@@ -371,6 +389,101 @@ describe("haunted castle deco (#85)", function()
 			if spec.role == "Landmark" and spec.collide then
 				local dx, dz = math.abs(spec.cframe[1] - p[1]), math.abs(spec.cframe[3] - p[3])
 				expect(dx < spec.size[1] / 2 + 1 and dz < spec.size[3] / 2 + 1).toBe(false)
+			end
+		end
+	end)
+end)
+
+describe("environment upgrade of the first seven worlds (#104)", function()
+	local EXPECTED = {
+		PizzeriaGarden = { "Lantern", "FlowerBed", "Fireflies" },
+		Farm = { "Fence", "Hay", "Lantern", "Fireflies" },
+		Beach = { "Shell", "Driftwood", "Starfish" },
+		Icebergs = { "IceSpike", "Snow", "Snowfall" },
+		Volcano = { "Basalt", "Embers", "Mist" },
+		CandyLand = { "Lolli", "CandyStick", "Gumdrop" },
+		Space = { "Crystal", "Crater", "Stars" },
+	}
+	local EMITTERS = { Fireflies = true, Mist = true, Snowfall = true, Embers = true, Stars = true }
+
+	for id, roles in EXPECTED do
+		local index = indexOf(id)
+
+		it(`gives {id} its themed kits (2-4) and particles within the budget`, function()
+			local theme = cfg.themes[id]
+			expect(theme.deco ~= nil).toBe(true)
+			expect(#theme.deco.kits >= 2 and #theme.deco.kits <= 4).toBe(true)
+			local found = {}
+			for _, spec in decoParts(index) do
+				found[spec.role or ""] = (found[spec.role or ""] or 0) + 1
+			end
+			for _, role in roles do
+				expect((found[role] or 0) >= 1).toBe(true)
+			end
+			expect(#decoParts(index) <= 400).toBe(true)
+		end)
+
+		it(
+			`keeps the {id} deco on the island, off field, path and stations; detail and emitters never collide`,
+			function()
+				local island = plan.worldIsland(index)
+				local center = island.center
+				local field = island.field :: any
+				for _, spec in decoParts(index) do
+					local x, z = spec.cframe[1], spec.cframe[3]
+					expect(IslandPlan.isInsideOutline(island.outline, x, z)).toBe(true)
+					local inField = math.abs(x - field.center[1]) < field.size[1] / 2
+						and math.abs(z - field.center[3]) < field.size[2] / 2
+					expect(inField).toBe(false)
+					expect(math.abs(x - center[1]) < cfg.pathWidth / 2).toBe(false)
+					for name, station in island.stations do
+						if name ~= "Landmark" then
+							local p = station.position
+							expect(math.sqrt((x - p[1]) ^ 2 + (z - p[3]) ^ 2) > 8).toBe(true)
+						end
+					end
+					if spec.detail then
+						expect(spec.collide).toBe(false)
+					end
+					if EMITTERS[spec.role or ""] then
+						expect(spec.transparency).toBe(1)
+						expect(spec.collide).toBe(false)
+					end
+				end
+			end
+		)
+
+		it(`builds the same {id} deco every time (deterministic)`, function()
+			local again = IslandPlan.new(cfg, GameConfig.worlds).worldIsland(index)
+			local first = plan.worldIsland(index)
+			expect(#again.parts).toBe(#first.parts)
+			for i, spec in first.parts do
+				expect(again.parts[i].cframe).toEqual(spec.cframe)
+			end
+		end)
+	end
+
+	it("marks lantern lamps as night lights (for the day/night cycle of #105), and only them", function()
+		local lamps = 0
+		for index = 1, 7 do
+			for _, spec in decoParts(index) do
+				if spec.night then
+					lamps += 1
+					expect(spec.name).toBe("LanternLamp")
+					-- Not a detail part: the light stays on graphics "Low".
+					expect(spec.detail ~= true).toBe(true)
+				elseif spec.name == "LanternLamp" then
+					error("lantern lamp without night flag")
+				end
+			end
+		end
+		expect(lamps >= 10).toBe(true)
+	end)
+
+	it("adds no extra always-on lights (role Glow) to the old worlds", function()
+		for index = 1, 7 do
+			for _, spec in decoParts(index) do
+				expect(spec.role == "Glow").toBe(false)
 			end
 		end
 	end)
