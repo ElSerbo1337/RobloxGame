@@ -161,6 +161,9 @@ describe("scripted world deco (#82)", function()
 			GlowShroom = true,
 			Stalagmite = true,
 			CavePool = true,
+			FloatingIsle = true,
+			CloudPuff = true,
+			SunOrb = true,
 		}
 		for _, theme in cfg.themes do
 			for _, item in (theme.deco and theme.deco.kits) or {} do
@@ -543,6 +546,71 @@ describe("crystal cave deco (#87)", function()
 		expect(p[1] > island.center[1]).toBe(true)
 		expect(p[2]).toBe(cfg.groundY + cfg.layout.terraces[2][4])
 		for _, spec in decoParts(cave) do
+			local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+			expect(d > chest.clear).toBe(true)
+		end
+		for _, spec in island.parts do
+			if spec.role == "Landmark" then
+				local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+				expect(d > chest.clear + 5).toBe(true)
+			end
+		end
+	end)
+end)
+
+describe("cloud city deco (#88)", function()
+	local city = indexOf("CloudCity")
+	local island = plan.worldIsland(city)
+
+	it("gives the cloud city floating islands, cloud puffs, golden sun orbs, light motes and mist", function()
+		local roles, names = {}, {}
+		for _, spec in decoParts(city) do
+			roles[spec.role or ""] = (roles[spec.role or ""] or 0) + 1
+			names[spec.name] = (names[spec.name] or 0) + 1
+		end
+		expect((names.IsleTop or 0) >= 8).toBe(true)
+		expect((names.CloudPuff or 0) >= 40).toBe(true)
+		expect((names.SunOrb or 0) >= 6).toBe(true)
+		expect((roles.Fireflies or 0) >= 2).toBe(true)
+		expect((roles.Mist or 0) >= 2).toBe(true)
+	end)
+
+	it("lets floating islands hover without colliding and marks nothing for the night (no day/night)", function()
+		expect(cfg.groundY ~= nil).toBe(true)
+		for _, spec in island.parts do
+			expect(spec.night ~= true).toBe(true)
+			if spec.role == "FloatingIsle" or spec.role == "Cloud" then
+				expect(spec.collide).toBe(false)
+			end
+			if spec.name == "IsleTop" then
+				expect(spec.cframe[2] > cfg.groundY + 5).toBe(true)
+			end
+		end
+		expect(GameConfig.dayNight.skipWorlds.CloudCity).toBe(true)
+	end)
+
+	it("builds a rainbow arch of six bands over cloud piles with a golden sun, inside the island", function()
+		local found = {}
+		for _, spec in island.parts do
+			found[spec.name] = (found[spec.name] or 0) + 1
+			if spec.role == "Landmark" then
+				expect(IslandPlan.isInsideOutline(island.outline, spec.cframe[1], spec.cframe[3])).toBe(true)
+			end
+		end
+		expect(found.RainbowBand).toBe(48)
+		expect(found.ArchCloud).toBe(8)
+		expect(found.SkySun).toBe(1)
+		expect(found.SunRay).toBe(8)
+		expect((found.CloudBank or 0) >= 10).toBe(true)
+		expect((found.SunLamp or 0) >= 3).toBe(true)
+	end)
+
+	it("keeps a spot for the hidden chest (#100) on the right terrace, free of deco and landmark", function()
+		local chest = island.stations.SecretChest
+		expect(chest ~= nil).toBe(true)
+		local p = chest.position
+		expect(p[1] > island.center[1]).toBe(true)
+		for _, spec in decoParts(city) do
 			local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
 			expect(d > chest.clear).toBe(true)
 		end

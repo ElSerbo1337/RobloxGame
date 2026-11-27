@@ -184,4 +184,25 @@ describe("World model packs (#82)", function()
 			"PrismDragon",
 		})
 	end)
+	it("lists the Cloud City assets: 3 toppings, 6 pets, the Secret pet and the egg (#88)", function()
+		local city
+		for _, world in GameConfig.worlds do
+			if world.id == "CloudCity" then
+				city = world
+			end
+		end
+		expect(WorldPacks.assetsOf(city)).toEqual({
+			"CloudEgg",
+			"CloudKingGriffin",
+			"CloudLamb",
+			"CloudMozzarella",
+			"RainbowHummingbird",
+			"SkyWhale",
+			"Starfruit",
+			"StarfruitBunny",
+			"SunPegasus",
+			"SunflowerFinch",
+			"SunflowerSeeds",
+		})
+	end)
 end)

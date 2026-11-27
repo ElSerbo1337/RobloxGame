@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (120)
+## Pets (127)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -178,6 +178,17 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | GeodeGolem | Geoden-Golem | Geode Golem | Kristall-Ei | Legendär | |
 | PrismDragon | Prisma-Drache | Prism Dragon | Kristall-Ei | Mythisch | |
 
+### Welt 14 – Wolkenstadt (#88)
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| CloudLamb | Wolken-Lamm | Cloud Lamb | Wolken-Ei | Gewöhnlich | Wolken-Mozzarella-Belag als Thema |
+| SunflowerFinch | Sonnenblumen-Fink | Sunflower Finch | Wolken-Ei | Ungewöhnlich | Sonnenblumenkerne-Belag als Thema |
+| StarfruitBunny | Sternfrucht-Hase | Starfruit Bunny | Wolken-Ei | Selten | Sternfrucht-Belag als Thema |
+| RainbowHummingbird | Regenbogen-Kolibri | Rainbow Hummingbird | Wolken-Ei | Episch | Regenbogen |
+| SkyWhale | Himmelswal | Sky Whale | Wolken-Ei | Legendär | |
+| SunPegasus | Sonnen-Pegasus | Sun Pegasus | Wolken-Ei | Mythisch | goldenes Licht |
+
 ### Geheim-Pets (#81)
 
 Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro Ei).
@@ -197,6 +208,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | CountFangtastic | Graf Gruselzahn | Count Fangtastic | Welt 11 (Spuk-Ei) | Geheim | #85, freundlicher Vampir-Fledermaus-Graf |
 | PizzasaurusRex | Pizzasaurus Rex | Pizzasaurus Rex | Welt 12 (Fossil-Ei) | Geheim | #86, T-Rex mit Pizza-Krone, in beiden Sprachen gleich |
 | DiamondMoleKing | Diamant-Maulwurfkönig | Diamond Mole King | Welt 13 (Kristall-Ei) | Geheim | #87, Maulwurf mit Grubenhelm-Lampe und Diamant-Krone |
+| CloudKingGriffin | Wolkenkönig-Greif | Cloud King Griffin | Welt 14 (Wolken-Ei) | Geheim | #88, Greif mit Wolkenmähne und goldener Krone |
 
 ### Kalender-Pet (#101)
 
@@ -207,7 +219,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | CalendarFox | Kalender-Fuchs | Calendar Fox | – (Login-Kalender Tag 30) | Mythisch | #101 |
 | MerchantCamel | Händler-Kamel | Merchant Camel | – (Reisender Händler) | Mythisch | #107 |
 
-## Beläge (40)
+## Beläge (43)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -251,8 +263,11 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | CrystalSalt | Kristall-Salz | Crystal Salt | Kristallhöhle | #87 |
 | GlowMushroom | Leucht-Pilz | Glow Mushroom | Kristallhöhle | #87 |
 | AmethystOlive | Amethyst-Olive | Amethyst Olive | Kristallhöhle | #87 |
+| CloudMozzarella | Wolken-Mozzarella | Cloud Mozzarella | Wolkenstadt | #88 |
+| SunflowerSeeds | Sonnenblumenkerne | Sunflower Seeds | Wolkenstadt | #88 |
+| Starfruit | Sternfrucht | Starfruit | Wolkenstadt | #88 |
 
-## Welten (13)
+## Welten (14)
 
 | Id | Deutsch | Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- |
@@ -269,8 +284,9 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | HauntedCastle | Spukschloss | Haunted Castle | #85 |
 | DinoAge | Dino-Urzeit | Dino Age | #86 |
 | CrystalCave | Kristallhöhle | Crystal Cave | #87 |
+| CloudCity | Wolkenstadt | Cloud City | #88 |
 
-## Eier (20)
+## Eier (21)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -294,6 +310,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | SpookyEgg | Spuk-Ei | Spooky Egg | Spukschloss | #85 |
 | FossilEgg | Fossil-Ei | Fossil Egg | Dino-Urzeit | #86 |
 | CrystalEgg | Kristall-Ei | Crystal Egg | Kristallhöhle | #87 |
+| CloudEgg | Wolken-Ei | Cloud Egg | Wolkenstadt | #88 |
 
 ## Tränke (6)
 
@@ -319,7 +336,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | TripleOpen | 3 Eier auf einmal | 3 Eggs at Once | Schaltet „3 öffnen“ an jedem Ei frei | Unlocks “Open 3” at every egg | „Open 3“ muss zum Knopftext im Ei-Menü (#67 ff.) passen |
 | GoldLuck | Gold-Glück | Gold Luck | Mehr goldene Beläge (10-facher Wert) | More golden toppings (10x value) | MEGA UPDATE #94 |
 
-## Shops (9)
+## Shops (10)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -332,6 +349,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | World11Shop | Spuk-Shop | Spooky Shop | Spukschloss | #85 |
 | World12Shop | Dino-Shop | Dino Shop | Dino-Urzeit | #86 |
 | World13Shop | Kristall-Shop | Crystal Shop | Kristallhöhle | #87 |
+| World14Shop | Wolken-Shop | Cloud Shop | Wolkenstadt | #88 |
 
 ## Wetter (14)
 
@@ -351,7 +369,7 @@ Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte seit #105. Di
 | MeteorShower | Sternschnuppen | Meteor Shower | Weltraum | #105 |
 | AshRain | Ascheregen | Ash Rain | Dino-Urzeit | #105, #86 |
 | CrystalGlitter | Kristall-Glitzern | Crystal Glitter | Kristallhöhle | #105, #87 |
-| RainbowSky | Regenbogen | Rainbow | Welt 14 | #105, Welt folgt |
+| RainbowSky | Regenbogen | Rainbow | Wolkenstadt | #105, #88 |
 | CheeseRain | Käseregen | Cheese Rain | Welt 15 | #105, Welt folgt |
 
 ## Sonstige: Seltenheiten (7)

@@ -476,6 +476,57 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 				})
 			)
 		end
+	elseif style == "CloudRim" then
+		-- Cloud city (#88): a low white cloud bank along the edge (an invisible-looking
+		-- soft block that collides and keeps players in) with puffy cloud balls on top and
+		-- a small golden post with a sun lamp on every fourth piece.
+		local cloud = theme.rim
+		local center = add(scale(add(p, q), 0.5), add(inset, v(0, 0.9, 0)))
+		table.insert(
+			parts,
+			spec("Block", v(2.2, 1.8, len + 0.3), along(center, dir), {
+				name = "CloudBank",
+				color = cloud,
+				material = "SmoothPlastic",
+				role = "Rim",
+			})
+		)
+		for s = 0, 1 do
+			local at = add(add(p, scale(dir, 0.25 + s * 0.5)), add(inset, v(0, 1.9, 0)))
+			table.insert(
+				parts,
+				ball(at, 2.4 + noise(i, 7 + s) * 1.2, {
+					name = "CloudPuff",
+					color = if s == 0 then cloud else theme.cloudShade or cloud,
+					material = "SmoothPlastic",
+					collide = false,
+					role = "Rim",
+					detail = s == 1,
+				})
+			)
+		end
+		if i % 4 == 0 then
+			local foot = add(p, add(inset, v(0, 1.8, 0)))
+			table.insert(
+				parts,
+				disc(add(foot, v(0, 1.2, 0)), 0.5, 2.4, {
+					name = "GoldPost",
+					color = theme.gold or { 255, 200, 80 },
+					collide = false,
+					role = "Rim",
+				})
+			)
+			table.insert(
+				parts,
+				ball(add(foot, v(0, 2.7, 0)), 0.9, {
+					name = "SunLamp",
+					color = theme.glow or { 255, 220, 120 },
+					material = "Neon",
+					collide = false,
+					role = "Rim",
+				})
+			)
+		end
 	elseif style == "IceEdge" then
 		local h = 1.8 + noise(i, 3) * 1.4
 		local center = add(scale(add(p, q), 0.5), add(inset, v(0, h / 2, 0)))
@@ -2440,7 +2491,106 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		end
 	end
 
+	-- World 14 landmark (#88): a rainbow arch on the terrace - six coloured bands
+	-- (theme.rainbow) bent over a cloud bank, each foot in a pile of cloud balls, a golden
+	-- sun disc glowing under the top of the arch and a small floating cloud above it.
+	local function rainbowArch(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local bands = theme.rainbow
+			or {
+				{ 255, 90, 90 },
+				{ 255, 160, 70 },
+				{ 255, 220, 80 },
+				{ 110, 220, 110 },
+				{ 90, 160, 255 },
+				{ 170, 110, 255 },
+			}
+		local cloud = theme.rim or { 250, 250, 255 }
+		local function p3(dx: number, dy: number, dz: number): V
+			return v(at[1] + dx, baseY + dy, at[3] + dz)
+		end
+		table.insert(parts, disc(p3(0, 0.3, 0), 22, 0.6, { name = "CloudFloor", color = cloud, role = "Landmark" }))
+		-- Arch across x (facing the field): radius 9 (outer band) down to 6.5; 8 straight pieces per band.
+		local segments = 8
+		for b, color in bands do
+			local r = 9.4 - (b - 1) * 0.55
+			for s = 1, segments do
+				local a0 = math.pi * (s - 1) / segments
+				local a1 = math.pi * s / segments
+				local p0 = p3(math.cos(a0) * r, 1 + math.sin(a0) * r, 0)
+				local p1 = p3(math.cos(a1) * r, 1 + math.sin(a1) * r, 0)
+				-- Tiny z offset: a vertical beam has no defined orientation.
+				table.insert(
+					parts,
+					beam(add(p0, v(0, 0, 0.01)), add(p1, v(0, 0, -0.01)), 0.6, 1.2, {
+						name = "RainbowBand",
+						color = color,
+						material = "Neon",
+						collide = false,
+						role = "Landmark",
+					})
+				)
+			end
+		end
+		-- Cloud piles at both feet (the lower ball collides).
+		for _, side in { -1, 1 } do
+			for k, c in { { 0, 1.6, 4.2 }, { 1.6, 2.6, 3 }, { -1.5, 2.4, 2.6 }, { 0.4, 3.8, 2.4 } } do
+				table.insert(
+					parts,
+					ball(p3(side * (8 + (k % 2) * 0.6), c[2], c[1]), c[3], {
+						name = "ArchCloud",
+						color = if k % 2 == 0 then theme.cloudShade or cloud else cloud,
+						material = "SmoothPlastic",
+						collide = k == 1,
+						role = "Landmark",
+					})
+				)
+			end
+		end
+		-- Golden sun under the top of the arch: a glowing disc with a ring of rays.
+		local sun = p3(0, 6.5, -0.5)
+		table.insert(
+			parts,
+			spec("Cylinder", v(0.6, 3.6, 3.6), yawed(sun, math.pi / 2), {
+				name = "SkySun",
+				color = theme.glow or { 255, 220, 120 },
+				material = "Neon",
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		for k = 1, 8 do
+			local angle = k * math.pi / 4
+			local from = add(sun, v(math.cos(angle) * 2.2, math.sin(angle) * 2.2, 0))
+			local to = add(sun, v(math.cos(angle) * 3.4, math.sin(angle) * 3.4, 0.01))
+			table.insert(
+				parts,
+				beam(from, to, 0.4, 0.4, {
+					name = "SunRay",
+					color = theme.gold or { 255, 200, 80 },
+					material = "Neon",
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		-- A small cloud drifting above the arch.
+		for k, c in { { 0, 0, 2.6 }, { 0.3, 1.6, 2 }, { -0.2, -1.7, 1.8 } } do
+			table.insert(
+				parts,
+				ball(p3(c[2], 12.5 + k * 0.2, c[1]), c[3], {
+					name = "ArchCloudTop",
+					color = cloud,
+					material = "SmoothPlastic",
+					collide = false,
+					role = "Landmark",
+					detail = k > 1,
+				})
+			)
+		end
+	end
+
 	local LANDMARKS = {
+		RainbowArch = rainbowArch,
 		CrystalGrotto = crystalGrotto,
 		DinoSkeleton = dinoSkeleton,
 		HauntedCastle = hauntedCastle,
@@ -3817,6 +3967,121 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 			)
 		end
 		return parts
+	end
+
+	-- Cloud city kits (#88). FloatingIsle: a small floating island hovering above the
+	-- ground (a rock cone under a grass top, sometimes a tiny tree or a cloud, nothing
+	-- collides). CloudPuff: a cluster of three to five cloud balls on the ground. SunOrb: a
+	-- golden glowing orb on a slim gold column ("golden light"; the orb is optional, the
+	-- first four orbs carry a light).
+	function DECO_KITS.FloatingIsle(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local hover = 6 + noise(k, 21) * 6
+		local top = add(at, v(0, hover, 0))
+		table.insert(
+			parts,
+			disc(top, size, size * 0.18, {
+				name = "IsleTop",
+				color = colors[1] or theme.grass,
+				collide = false,
+				role = "FloatingIsle",
+				deco = true,
+			})
+		)
+		local tip = add(top, v(math.cos(yaw) * 0.3, -size * 0.75, math.sin(yaw) * 0.3))
+		table.insert(
+			parts,
+			beam(add(top, v(0, -size * 0.09, 0)), tip, size * 0.75, size * 0.75, {
+				name = "IsleRock",
+				color = colors[2] or theme.cliff,
+				collide = false,
+				role = "FloatingIsle",
+				deco = true,
+			})
+		)
+		if k % 2 == 0 then
+			local trunk = add(top, v(0, size * 0.09, 0))
+			table.insert(
+				parts,
+				disc(add(trunk, v(0, size * 0.22, 0)), size * 0.1, size * 0.44, {
+					name = "IsleTrunk",
+					color = theme.wood,
+					collide = false,
+					role = "FloatingIsle",
+					deco = true,
+					detail = true,
+				})
+			)
+			table.insert(
+				parts,
+				ball(add(trunk, v(0, size * 0.55, 0)), size * 0.45, {
+					name = "IsleCrown",
+					color = colors[3] or theme.grassLight,
+					collide = false,
+					role = "FloatingIsle",
+					deco = true,
+					detail = true,
+				})
+			)
+		else
+			table.insert(
+				parts,
+				ball(add(top, v(0, size * 0.25, 0)), size * 0.4, {
+					name = "IsleCloud",
+					color = theme.rim,
+					material = "SmoothPlastic",
+					collide = false,
+					role = "FloatingIsle",
+					deco = true,
+					detail = true,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.CloudPuff(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local count = 3 + k % 3
+		for b = 1, count do
+			local angle = yaw + b * 2.4
+			local r = if b == 1 then 0 else size * 0.3
+			local d = size * (0.7 - b * 0.08)
+			table.insert(
+				parts,
+				ball(add(at, v(math.cos(angle) * r, d * 0.35, math.sin(angle) * r)), d, {
+					name = "CloudPuff",
+					color = colors[(b - 1) % math.max(#colors, 1) + 1] or theme.rim,
+					material = "SmoothPlastic",
+					collide = false,
+					role = "Cloud",
+					deco = true,
+					detail = b > 3,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.SunOrb(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		return {
+			disc(add(at, v(0, size * 0.5, 0)), size * 0.2, size, {
+				name = "SunColumn",
+				color = theme.gold or { 255, 200, 80 },
+				role = "Lamp",
+				deco = true,
+			}),
+			ball(add(at, v(0, size * 1.15, 0)), size * 0.45, {
+				name = "SunOrb",
+				color = colors[1] or theme.glow,
+				material = "Neon",
+				collide = false,
+				-- Only the first four orbs get a PointLight (role Glow): golden light, no glare.
+				role = if k <= 4 then "Glow" else "SunGlow",
+				deco = true,
+				detail = true,
+			}),
+		}
 	end
 
 	-- Old-world kits (#104), all script-built and cheap (2-6 parts each):

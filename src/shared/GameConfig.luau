@@ -253,6 +253,10 @@ local GameConfig = {
 		CrystalSalt = { displayName = "Kristall-Salz", displayNameEn = "Crystal Salt", value = 141000000 },
 		GlowMushroom = { displayName = "Leucht-Pilz", displayNameEn = "Glow Mushroom", value = 244000000 },
 		AmethystOlive = { displayName = "Amethyst-Olive", displayNameEn = "Amethyst Olive", value = 355000000 },
+		-- World 14 (Cloud City, #88): about 4.8x world 13 (#87). Provisional, tuned in #108.
+		CloudMozzarella = { displayName = "Wolken-Mozzarella", displayNameEn = "Cloud Mozzarella", value = 677000000 },
+		SunflowerSeeds = { displayName = "Sonnenblumenkerne", displayNameEn = "Sunflower Seeds", value = 1170000000 },
+		Starfruit = { displayName = "Sternfrucht", displayNameEn = "Starfruit", value = 1700000000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -1186,6 +1190,45 @@ local GameConfig = {
 			rarity = "Mythic",
 			bonus = 13.2,
 		},
+		-- World 14 (Wolken-Ei, #88): sky critters; the Mythic one is the world's best
+		-- (+1460 %, the flat curve +140 % per world), the others scaled like the crystal egg.
+		-- Provisional (#108). Models: tools/blender/build_world.py CloudCity.
+		CloudLamb = {
+			displayName = "Wolken-Lamm",
+			displayNameEn = "Cloud Lamb",
+			rarity = "Common",
+			bonus = 0.96,
+		},
+		SunflowerFinch = {
+			displayName = "Sonnenblumen-Fink",
+			displayNameEn = "Sunflower Finch",
+			rarity = "Uncommon",
+			bonus = 1.46,
+		},
+		StarfruitBunny = {
+			displayName = "Sternfrucht-Hase",
+			displayNameEn = "Starfruit Bunny",
+			rarity = "Rare",
+			bonus = 2.43,
+		},
+		RainbowHummingbird = {
+			displayName = "Regenbogen-Kolibri",
+			displayNameEn = "Rainbow Hummingbird",
+			rarity = "Epic",
+			bonus = 3.89,
+		},
+		SkyWhale = {
+			displayName = "Himmelswal",
+			displayNameEn = "Sky Whale",
+			rarity = "Legendary",
+			bonus = 7.3,
+		},
+		SunPegasus = {
+			displayName = "Sonnen-Pegasus",
+			displayNameEn = "Sun Pegasus",
+			rarity = "Mythic",
+			bonus = 14.6,
+		},
 
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
 		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
@@ -1422,6 +1465,12 @@ local GameConfig = {
 			rarity = "Secret",
 			bonus = 26.4,
 		},
+		CloudKingGriffin = {
+			displayName = "Wolkenkönig-Greif",
+			displayNameEn = "Cloud King Griffin",
+			rarity = "Secret",
+			bonus = 29.2,
+		},
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -1430,7 +1479,7 @@ local GameConfig = {
 	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
-	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats, Footprints, Crystals. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats, Footprints, Crystals, Clouds. `glow` = accent glows (Neon); `fancy` = showier variant
 	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
@@ -1705,6 +1754,21 @@ local GameConfig = {
 				{ pet = "PrismDragon", chance = 0.5 },
 			},
 		},
+		-- World 14 (#88). Price provisional (#108).
+		CloudEgg = {
+			displayName = "Wolken-Ei",
+			displayNameEn = "Cloud Egg",
+			look = { color = "9FD4FF", accent = "FFE27A", pattern = "Clouds", glow = true },
+			price = 290000000000,
+			pets = {
+				{ pet = "CloudLamb", chance = 50 },
+				{ pet = "SunflowerFinch", chance = 28 },
+				{ pet = "StarfruitBunny", chance = 15 },
+				{ pet = "RainbowHummingbird", chance = 5.5 },
+				{ pet = "SkyWhale", chance = 1 },
+				{ pet = "SunPegasus", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -1876,6 +1940,24 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
+		World14Shop = {
+			worldId = "CloudCity",
+			displayName = "Wolken-Shop",
+			displayNameEn = "Cloud Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
+			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
+		},
 	},
 
 	-- Flying islands (#27): spawn island, then world 1, 2, ... in a chain along -Z, all at
@@ -1947,6 +2029,7 @@ local GameConfig = {
 		--                | "Sandstone" | "IronFence" (with `post` stone and `pumpkin` colours)
 		--                | "BoneFence" (lava-rock wall with rib bones in `bone`)
 		--                | "CrystalRim" (cave-rock wall with crystal spikes in `crystals`)
+		--                | "CloudRim" (cloud bank with puffs in `rim`/`cloudShade`, gold sun lamps)
 		--                (low visible rim)
 		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
 		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" | "GreatPyramid"
@@ -1955,6 +2038,7 @@ local GameConfig = {
 		--                stone, two volcanoes in `basalt`/`basaltDark`/`glow` behind it)
 		--                | "CrystalGrotto" (rock arch over a glowing lake in `water`, crystal
 		--                cluster in `crystals` with an `amethyst` heart crystal)
+		--                | "RainbowArch" (rainbow in `rainbow` bands over cloud piles, a `glow` sun)
 		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
 		--                the bridge leading INTO the world
 		--   trees        tree models scattered along the rim (ModelLibrary names); false = none
@@ -1977,6 +2061,8 @@ local GameConfig = {
 		--                "Bones" (lying bones, rib cages and skulls in `bone`, #86),
 		--                "GlowShroom" (glowing mushrooms, caps marked `night`), "Stalagmite"
 		--                (rock spikes), "CavePool" (small glowing pool, `night`, #87),
+		--                "FloatingIsle" (small hovering island), "CloudPuff" (cloud balls),
+		--                "SunOrb" (golden glowing orb on a gold column, #88),
 		--                old worlds (#104): "Lantern" (lamp marked `night` for #105),
 		--                "FlowerBed", "FenceRow", "HayStack", "Shell", "Driftwood", "Starfish",
 		--                "IceSpike", "SnowPile", "BasaltCluster", "Lolli", "CandyStick",
@@ -2673,6 +2759,69 @@ local GameConfig = {
 					},
 				},
 			},
+			-- World 14 (#88): a cloud city in the sky - pale golden-green meadow, a rim of
+			-- white cloud banks with gold sun lamps, a glowing light bridge, a rainbow arch over
+			-- cloud piles with a golden sun on the terrace; small floating islands hover around,
+			-- cloud puffs, golden sun orbs, light motes and soft mist (scripted deco, ~400
+			-- parts). No day and night here (dayNight.skipWorlds), so nothing is marked `night`.
+			-- Hidden chest (#100) on the right terrace.
+			CloudCity = {
+				grass = { 196, 226, 160 },
+				grassLight = { 216, 238, 180 },
+				field = { 240, 232, 200 },
+				cliff = { 200, 196, 220 },
+				cliffDark = { 160, 156, 186 },
+				cliffLight = { 226, 222, 240 },
+				rim = { 250, 250, 255 },
+				cloudShade = { 226, 232, 248 },
+				rimStyle = "CloudRim",
+				gold = { 255, 200, 80 },
+				glow = { 255, 226, 130 },
+				rainbow = {
+					{ 255, 90, 90 },
+					{ 255, 160, 70 },
+					{ 255, 220, 80 },
+					{ 110, 220, 110 },
+					{ 90, 160, 255 },
+					{ 170, 110, 255 },
+				},
+				path = { 255, 236, 180 },
+				pathDark = { 230, 206, 150 },
+				water = { 150, 210, 255 },
+				waterfall = { 220, 240, 255 },
+				wood = { 210, 170, 110 },
+				woodDark = { 170, 130, 80 },
+				rope = { 255, 220, 140 },
+				ice = { 255, 230, 150 },
+				iceDark = { 230, 190, 90 },
+				snow = { 250, 250, 255 },
+				flowers = { { 255, 220, 80 }, { 255, 160, 200 }, { 170, 200, 255 }, { 255, 255, 255 } },
+				landmark = "RainbowArch",
+				bridge = "Light",
+				trees = false,
+				accents = { { model = "Sunflower", width = 4 } },
+				secretChest = { 54, -88, 5 },
+				deco = {
+					budget = 400,
+					kits = {
+						{
+							kit = "FloatingIsle",
+							count = 22,
+							size = { 5, 9 },
+							colors = { { 190, 225, 150 }, { 200, 196, 220 }, { 150, 210, 120 } },
+						},
+						{
+							kit = "CloudPuff",
+							count = 50,
+							size = { 4, 8 },
+							colors = { { 250, 250, 255 }, { 232, 238, 252 }, { 255, 244, 220 } },
+						},
+						{ kit = "SunOrb", count = 14, size = { 3, 4.5 }, colors = { { 255, 226, 130 } } },
+						{ kit = "Fireflies", count = 3, size = { 14, 18 }, colors = { { 255, 230, 150 } } },
+						{ kit = "Mist", count = 3, size = { 12, 16 }, colors = { { 250, 250, 255 } } },
+					},
+				},
+			},
 		},
 	},
 
@@ -2690,7 +2839,7 @@ local GameConfig = {
 		cycleSeconds = 1200,
 		nightStarts = 19.5,
 		nightEnds = 5.5,
-		-- World 13 (cloud city) is not built yet; its id is reserved here.
+		-- World 14 (cloud city, #88) stays in its golden day light (spec #72).
 		skipWorlds = { Space = true, CloudCity = true },
 	},
 
@@ -2698,8 +2847,8 @@ local GameConfig = {
 	-- colours (RGB) of the weather particles; `style`: how they move (client/WeatherFx):
 	-- "rain" (fast streaks), "snow" (slow flakes), "dust" (drifting sideways),
 	-- "bubbles" (rising), "sparkle" (twinkling in the air).
-	-- AshRain is used by world 12 (#86), CrystalGlitter by world 13 (#87); worlds 14-15 are
-	-- not built yet: RainbowSky and CheeseRain wait here for their world entries.
+	-- AshRain is used by world 12 (#86), CrystalGlitter by world 13 (#87), RainbowSky by
+	-- world 14 (#88); world 15 is not built yet: CheeseRain waits here for its world entry.
 	weathers = {
 		Rain = {
 			displayName = "Regen",
@@ -3038,6 +3187,23 @@ local GameConfig = {
 			eggs = { "CrystalEgg" },
 			secretPet = "DiamondMoleKing",
 			weather = "CrystalGlitter",
+		},
+		-- World 14 (#88), after world 13 (#87). 7 rebirths (spec #72). Price provisional (#108).
+		{
+			id = "CloudCity",
+			requiredRebirths = 7,
+			displayName = "Wolkenstadt",
+			displayNameEn = "Cloud City",
+			unlockPrice = 8000000000000,
+			color = { 255, 214, 120 },
+			toppingSpawns = {
+				{ topping = "CloudMozzarella", weight = 55 },
+				{ topping = "SunflowerSeeds", weight = 30 },
+				{ topping = "Starfruit", weight = 15 },
+			},
+			eggs = { "CloudEgg" },
+			secretPet = "CloudKingGriffin",
+			weather = "RainbowSky",
 		},
 	},
 }
