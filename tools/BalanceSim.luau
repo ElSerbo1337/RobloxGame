@@ -1,24 +1,32 @@
 --!strict
--- Balancing simulation (#41): plays a model player through worlds 1-7 with the real game
--- rules (GameRules) and a configuration, and measures the play time spent in every world,
--- once from a new player state and once after the first rebirth.
--- Used by `lune run balance` (table in docs/balancing.md) and tests/GameConfig.spec.luau.
+-- Balancing simulation (#41, extended to the whole campaign in #108): plays a model player
+-- with the real game rules (GameRules) and a configuration from a new player state until
+-- the last world is unlocked, with as many rebirths as the player wants on the way, and
+-- measures the play time per world and per rebirth run plus the gem income per source.
+-- Used by `lune run balance` (tables in docs/balancing.md) and tests/BalanceSim.spec.luau.
 --
 -- Model (all assumptions, see docs/balancing.md):
 -- * Income: rules.incomePerMinute (config.income.roundsPerMinute rounds of a full pizza
---   with the average topping of the highest unlocked world) x the coin potion, credited
---   every tick. Gem toppings: config.gems chances on the same number of toppings.
+--   with the average topping of the highest unlocked world) x golden toppings (#94) x the
+--   coin potion, credited every tick. Gem toppings: config.gems chances on the same number
+--   of toppings.
 -- * The player plays `sessionMinutes` per German day: login calendar at the start of each
---   session, play time gifts as soon as they are ready.
+--   session, play time gifts as soon as they are ready, the free lucky wheel spins (#98)
+--   and the hidden chests (#100) of every unlocked chest world once a day.
 -- * Delivery: every call is accepted and delivered after `deliverySeconds`; the ordered
 --   toppings are not sold (their sell value is taken back from the income).
+-- * Quests (#97) are not played: their expected gems (all done every day,
+--   BalanceSim.questGemsPerDay) are paid after half of each day's session.
 -- * Potions are drunk as soon as they are owned. Gems buy pet slots first, then coin potions.
 -- * Coins: next world as soon as affordable, then pizza space, eggs of the highest unlocked
 --   world whose expected coin gain pays them back within `eggPaybackMinutes`, range and
 --   magnet levels costing at most `comfortMinutes` of income (no effect on the income).
--- * A run ends with the rebirth (run 1) or once the next rebirth is affordable (run 2),
---   after every world the rebirths done so far allow (`requiredRebirths`, #43) is bought.
---   Worlds needing more rebirths are not entered in that run (0 minutes).
+-- * Pets: equipped pets gain levels (#90); 5 equal pets are merged into Gold / Rainbow (#80)
+--   whenever that does not lower the pet multiplier. Shiny and Secret pets are left out.
+-- * Rebirth: as soon as it is affordable, unless the next world it may buy costs at most the
+--   rebirth price (then that world first). Worlds behind more rebirths (`requiredRebirths`,
+--   #43) are never entered before.
+-- * The campaign ends when the last world (or `targetWorld`) is unlocked.
 
 local GameRules = require("../src/shared/GameRules")
 
@@ -29,20 +37,79 @@ export type Options = {
 	deliverySeconds: number?,
 	eggPaybackMinutes: number?,
 	comfortMinutes: number?,
-	-- Safety stop per run (minutes of play time).
+	-- World index whose unlock ends the campaign (default: the last world).
+	targetWorld: number?,
+	-- Safety stop (minutes of play time).
 	maxMinutes: number?,
 	-- Called with the play time (minutes) and a short note on every purchase.
 	trace: ((minutes: number, note: string) -> ())?,
 }
 
--- Minutes spent in each world (index = world; the last reachable world lasts until the
--- next rebirth is affordable, worlds behind more rebirths get 0) plus the run's total.
-export type Run = { worlds: { number }, total: number }
-export type Result = { first: Run, afterRebirth: Run, rebirthPetMultiplier: number }
+-- One rebirth run: minutes from its start to the rebirth (or the campaign end), the
+-- rebirths the player had during it, the highest world it reached and the pet multiplier
+-- at its end.
+export type Run = { minutes: number, rebirths: number, highestWorld: number, petMultiplier: number }
+
+export type Campaign = {
+	-- Minutes of play time when the world was unlocked the first time (world 1: 0).
+	worldEnteredAt: { number },
+	-- Minutes from the first unlock of a world to the first unlock of the next one.
+	worldMinutes: { number },
+	-- Coins per minute (without potions) right before the world was unlocked the first time.
+	incomeAtUnlock: { number },
+	-- Rebirths done when the world was unlocked the first time.
+	rebirthsAtUnlock: { number },
+	runs: { Run },
+	-- Rebirths done when the last world was unlocked.
+	rebirths: number,
+	totalMinutes: number,
+	-- Gems earned per source (Toppings, Delivery, Gifts, Calendar, Wheel, Chests) and in total.
+	gems: { [string]: number },
+	gemsTotal: number,
+	petMultiplier: number,
+}
 
 local BalanceSim = {}
 
--- 2026-01-05 08:00 UTC: winter time, so a German day is exactly 24 h long throughout.
+BalanceSim.GEM_SOURCES = { "Toppings", "Delivery", "Gifts", "Calendar", "Wheel", "Chests", "Quests" }
+-- Gem sources that are not bound to a German day (#72: "regular sources", 20-40 an hour);
+-- wheel, chests and quests pay a fixed amount once a day.
+BalanceSim.REGULAR_SOURCES = { "Toppings", "Delivery", "Gifts", "Calendar" }
+
+-- Expected gems a day from quests (#97) when all daily quests and their bonus chest are
+-- done every day (streak chest every `streakDays` days) and all weekly quests every week.
+function BalanceSim.questGemsPerDay(config: any): number
+	local quests = config.quests
+	if quests == nil then
+		return 0
+	end
+	local function expected(rewards: { any }): number
+		local total, gemsSum = 0, 0
+		for _, reward in rewards do
+			local weight = reward.weight or 1
+			total += weight
+			if reward.kind == "Gems" then
+				gemsSum += weight * reward.amount
+			end
+		end
+		return if total > 0 then gemsSum / total else 0
+	end
+	local function fixed(rewards: { any }): number
+		local sum = 0
+		for _, reward in rewards do
+			if reward.kind == "Gems" then
+				sum += reward.amount
+			end
+		end
+		return sum
+	end
+	return quests.dailyCount * expected(quests.dailyRewards)
+		+ fixed(quests.bonusRewards)
+		+ fixed(quests.streakRewards) / quests.streakDays
+		+ quests.weeklyCount * expected(quests.weeklyRewards) / 7
+end
+
+-- 2026-01-05 08:00 UTC: winter time, so a German day is exactly 24 h long for ~80 days.
 local START_TIME = 1767600000
 local DAY_SECONDS = 24 * 3600
 
@@ -57,11 +124,11 @@ local function lcg(seed: number): () -> number
 	end
 end
 
-function BalanceSim.run(config: any, options: Options?): Result
+function BalanceSim.campaign(config: any, options: Options?): Campaign
 	local opts: Options = options or {}
 	-- Secret pets (#81) are a 1 in 20,000 jackpot, not part of the expected curve: left out,
 	-- so their extra roll per egg does not shift the simulated luck.
-	-- Shiny pets (#80) are left out for the same reason (and they never merge in the sim).
+	-- Shiny pets (#80) are left out for the same reason.
 	if config.secretPets or config.shinyPets then
 		config = table.clone(config)
 		config.secretPets = nil
@@ -69,12 +136,13 @@ function BalanceSim.run(config: any, options: Options?): Result
 	end
 	local rules = GameRules.new(config)
 	local random = lcg(opts.seed or 1)
-	local tick = opts.tickSeconds or 5
+	local tick = opts.tickSeconds or 10
 	local sessionSeconds = (opts.sessionMinutes or 60) * 60
 	local deliverySeconds = opts.deliverySeconds or 60
 	local eggPayback = opts.eggPaybackMinutes or 10
 	local comfortMinutes = opts.comfortMinutes or 5
-	local maxSeconds = (opts.maxMinutes or 1500) * 60
+	local targetWorld = opts.targetWorld or #config.worlds
+	local maxSeconds = (opts.maxMinutes or 6000) * 60
 
 	local shopIds = {}
 	for shopId in config.shops do
@@ -82,14 +150,27 @@ function BalanceSim.run(config: any, options: Options?): Result
 	end
 	table.sort(shopIds)
 
+	local chestWorlds = if config.hiddenChests then config.hiddenChests.worlds else {}
+	-- Quests are not played in the model: their expected gems come once a day.
+	local questGems = BalanceSim.questGemsPerDay(config)
+	local questDay = -1
+	local questFraction = 0
+	local goldenExtra = if config.goldenToppings then config.goldenToppings.valueMultiplier - 1 else 0
+
 	local state = rules.newPlayerState()
 	state.tutorialStep = 99 -- tutorial done (it takes the first minute anyway)
 	local played = 0 -- seconds of play time in total
 	local gemFraction = 0
 	local deliverAt: number? = nil
+	local gems: { [string]: number } = {}
+	for _, source in BalanceSim.GEM_SOURCES do
+		gems[source] = 0
+	end
 
 	local function now(): number
-		local day = played // sessionSeconds
+		-- A day covers play time (0, session]: the last tick of a day still counts there
+		-- (so the 60 minute gift is claimed), the next one starts the next day.
+		local day = math.max(0, played - 1) // sessionSeconds
 		return START_TIME + day * DAY_SECONDS + (played - day * sessionSeconds)
 	end
 
@@ -100,9 +181,17 @@ function BalanceSim.run(config: any, options: Options?): Result
 		return result.ok
 	end
 
+	-- Applies a reward action and books the gems it paid to `source`.
+	local function applyGems(source: string, result: any): boolean
+		local before = state.gems
+		local ok = apply(result)
+		gems[source] += math.max(0, state.gems - before)
+		return ok
+	end
+
 	local function note(text: string)
 		if opts.trace then
-			opts.trace(played / 60, `{text} (coins/min {math.floor(rules.incomePerMinute(state))})`)
+			opts.trace(played / 60, `{text} (r{state.rebirths}, coins/min {math.floor(rules.incomePerMinute(state))})`)
 		end
 	end
 
@@ -114,6 +203,11 @@ function BalanceSim.run(config: any, options: Options?): Result
 			end
 		end
 		return count
+	end
+
+	local function income(): number
+		local golden = if goldenExtra > 0 then 1 + rules.goldenChance(state) * goldenExtra else 1
+		return rules.incomePerMinute(state) * golden
 	end
 
 	local function drinkAll()
@@ -130,7 +224,7 @@ function BalanceSim.run(config: any, options: Options?): Result
 		local equipped = {}
 		for _, pet in state.pets do
 			if table.find(state.equipped, pet.uid) then
-				table.insert(equipped, config.pets[pet.petId].bonus)
+				table.insert(equipped, rules.petBonus(pet))
 			end
 		end
 		local weakest = 0
@@ -153,13 +247,37 @@ function BalanceSim.run(config: any, options: Options?): Result
 			local weakest = nil
 			for _, pet in state.pets do
 				if not table.find(state.equipped, pet.uid) then
-					if weakest == nil or config.pets[pet.petId].bonus < config.pets[weakest.petId].bonus then
+					if weakest == nil or rules.petBonus(pet) < rules.petBonus(weakest) then
 						weakest = pet
 					end
 				end
 			end
 			if weakest == nil or not apply(rules.deletePet(state, weakest.uid)) then
 				return
+			end
+		end
+	end
+
+	-- Merges equal pets (#80) as long as it does not lower the pet multiplier.
+	local function mergeAll()
+		local merged = true
+		while merged do
+			merged = false
+			for _, group in rules.mergeGroups(state.pets) do
+				if group.have >= group.need then
+					local before = rules.petMultiplier(state)
+					local saved = state
+					if apply(rules.mergePets(state, group.petId, group.variant, now())) then
+						apply(rules.equipBest(state))
+						if rules.petMultiplier(state) < before then
+							state = saved
+						else
+							merged = true
+							note(`merge {group.petId} -> {group.target}`)
+							break
+						end
+					end
+				end
 			end
 		end
 	end
@@ -200,7 +318,7 @@ function BalanceSim.run(config: any, options: Options?): Result
 	end
 
 	local function spendCoins(goalPrice: number)
-		local income = rules.incomePerMinute(state)
+		local perMinute = income()
 		local changed = true
 		while changed do
 			changed = false
@@ -210,16 +328,16 @@ function BalanceSim.run(config: any, options: Options?): Result
 					local level = rules.upgradeLevel(state, upgradeId)
 					local nextLevel = config.upgrades[upgradeId].levels[level + 1]
 					local affordable = nextLevel ~= nil
-						and (upgradeId == "PizzaSpace" or nextLevel.price <= income * comfortMinutes)
+						and (upgradeId == "PizzaSpace" or nextLevel.price <= perMinute * comfortMinutes)
 					if affordable and apply(rules.buyUpgrade(state, shopId, upgradeId)) then
 						note(`{upgradeId} {level + 1}`)
 						changed = true
-						income = rules.incomePerMinute(state)
+						perMinute = income()
 					end
 				end
 			end
 			-- Eggs of the highest unlocked world: the best expected gain per coin, if it pays back.
-			local baseIncome = income / rules.petMultiplier(state)
+			local baseIncome = perMinute / rules.petMultiplier(state)
 			local bestEgg, bestRatio = nil, 0
 			for _, eggId in config.worlds[unlockedCount()].eggs do
 				local price = config.eggs[eggId].price
@@ -235,9 +353,10 @@ function BalanceSim.run(config: any, options: Options?): Result
 				makeRoom()
 				if apply(rules.openEgg(state, bestEgg, random)) then
 					apply(rules.equipBest(state))
+					mergeAll()
 					note(`{bestEgg} -> pets x{rules.petMultiplier(state)}`)
 					changed = true
-					income = rules.incomePerMinute(state)
+					perMinute = income()
 				end
 			end
 			if state.coins >= goalPrice then
@@ -247,28 +366,51 @@ function BalanceSim.run(config: any, options: Options?): Result
 	end
 
 	local function step()
-		local t = now()
-		local income = rules.incomePerMinute(state) * rules.potionCoinMultiplier(state)
-		state.coins += income * tick / 60
-		state.totalCoinsEarned += income * tick / 60
+		local coins = income() * rules.potionCoinMultiplier(state) * tick / 60
+		state.coins += coins
+		state.totalCoinsEarned += coins
 		local toppings = rules.pizzaCapacity(state) * config.income.roundsPerMinute * tick / 60
 		local gemChance = config.gems.toppingChance * (config.gems.toppingMin + config.gems.toppingMax) / 2
 		gemFraction += toppings * gemChance
 		local wholeGems = math.floor(gemFraction)
 		state.gems += wholeGems
+		gems.Toppings += wholeGems
 		gemFraction -= wholeGems
 
+		-- The tick (played, played + tick] counts on the day of its end.
+		played += tick
+		local t = now()
 		apply(rules.addPlayTime(state, tick, t))
+		if config.petLevels then
+			apply(rules.addPetXp(state, tick))
+		end
 		if next(state.activePotions) then
 			apply(rules.tickPotions(state, tick))
 		end
-		played += tick
-		t = now()
 
-		-- Login calendar (once a day) and play time gifts.
-		apply(rules.claimLoginReward(state, t, random))
+		-- Quest gems once a day, after half a session (quests take some play time).
+		local day = rules.dayNumber(t)
+		if day ~= questDay and rules.dailyPlaytime(state, t) >= sessionSeconds / 2 then
+			questDay = day
+			questFraction += questGems
+			local whole = math.floor(questFraction)
+			questFraction -= whole
+			state.gems += whole
+			gems.Quests += whole
+		end
+
+		-- Login calendar (once a day), play time gifts, free wheel spins and hidden chests.
+		applyGems("Calendar", rules.claimLoginReward(state, t, random))
 		for index in config.gifts do
-			apply(rules.claimGift(state, index, t, random))
+			applyGems("Gifts", rules.claimGift(state, index, t, random))
+		end
+		if config.luckyWheel then
+			applyGems("Wheel", rules.spinWheel(state, t, random, true))
+		end
+		for _, worldId in chestWorlds do
+			if rules.isWorldUnlocked(state, worldId) then
+				applyGems("Chests", rules.openSecretChest(state, worldId, t))
+			end
 		end
 
 		-- Delivery: accept every call, deliver after deliverySeconds.
@@ -288,7 +430,7 @@ function BalanceSim.run(config: any, options: Options?): Result
 				end
 				state.pizza = pizza
 				local multiplier = rules.coinMultiplier(state) * rules.potionCoinMultiplier(state)
-				if apply(rules.deliverOrder(state, t)) then
+				if applyGems("Delivery", rules.deliverOrder(state, t)) then
 					-- The ordered toppings were collected in the income stream but not sold.
 					state.coins = math.max(0, state.coins - value * multiplier)
 				else
@@ -302,93 +444,134 @@ function BalanceSim.run(config: any, options: Options?): Result
 		spendGems()
 	end
 
-	-- Plays until `done()`; returns the minutes spent in each world (by unlock time).
-	local function playRun(done: () -> boolean): Run
-		local startedAt = played
-		local enteredAt = { [1] = played }
-		while not done() do
-			if played - startedAt > maxSeconds then
-				error(`BalanceSim: run did not finish within {maxSeconds / 60} minutes`)
-			end
-			step()
-			local count = unlockedCount()
-			local nextWorld = config.worlds[count + 1]
-			if nextWorld and not rules.hasRebirthsFor(state, nextWorld.id) then
-				nextWorld = nil -- needs more rebirths (#43): play on towards the rebirth
-			end
-			local goal = if nextWorld then nextWorld.unlockPrice else rules.rebirthOffer(state).price
-			if nextWorld and state.coins >= goal and apply(rules.unlockWorld(state, nextWorld.id)) then
-				enteredAt[count + 1] = played
-				note(`unlock {nextWorld.id}`)
-			else
-				spendCoins(goal)
-			end
-		end
-		local worlds = {}
-		for index = 1, #config.worlds do
-			local nextAt = enteredAt[index + 1] or played
-			table.insert(worlds, (nextAt - (enteredAt[index] or played)) / 60)
-		end
-		return { worlds = worlds, total = (played - startedAt) / 60 }
-	end
+	local enteredAt = { [1] = 0 }
+	local incomeAtUnlock = { [1] = 0 }
+	local rebirthsAtUnlock = { [1] = 0 }
+	local runs: { Run } = {}
+	local runStartedAt = 0
+	local highest = 1
 
-	-- Worlds the player may buy with the rebirths done so far (#43).
-	local function reachableCount(): number
-		local count = 0
-		for _, world in config.worlds do
-			if not rules.hasRebirthsFor(state, world.id) then
-				break
-			end
+	while unlockedCount() < targetWorld do
+		if played > maxSeconds then
+			error(`BalanceSim: world {targetWorld} not reached within {maxSeconds / 60} minutes`)
+		end
+		step()
+		local count = unlockedCount()
+		local nextWorld = config.worlds[count + 1]
+		if nextWorld and not rules.hasRebirthsFor(state, nextWorld.id) then
+			nextWorld = nil -- needs more rebirths (#43): play on towards the rebirth
+		end
+		local offer = rules.rebirthOffer(state)
+		local incomeBefore = income()
+		if nextWorld and state.coins >= nextWorld.unlockPrice and apply(rules.unlockWorld(state, nextWorld.id)) then
 			count += 1
+			incomeAtUnlock[count] = incomeAtUnlock[count] or incomeBefore
+			rebirthsAtUnlock[count] = rebirthsAtUnlock[count] or state.rebirths
+			highest = math.max(highest, count)
+			enteredAt[count] = enteredAt[count] or played / 60
+			note(`unlock {nextWorld.id}`)
+		elseif offer.affordable and (nextWorld == nil or nextWorld.unlockPrice > offer.price) then
+			table.insert(runs, {
+				minutes = (played - runStartedAt) / 60,
+				rebirths = state.rebirths,
+				highestWorld = count,
+				petMultiplier = rules.petMultiplier(state),
+			})
+			assert(apply(rules.rebirth(state, now())), "BalanceSim: rebirth failed")
+			runStartedAt = played
+			deliverAt = nil
+			note("rebirth")
+		else
+			spendCoins(if nextWorld then math.min(nextWorld.unlockPrice, offer.price) else offer.price)
 		end
-		return count
 	end
+	table.insert(runs, {
+		minutes = (played - runStartedAt) / 60,
+		rebirths = state.rebirths,
+		highestWorld = highest,
+		petMultiplier = rules.petMultiplier(state),
+	})
 
-	local function rebirthReady(): boolean
-		return unlockedCount() == reachableCount() and rules.rebirthOffer(state).affordable
+	local worldMinutes = {}
+	for index = 1, targetWorld - 1 do
+		worldMinutes[index] = enteredAt[index + 1] - enteredAt[index]
 	end
-
-	local first = playRun(rebirthReady)
-	assert(apply(rules.rebirth(state, now())), "BalanceSim: rebirth failed")
-	deliverAt = nil
-	local petMultiplier = rules.petMultiplier(state)
-	local afterRebirth = playRun(rebirthReady)
-	return { first = first, afterRebirth = afterRebirth, rebirthPetMultiplier = petMultiplier }
+	local gemsTotal = 0
+	for _, amount in gems do
+		gemsTotal += amount
+	end
+	return {
+		worldEnteredAt = enteredAt,
+		worldMinutes = worldMinutes,
+		incomeAtUnlock = incomeAtUnlock,
+		rebirthsAtUnlock = rebirthsAtUnlock,
+		runs = runs,
+		rebirths = state.rebirths,
+		totalMinutes = played / 60,
+		gems = gems,
+		gemsTotal = gemsTotal,
+		petMultiplier = rules.petMultiplier(state),
+	}
 end
 
--- Median minutes per world and of the total over `seeds` runs with different luck.
-function BalanceSim.median(config: any, seeds: number, options: Options?): Result
-	local runs = {}
+local function median(values: { number }): number
+	local sorted = table.clone(values)
+	table.sort(sorted)
+	local middle = (#sorted + 1) / 2
+	return (sorted[math.floor(middle)] + sorted[math.ceil(middle)]) / 2
+end
+BalanceSim.medianOf = median
+
+-- Campaigns over `seeds` different lucks, plus the median of the main numbers.
+export type Summary = {
+	campaigns: { Campaign },
+	worldEnteredAt: { number },
+	worldMinutes: { number },
+	totalMinutes: number,
+	rebirths: number,
+	gemsPerHour: number,
+}
+
+function BalanceSim.summary(config: any, seeds: number, options: Options?): Summary
+	local campaigns = {}
 	for seed = 1, seeds do
 		local opts = table.clone(options or {})
 		opts.seed = seed * 7919
-		table.insert(runs, BalanceSim.run(config, opts))
+		table.insert(campaigns, BalanceSim.campaign(config, opts))
 	end
-	local function median(values: { number }): number
-		table.sort(values)
-		local middle = (#values + 1) / 2
-		return (values[math.floor(middle)] + values[math.ceil(middle)]) / 2
-	end
-	local function medianRun(key: string): Run
-		local worlds = {}
-		for index = 1, #config.worlds do
-			local values = {}
-			for _, run in runs do
-				table.insert(values, run[key].worlds[index])
-			end
-			worlds[index] = median(values)
+	local function medianOf(get: (Campaign) -> number): number
+		local values = {}
+		for _, campaign in campaigns do
+			table.insert(values, get(campaign))
 		end
-		local totals = {}
-		for _, run in runs do
-			table.insert(totals, run[key].total)
+		return median(values)
+	end
+	local worlds = #campaigns[1].worldEnteredAt
+	local entered, perWorld = {}, {}
+	for index = 1, worlds do
+		entered[index] = medianOf(function(c)
+			return c.worldEnteredAt[index]
+		end)
+		if index < worlds then
+			perWorld[index] = medianOf(function(c)
+				return c.worldMinutes[index]
+			end)
 		end
-		return { worlds = worlds, total = median(totals) }
 	end
-	local pets = {}
-	for _, run in runs do
-		table.insert(pets, run.rebirthPetMultiplier)
-	end
-	return { first = medianRun("first"), afterRebirth = medianRun("afterRebirth"), rebirthPetMultiplier = median(pets) }
+	return {
+		campaigns = campaigns,
+		worldEnteredAt = entered,
+		worldMinutes = perWorld,
+		totalMinutes = medianOf(function(c)
+			return c.totalMinutes
+		end),
+		rebirths = medianOf(function(c)
+			return c.rebirths
+		end),
+		gemsPerHour = medianOf(function(c)
+			return c.gemsTotal / (c.totalMinutes / 60)
+		end),
+	}
 end
 
 return BalanceSim
