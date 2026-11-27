@@ -439,6 +439,28 @@ def pattern_bats(look):
     return objs
 
 
+def pattern_footprints(look):
+    """Dino Age (#86): a trail of three-toed dino footprints walking up around the egg -
+    an oval heel pad with three pointed toes each."""
+    objs = []
+    steps = [(-2.6, -0.6), (-1.9, -0.35), (-1.2, -0.1), (-0.5, 0.15), (0.2, 0.38), (0.9, 0.58),
+             (1.7, -0.45), (2.4, -0.15), (3.0, 0.2)]
+    for i, (theta, u) in enumerate(steps):
+        spin = 0.5 + (0.25 if i % 2 else -0.25)
+        bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=0.13, depth=0.05)
+        heel = bpy.context.active_object
+        heel.scale = (1, 1.25, 1)
+        bpy.ops.object.transform_apply(scale=True)
+        objs.append(on_surface(heel, theta, u, lift=-0.02, spin=spin))
+        for k in (-1, 0, 1):
+            bpy.ops.mesh.primitive_cone_add(vertices=4, radius1=0.06, radius2=0.0, depth=0.05)
+            toe = bpy.context.active_object
+            toe.scale = (1, 2.4, 1)
+            bpy.ops.object.transform_apply(scale=True)
+            objs.append(on_surface(toe, theta + k * 0.09, u + 0.17 - abs(k) * 0.03, lift=-0.02, spin=spin + k * 0.45))
+    return objs
+
+
 PATTERNS = {
     "Spots": pattern_spots,
     "Stripes": pattern_stripes,
@@ -451,6 +473,7 @@ PATTERNS = {
     "Vines": pattern_vines,
     "Zigzag": pattern_zigzag,
     "Bats": pattern_bats,
+    "Footprints": pattern_footprints,
 }
 
 
