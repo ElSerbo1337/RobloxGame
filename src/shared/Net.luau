@@ -80,6 +80,10 @@
 --                                    free: boolean)  field = index into GameConfig.luckyWheel.fields (the
 --                                    server drew it and already paid the rewards); reasons: NoFreeSpin,
 --                                    NotEnoughGems, Busy (spun again too fast)
+-- BuyMerchant     client -> server  (offerId: "Potion" | "Egg" | "Pet")  buy from the travelling merchant (#107)
+-- MerchantResult  server -> client  (ok: boolean, offerIdOrReason: string, petId: string?)  reasons:
+--                                    MerchantAway, NotOffered, SoldOut, NotEnoughGems, InventoryFull, Busy
+-- MerchantNotice  server -> client  (kind: "soon" | "arrived", minutes: number?)  merchant announcement
 --
 -- Player state for the HUD is replicated via player attributes (see PlayerStates on the server):
 -- Coins, Gems, PizzaCount, PizzaCapacity, AutoCollect, UnlockedWorlds (comma-separated world ids bought),
@@ -97,6 +101,8 @@
 -- Notify kinds of the delivery: PhoneRinging, OrderAccepted, OrderDeclined, OrderExpired, WrongToppings,
 -- PhoneCallsOff, PhoneCallsOn,
 -- NoOrder, Delivered (amount, rewardKind "Coins" | "Gems" | "Potion", potionId?).
+-- Travelling merchant (see MerchantService, #107): Merchant (JSON { active, startsAt, endsAt (server time),
+-- offers = { GameRules.MerchantOffer } (empty while away) }).
 -- Lucky wheel (see WheelService, #98): Wheel (JSON { free = free spins left today, freeTotal, bonusSeconds =
 -- play time until the bonus free spin (-1 = reached), price = gems per paid spin, fields = { { id, jackpot,
 -- chance, rewards } } with the coins for this player's income }).
@@ -171,6 +177,9 @@ local EVENTS = {
 	WorldIntro = true,
 	SpinWheel = true,
 	WheelResult = true,
+	BuyMerchant = true,
+	MerchantResult = true,
+	MerchantNotice = true,
 	ClaimQuest = true,
 	RerollQuest = true,
 	ClaimQuestBonus = true,

@@ -34,6 +34,7 @@ local TutorialService = require(script.TutorialService)
 local IslandBuilder = require(script.IslandBuilder)
 local LeaderboardService = require(script.LeaderboardService)
 local WheelService = require(script.WheelService)
+local MerchantService = require(script.MerchantService)
 local WorldMap = require(script.WorldMap)
 
 -- Create remotes before any client asks for them.
@@ -82,6 +83,9 @@ for _, name in { "SetSetting", "RedeemCode", "CodeResult" } do
 end
 Net.event("SpinWheel")
 Net.event("WheelResult")
+for _, name in { "BuyMerchant", "MerchantResult", "MerchantNotice" } do
+	Net.event(name)
+end
 for _, name in { "ClaimQuest", "RerollQuest", "ClaimQuestBonus", "QuestResult" } do
 	Net.event(name)
 end
@@ -163,6 +167,8 @@ GiftService.start()
 LoginCalendarService.start()
 -- Lucky wheel (#98): 3D wheel on the reserved spot of the spawn island, spins drawn here.
 WheelService.start(spawnIsland)
+-- Travelling merchant (#107): every 2 h for 10 min on the reserved spot of the spawn island.
+MerchantService.start(spawnIsland)
 PotionService.start()
 -- Delivery service: a phone and a delivery van in every world (same spot in each world).
 DeliveryService.start(DeliveryService.buildAll())

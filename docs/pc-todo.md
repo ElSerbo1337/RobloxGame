@@ -2185,3 +2185,16 @@ Schalter: `GameConfig.features.juice`. Alles rein clientseitig (`src/client/Juic
 - [ ] Portale: funkelnder Wirbel vor jeder Portalfläche in der Farbe der Zielwelt. Grafik „Niedrig“ → deutlich weniger Funken; Handy flüssig.
 - [ ] Teleport über das Portal-Menü → weiße Pizza dreht sich über den ganzen Bildschirm. Einstellung „Blitze“ aus → nur eine kleine, halbdurchsichtige Pizza.
 - [ ] Lieferung abgeben → Lieferwagen fährt nach vorn weg und kommt von hinten zurück auf seinen Platz (prüfen: fährt er in Fahrtrichtung der Kabine? Falls das importierte Modell gedreht ist, Richtung in `driveVan` anpassen). Abgabezone funktioniert weiter (Server unverändert).
+
+## MEGA UPDATE – #107 Reisender Händler
+
+Vorher: `lune run test` → alle grün (u. a. `tests/Merchant.spec.luau`). **Modell-Import:** `assets/models/pets/MerchantCamel.fbx` wie die anderen Pets nach `ReplicatedStorage.GameAssets.Models.Pets` importieren (Name `MerchantCamel`); ohne Import zeigt das Spiel den runden Platzhalter in Mythisch-Farbe.
+
+- [ ] Play: Ohne Besuch steht auf dem Händler-Platz (Spawn-Insel links hinten) **nichts**.
+- [ ] Admin-Panel → **„Händler jetzt erscheinen lassen“**: Stand (Theke, rot-weißes Dach, Schild „🐪 Reisender Händler“) erscheint innerhalb ~1 s auf `MerchantAnchor`, Banner „Der reisende Händler ist da!“ oben.
+- [ ] Prompt „Handeln“ am Stand → Menü mit Restzeit (zählt von 10:00 runter) und Angeboten: Mega-Trank (60 💎 statt 120), Ei der besten freigeschalteten Welt mit „10x Geheim-Chance“ (60 💎), exklusives **Händler-Kamel** (750 💎, beim Admin-Besuch immer dabei).
+- [ ] Kaufen ohne Gems → „Nicht genug Gems.“; mit Gems (Admin „Gems geben“) → Trank im Trank-Inventar, Ei-Pet bzw. Kamel im Pet-Inventar; „Noch x/y“ zählt runter, danach „Ausverkauft“ (Trank 3, Ei 3, Kamel 1 pro Besuch).
+- [ ] Nach 10 Minuten verschwindet der Stand, Kauf wird abgelehnt („Der Händler ist schon weg.“).
+- [ ] Regulärer Zeitplan: alle 2 h zu geraden UTC-Stunden (01:00, 03:00 … deutscher Winterzeit) für 10 min; 2 min vorher Banner „kommt in 2 Min.“ – auf zwei Servern gleichzeitig.
+- [ ] Englisch: Banner, Menü, Schild und Prompt auf Englisch; Handy-Layout des Menüs.
+- [ ] Schalter `features.travelingMerchant = false`: kein Stand, kein Menü, Admin-Aktion ausgeblendet.

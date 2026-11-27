@@ -34,6 +34,7 @@ local Sounds = require(script.Sounds)
 local ToppingInput = require(script.ToppingInput)
 local Tutorial = require(script.Tutorial)
 local WheelMenu = require(script.WheelMenu)
+local MerchantMenu = require(script.MerchantMenu)
 local WhatsNewMenu = require(script.WhatsNewMenu)
 local WorldAmbience = require(script.WorldAmbience)
 local WorldIntro = require(script.WorldIntro)
@@ -56,6 +57,8 @@ GiftMenu.start()
 LoginCalendarMenu.start()
 -- Lucky wheel (#98): side bar tile, menu and the spin animation of the 3D wheel.
 WheelMenu.start()
+-- Travelling merchant (#107): announcement banner and the trade menu at the stand.
+MerchantMenu.start()
 -- Daily and weekly quests (#97): side bar tile with a red dot when a quest is done.
 QuestMenu.start()
 -- Pet index and topping index (#95): side bar tile, one menu with two tabs.
