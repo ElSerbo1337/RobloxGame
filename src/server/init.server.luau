@@ -36,6 +36,7 @@ local IslandBuilder = require(script.IslandBuilder)
 local LeaderboardService = require(script.LeaderboardService)
 local WheelService = require(script.WheelService)
 local MerchantService = require(script.MerchantService)
+local WeatherService = require(script.WeatherService)
 local WorldMap = require(script.WorldMap)
 
 -- Create remotes before any client asks for them.
@@ -179,6 +180,8 @@ PortalService.start(PortalService.buildAll())
 RebirthService.start()
 -- Admin panel (#74): only GameConfig.admin.userIds, checked per action.
 AdminService.start()
+-- Weather (#105): every ~15 min for 2 min per world, +20 % toppings while it lasts.
+WeatherService.start()
 -- Settings menu (#76): volume, graphics, camera, egg animation; saved per player.
 SettingsService.start()
 -- Codes (#99): typed in the settings menu, once per player.

@@ -9,6 +9,9 @@
 export type Entry = { id: string, volume: number, looped: boolean?, search: { string } }
 
 local SoundList: { [string]: Entry } = {
+	-- Thunder rumble of the thunderstorm weather (#105); plays with or without the
+	-- lightning flash. ID still empty: the local session picks one (Creator Store).
+	Thunder = { id = "", volume = 0.6, search = { "thunder", "thunder rumble", "storm", "lightning strike" } },
 	-- Short "plop" when a topping lands on the pizza.
 	Collect = { id = "9119669065", volume = 0.5, search = { "pop", "plop", "bubble pop", "click" } },
 	-- Cash register / coins when selling at the oven.

@@ -7,6 +7,7 @@ local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local AdminPanel = require(script.AdminPanel)
 local Barriers = require(script.Barriers)
 local BonusPills = require(script.BonusPills)
+local WeatherFx = require(script.WeatherFx)
 local DeliveryMenu = require(script.DeliveryMenu)
 local EggAnimation = require(script.EggAnimation)
 local EggPreview = require(script.EggPreview)
@@ -74,6 +75,8 @@ WhatsNewMenu.start()
 DeliveryMenu.start()
 -- Active bonuses top right (#102: friends on the server).
 BonusPills.start()
+-- Weather and night (#105): particles, weather pill, lightning, lanterns, fireflies.
+task.spawn(WeatherFx.start)
 -- Settings menu (#76): side bar tile; graphics Low = fewer particles, hidden decoration.
 SettingsMenu.start()
 task.spawn(GraphicsQuality.start)

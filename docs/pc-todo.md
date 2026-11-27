@@ -2226,3 +2226,15 @@ Vorher: `lune run test` → alle grün (u. a. `tests/Profile.spec.luau`). **Badg
 - [ ] FPS am PC (Strg+Shift+F5) in jeder Welt ~60; Handy mit Grafik „Niedrig“ flüssig (Partikel auf 30 %, Kappen/Blüten/Nebenteile ausgeblendet).
 - [ ] Laternen-Gläser haben Tag `NightLight` + Attribut `NightLight` und ein ausgeschaltetes PointLight „NightLight“ (für Tag/Nacht #105) – tagsüber leuchten sie nicht.
 - [ ] Schalter `worldDeco` aus → keine Skript-Deko in allen Welten.
+
+## MEGA UPDATE – #105 Tag-Nacht-Wechsel und Wetter
+
+- [ ] **Tag-Nacht**: Im Pizzeria-Garten ein paar Minuten spielen – das Licht wandert (ein Tag = 20 min, Nacht ca. 19:30–5:30 Uhr, also rund 8 min). Nachts leuchten die Laternen (#104: Glas wird Neon, PointLight an), um den Spieler fliegen Glühwürmchen. Nacht nicht zu dunkel? Sonst `dayNight.nightStarts/nightEnds` anpassen.
+- [ ] Im **Weltraum** bleibt das feste Licht (kein Wechsel, keine Glühwürmchen); zurück in einer anderen Welt läuft die Uhr weiter.
+- [ ] **Wetter**: Admin-Panel → „Wetter jetzt starten“ → Welt wählen, in die Welt gehen: Partikel über dem Spieler (Regen/Schnee/Asche/Zuckerregen/Blasen/Sand …), oben rechts die blaue Anzeige „🌧️ Regen: +20 % Beläge (1:59)“ mit Countdown. Nach 2 min hört es auf.
+- [ ] Während des Wetters füllen sich leere Belag-Plätze sichtbar schneller nach; goldene Beläge nicht häufiger.
+- [ ] **Gewitter** (Spukschloss): Blitze (kurzer heller Bildschirm-Blitz) alle 6–14 s; mit Einstellung „Bildschirm-Blitze“ aus nur Regen (und Donner, sobald die Sound-ID da ist).
+- [ ] **Grafik Niedrig**: deutlich weniger Wetter-Partikel und Glühwürmchen (30 %), FPS am Handy ok.
+- [ ] Englisch (Attribut `Language = en`): Anzeige „Rain: +20% toppings“, Admin-Aktion „Start weather now“.
+- [ ] Schalter `weather` bzw. `dayNight` in `GameConfig.features` aus: kein Wetter/kein Bonus bzw. festes Tageslicht.
+- [ ] Sound-ID für `Thunder` in `src/shared/SoundList.luau` eintragen (Suchbegriffe dort).

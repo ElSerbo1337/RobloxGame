@@ -17,6 +17,7 @@ local GameRules = require(ReplicatedStorage.Shared.GameRules)
 local Net = require(ReplicatedStorage.Shared.Net)
 local ToppingField = require(ReplicatedStorage.Shared.ToppingField)
 local PlayerStates = require(script.Parent.PlayerStates)
+local WeatherService = require(script.Parent.WeatherService)
 local MagnetPull = require(script.Parent.MagnetPull)
 local ToppingLook = require(script.Parent.ToppingLook)
 local ModelLibrary = require(ReplicatedStorage.Shared.ModelLibrary)
@@ -138,7 +139,7 @@ function ToppingService.start(worldId: string, layout: Layout)
 				MagnetPull.fly(parts[slotId], root)
 			end
 			-- No yield between the check above and here, so no other request can take it meanwhile.
-			field:take(slotId, os.clock())
+			field:take(slotId, os.clock(), WeatherService.spawnMultiplier(worldId))
 			PlayerStates.set(player, result.state)
 			render(slotId)
 			if result.gemsEarned > 0 then

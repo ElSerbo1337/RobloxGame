@@ -1,7 +1,7 @@
 --!strict
 -- Active bonuses at the top of the right HUD column (#75 slot LayoutOrder 1, above the
 -- order card). One shared frame; each bonus gets a pill with BonusPills.pill(id, order).
--- Today: friends (#102). Weather adds its pill here later. Hidden pills take no room.
+-- Friends (#102, order 1) and weather (#105, order 2, client/WeatherFx). Hidden pills take no room.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

@@ -14,6 +14,7 @@ local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local Net = require(ReplicatedStorage.Shared.Net)
 local PlayerStates = require(script.Parent.PlayerStates)
+local WeatherService = require(script.Parent.WeatherService)
 local WorldMap = require(script.Parent.WorldMap)
 
 -- Ignore requests faster than this (held-down key, double taps).
@@ -57,6 +58,10 @@ function AdminService.start()
 			if result.ok then
 				PlayerStates.set(player, result.state)
 				print(`[Admin] {player.Name}: {shownId} ok`)
+				if actionId == "startWeather" then
+					-- Shared by everyone on the server, not part of the admin's state.
+					WeatherService.force(args[1])
+				end
 				if actionId == "resetProgress" then
 					-- Fresh start: back to the spawn of world 1 like a new player.
 					local character = player.Character

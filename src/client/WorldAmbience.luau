@@ -3,14 +3,19 @@
 -- the music of the world the local player is standing in. Data: Shared.WorldLooks.
 -- All worlds share one light (#45): switching it per island made visible islands look
 -- wrong, so crossing a bridge only switches the music. Purely cosmetic and local.
+-- Day and night (#105, switch dayNight): the shared light follows the 20-minute clock of
+-- Shared.Weather, except while the player stands in a world of dayNight.skipWorlds
+-- (space, cloud city), which keeps the fixed look of its WorldLooks entry.
 
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Features = require(ReplicatedStorage.Shared.Features)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local IslandPlan = require(ReplicatedStorage.Shared.IslandPlan)
+local Weather = require(ReplicatedStorage.Shared.Weather)
 local WorldLooks = require(ReplicatedStorage.Shared.WorldLooks)
 local Sounds = require(script.Parent.Sounds)
 
@@ -21,6 +26,28 @@ local CHECK_SECONDS = 1
 local DEFAULT_WORLD = "PizzeriaGarden"
 
 local WorldAmbience = {}
+
+local weather = Weather.new(GameConfig)
+local dayNightOn = Features.new(GameConfig.features).enabled("dayNight")
+local currentWorld = DEFAULT_WORLD
+
+-- World the local player is in (the one left while on a bridge).
+function WorldAmbience.currentWorld(): string
+	return currentWorld
+end
+
+-- Clock hour of the light the player sees right now (fixed look in skipped worlds).
+function WorldAmbience.clock(): number
+	if dayNightOn and weather.hasDayNight(currentWorld) then
+		return weather.clockAt(Workspace:GetServerTimeNow())
+	end
+	return (WorldLooks[currentWorld] or WorldLooks[DEFAULT_WORLD]).clockTime
+end
+
+-- True while lanterns glow and fireflies fly (never in skipped worlds).
+function WorldAmbience.isNight(): boolean
+	return dayNightOn and weather.hasDayNight(currentWorld) and weather.isNight(WorldAmbience.clock())
+end
 
 local function rgb(c: { number }): Color3
 	return Color3.fromRGB(c[1], c[2], c[3])
@@ -41,7 +68,8 @@ end
 -- Effects this module owns. Anything else of these kinds in Lighting (e.g. the Bloom,
 -- Atmosphere, SunRays and DepthOfField of the Studio baseplate template) would stack on
 -- top of the shared look: a second bloom with a low threshold made sand and snow glow.
-local OWN_EFFECTS = { WorldAtmosphere = true, WorldBloom = true, WorldColor = true, WorldSunRays = true }
+local OWN_EFFECTS =
+	{ WorldAtmosphere = true, WorldBloom = true, WorldColor = true, WorldSunRays = true, WeatherFlash = true }
 
 local function removeForeignEffects()
 	for _, child in Lighting:GetChildren() do
@@ -113,7 +141,11 @@ function WorldAmbience.start()
 		local worldId = (if root then worldAt(root.Position) else nil) or current or DEFAULT_WORLD
 		if worldId ~= current then
 			current = worldId
+			currentWorld = worldId
 			Sounds.playMusic((WorldLooks[worldId] or WorldLooks[DEFAULT_WORLD]).music)
+		end
+		if dayNightOn then
+			Lighting.ClockTime = WorldAmbience.clock()
 		end
 	end
 
