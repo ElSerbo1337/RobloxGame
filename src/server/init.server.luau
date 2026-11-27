@@ -15,6 +15,7 @@ local GiftService = require(script.GiftService)
 local LoginCalendarService = require(script.LoginCalendarService)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 local FriendsService = require(script.FriendsService)
+local ProfileService = require(script.ProfileService)
 local IndexService = require(script.IndexService)
 local OvenService = require(script.OvenService)
 local PetService = require(script.PetService)
@@ -188,5 +189,7 @@ QuestService.start()
 IndexService.start()
 
 FriendsService.start()
+-- Lifetime stats, badges and titles (#103): Profile/TitleId attributes, badge awards.
+ProfileService.start()
 
 print(`[{Constants.GAME_NAME}] Server gestartet`)

@@ -36,6 +36,8 @@ local MESSAGE_KINDS = {
 	WorldUnlocked = true,
 	InventoryFull = true,
 	NotEnoughGems = true,
+	-- Titles (#103)
+	TitleLocked = true,
 	-- Delivery service
 	PhoneRinging = true,
 	OrderAccepted = true,
@@ -306,6 +308,10 @@ function Hud.start(): GuiObject
 			})
 			showToast(text, COIN)
 			Sounds.play("QuestDone")
+		elseif kind == "BadgeEarned" and type(amount) == "string" then
+			-- Badges (#103): Roblox awarded a badge.
+			showToast(Lang.t("notify.badgeEarned", { badge = Lang.t(`badge.{amount}.name`) }), COIN)
+			Sounds.play("Badge")
 		elseif kind == "Gems" and amount then
 			showToast(Lang.t("notify.gems", { amount = formatNumber(amount) }), GEM)
 		elseif MESSAGE_KINDS[kind] then

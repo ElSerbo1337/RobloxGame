@@ -25,6 +25,8 @@ local features = Features.new({
 	dailyQuests = true,
 	weeklyQuests = true,
 	travelingMerchant = true,
+	stats = true,
+	titles = true,
 })
 local admin = AdminActions.new(rules, TestConfig, features)
 
@@ -102,6 +104,8 @@ describe("admin registry", function()
 			"rerollQuests",
 			"completePetIndex",
 			"simulateFriends",
+			"addStat",
+			"giveWeeklyChampion",
 			"resetProgress",
 		})
 	end)
@@ -449,6 +453,8 @@ describe("admin actions for golden toppings (#94)", function()
 			Features.new({
 				travelingMerchant = true,
 				adminPanel = true,
+				stats = true,
+				titles = true,
 				loginCalendar30 = true,
 				codes = false,
 				petLevels = true,
@@ -534,6 +540,8 @@ describe("admin Secret pet actions (#81)", function()
 			Features.new({
 				travelingMerchant = true,
 				adminPanel = true,
+				stats = true,
+				titles = true,
 				loginCalendar30 = true,
 				codes = false,
 				petLevels = true,
@@ -618,6 +626,8 @@ describe("pet variant admin actions (#80)", function()
 			Features.new({
 				travelingMerchant = true,
 				adminPanel = true,
+				stats = true,
+				titles = true,
 				loginCalendar30 = true,
 				codes = false,
 				luckyWheel = true,
@@ -679,6 +689,8 @@ describe("pet level admin action (#90)", function()
 			Features.new({
 				travelingMerchant = true,
 				adminPanel = true,
+				stats = true,
+				titles = true,
 				loginCalendar30 = true,
 				codes = false,
 				luckyWheel = true,
@@ -706,6 +718,8 @@ describe("admin lucky wheel (#98)", function()
 		Features.new({
 			travelingMerchant = true,
 			adminPanel = true,
+			stats = true,
+			titles = true,
 			loginCalendar30 = true,
 			codes = false,
 			petLevels = true,
@@ -888,5 +902,22 @@ describe("admin login calendar (#101)", function()
 
 		expect(table.find(ids(offAdmin.list()), "setCalendarDay")).toBeNil()
 		expect(offAdmin.run(ADMIN, player(), "setCalendarDay", { 7 }, ctx).reason).toBe("FeatureOff")
+	end)
+end)
+
+describe("profile admin actions (#103)", function()
+	it("addStat raises a lifetime counter", function()
+		local result = admin.run(ADMIN, player(), "addStat", { "EggsOpened", 25 }, ctx)
+		expect(result.ok).toBe(true)
+		expect(result.state.eggsOpened).toBe(25)
+		local coins = admin.run(ADMIN, player(), "addStat", { "CoinsEarned", 1000 }, ctx)
+		expect(coins.state.totalCoinsEarned).toBe(1000)
+		expect(admin.run(ADMIN, player(), "addStat", { "Gems", 1 }, ctx).reason).toBe("InvalidArgument")
+	end)
+
+	it("giveWeeklyChampion grants the title for the chosen days", function()
+		local result = admin.run(ADMIN, player(), "giveWeeklyChampion", { 7 }, ctx)
+		expect(result.ok).toBe(true)
+		expect(result.state.weeklyChampionUntil).toBe(NOW + 7 * 86400)
 	end)
 end)

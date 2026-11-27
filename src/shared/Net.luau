@@ -121,6 +121,9 @@
 -- Index (see IndexService, #95): Index (JSON { pets = rules.petIndex, toppings = rules.toppingIndex,
 --   bonus = rules.indexBonus, worldBonus }); Notify("IndexWorldComplete", worldId) when a world's
 --   pet index becomes complete.
+-- Profile (see ProfileService, #103): SetTitle  client -> server  (titleId: string, "" =
+--   automatic); attributes Profile (JSON { stats, badges, titles, title, selected }) and
+--   TitleId on every player; Notify("BadgeEarned", badgeId).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -184,6 +187,7 @@ local EVENTS = {
 	RerollQuest = true,
 	ClaimQuestBonus = true,
 	QuestResult = true,
+	SetTitle = true,
 }
 
 local Net = {}

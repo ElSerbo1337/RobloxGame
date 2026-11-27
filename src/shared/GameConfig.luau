@@ -77,6 +77,44 @@ local GameConfig = {
 
 	-- Admin panel (#74): only these Roblox user ids see it and may run its actions
 	-- (checked on the server for every action, in Studio and live).
+	-- Badges (#103): created by the user in the Creator Hub (texts and icon ideas in
+	-- docs/store/badges.md); badgeId 0 = placeholder, skipped without error until filled
+	-- in. Awarded by the server when reached and retroactively on join. kind: see
+	-- rules.badgeReached. Switch: features.badges.
+	badges = {
+		{ id = "Welcome", badgeId = 0, kind = "Welcome" },
+		{ id = "Coins1K", badgeId = 0, kind = "CoinsEarned", goal = 1e3 },
+		{ id = "Coins1M", badgeId = 0, kind = "CoinsEarned", goal = 1e6 },
+		{ id = "Coins1B", badgeId = 0, kind = "CoinsEarned", goal = 1e9 },
+		{ id = "Coins1T", badgeId = 0, kind = "CoinsEarned", goal = 1e12 },
+		{ id = "Toppings100", badgeId = 0, kind = "ToppingsCollected", goal = 100 },
+		{ id = "Toppings10K", badgeId = 0, kind = "ToppingsCollected", goal = 1e4 },
+		{ id = "Toppings1M", badgeId = 0, kind = "ToppingsCollected", goal = 1e6 },
+		{ id = "Eggs10", badgeId = 0, kind = "EggsOpened", goal = 10 },
+		{ id = "Eggs100", badgeId = 0, kind = "EggsOpened", goal = 100 },
+		{ id = "Eggs1K", badgeId = 0, kind = "EggsOpened", goal = 1e3 },
+		{ id = "Eggs10K", badgeId = 0, kind = "EggsOpened", goal = 1e4 },
+		{ id = "FirstLegendary", badgeId = 0, kind = "Rarity", rarity = "Legendary" },
+		{ id = "FirstMythic", badgeId = 0, kind = "Rarity", rarity = "Mythic" },
+		{ id = "FirstShiny", badgeId = 0, kind = "Shiny" },
+		{ id = "FirstSecret", badgeId = 0, kind = "Rarity", rarity = "Secret" },
+	},
+
+	-- Titles over the head (#103), in rank order: world = highest world ever reached
+	-- (index), rebirths = rebirths done, weekly = Weekly Champion (granted by #109).
+	-- Without a choice the last unlocked one is shown. Texts: title.<id>. Switch:
+	-- features.titles.
+	titles = {
+		{ id = "Newbie" },
+		{ id = "Collector", world = 3 },
+		{ id = "OvenPro", world = 5 },
+		{ id = "Chef", rebirths = 1 },
+		{ id = "MasterChef", world = 10 },
+		{ id = "Legend", world = 15 },
+		{ id = "PizzaGod", rebirths = 10 },
+		{ id = "WeeklyChampion", weekly = true },
+	},
+
 	admin = {
 		userIds = { 372358501 },
 	},

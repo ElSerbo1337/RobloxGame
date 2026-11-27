@@ -510,6 +510,34 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Lifetime stats (#103): raises a lifetime counter (badges are then awarded at once).
+		id = "addStat",
+		feature = "stats",
+		params = {
+			{ name = "stat", kind = "choice", choices = { "CoinsEarned", "ToppingsCollected", "EggsOpened" } },
+			{ name = "amount", kind = "integer", min = 0, max = MAX_AMOUNT, default = 1000 },
+		},
+		run = function(_env, state, args)
+			local field = ({
+				CoinsEarned = "totalCoinsEarned",
+				ToppingsCollected = "toppingsCollected",
+				EggsOpened = "eggsOpened",
+			})[args[1]]
+			local newState = table.clone(state)
+			newState[field] = (state[field] or 0) + args[2]
+			return { ok = true, state = newState }
+		end,
+	},
+	{
+		-- Titles (#103): the admin holds the "Weekly Champion" title for this many days.
+		id = "giveWeeklyChampion",
+		feature = "titles",
+		params = { { name = "days", kind = "integer", min = 1, max = 14, default = 7 } },
+		run = function(env, state, args, ctx)
+			return env.rules.grantWeeklyChampion(state, ctx.now + args[1] * 86400)
+		end,
+	},
+	{
 		id = "resetProgress",
 		confirm = true,
 		params = {},

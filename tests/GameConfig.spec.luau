@@ -1770,3 +1770,43 @@ describe("feature hints (#113)", function()
 		end
 	end)
 end)
+
+describe("badges and titles (#103)", function()
+	local rules = GameRules.new(GameConfig)
+
+	it("has the 16 badges with unique ids, known kinds and texts in both languages", function()
+		expect(#GameConfig.badges).toBe(16)
+		local seen = {}
+		for _, badge in GameConfig.badges do
+			expect(seen[badge.id]).toBe(nil)
+			seen[badge.id] = true
+			expect(type(badge.badgeId)).toBe("number")
+			for _, key in { `badge.{badge.id}.name`, `badge.{badge.id}.desc` } do
+				expect(Texts.strings[key].de ~= nil and Texts.strings[key].en ~= nil).toBe(true)
+			end
+			if badge.kind == "Rarity" then
+				expect(GameConfig.rarities[badge.rarity] ~= nil).toBe(true)
+			end
+		end
+		-- A fresh player reaches Welcome only.
+		local reached = 0
+		for _, entry in rules.badges(rules.newPlayerState()) do
+			reached += if entry.reached then 1 else 0
+		end
+		expect(reached).toBe(1)
+	end)
+
+	it("has the 7 progress titles plus Weekly Champion, with texts, for worlds 1-15", function()
+		expect(#GameConfig.titles).toBe(8)
+		for _, title in GameConfig.titles do
+			expect(Texts.strings[`title.{title.id}`] ~= nil).toBe(true)
+			expect(Texts.strings[`title.{title.id}.how`] ~= nil).toBe(true)
+			if title.world then
+				-- Worlds 12-15 come with their own tickets (#86-#89).
+				expect(title.world >= 1 and title.world <= 15).toBe(true)
+			end
+		end
+		expect(GameConfig.titles[#GameConfig.titles].id).toBe("WeeklyChampion")
+		expect(rules.activeTitle(rules.newPlayerState(), 0)).toBe("Newbie")
+	end)
+end)

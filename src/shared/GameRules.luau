@@ -141,7 +141,36 @@ export type PlayerState = {
 	-- Analytics (#114): keys of the once-only events already logged (see
 	-- rules.analyticsEvents), so a "first" event never fires twice. Kept on rebirth.
 	analyticsLogged: { [string]: boolean },
+	-- Lifetime stats (#103, kept on rebirth): toppings collected, eggs opened, highest
+	-- world index ever unlocked (unlockedWorlds resets on rebirth).
+	toppingsCollected: number,
+	eggsOpened: number,
+	highestWorld: number,
+	-- Badges (#103): badge id (config.badges[].id) -> true once awarded by Roblox.
+	badgesAwarded: { [string]: boolean },
+	-- Titles (#103): chosen title id ("" = best unlocked one) and the Unix time until which
+	-- the "WeeklyChampion" title is held (#109 grants it).
+	selectedTitle: string,
+	weeklyChampionUntil: number,
 }
+
+-- Lifetime stats (#103) for the profile.
+export type LifetimeStats = {
+	coinsEarned: number,
+	toppingsCollected: number,
+	eggsOpened: number,
+	playtimeSeconds: number,
+	rebirths: number,
+	highestWorld: number,
+	petIndexFound: number,
+	petIndexTotal: number,
+	toppingIndexFound: number,
+	toppingIndexTotal: number,
+}
+
+export type BadgeEntry = { id: string, reached: boolean, awarded: boolean, progress: number?, goal: number? }
+
+export type TitleEntry = { id: string, unlocked: boolean, active: boolean }
 
 -- One quest (#97): kind (config.quests.kinds id), goal and progress (PlayMinutes counts
 -- minutes, may be fractional), the reward drawn when it was made, claimed or not.
@@ -772,6 +801,12 @@ function GameRules.new(config: any)
 			toppingsFound = {},
 			goldenToppingsFound = {},
 			analyticsLogged = {},
+			toppingsCollected = 0,
+			eggsOpened = 0,
+			highestWorld = 1,
+			badgesAwarded = {},
+			selectedTitle = "",
+			weeklyChampionUntil = 0,
 		}
 	end
 
@@ -896,6 +931,7 @@ function GameRules.new(config: any)
 		newState.coins = state.coins - (world.unlockPrice or 0)
 		newState.unlockedWorlds = table.clone(state.unlockedWorlds)
 		table.insert(newState.unlockedWorlds, worldId)
+		newState.highestWorld = math.max(state.highestWorld or 1, index)
 		addQuestProgress(newState, "UnlockWorld", 1)
 		return { ok = true, state = newState }
 	end
@@ -1327,6 +1363,7 @@ function GameRules.new(config: any)
 			newState.pizzaGolden[toppingId] = (newState.pizzaGolden[toppingId] or 0) + 1
 		end
 		recordTopping(newState, toppingId, golden)
+		newState.toppingsCollected = (state.toppingsCollected or 0) + 1
 		advanceTutorial(newState, "CollectToppings")
 		addQuestProgress(newState, "CollectToppings", 1)
 		if golden then
@@ -2100,6 +2137,7 @@ function GameRules.new(config: any)
 			end
 			table.insert(drawn, pet)
 		end
+		newState.eggsOpened = (state.eggsOpened or 0) + count
 		advanceTutorial(newState, "OpenEgg")
 		addQuestProgress(newState, "OpenEggs", count)
 		return { ok = true, state = newState, pets = drawn, autoDeleted = autoDeleted }
@@ -4365,6 +4403,224 @@ function GameRules.new(config: any)
 			logged[key] = true
 		end
 		newState.analyticsLogged = logged
+		return { ok = true, state = newState }
+	end
+
+	-- Lifetime stats, badges and titles (#103) ----------------------------------------
+
+	-- Highest world (index in config.worlds) the player ever had: the stored maximum or a
+	-- world unlocked right now (admin unlocks, saves from before #103).
+	function rules.highestWorld(state: PlayerState): number
+		local highest = math.max(1, state.highestWorld or 1)
+		for index, world in config.worlds do
+			if index > highest and rules.isWorldUnlocked(state, world.id) then
+				highest = index
+			end
+		end
+		return highest
+	end
+
+	-- Lifetime counters for the profile (#103). Index numbers from #95.
+	function rules.lifetimeStats(state: PlayerState): LifetimeStats
+		local pets = rules.petIndex(state)
+		local toppings = rules.toppingIndex(state)
+		return {
+			coinsEarned = state.totalCoinsEarned or 0,
+			toppingsCollected = state.toppingsCollected or 0,
+			eggsOpened = state.eggsOpened or 0,
+			playtimeSeconds = state.totalPlaytimeSeconds or 0,
+			rebirths = state.rebirths or 0,
+			highestWorld = rules.highestWorld(state),
+			petIndexFound = pets.found,
+			petIndexTotal = pets.total,
+			toppingIndexFound = toppings.found,
+			toppingIndexTotal = toppings.total,
+		}
+	end
+
+	-- Whether the player ever owned a pet of this rarity (inventory or "ever owned").
+	local function everOwnedRarity(state: PlayerState, rarity: string): boolean
+		for petId in state.petsOwnedEver or {} do
+			local pet = config.pets[petId]
+			if pet and pet.rarity == rarity then
+				return true
+			end
+		end
+		for _, pet in state.pets do
+			local def = config.pets[pet.petId]
+			if def and def.rarity == rarity then
+				return true
+			end
+		end
+		return false
+	end
+
+	local function everShiny(state: PlayerState): boolean
+		for _, stars in state.petIndexStars or {} do
+			if stars.Shiny then
+				return true
+			end
+		end
+		for _, pet in state.pets do
+			if pet.shiny then
+				return true
+			end
+		end
+		return false
+	end
+
+	local BADGE_STATS = {
+		CoinsEarned = "coinsEarned",
+		ToppingsCollected = "toppingsCollected",
+		EggsOpened = "eggsOpened",
+	}
+
+	-- Badge condition (pure, #103). kind: "Welcome" (always) | "CoinsEarned" |
+	-- "ToppingsCollected" | "EggsOpened" (counter >= goal) | "Rarity" (ever owned a pet of
+	-- `rarity`) | "Shiny" (ever owned a Shiny pet). Unknown kinds are never reached.
+	function rules.badgeReached(state: PlayerState, badge: any): boolean
+		local kind = badge.kind
+		if kind == "Welcome" then
+			return true
+		elseif BADGE_STATS[kind] then
+			return rules.lifetimeStatsLight(state)[BADGE_STATS[kind]] >= (badge.goal or math.huge)
+		elseif kind == "Rarity" then
+			return badge.rarity ~= nil and everOwnedRarity(state, badge.rarity)
+		elseif kind == "Shiny" then
+			return everShiny(state)
+		end
+		return false
+	end
+
+	-- All badges of config.badges in order, with reached / awarded and (for counter
+	-- badges) the counter value and goal.
+	function rules.badges(state: PlayerState): { BadgeEntry }
+		local entries = {}
+		local stats = rules.lifetimeStatsLight(state)
+		for _, badge in config.badges or {} do
+			local statKey = BADGE_STATS[badge.kind]
+			table.insert(entries, {
+				id = badge.id,
+				reached = rules.badgeReached(state, badge),
+				awarded = (state.badgesAwarded or {})[badge.id] == true,
+				progress = if statKey then stats[statKey] else nil,
+				goal = if statKey then badge.goal else nil,
+			})
+		end
+		return entries
+	end
+
+	-- Counters the badges use (cheap, without the index).
+	function rules.lifetimeStatsLight(state: PlayerState): { [string]: number }
+		return {
+			coinsEarned = state.totalCoinsEarned or 0,
+			toppingsCollected = state.toppingsCollected or 0,
+			eggsOpened = state.eggsOpened or 0,
+		}
+	end
+
+	-- Badges reached but not yet awarded that have a real Roblox badge id (a missing /
+	-- 0 id is skipped without error, so it is awarded once the id is filled in).
+	function rules.badgesToAward(state: PlayerState): { { id: string, badgeId: number } }
+		local list = {}
+		local awarded = state.badgesAwarded or {}
+		for _, badge in config.badges or {} do
+			local badgeId = tonumber(badge.badgeId) or 0
+			if badgeId > 0 and not awarded[badge.id] and rules.badgeReached(state, badge) then
+				table.insert(list, { id = badge.id, badgeId = badgeId })
+			end
+		end
+		return list
+	end
+
+	-- Stores that Roblox awarded (or the player already owns) this badge.
+	function rules.markBadgeAwarded(state: PlayerState, badgeId: string): Result
+		local known = false
+		for _, badge in config.badges or {} do
+			known = known or badge.id == badgeId
+		end
+		if not known then
+			return fail(state, "UnknownBadge")
+		end
+		local newState = table.clone(state)
+		newState.badgesAwarded = table.clone(state.badgesAwarded or {})
+		newState.badgesAwarded[badgeId] = true
+		return { ok = true, state = newState }
+	end
+
+	-- Title condition (#103): `world` (highest world >= n), `rebirths` (>= n), `weekly`
+	-- (Weekly Champion held at `now`). A title without a condition is always unlocked.
+	local function titleUnlocked(state: PlayerState, title: any, now: number): boolean
+		if title.weekly then
+			return now < (state.weeklyChampionUntil or 0)
+		end
+		if title.world and rules.highestWorld(state) < title.world then
+			return false
+		end
+		if title.rebirths and (state.rebirths or 0) < title.rebirths then
+			return false
+		end
+		return true
+	end
+
+	-- All titles of config.titles in order with unlocked / selected.
+	function rules.titles(state: PlayerState, now: number): { TitleEntry }
+		local active = rules.activeTitle(state, now)
+		local entries = {}
+		for _, title in config.titles or {} do
+			table.insert(entries, {
+				id = title.id,
+				unlocked = titleUnlocked(state, title, now),
+				active = title.id == active,
+			})
+		end
+		return entries
+	end
+
+	-- The title shown over the head: the chosen one while unlocked, else the last unlocked
+	-- title in config order (so the Weekly Champion, listed last, shows while held).
+	function rules.activeTitle(state: PlayerState, now: number): string?
+		local best = nil
+		for _, title in config.titles or {} do
+			if titleUnlocked(state, title, now) then
+				if title.id == state.selectedTitle then
+					return title.id
+				end
+				best = title.id
+			end
+		end
+		return best
+	end
+
+	-- Chooses the shown title ("" = automatic, the best unlocked one).
+	function rules.setTitle(state: PlayerState, titleId: any, now: number): Result
+		if titleId ~= "" then
+			local found = nil
+			for _, title in config.titles or {} do
+				if title.id == titleId then
+					found = title
+				end
+			end
+			if found == nil then
+				return fail(state, "UnknownTitle")
+			end
+			if not titleUnlocked(state, found, now) then
+				return fail(state, "TitleLocked")
+			end
+		end
+		local newState = table.clone(state)
+		newState.selectedTitle = titleId
+		return { ok = true, state = newState }
+	end
+
+	-- Interface for the weekly leaderboards (#109): the player holds the Weekly Champion
+	-- title until `untilTime` (Unix seconds; a later grant never shortens it).
+	function rules.grantWeeklyChampion(state: PlayerState, untilTime: number): Result
+		if not (untilTime == untilTime and untilTime < math.huge) then
+			return fail(state, "InvalidTime")
+		end
+		local newState = table.clone(state)
+		newState.weeklyChampionUntil = math.max(state.weeklyChampionUntil or 0, untilTime)
 		return { ok = true, state = newState }
 	end
 
