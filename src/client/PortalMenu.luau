@@ -24,6 +24,7 @@ local WorldPreview = require(ReplicatedStorage.Shared.WorldPreview)
 local Lang = require(script.Parent.Lang)
 local SideBar = require(script.Parent.SideBar)
 local TileIcon = require(script.Parent.TileIcon)
+local Juice = require(script.Parent.Juice)
 local UiKit = require(script.Parent.UiKit)
 
 type PortalEntry = GameRules.PortalEntry
@@ -373,6 +374,7 @@ function PortalMenu.start()
 				row.Activated:Connect(function()
 					UiKit.pop(row)
 					teleport:FireServer(entry.worldId)
+					Juice.teleportSwirl()
 				end)
 			else
 				-- Greyed out / current world: not selectable.
@@ -410,6 +412,7 @@ function PortalMenu.start()
 				local worldId = entry.worldId
 				card = buildCard(list, world, entry.index or 0, function()
 					teleport:FireServer(worldId)
+					Juice.teleportSwirl()
 				end)
 				cards[entry.worldId] = card
 			end

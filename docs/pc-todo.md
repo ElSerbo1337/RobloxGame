@@ -2175,3 +2175,13 @@ Musik nicht doppelt vergeben (jede Welt eigene Musik), Lautstärke steht schon (
 - [ ] Glücksrad drehen → Klicks beim Drehen, Jingle am Ende. Quest fertig → `QuestDone`. Pet-Level-Toast → `PetLevelUp`. Goldener Belag → `GoldenTopping`.
 - [ ] Per Admin-Panel in Welt 8–11 teleportieren → jede Welt hat ihre Musik.
 - [ ] Einstellungen: Musik-/Effekt-Regler und Stumm wirken sofort auf alle neuen Sounds.
+
+## MEGA UPDATE – #110 Juice (Münzen, Zahlen, Portale, Teleport, Lieferwagen)
+
+Schalter: `GameConfig.features.juice`. Alles rein clientseitig (`src/client/Juice.luau`, Farbstufen in `src/shared/SaleNumbers.luau`).
+
+- [ ] Pizza verkaufen → Münzen fliegen in den Zähler (wie bisher), dazu große Zahl „+123“ in der Bildschirmmitte. Normale Verkäufe weiß; ein deutlich größerer Verkauf als die letzten (≥ 1,5× / 3× / 6× Schnitt) gelb / orange / pink und größer.
+- [ ] Admin-Panel: Mythisches bzw. Geheimes Pet per Ei mit hoher Chance schlüpfen lassen → Kamera wackelt kurz beim Aufplatzen. Einstellungen „Kamera-Wackeln“ aus → kein Wackeln.
+- [ ] Portale: funkelnder Wirbel vor jeder Portalfläche in der Farbe der Zielwelt. Grafik „Niedrig“ → deutlich weniger Funken; Handy flüssig.
+- [ ] Teleport über das Portal-Menü → weiße Pizza dreht sich über den ganzen Bildschirm. Einstellung „Blitze“ aus → nur eine kleine, halbdurchsichtige Pizza.
+- [ ] Lieferung abgeben → Lieferwagen fährt nach vorn weg und kommt von hinten zurück auf seinen Platz (prüfen: fährt er in Fahrtrichtung der Kabine? Falls das importierte Modell gedreht ist, Richtung in `driveVan` anpassen). Abgabezone funktioniert weiter (Server unverändert).

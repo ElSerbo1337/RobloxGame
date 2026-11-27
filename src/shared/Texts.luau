@@ -360,6 +360,8 @@ Texts.strings = {
 	["egg.secretHatched"] = { de = "🤫 GEHEIM!", en = "🤫 SECRET!" },
 	-- Shiny pets (#80): hatch card title.
 	["egg.shinyHatched"] = { de = "✨ SHINY!", en = "✨ SHINY!" },
+	-- Juice (#110): big coloured number when a pizza is sold.
+	["juice.saleNumber"] = { de = "+{amount}", en = "+{amount}" },
 	["announce.secret"] = {
 		de = "🌟 {player} hat {pet} geschlüpft! (Geheim)",
 		en = "🌟 {player} hatched {pet}! (Secret)",

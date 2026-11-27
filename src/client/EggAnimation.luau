@@ -23,6 +23,7 @@ local Lang = require(script.Parent.Lang)
 local Sounds = require(script.Parent.Sounds)
 local PetIcon = require(script.Parent.PetIcon)
 local Settings = require(script.Parent.Settings)
+local Juice = require(script.Parent.Juice)
 local UiKit = require(script.Parent.UiKit)
 
 local CARD_WIDTH = 300
@@ -354,6 +355,10 @@ function EggAnimation.start()
 		cards.Visible = true
 		UiKit.pop(cards, 0.2)
 		tween(flash, if secret then 1.2 else 0.5, { BackgroundTransparency = 1 })
+		-- Mythic and Secret shake the camera (#110; off with the camera-shake setting).
+		if topRarity.order >= GameConfig.rarities.Mythic.order then
+			Juice.shakeCamera(if secret then 0.8 else 0.5, if secret then 0.6 else 0.35)
+		end
 		-- Legendary and rarer: tint the screen and turn light rays behind the cards.
 		if effects and topRarity.order >= RARE_ORDER then
 			backdrop.BackgroundColor3 = rareColor:Lerp(BACKDROP_COLOR, 0.35)
