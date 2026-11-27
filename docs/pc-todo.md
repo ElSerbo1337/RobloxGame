@@ -2350,7 +2350,7 @@ Vorher: `lune run test` → alle grün (u. a. `tests/Profile.spec.luau`). **Badg
 ## MEGA UPDATE – #100 Geheime Truhen (Welt 3, 6, 9, 12, 15)
 
 - [ ] Truhen stehen versteckt: Welt 3 Strand hinter dem Leuchtturm, Welt 6 Candy-Land hinter dem Kuchen (beide linke Terrasse), Welt 9 hinter dem Tempel, Welt 12 und 15 auf der rechten Terrasse. Nicht im Weg, vom Hauptweg aus verdeckt? Holzkiste mit Goldbändern sieht ok aus und steht nicht in der Luft/im Boden?
-- [ ] Admin-Panel: Welten per Rebirths/Freischalten öffnen, zur Truhe laufen: ab ~30 Studs funkelt sie, Prompt „Öffnen“ (en: „Open“), Toast „Geheime Truhe gefunden! +10 Gems“, Gem-Sound, Gems +10.
+- [ ] Admin-Panel: Welten per Rebirths/Freischalten öffnen, zur Truhe laufen: ab ~30 Studs funkelt sie, Prompt „Öffnen“ (en: „Open“), Toast „Geheime Truhe gefunden! +5 Gems“, Gem-Sound, Gems +5 (seit #108 5 statt 10).
 - [ ] Danach: kein Funkeln, kein Prompt mehr an dieser Truhe; andere Truhen gehen weiter. Admin „Tage vorspulen“ (1) → nach max. 1 Minute funkelt sie wieder und lässt sich öffnen.
 - [ ] Quest „Öffne geheime Truhe(n)“ (ab Welt 3) zählt beim Öffnen hoch.
 - [ ] Grafik „Niedrig“: Funkeln deutlich schwächer, aber sichtbar.
@@ -2364,3 +2364,14 @@ Nicht in Studio, sondern im Creator Hub – erst beim öffentlichen Start des Up
 - [ ] Titel und Beschreibung (de) unter Basic Info eintragen, die englische Fassung unter Localization → Englisch → Experience Information.
 - [ ] Vor dem Eintragen prüfen, ob nach #108 noch alles stimmt (die Texte nennen absichtlich keine Preise/Chancen, nur „8 neue Welten / 15 Welten“).
 - [ ] Spielseite im Browser (Desktop + Handy-App) ansehen: Icon, Thumbnails, Emojis korrekt dargestellt.
+
+## MEGA UPDATE – #108 Balancing-Umbau auf ~40 Stunden
+
+Nur Zahlen geändert (Tabellen in `docs/balancing.md`). Neuer DataStore, also frisch starten. Mit Stoppuhr prüfen, ob sich das Modell (2 Runden pro Minute) echt anfühlt:
+- [ ] **Schneller Einstieg:** neuer Spieler (ohne Admin) – Salami 2, Pilz 4, Mozzarella 10 Münzen; nach ~3 Runden reicht es für das erste Pizza-Platz-Upgrade (15). Bauernhof (75) nach ~3–6 Minuten, Strand (690) nach ~13 Minuten, Eisberge (12.000) nach ~30 Minuten.
+- [ ] **Erster Rebirth** (300.000) nach etwa 70–90 Minuten in Welt 4; Rebirth-Menü zeigt ×1 → ×1,25 und „Öffnet: Vulkan, Süßigkeitenland“. Danach Welt 1–4 in ~10 Minuten wieder kaufen, Vulkan kostet 150.000.
+- [ ] Admin-Panel → **Rebirths setzen** (z. B. 10, 20, 29) und **Münzen geben** (Rebirth-Preis = 300.000 × 2^Rebirths, z. B. 29 → 161 Bio): Preise im Rebirth-Menü, an den Toren und im Portal-Menü passen zur Tabelle (Welt 15: 260 Bio, ab 10 Rebirths), große Zahlen lesbar („322 Bio“, ab 10^15 „Brd“/„Qa“).
+- [ ] **Pets:** Garten-Ei bestes Pet +37 %, Stein-Ofen-Ei +55 %, Göttliches Ei bis +1251 %; Pet-Plätze im Welt-1-Shop 40 / 120 Gems, neue Stufen 9 / 10 / 11 Plätze in den Shops von Welt 10 / 12 / 15 (750 / 950 / 1.200 Gems); Inventar startet bei 75, neue Stufen 600 / 750 / 900 (Shop Welt 10 / 12 / 15).
+- [ ] **Gems an einem Tag** (Admin „Tage vorspulen“ zum Testen): Geschenke 3 / 4 / Trank / Trank / 4 / 5 + Trank, Kalender-Tag 1–7: 3 / 6 / Trank / Trank / 10 / 2 Tränke / 35 + 3 Tränke, Truhen +5, Lieferaufträge geben seltener Gems (7 %) und öfter Tränke.
+- [ ] Tränke im Shop: Shiny 35, Gold 35, Mega 90 Gems; Händler-Mega 45.
+- [ ] Gefühl: lohnen sich Eier in den neuen Welten (Preis ≈ ein paar Minuten Einkommen)? Durchläufe 45–90 Minuten realistisch? Abweichungen notieren und `docs/balancing.md` → „Neu rechnen“ folgen.
