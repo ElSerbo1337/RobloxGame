@@ -306,6 +306,7 @@ return {
 				{ topping = "Mozzarella", weight = 1 },
 			},
 			eggs = { "TestEgg" },
+			weather = "Rain",
 		},
 		{
 			id = "Farm",
@@ -325,4 +326,8 @@ return {
 		},
 	},
 	friendsBonus = { perFriend = 0.1, max = 0.3 },
+	-- Weather and day-night (#105).
+	weather = { periodSeconds = 900, durationSeconds = 120, spawnBonus = 0.2 },
+	weathers = { Rain = { displayName = "Regen", displayNameEn = "Rain", particles = { { 1, 2, 3 } } } },
+	dayNight = { cycleSeconds = 1200, nightStarts = 19.5, nightEnds = 5.5, skipWorlds = { Beach = true } },
 }

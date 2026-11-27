@@ -17,6 +17,11 @@ Texts.strings = {
 	-- HUD
 	["hud.pizza"] = { de = "Pizza {count}/{capacity}", en = "Pizza {count}/{capacity}" },
 	["hud.pizzaFull"] = { de = "Pizza VOLL {count}/{capacity}", en = "Pizza FULL {count}/{capacity}" },
+	-- Weather (#105): pill in the active bonuses while the world's weather lasts.
+	["hud.weatherBonus"] = {
+		de = "{icon} {weather}: +{percent} % Beläge ({time})",
+		en = "{icon} {weather}: +{percent}% toppings ({time})",
+	},
 	["hud.friendsBonus"] = {
 		de = "👥 {count} Freunde: +{percent} % Münzen",
 		en = "👥 {count} friends: +{percent}% coins",
@@ -90,6 +95,7 @@ Texts.strings = {
 		de = "Gratis-Drehungen zurücksetzen",
 		en = "Reset free spins",
 	},
+	["admin.action.startWeather"] = { de = "Wetter jetzt starten", en = "Start weather now" },
 	["admin.action.spawnMerchant"] = {
 		de = "Händler jetzt erscheinen lassen",
 		en = "Make the merchant appear now",

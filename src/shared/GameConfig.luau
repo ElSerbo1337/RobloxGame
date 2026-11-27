@@ -2379,24 +2379,108 @@ local GameConfig = {
 		},
 	},
 
-	-- Weather kinds (#72): names and look only. The rules (every ~15 min for 2 min per
-	-- world, +20 % toppings) and the effects come with #105; worlds pick theirs with
-	-- `weather = "<id>"`. `particles`: colours (RGB) of the weather particles.
+	-- Weather (#105, switch features.weather): every world with a `weather` gets it every
+	-- `periodSeconds` for `durationSeconds`, from the clock (Shared.Weather: each world has
+	-- its own offset, so not all worlds rain at once). While it lasts, empty topping slots
+	-- refill with +`spawnBonus` speed (+20 % toppings); the golden chance stays untouched.
+	weather = { periodSeconds = 900, durationSeconds = 120, spawnBonus = 0.2 },
+
+	-- Day and night (#105, switch features.dayNight): the shared light cycles every
+	-- `cycleSeconds` (from the clock, the same on all servers). Night runs from
+	-- `nightStarts` to `nightEnds` (Lighting clock hours): lanterns (tag NightLight, #104)
+	-- light up and fireflies come out. Players standing in `skipWorlds` keep the fixed look.
+	dayNight = {
+		cycleSeconds = 1200,
+		nightStarts = 19.5,
+		nightEnds = 5.5,
+		-- World 13 (cloud city) is not built yet; its id is reserved here.
+		skipWorlds = { Space = true, CloudCity = true },
+	},
+
+	-- Weather kinds (#72, #105); worlds pick theirs with `weather = "<id>"`. `particles`:
+	-- colours (RGB) of the weather particles; `style`: how they move (client/WeatherFx):
+	-- "rain" (fast streaks), "snow" (slow flakes), "dust" (drifting sideways),
+	-- "bubbles" (rising), "sparkle" (twinkling in the air).
+	-- Worlds 12-15 are not built yet: AshRain, CrystalGlitter, RainbowSky and CheeseRain
+	-- wait here for their world entries.
 	weathers = {
+		Rain = {
+			displayName = "Regen",
+			displayNameEn = "Rain",
+			particles = { { 175, 200, 225 }, { 215, 230, 245 } },
+			style = "rain",
+		},
+		Snow = {
+			displayName = "Schneefall",
+			displayNameEn = "Snowfall",
+			particles = { { 255, 255, 255 }, { 220, 235, 255 } },
+			style = "snow",
+		},
+		AshCloud = {
+			displayName = "Aschewolke",
+			displayNameEn = "Ash Cloud",
+			particles = { { 90, 85, 85 }, { 150, 140, 135 } },
+			style = "dust",
+		},
+		CandyRain = {
+			displayName = "Zuckerregen",
+			displayNameEn = "Candy Rain",
+			particles = { { 255, 120, 190 }, { 120, 220, 255 }, { 255, 230, 90 } },
+			style = "snow",
+		},
+		SummerRain = {
+			displayName = "Sommerregen",
+			displayNameEn = "Summer Rain",
+			particles = { { 190, 225, 240 }, { 240, 250, 255 } },
+			style = "rain",
+		},
+		MeteorShower = {
+			displayName = "Sternschnuppen",
+			displayNameEn = "Meteor Shower",
+			particles = { { 255, 240, 180 }, { 190, 160, 255 } },
+			style = "rain",
+		},
+		AshRain = {
+			displayName = "Ascheregen",
+			displayNameEn = "Ash Rain",
+			particles = { { 70, 65, 65 }, { 255, 120, 50 } },
+			style = "snow",
+		},
+		CrystalGlitter = {
+			displayName = "Kristall-Glitzern",
+			displayNameEn = "Crystal Glitter",
+			particles = { { 170, 240, 255 }, { 230, 180, 255 } },
+			style = "sparkle",
+		},
+		RainbowSky = {
+			displayName = "Regenbogen",
+			displayNameEn = "Rainbow",
+			particles = { { 255, 90, 90 }, { 255, 210, 70 }, { 110, 220, 110 }, { 90, 160, 255 } },
+			style = "sparkle",
+		},
+		CheeseRain = {
+			displayName = "Käseregen",
+			displayNameEn = "Cheese Rain",
+			particles = { { 255, 210, 80 }, { 250, 180, 50 } },
+			style = "snow",
+		},
 		BubbleStorm = {
 			displayName = "Blasen-Sturm",
 			displayNameEn = "Bubble Storm",
 			particles = { { 200, 240, 255 }, { 150, 220, 255 } },
+			style = "bubbles",
 		},
 		TropicalRain = {
 			displayName = "Tropenregen",
 			displayNameEn = "Tropical Rain",
 			particles = { { 170, 210, 230 }, { 220, 240, 255 } },
+			style = "rain",
 		},
 		Sandstorm = {
 			displayName = "Sandsturm",
 			displayNameEn = "Sandstorm",
 			particles = { { 236, 200, 130 }, { 210, 168, 100 } },
+			style = "dust",
 		},
 		-- World 11 (#85). `lightning`: the effect (#105) adds lightning flashes, but only
 		-- when the player's setting "screen flashes" (#76, Settings.screenFlashes()) is on;
@@ -2405,6 +2489,7 @@ local GameConfig = {
 			displayName = "Gewitter",
 			displayNameEn = "Thunderstorm",
 			particles = { { 160, 170, 200 }, { 210, 215, 240 } },
+			style = "rain",
 			lightning = true,
 		},
 	},
@@ -2450,6 +2535,7 @@ local GameConfig = {
 			eggs = { "GardenEgg", "StoneOvenEgg" },
 			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
 			secretPet = "MozzarellaGhost",
+			weather = "Rain",
 		},
 		{
 			id = "Farm",
@@ -2466,6 +2552,7 @@ local GameConfig = {
 			eggs = { "FarmEgg", "BarnEgg" },
 			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
 			secretPet = "ScarecrowRaven",
+			weather = "Rain",
 		},
 		{
 			id = "Beach",
@@ -2481,6 +2568,7 @@ local GameConfig = {
 			eggs = { "BeachEgg", "ShellEgg" },
 			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
 			secretPet = "TreasureOctopus",
+			weather = "SummerRain",
 		},
 		{
 			id = "Icebergs",
@@ -2496,6 +2584,7 @@ local GameConfig = {
 			eggs = { "IceEgg", "GlacierEgg" },
 			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
 			secretPet = "AuroraWolf",
+			weather = "Snow",
 		},
 		{
 			id = "Volcano",
@@ -2512,6 +2601,7 @@ local GameConfig = {
 			eggs = { "VolcanoEgg", "MagmaEgg" },
 			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
 			secretPet = "ObsidianDragon",
+			weather = "AshCloud",
 		},
 		{
 			id = "CandyLand",
@@ -2528,6 +2618,7 @@ local GameConfig = {
 			eggs = { "CandyEgg", "BonbonEgg" },
 			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
 			secretPet = "GingerbreadGolem",
+			weather = "CandyRain",
 		},
 		{
 			id = "Space",
@@ -2544,6 +2635,7 @@ local GameConfig = {
 			eggs = { "SpaceEgg", "NebulaEgg" },
 			-- Secret pet of this world (#81): a separate 1 in 20,000 roll per egg.
 			secretPet = "BlackHoleCat",
+			weather = "MeteorShower",
 		},
 		-- World 8 (#82), the pattern for worlds 9-15: toppings, one egg with 6 pets, a Secret
 		-- pet, a shop (shops.World8Shop), weather, island theme (islands.themes.Atlantis,

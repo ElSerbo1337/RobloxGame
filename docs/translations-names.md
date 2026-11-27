@@ -297,9 +297,9 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | World10Shop | Wüsten-Shop | Desert Shop | Wüsten-Pyramiden | #84 |
 | World11Shop | Spuk-Shop | Spooky Shop | Spukschloss | #85 |
 
-## Wetter (4)
+## Wetter (14)
 
-Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte kommen mit #105.
+Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte seit #105. Die Wetter der Welten 12–15 stehen schon in der Config.
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -307,6 +307,16 @@ Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte kommen mit #1
 | TropicalRain | Tropenregen | Tropical Rain | Dschungel-Tempel | #83 |
 | Sandstorm | Sandsturm | Sandstorm | Wüsten-Pyramiden | #84 |
 | Thunderstorm | Gewitter | Thunderstorm | Spukschloss | #85, Blitze nur mit „Bildschirm-Blitze“ an (#76) |
+| Rain | Regen | Rain | Pizzeria-Garten, Bauernhof | #105 |
+| Snow | Schneefall | Snowfall | Eisberge | #105 |
+| AshCloud | Aschewolke | Ash Cloud | Vulkan | #105 |
+| CandyRain | Zuckerregen | Candy Rain | Süßigkeitenland | #105 |
+| SummerRain | Sommerregen | Summer Rain | Strand | #105 |
+| MeteorShower | Sternschnuppen | Meteor Shower | Weltraum | #105 |
+| AshRain | Ascheregen | Ash Rain | Welt 12 | #105, Welt folgt |
+| CrystalGlitter | Kristall-Glitzern | Crystal Glitter | Welt 13 | #105, Welt folgt |
+| RainbowSky | Regenbogen | Rainbow | Welt 14 | #105, Welt folgt |
+| CheeseRain | Käseregen | Cheese Rain | Welt 15 | #105, Welt folgt |
 
 ## Sonstige: Seltenheiten (7)
 

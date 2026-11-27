@@ -25,6 +25,7 @@ local features = Features.new({
 	dailyQuests = true,
 	weeklyQuests = true,
 	travelingMerchant = true,
+	weather = true,
 	stats = true,
 	titles = true,
 })
@@ -104,6 +105,7 @@ describe("admin registry", function()
 			"rerollQuests",
 			"completePetIndex",
 			"simulateFriends",
+			"startWeather",
 			"addStat",
 			"giveWeeklyChampion",
 			"resetProgress",
@@ -452,6 +454,7 @@ describe("admin actions for golden toppings (#94)", function()
 			TestConfig,
 			Features.new({
 				travelingMerchant = true,
+				weather = true,
 				adminPanel = true,
 				stats = true,
 				titles = true,
@@ -539,6 +542,7 @@ describe("admin Secret pet actions (#81)", function()
 			config,
 			Features.new({
 				travelingMerchant = true,
+				weather = true,
 				adminPanel = true,
 				stats = true,
 				titles = true,
@@ -625,6 +629,7 @@ describe("pet variant admin actions (#80)", function()
 			config,
 			Features.new({
 				travelingMerchant = true,
+				weather = true,
 				adminPanel = true,
 				stats = true,
 				titles = true,
@@ -688,6 +693,7 @@ describe("pet level admin action (#90)", function()
 			config,
 			Features.new({
 				travelingMerchant = true,
+				weather = true,
 				adminPanel = true,
 				stats = true,
 				titles = true,
@@ -717,6 +723,7 @@ describe("admin lucky wheel (#98)", function()
 		TestConfig,
 		Features.new({
 			travelingMerchant = true,
+			weather = true,
 			adminPanel = true,
 			stats = true,
 			titles = true,
@@ -840,6 +847,16 @@ describe("admin friends action (#102)", function()
 		local off = admin.run(ADMIN, result.state, "simulateFriends", { 0 }, ctx)
 		expect(rules.friendsCount(off.state)).toBe(0)
 		expect(admin.run(ADMIN, player(), "simulateFriends", { 6 }, ctx).reason).toBe("InvalidArgument")
+	end)
+end)
+
+describe("admin weather action (#105)", function()
+	it("startWeather accepts only worlds that have a weather and keeps the state", function()
+		local state = player()
+		local result = admin.run(ADMIN, state, "startWeather", { "PizzeriaGarden" }, ctx)
+		expect(result.ok).toBe(true)
+		expect(result.state).toBe(state)
+		expect(admin.run(ADMIN, state, "startWeather", { "Farm" }, ctx).reason).toBe("InvalidArgument")
 	end)
 end)
 

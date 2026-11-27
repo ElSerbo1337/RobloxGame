@@ -96,14 +96,15 @@ function ToppingField.get(self: ToppingField, slotId: number): Topping?
 end
 
 -- Removes the topping from the field. Returns false if the slot is empty, so a
--- topping can only ever be taken by one player.
-function ToppingField.take(self: ToppingField, slotId: number, now: number): boolean
+-- topping can only ever be taken by one player. `spawnMultiplier` (default 1) speeds up
+-- the refill, e.g. 1.2 during weather (#105, Weather.spawnMultiplier): +20 % toppings.
+function ToppingField.take(self: ToppingField, slotId: number, now: number, spawnMultiplier: number?): boolean
 	local slot = self._slots[slotId]
 	if slot == nil or slot.topping == nil then
 		return false
 	end
 	slot.topping = nil
-	slot.respawnAt = now + self._respawnSeconds
+	slot.respawnAt = now + self._respawnSeconds / math.max(spawnMultiplier or 1, 1)
 	return true
 end
 

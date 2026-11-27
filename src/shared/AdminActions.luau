@@ -510,6 +510,32 @@ AdminActions.BUILT_IN = {
 		end,
 	},
 	{
+		-- Weather (#105): starts the chosen world's weather now for its full length. The
+		-- weather is shared by the server, so the state stays as it is; AdminService then
+		-- tells WeatherService (Weather.activeAt with `forcedAt`).
+		id = "startWeather",
+		feature = "weather",
+		params = {
+			{
+				name = "world",
+				kind = "choice",
+				names = "world",
+				choices = function(config)
+					local list = {}
+					for _, world in config.worlds do
+						if world.weather and config.weathers and config.weathers[world.weather] then
+							table.insert(list, world.id)
+						end
+					end
+					return list
+				end,
+			},
+		},
+		run = function(_env, state)
+			return { ok = true, state = state }
+		end,
+	},
+	{
 		-- Lifetime stats (#103): raises a lifetime counter (badges are then awarded at once).
 		id = "addStat",
 		feature = "stats",
