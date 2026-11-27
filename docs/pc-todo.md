@@ -2015,6 +2015,33 @@ Studio, Rojo verbinden, **Play** (als Admin):
 - [ ] Musik-ID für `Music_DinoAge` eintragen (Suchbegriffe in `SoundList.luau`).
 - [ ] Handy: Bildrate auf der Dino-Insel ok.
 
+## MEGA UPDATE – #87 Welt 13 Kristallhöhle
+
+Fünfte neue Welt nach dem Atlantis-Muster: violett-graue Höhleninsel mit **Kristall-Rand** (niedrige Höhlenfels-Mauer, aus jedem zweiten Stück ragt ein Kristall, jeder sechste leuchtet), Amethyst-Glasbrücke, **Kristallgrotte** hinten links auf der Terrasse (Felsbogen mit Tropfsteinen über einem leuchtenden **unterirdischen See**, Kristallbündel mit großem **Herz-Kristall**, Felsbrocken); Kristallgruppen, Leuchtpilze, Stalagmiten, kleine leuchtende Tümpel, Lichtpünktchen und Höhlennebel (alles per Skript, ~320 Teile, kein Import nötig). **Nacht (#105):** jeder zweite Pilzhut, die Tümpel, der See und der Herz-Kristall tragen `NightLight` und leuchten nachts auf. 3 Beläge (Kristall-Salz, Leucht-Pilz, Amethyst-Olive), **Kristall-Ei** (Muster „Kristalle“) mit 6 Pets (Kristall-Fledermaus, Leuchtpilz-Schnecke, Amethyst-Igel, Höhlen-Axolotl, Geoden-Golem, Prisma-Drache), Geheim-Pet **Diamant-Maulwurfkönig**, Kristall-Shop. Braucht **7 Rebirths** + 1,8 Bio. Münzen (vorläufig, #108). Wetter **„Kristall-Glitzern“** (Eintrag aus #105). Musik `Music_CrystalCave` (aus #112) hat noch **keine ID**. Geheime Truhe (#100): Anker `SecretChestAnchor` auf der **rechten** Terrasse. Vorschau: `assets/previews/worlds/CrystalCave.png`, Insel: `assets/previews/islands/World13_Overview.jpg`.
+
+Vorher: `lune run test` → alle grün (u. a. `WorldDeco.spec` „crystal cave deco (#87)“, `WorldModels.spec`).
+
+**Modelle importieren** (eine Datei für die ganze Welt):
+
+- [ ] **Home → Import 3D** → `assets/models/worlds/CrystalCave.fbx` → *Rig Type* = **No Rig** → **Import**, das Model `CrystalCave` nach `ReplicatedStorage → GameAssets → Models → Worlds` ziehen. Kontrolle: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.CrystalCave:GetChildren())` → **11** (`CrystalSalt`, `GlowMushroom`, `AmethystOlive`, `CrystalBat`, `GlowshroomSnail`, `AmethystHedgehog`, `CaveAxolotl`, `GeodeGolem`, `PrismDragon`, `DiamondMoleKing`, `CrystalEgg`).
+
+Ohne Import läuft alles mit Platzhaltern (Scheiben, Kugeln, Platzhalter-Ei).
+
+Studio, Rojo verbinden, **Play** (als Admin):
+
+- [ ] Output ohne rote Fehler beim Start (Insel 13 wird gebaut, auch ohne Import).
+- [ ] Admin-Panel → **Rebirths setzen** 7 → **Welt freischalten** bis Welt 12 → zum Tor der Kristallhöhle: Preisschild 1,8 Bio., mit **Münzen geben** kaufen → Tor offen. Mit 6 Rebirths: „Ab 7 Rebirths“.
+- [ ] Insel ansehen: Kristall-Rand (Mauer hält Spieler, Kristalle nicht im Weg), Glasbrücke, Grotte mit Bogen, Tropfsteinen, See und Herz-Kristall (Bogen-Säulen fest, nichts schwebt), Kristalle, Pilze, Stalagmiten, Tümpel, Lichtpünktchen, Nebel. Nichts auf Weg/Feld/vor Stationen; man bleibt an Stalagmiten nicht hängen.
+- [ ] Nacht abwarten (oder Admin-Zeit, falls vorhanden): Pilzhüte, Tümpel, See und Herz-Kristall leuchten auf, morgens wieder aus. Bildrate trotz ~18 Nachtlichtern ok?
+- [ ] Wetter „Kristall-Glitzern“ erscheint auf der Kristall-Insel (funkelnde Pünktchen in Cyan/Lila).
+- [ ] Rechte Terrasse: `Workspace → … CrystalCave → Anchors → SecretChestAnchor` liegt auf der Terrasse, frei von Deko (Attribut `ClearRadius` = 5).
+- [ ] Beläge Kristall-Salz/Leucht-Pilz/Amethyst-Olive sammeln, verkaufen; Namen de/en.
+- [ ] Kristall-Ei (ein Stand): 6 Pets + „??? (Geheim)“, öffnen; **Geheim-Pet geben** → Welt Kristallhöhle → Diamant-Maulwurfkönig.
+- [ ] Kristall-Shop, Portal (Teleport), Telefon/Lieferwagen mit Kristall-Belägen.
+- [ ] Grafik **Niedrig** → Pilz-Tupfen, kleine Pilze, kleine Stalagmiten, Tümpel-Steine weg; **Hoch** → alles wieder da. `worldDeco` aus → keine Skript-Deko.
+- [ ] Musik-ID für `Music_CrystalCave` eintragen (Suchbegriffe in `SoundList.luau`).
+- [ ] Handy: Bildrate auf der Kristall-Insel ok.
+
 ## MEGA UPDATE – #99 Codes
 
 Neu: Codes im Einstellungs-Menü (Feld aus #76) werden jetzt vom Server geprüft (`src/server/CodeService.luau`, Regeln `rules.redeemCode`). Codes in `GameConfig.codes`: `WELCOME` = 50 Gems, `PIZZA` = 2 Glücks-Tränke, beide bis 31.12.2026 23:59 deutscher Zeit, einmal pro Spieler. Schalter: `GameConfig.features.codes`.
