@@ -321,6 +321,34 @@ describe("GameConfig", function()
 		expect(rules.teleport(result.state, "DinoAge").ok).toBe(true)
 	end)
 
+	it(
+		"lets a player with 7 rebirths unlock world 13 (Crystal Cave) after world 12, with crystal glitter (#87)",
+		function()
+			local rules = GameRules.new(GameConfig)
+			local index, cave = 0, nil
+			for i, world in GameConfig.worlds do
+				if world.id == "CrystalCave" then
+					index, cave = i, world
+				end
+			end
+			expect(index).toBe(13)
+			expect(cave.weather).toBe("CrystalGlitter")
+			expect(GameConfig.weathers.CrystalGlitter.displayName).toBe("Kristall-Glitzern")
+			local state = rules.newPlayerState()
+			state.unlockedWorlds = {}
+			for i = 1, index - 1 do
+				table.insert(state.unlockedWorlds, GameConfig.worlds[i].id)
+			end
+			state.coins = cave.unlockPrice
+			state.rebirths = 6
+			expect(rules.unlockWorld(state, "CrystalCave").ok).toBe(false)
+			state.rebirths = 7
+			local result = rules.unlockWorld(state, "CrystalCave")
+			expect(result.ok).toBe(true)
+			expect(rules.teleport(result.state, "CrystalCave").ok).toBe(true)
+		end
+	)
+
 	it("lets a player unlock worlds 2-4 one after another at their barriers", function()
 		local rules = GameRules.new(GameConfig)
 		local state = rules.newPlayerState()
@@ -768,6 +796,7 @@ describe("GameConfig pets and eggs", function()
 			Zigzag = true,
 			Bats = true,
 			Footprints = true,
+			Crystals = true,
 		}
 		local usedColors = {}
 		for eggId, egg in GameConfig.eggs do
@@ -838,10 +867,11 @@ describe("GameConfig worlds and eggs", function()
 		DesertPyramids = 9,
 		HauntedCastle = 10.4,
 		DinoAge = 11.8,
+		CrystalCave = 13.2,
 	}
 
 	it(
-		"makes the best pet of each world follow +75/110/160/230/320/400/500/620/760/900/1040/1180 % and rise",
+		"makes the best pet of each world follow +75/110/160/230/320/400/500/620/760/900/1040/1180/1320 % and rise",
 		function()
 			local previous = 0
 			for _, world in GameConfig.worlds do

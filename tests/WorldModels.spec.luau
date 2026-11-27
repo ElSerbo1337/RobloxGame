@@ -163,4 +163,25 @@ describe("World model packs (#82)", function()
 			"VolcanoPterodactyl",
 		})
 	end)
+	it("lists the Crystal Cave assets: 3 toppings, 6 pets, the Secret pet and the egg (#87)", function()
+		local cave
+		for _, world in GameConfig.worlds do
+			if world.id == "CrystalCave" then
+				cave = world
+			end
+		end
+		expect(WorldPacks.assetsOf(cave)).toEqual({
+			"AmethystHedgehog",
+			"AmethystOlive",
+			"CaveAxolotl",
+			"CrystalBat",
+			"CrystalEgg",
+			"CrystalSalt",
+			"DiamondMoleKing",
+			"GeodeGolem",
+			"GlowMushroom",
+			"GlowshroomSnail",
+			"PrismDragon",
+		})
+	end)
 end)

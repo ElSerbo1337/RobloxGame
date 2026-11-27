@@ -6,7 +6,7 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 
 Änderungswünsche einfach direkt in der Spalte „Englisch“ eintragen oder im Issue kommentieren.
 
-## Pets (113)
+## Pets (120)
 
 ### Welt 1 – Pizzeria-Garten
 
@@ -167,6 +167,17 @@ Vorschläge für alle `displayName`-Einträge aus `src/shared/GameConfig.luau` (
 | LavaAnkylosaurus | Lava-Ankylosaurus | Lava Ankylosaurus | Fossil-Ei | Legendär | |
 | PrimalTRex | Urzeit-T-Rex | Primal T-Rex | Fossil-Ei | Mythisch | |
 
+### Welt 13 – Kristallhöhle (#87)
+
+| Id | Deutsch | Englisch (Vorschlag) | Ei | Seltenheit | Anmerkung |
+| --- | --- | --- | --- | --- | --- |
+| CrystalBat | Kristall-Fledermaus | Crystal Bat | Kristall-Ei | Gewöhnlich | Kristall-Salz-Belag als Thema |
+| GlowshroomSnail | Leuchtpilz-Schnecke | Glowshroom Snail | Kristall-Ei | Ungewöhnlich | Leucht-Pilz-Belag als Thema |
+| AmethystHedgehog | Amethyst-Igel | Amethyst Hedgehog | Kristall-Ei | Selten | Amethyst-Olive-Belag als Thema |
+| CaveAxolotl | Höhlen-Axolotl | Cave Axolotl | Kristall-Ei | Episch | unterirdischer See |
+| GeodeGolem | Geoden-Golem | Geode Golem | Kristall-Ei | Legendär | |
+| PrismDragon | Prisma-Drache | Prism Dragon | Kristall-Ei | Mythisch | |
+
 ### Geheim-Pets (#81)
 
 Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro Ei).
@@ -185,6 +196,7 @@ Eine pro Welt, nicht in der Chancen-Tabelle der Eier (eigener 1:20.000-Wurf pro 
 | ScorpionKing | Skorpionkönig | Scorpion King | Welt 10 (Pyramiden-Ei) | Geheim | #84 |
 | CountFangtastic | Graf Gruselzahn | Count Fangtastic | Welt 11 (Spuk-Ei) | Geheim | #85, freundlicher Vampir-Fledermaus-Graf |
 | PizzasaurusRex | Pizzasaurus Rex | Pizzasaurus Rex | Welt 12 (Fossil-Ei) | Geheim | #86, T-Rex mit Pizza-Krone, in beiden Sprachen gleich |
+| DiamondMoleKing | Diamant-Maulwurfkönig | Diamond Mole King | Welt 13 (Kristall-Ei) | Geheim | #87, Maulwurf mit Grubenhelm-Lampe und Diamant-Krone |
 
 ### Kalender-Pet (#101)
 
@@ -195,7 +207,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | CalendarFox | Kalender-Fuchs | Calendar Fox | – (Login-Kalender Tag 30) | Mythisch | #101 |
 | MerchantCamel | Händler-Kamel | Merchant Camel | – (Reisender Händler) | Mythisch | #107 |
 
-## Beläge (37)
+## Beläge (40)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -236,8 +248,11 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | FernSpinach | Farn-Spinat | Fern Spinach | Dino-Urzeit | #86 |
 | PrehistoricEgg | Urzeit-Ei | Prehistoric Egg | Dino-Urzeit | #86 (Belag, nicht das Fossil-Ei zum Ausbrüten) |
 | AmberHoney | Bernstein-Honig | Amber Honey | Dino-Urzeit | #86 |
+| CrystalSalt | Kristall-Salz | Crystal Salt | Kristallhöhle | #87 |
+| GlowMushroom | Leucht-Pilz | Glow Mushroom | Kristallhöhle | #87 |
+| AmethystOlive | Amethyst-Olive | Amethyst Olive | Kristallhöhle | #87 |
 
-## Welten (12)
+## Welten (13)
 
 | Id | Deutsch | Englisch (Vorschlag) | Anmerkung |
 | --- | --- | --- | --- |
@@ -253,8 +268,9 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | DesertPyramids | Wüsten-Pyramiden | Desert Pyramids | #84 |
 | HauntedCastle | Spukschloss | Haunted Castle | #85 |
 | DinoAge | Dino-Urzeit | Dino Age | #86 |
+| CrystalCave | Kristallhöhle | Crystal Cave | #87 |
 
-## Eier (19)
+## Eier (20)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -277,6 +293,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | PyramidEgg | Pyramiden-Ei | Pyramid Egg | Wüsten-Pyramiden | #84 |
 | SpookyEgg | Spuk-Ei | Spooky Egg | Spukschloss | #85 |
 | FossilEgg | Fossil-Ei | Fossil Egg | Dino-Urzeit | #86 |
+| CrystalEgg | Kristall-Ei | Crystal Egg | Kristallhöhle | #87 |
 
 ## Tränke (6)
 
@@ -302,7 +319,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | TripleOpen | 3 Eier auf einmal | 3 Eggs at Once | Schaltet „3 öffnen“ an jedem Ei frei | Unlocks “Open 3” at every egg | „Open 3“ muss zum Knopftext im Ei-Menü (#67 ff.) passen |
 | GoldLuck | Gold-Glück | Gold Luck | Mehr goldene Beläge (10-facher Wert) | More golden toppings (10x value) | MEGA UPDATE #94 |
 
-## Shops (8)
+## Shops (9)
 
 | Id | Deutsch | Englisch (Vorschlag) | Welt | Anmerkung |
 | --- | --- | --- | --- | --- |
@@ -314,6 +331,7 @@ Nur als Belohnung an Tag 30 des Login-Kalenders, in keinem Ei.
 | World10Shop | Wüsten-Shop | Desert Shop | Wüsten-Pyramiden | #84 |
 | World11Shop | Spuk-Shop | Spooky Shop | Spukschloss | #85 |
 | World12Shop | Dino-Shop | Dino Shop | Dino-Urzeit | #86 |
+| World13Shop | Kristall-Shop | Crystal Shop | Kristallhöhle | #87 |
 
 ## Wetter (14)
 
@@ -332,7 +350,7 @@ Namen der Wetter-Arten (`GameConfig.weathers`); Regeln und Effekte seit #105. Di
 | SummerRain | Sommerregen | Summer Rain | Strand | #105 |
 | MeteorShower | Sternschnuppen | Meteor Shower | Weltraum | #105 |
 | AshRain | Ascheregen | Ash Rain | Dino-Urzeit | #105, #86 |
-| CrystalGlitter | Kristall-Glitzern | Crystal Glitter | Welt 13 | #105, Welt folgt |
+| CrystalGlitter | Kristall-Glitzern | Crystal Glitter | Kristallhöhle | #105, #87 |
 | RainbowSky | Regenbogen | Rainbow | Welt 14 | #105, Welt folgt |
 | CheeseRain | Käseregen | Cheese Rain | Welt 15 | #105, Welt folgt |
 

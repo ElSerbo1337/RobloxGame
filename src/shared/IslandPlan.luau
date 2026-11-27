@@ -434,6 +434,48 @@ local function rimPiece(parts: { PartSpec }, style: string, p: V, q: V, inward: 
 		if i % 4 == 0 then
 			table.insert(parts, ball(tip, 0.6, { name = "RibKnob", color = bone, collide = false, role = "Rim" }))
 		end
+	elseif style == "CrystalRim" then
+		-- Crystal cave (#87): a low wall of cave rock along the edge (collides, keeps players
+		-- in) with a crystal spike (theme.crystals) leaning outwards from every second piece
+		-- and a small one beside it; every sixth big spike glows (Neon without a light).
+		local tones = theme.crystals or { theme.glow or { 170, 120, 255 } }
+		local center = add(scale(add(p, q), 0.5), add(inset, v(0, 0.9, 0)))
+		table.insert(
+			parts,
+			spec("Block", v(2, 1.8 + noise(i, 5) * 0.6, len + 0.3), along(center, dir), {
+				name = "CaveRockWall",
+				color = if i % 3 == 0 then theme.cliffDark else theme.rim,
+				role = "Rim",
+			})
+		)
+		if i % 2 == 0 then
+			local foot = add(add(p, scale(dir, 0.5)), add(inset, v(0, 1.6, 0)))
+			local tip = add(foot, add(scale(inward, -0.9), v(0, 2.6 + noise(i, 9) * 1.8, 0)))
+			local color = tones[(i // 2) % #tones + 1]
+			table.insert(
+				parts,
+				beam(foot, tip, 0.95, 0.95, {
+					name = "RimCrystal",
+					color = color,
+					material = if i % 6 == 0 then "Neon" else "Glass",
+					transparency = if i % 6 == 0 then 0 else 0.1,
+					collide = false,
+					role = "Rim",
+				})
+			)
+			local small = add(foot, scale(dir, 0.18))
+			table.insert(
+				parts,
+				beam(small, add(small, add(scale(inward, 0.5), v(0, 1.4, 0))), 0.5, 0.5, {
+					name = "RimCrystalSmall",
+					color = tones[(i // 2 + 1) % #tones + 1],
+					material = "Glass",
+					transparency = 0.1,
+					collide = false,
+					role = "Rim",
+				})
+			)
+		end
 	elseif style == "IceEdge" then
 		local h = 1.8 + noise(i, 3) * 1.4
 		local center = add(scale(add(p, q), 0.5), add(inset, v(0, h / 2, 0)))
@@ -2288,7 +2330,118 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 		end
 	end
 
+	-- World 13 landmark (#87): a crystal grotto on the terrace - a rock arch (two pillars
+	-- of stacked cave rock, collide, and a lintel) with stalactites hanging from it over a
+	-- glowing underground lake, a big crystal cluster rising from the lake's back shore
+	-- with a heart crystal (lights up at night, #105) and boulders around it.
+	local function crystalGrotto(parts: { PartSpec }, at: V, baseY: number, theme: any)
+		local tones = theme.crystals or { theme.glow or { 170, 120, 255 } }
+		local function p3(dx: number, dy: number, dz: number): V
+			return v(at[1] + dx, baseY + dy, at[3] + dz)
+		end
+		table.insert(
+			parts,
+			disc(p3(0, 0.3, 0), 22, 0.6, { name = "GrottoFloor", color = theme.cliffDark, role = "Landmark" })
+		)
+		-- Underground lake in front of the cluster: glowing water with a stone shore.
+		table.insert(
+			parts,
+			disc(p3(2.5, 0.45, 0), 13, 0.5, { name = "GrottoShore", color = theme.cliff, role = "Landmark" })
+		)
+		table.insert(
+			parts,
+			disc(p3(2.5, 0.72, 0), 11, 0.2, {
+				name = "GrottoLake",
+				color = theme.water or { 70, 190, 240 },
+				material = "Glass",
+				transparency = 0.25,
+				collide = false,
+				role = "Landmark",
+				night = true,
+			})
+		)
+		-- Arch: two pillars of stacked rocks at the sides and a lintel over the lake.
+		for _, s in { -1, 1 } do
+			for k = 1, 5 do
+				local d = 4.2 - k * 0.35
+				table.insert(
+					parts,
+					disc(p3(2 + (k % 2) * 0.4, (k - 0.5) * 2.4, s * 7.2), d, 2.6, {
+						name = "GrottoPillar",
+						color = if k % 2 == 0 then theme.cliff else theme.cliffLight,
+						role = "Landmark",
+					})
+				)
+			end
+		end
+		table.insert(
+			parts,
+			beam(p3(2, 12.4, -7.6), p3(2.4, 13, 7.6), 3.4, 2.4, {
+				name = "GrottoLintel",
+				color = theme.cliff,
+				collide = false,
+				role = "Landmark",
+			})
+		)
+		-- Stalactites hanging from the lintel (pointing down, slightly tilted).
+		for k = -2, 2 do
+			local top = p3(2.2, 11.4, k * 2.6)
+			local len = 2.2 + (2 - math.abs(k)) * 0.9
+			table.insert(
+				parts,
+				beam(top, add(top, v(0.3, -len, 0.2)), 0.9, 0.9, {
+					name = "Stalactite",
+					color = theme.cliffLight,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		-- Crystal cluster on the back shore: a ring of leaning crystals around the heart.
+		for k = 1, 7 do
+			local angle = k * 2 * math.pi / 7
+			local base = p3(-3 + math.cos(angle) * 1.6, 0.8, math.sin(angle) * 1.6)
+			local h = 4 + noise(k, 13) * 3.5
+			local tip = add(base, v(math.cos(angle) * h * 0.35, h, math.sin(angle) * h * 0.35))
+			table.insert(
+				parts,
+				beam(base, tip, 1.3, 1.3, {
+					name = "GrottoCrystal",
+					color = tones[k % #tones + 1],
+					material = if k % 3 == 0 then "Neon" else "Glass",
+					transparency = if k % 3 == 0 then 0 else 0.1,
+					collide = false,
+					role = "Landmark",
+				})
+			)
+		end
+		table.insert(
+			parts,
+			beam(p3(-3, 0.8, 0), p3(-3.3, 10.5, 0.2), 2.4, 2.4, {
+				name = "HeartCrystal",
+				color = theme.amethyst or { 170, 110, 255 },
+				material = "Glass",
+				transparency = 0.05,
+				collide = false,
+				role = "Landmark",
+				night = true,
+			})
+		)
+		-- Boulders around the grotto.
+		for k, b in { { -8, -5, 3 }, { -8.5, 4, 2.4 }, { 7.5, -4.5, 1.8 }, { -6, 7.5, 2 } } do
+			table.insert(
+				parts,
+				ball(p3(b[1], b[3] * 0.35, b[2]), b[3], {
+					name = "GrottoBoulder",
+					color = if k % 2 == 0 then theme.cliff else theme.cliffLight,
+					role = "Landmark",
+				})
+			)
+		end
+	end
+
 	local LANDMARKS = {
+		CrystalGrotto = crystalGrotto,
 		DinoSkeleton = dinoSkeleton,
 		HauntedCastle = hauntedCastle,
 		SteppedTemple = steppedTemple,
@@ -3522,6 +3675,146 @@ function IslandPlan.new(config: any, worlds: { any }, eventWorlds: { any }?): Pl
 					})
 				)
 			end
+		end
+		return parts
+	end
+
+	-- Crystal cave kits (#87). GlowShroom: a mushroom with a pale stem and a glowing cap
+	-- (every second cap lights up at night, #105), spots on the cap and a small mushroom
+	-- beside it (optional). Stalagmite: two to four rock spikes rising from the floor (the
+	-- biggest collides). CavePool: a small glowing pool in a stone ring (lights up at night).
+	function DECO_KITS.GlowShroom(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {}
+		local cap = colors[(k - 1) % math.max(#colors, 1) + 1] or theme.glow
+		local stem = { 230, 226, 240 }
+		local h = size * 0.7
+		table.insert(
+			parts,
+			disc(add(at, v(0, h / 2, 0)), size * 0.22, h, {
+				name = "GlowShroomStem",
+				color = stem,
+				collide = false,
+				role = "Mushroom",
+				deco = true,
+			})
+		)
+		table.insert(
+			parts,
+			spec("Ball", v(size * 0.9, size * 0.38, size * 0.9), yawed(add(at, v(0, h, 0)), yaw), {
+				name = "GlowShroomCap",
+				color = cap,
+				material = "Neon",
+				collide = false,
+				role = "Mushroom",
+				deco = true,
+				night = k % 2 == 0,
+			})
+		)
+		for s = 1, 2 do
+			local angle = yaw + s * 2.6
+			table.insert(
+				parts,
+				ball(
+					add(at, v(math.cos(angle) * size * 0.22, h + size * 0.15, math.sin(angle) * size * 0.22)),
+					size * 0.12,
+					{
+						name = "GlowShroomSpot",
+						color = { 245, 245, 255 },
+						collide = false,
+						role = "Mushroom",
+						deco = true,
+						detail = true,
+					}
+				)
+			)
+		end
+		local side = add(at, v(math.cos(yaw) * size * 0.5, 0, math.sin(yaw) * size * 0.5))
+		table.insert(
+			parts,
+			disc(add(side, v(0, h * 0.22, 0)), size * 0.1, h * 0.44, {
+				name = "GlowShroomStem",
+				color = stem,
+				collide = false,
+				role = "Mushroom",
+				deco = true,
+				detail = true,
+			})
+		)
+		table.insert(
+			parts,
+			spec("Ball", v(size * 0.4, size * 0.18, size * 0.4), yawed(add(side, v(0, h * 0.44, 0)), yaw), {
+				name = "GlowShroomCapSmall",
+				color = colors[k % math.max(#colors, 1) + 1] or cap,
+				material = "Neon",
+				collide = false,
+				role = "Mushroom",
+				deco = true,
+				detail = true,
+			})
+		)
+		return parts
+	end
+
+	function DECO_KITS.Stalagmite(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local stones = if #colors > 0 then colors else { theme.cliff, theme.cliffLight }
+		local parts = {}
+		local count = 2 + k % 3
+		for b = 1, count do
+			local angle = yaw + b * 2.3
+			local r = if b == 1 then 0 else size * 0.22
+			local base = add(at, v(math.cos(angle) * r, 0, math.sin(angle) * r))
+			local h = size * (1.2 - b * 0.22) * (0.8 + noise(k, b) * 0.4)
+			-- Never exactly upright: a vertical beam has no defined orientation.
+			local tip = add(base, v(math.cos(angle) * 0.25, h, math.sin(angle) * 0.25))
+			local w = size * (0.32 - b * 0.04)
+			table.insert(
+				parts,
+				beam(base, tip, w, w, {
+					name = "Stalagmite",
+					color = stones[(k + b) % #stones + 1],
+					collide = b == 1,
+					role = "Stalagmite",
+					deco = true,
+					detail = b > 2,
+				})
+			)
+		end
+		return parts
+	end
+
+	function DECO_KITS.CavePool(at: V, size: number, yaw: number, colors: { { number } }, k: number, theme: any)
+		local parts = {
+			disc(add(at, v(0, 0.2, 0)), size, 0.4, {
+				name = "CavePoolRim",
+				color = theme.cliffLight,
+				collide = false,
+				role = "Pool",
+				deco = true,
+			}),
+			disc(add(at, v(0, 0.3, 0)), size * 0.8, 0.3, {
+				name = "CavePoolWater",
+				color = colors[1] or theme.water,
+				material = "Glass",
+				transparency = 0.2,
+				collide = false,
+				role = "Pool",
+				deco = true,
+				night = true,
+			}),
+		}
+		for s = 1, 3 do
+			local angle = yaw + s * 2.1
+			table.insert(
+				parts,
+				ball(add(at, v(math.cos(angle) * size * 0.5, 0.3, math.sin(angle) * size * 0.5)), size * 0.2, {
+					name = "CavePoolStone",
+					color = theme.cliff,
+					collide = false,
+					role = "Pool",
+					deco = true,
+					detail = s > 1,
+				})
+			)
 		end
 		return parts
 	end

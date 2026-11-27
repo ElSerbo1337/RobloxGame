@@ -158,6 +158,9 @@ describe("scripted world deco (#82)", function()
 			Embers = true,
 			Stars = true,
 			Bones = true,
+			GlowShroom = true,
+			Stalagmite = true,
+			CavePool = true,
 		}
 		for _, theme in cfg.themes do
 			for _, item in (theme.deco and theme.deco.kits) or {} do
@@ -457,6 +460,89 @@ describe("dino age deco (#86)", function()
 		expect(p[1] > island.center[1]).toBe(true)
 		expect(p[2]).toBe(cfg.groundY + cfg.layout.terraces[2][4])
 		for _, spec in decoParts(dino) do
+			local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+			expect(d > chest.clear).toBe(true)
+		end
+		for _, spec in island.parts do
+			if spec.role == "Landmark" then
+				local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
+				expect(d > chest.clear + 5).toBe(true)
+			end
+		end
+	end)
+end)
+
+describe("crystal cave deco (#87)", function()
+	local cave = indexOf("CrystalCave")
+	local island = plan.worldIsland(cave)
+
+	it("gives the crystal cave crystals, glowing mushrooms, stalagmites, pools, light motes and mist", function()
+		local roles, names = {}, {}
+		for _, spec in decoParts(cave) do
+			roles[spec.role or ""] = (roles[spec.role or ""] or 0) + 1
+			names[spec.name] = (names[spec.name] or 0) + 1
+		end
+		expect((roles.Crystal or 0) >= 60).toBe(true)
+		expect((names.GlowShroomCap or 0) >= 15).toBe(true)
+		expect((names.Stalagmite or 0) >= 30).toBe(true)
+		expect((names.CavePoolWater or 0) >= 3).toBe(true)
+		expect((roles.Fireflies or 0) >= 2).toBe(true)
+		expect((roles.Mist or 0) >= 2).toBe(true)
+	end)
+
+	it("lets no mushroom or pool collide and marks caps and pools to light up at night (#105)", function()
+		local caps, lit = 0, 0
+		for _, spec in decoParts(cave) do
+			if spec.role == "Mushroom" or spec.role == "Pool" then
+				expect(spec.collide).toBe(false)
+			end
+			if spec.name == "GlowShroomCap" then
+				caps += 1
+			end
+			if spec.night then
+				lit += 1
+				-- Not a detail part: the light stays on graphics "Low".
+				expect(spec.detail ~= true).toBe(true)
+				expect(spec.name == "GlowShroomCap" or spec.name == "CavePoolWater").toBe(true)
+			end
+		end
+		-- Every second cap: enough light at night without a light on every mushroom.
+		expect(lit >= caps / 2 and lit <= caps / 2 + 6).toBe(true)
+	end)
+
+	it(
+		"builds a grotto with an arch, stalactites, a glowing lake and a crystal cluster with a heart crystal",
+		function()
+			local found, night = {}, {}
+			for _, spec in island.parts do
+				found[spec.name] = (found[spec.name] or 0) + 1
+				if spec.night then
+					night[spec.name] = true
+				end
+				if spec.role == "Landmark" then
+					expect(IslandPlan.isInsideOutline(island.outline, spec.cframe[1], spec.cframe[3])).toBe(true)
+				end
+			end
+			expect(found.GrottoPillar).toBe(10)
+			expect(found.GrottoLintel).toBe(1)
+			expect(found.Stalactite).toBe(5)
+			expect(found.GrottoLake).toBe(1)
+			expect(found.GrottoCrystal).toBe(7)
+			expect(found.HeartCrystal).toBe(1)
+			expect(night.GrottoLake).toBe(true)
+			expect(night.HeartCrystal).toBe(true)
+			expect((found.CaveRockWall or 0) >= 10).toBe(true)
+			expect((found.RimCrystal or 0) >= 5).toBe(true)
+		end
+	)
+
+	it("keeps a spot for the hidden chest (#100) on the right terrace, free of deco and landmark", function()
+		local chest = island.stations.SecretChest
+		expect(chest ~= nil).toBe(true)
+		local p = chest.position
+		expect(p[1] > island.center[1]).toBe(true)
+		expect(p[2]).toBe(cfg.groundY + cfg.layout.terraces[2][4])
+		for _, spec in decoParts(cave) do
 			local d = math.sqrt((spec.cframe[1] - p[1]) ^ 2 + (spec.cframe[3] - p[3]) ^ 2)
 			expect(d > chest.clear).toBe(true)
 		end

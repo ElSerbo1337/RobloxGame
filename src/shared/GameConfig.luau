@@ -249,6 +249,10 @@ local GameConfig = {
 		FernSpinach = { displayName = "Farn-Spinat", displayNameEn = "Fern Spinach", value = 29300000 },
 		PrehistoricEgg = { displayName = "Urzeit-Ei", displayNameEn = "Prehistoric Egg", value = 50900000 },
 		AmberHoney = { displayName = "Bernstein-Honig", displayNameEn = "Amber Honey", value = 73900000 },
+		-- World 13 (Crystal Cave, #87): about 4.8x world 12 (#86). Provisional, tuned in #108.
+		CrystalSalt = { displayName = "Kristall-Salz", displayNameEn = "Crystal Salt", value = 141000000 },
+		GlowMushroom = { displayName = "Leucht-Pilz", displayNameEn = "Glow Mushroom", value = 244000000 },
+		AmethystOlive = { displayName = "Amethyst-Olive", displayNameEn = "Amethyst Olive", value = 355000000 },
 	},
 
 	-- Coin upgrades bought in shops. `levels` are in buy order: price in coins and the
@@ -1143,6 +1147,45 @@ local GameConfig = {
 			rarity = "Mythic",
 			bonus = 11.8,
 		},
+		-- World 13 (Kristall-Ei, #87): cave critters with crystals; the Mythic one is the
+		-- world's best (+1320 %, the flat curve +140 % per world), the others scaled like the
+		-- fossil egg. Provisional (#108). Models: tools/blender/build_world.py CrystalCave.
+		CrystalBat = {
+			displayName = "Kristall-Fledermaus",
+			displayNameEn = "Crystal Bat",
+			rarity = "Common",
+			bonus = 0.87,
+		},
+		GlowshroomSnail = {
+			displayName = "Leuchtpilz-Schnecke",
+			displayNameEn = "Glowshroom Snail",
+			rarity = "Uncommon",
+			bonus = 1.32,
+		},
+		AmethystHedgehog = {
+			displayName = "Amethyst-Igel",
+			displayNameEn = "Amethyst Hedgehog",
+			rarity = "Rare",
+			bonus = 2.2,
+		},
+		CaveAxolotl = {
+			displayName = "Höhlen-Axolotl",
+			displayNameEn = "Cave Axolotl",
+			rarity = "Epic",
+			bonus = 3.52,
+		},
+		GeodeGolem = {
+			displayName = "Geoden-Golem",
+			displayNameEn = "Geode Golem",
+			rarity = "Legendary",
+			bonus = 6.6,
+		},
+		PrismDragon = {
+			displayName = "Prisma-Drache",
+			displayNameEn = "Prism Dragon",
+			rarity = "Mythic",
+			bonus = 13.2,
+		},
 
 		-- Second egg per world (#39): Selten to Mythisch only, each about 1.5x the bonus of
 		-- the same rarity in the world's first egg. Models: tools/blender/build_pets.py (#40).
@@ -1373,6 +1416,12 @@ local GameConfig = {
 			rarity = "Secret",
 			bonus = 23.6,
 		},
+		DiamondMoleKing = {
+			displayName = "Diamant-Maulwurfkönig",
+			displayNameEn = "Diamond Mole King",
+			rarity = "Secret",
+			bonus = 26.4,
+		},
 	},
 
 	-- Egg id -> price in coins and pets with their chance in percent (must add up to 100).
@@ -1381,7 +1430,7 @@ local GameConfig = {
 	-- to Mythisch), open as soon as the world is unlocked.
 	-- `look`: colours (hex) and pattern of the egg model (tools/blender/build_eggs.py reads
 	-- them from here) and of the placeholder egg. Patterns: Spots, Stripes, Waves, Diamonds,
-	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats, Footprints. `glow` = accent glows (Neon); `fancy` = showier variant
+	-- Cracks, Swirl, Stars, Bubbles, Vines, Zigzag, Bats, Footprints, Crystals. `glow` = accent glows (Neon); `fancy` = showier variant
 	-- (gold band and beads, meant for a second egg per world).
 	eggs = {
 		GardenEgg = {
@@ -1641,6 +1690,21 @@ local GameConfig = {
 				{ pet = "PrimalTRex", chance = 0.5 },
 			},
 		},
+		-- World 13 (#87). Price provisional (#108).
+		CrystalEgg = {
+			displayName = "Kristall-Ei",
+			displayNameEn = "Crystal Egg",
+			look = { color = "5A3C8C", accent = "7FF0FF", pattern = "Crystals", glow = true },
+			price = 60000000000,
+			pets = {
+				{ pet = "CrystalBat", chance = 50 },
+				{ pet = "GlowshroomSnail", chance = 28 },
+				{ pet = "AmethystHedgehog", chance = 15 },
+				{ pet = "CaveAxolotl", chance = 5.5 },
+				{ pet = "GeodeGolem", chance = 1 },
+				{ pet = "PrismDragon", chance = 0.5 },
+			},
+		},
 	},
 
 	-- Shops by id. Each sells its `offers` up to `maxLevel`; bigger shops in later
@@ -1794,6 +1858,24 @@ local GameConfig = {
 			-- Potions sold at the gem counter.
 			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
 		},
+		World13Shop = {
+			worldId = "CrystalCave",
+			displayName = "Kristall-Shop",
+			displayNameEn = "Crystal Shop",
+			offers = {
+				{ upgrade = "PizzaSpace", maxLevel = 8 },
+				{ upgrade = "CollectRange", maxLevel = 8 },
+				{ upgrade = "Magnet", maxLevel = 5 },
+				-- Gem counter
+				{ upgrade = "PetSlots", maxLevel = 5 },
+				{ upgrade = "InventorySpace", maxLevel = 5 },
+				{ upgrade = "WalkSpeed", maxLevel = 5 },
+				{ upgrade = "TripleOpen", maxLevel = 1 },
+				{ upgrade = "GoldLuck", maxLevel = 5 },
+			},
+			-- Potions sold at the gem counter.
+			potions = { "Coins", "Luck", "Speed", "Shiny", "Gold", "Mega" },
+		},
 	},
 
 	-- Flying islands (#27): spawn island, then world 1, 2, ... in a chain along -Z, all at
@@ -1864,12 +1946,15 @@ local GameConfig = {
 		--                | "CoralReef" (with `corals` = knob colours) | "MossyStones" (with `moss`)
 		--                | "Sandstone" | "IronFence" (with `post` stone and `pumpkin` colours)
 		--                | "BoneFence" (lava-rock wall with rib bones in `bone`)
+		--                | "CrystalRim" (cave-rock wall with crystal spikes in `crystals`)
 		--                (low visible rim)
 		--   landmark     "GiantPizza" | "Windmill" | "Lighthouse" | "IcePeak" | "Volcano" | "Cake"
 		--                | "Rocket" | "SunkenTemple" | "SteppedTemple" | "GreatPyramid"
 		--                | "HauntedCastle" (back left terrace; the castle uses ruin/ruinDark,
 		--                `roof`, `ghost`) | "DinoSkeleton" (fossil in `bone` with an `amber`
 		--                stone, two volcanoes in `basalt`/`basaltDark`/`glow` behind it)
+		--                | "CrystalGrotto" (rock arch over a glowing lake in `water`, crystal
+		--                cluster in `crystals` with an `amethyst` heart crystal)
 		--   bridge       "Rope" | "Boardwalk" | "Ice" | "Basalt" | "CandyCane" | "Light": style of
 		--                the bridge leading INTO the world
 		--   trees        tree models scattered along the rim (ModelLibrary names); false = none
@@ -1890,6 +1975,8 @@ local GameConfig = {
 		--                "SpookyTree" (bare, crooked, sometimes a sleeping bat), "Pumpkin"
 		--                (some carved with a glowing face), "Bats" (a small flying flock),
 		--                "Bones" (lying bones, rib cages and skulls in `bone`, #86),
+		--                "GlowShroom" (glowing mushrooms, caps marked `night`), "Stalagmite"
+		--                (rock spikes), "CavePool" (small glowing pool, `night`, #87),
 		--                old worlds (#104): "Lantern" (lamp marked `night` for #105),
 		--                "FlowerBed", "FenceRow", "HayStack", "Shell", "Driftwood", "Starfish",
 		--                "IceSpike", "SnowPile", "BasaltCluster", "Lolli", "CandyStick",
@@ -2523,6 +2610,69 @@ local GameConfig = {
 					},
 				},
 			},
+			-- World 13 (#87): a crystal cave island - violet-grey cave floor, a low rim of cave
+			-- rock with glowing crystal spikes, an amethyst glass bridge, a crystal grotto on the
+			-- terrace (rock arch with stalactites over a glowing underground lake, a big
+			-- crystal cluster with a heart crystal); crystal clusters, glowing mushrooms,
+			-- stalagmites, small glowing pools, light motes and cave mist (scripted deco,
+			-- ~400 parts). Mushroom caps, pools, lake and heart crystal light up at night (#105).
+			-- Hidden chest (#100) on the right terrace.
+			CrystalCave = {
+				grass = { 112, 100, 140 },
+				grassLight = { 130, 118, 160 },
+				field = { 150, 138, 178 },
+				cliff = { 92, 82, 116 },
+				cliffDark = { 64, 58, 84 },
+				cliffLight = { 132, 120, 156 },
+				rim = { 76, 70, 100 },
+				rimStyle = "CrystalRim",
+				crystals = { { 170, 120, 255 }, { 110, 230, 255 }, { 255, 150, 230 } },
+				path = { 176, 166, 196 },
+				pathDark = { 146, 136, 168 },
+				water = { 70, 190, 240 },
+				waterfall = { 160, 236, 255 },
+				wood = { 96, 86, 116 },
+				woodDark = { 70, 62, 88 },
+				rope = { 190, 180, 210 },
+				ice = { 180, 140, 255 },
+				iceDark = { 100, 70, 180 },
+				snow = { 230, 240, 255 },
+				glow = { 120, 240, 255 },
+				amethyst = { 170, 110, 255 },
+				flowers = { { 170, 120, 255 }, { 110, 230, 255 }, { 255, 150, 230 }, { 230, 240, 255 } },
+				flowerStems = false,
+				landmark = "CrystalGrotto",
+				bridge = "Ice",
+				trees = false,
+				accents = { { model = "SpaceCrystal", width = 3 } },
+				secretChest = { 54, -88, 5 },
+				deco = {
+					budget = 400,
+					kits = {
+						{
+							kit = "Crystal",
+							count = 30,
+							size = { 3, 5.5 },
+							colors = { { 170, 120, 255 }, { 110, 230, 255 }, { 255, 150, 230 } },
+						},
+						{
+							kit = "GlowShroom",
+							count = 22,
+							size = { 2.5, 5 },
+							colors = { { 110, 230, 255 }, { 200, 130, 255 }, { 120, 255, 190 } },
+						},
+						{
+							kit = "Stalagmite",
+							count = 22,
+							size = { 4, 8 },
+							colors = { { 92, 82, 116 }, { 118, 106, 146 } },
+						},
+						{ kit = "CavePool", count = 5, size = { 6, 9 }, colors = { { 70, 200, 245 } } },
+						{ kit = "Fireflies", count = 3, size = { 14, 18 }, colors = { { 170, 240, 255 } } },
+						{ kit = "Mist", count = 3, size = { 12, 16 }, colors = { { 200, 190, 240 } } },
+					},
+				},
+			},
 		},
 	},
 
@@ -2548,8 +2698,8 @@ local GameConfig = {
 	-- colours (RGB) of the weather particles; `style`: how they move (client/WeatherFx):
 	-- "rain" (fast streaks), "snow" (slow flakes), "dust" (drifting sideways),
 	-- "bubbles" (rising), "sparkle" (twinkling in the air).
-	-- AshRain is used by world 12 (#86); worlds 13-15 are not built yet: CrystalGlitter,
-	-- RainbowSky and CheeseRain wait here for their world entries.
+	-- AshRain is used by world 12 (#86), CrystalGlitter by world 13 (#87); worlds 14-15 are
+	-- not built yet: RainbowSky and CheeseRain wait here for their world entries.
 	weathers = {
 		Rain = {
 			displayName = "Regen",
@@ -2871,6 +3021,23 @@ local GameConfig = {
 			eggs = { "FossilEgg" },
 			secretPet = "PizzasaurusRex",
 			weather = "AshRain",
+		},
+		-- World 13 (#87), after world 12 (#86). 7 rebirths (spec #72). Price provisional (#108).
+		{
+			id = "CrystalCave",
+			requiredRebirths = 7,
+			displayName = "Kristallhöhle",
+			displayNameEn = "Crystal Cave",
+			unlockPrice = 1800000000000,
+			color = { 150, 100, 230 },
+			toppingSpawns = {
+				{ topping = "CrystalSalt", weight = 55 },
+				{ topping = "GlowMushroom", weight = 30 },
+				{ topping = "AmethystOlive", weight = 15 },
+			},
+			eggs = { "CrystalEgg" },
+			secretPet = "DiamondMoleKing",
+			weather = "CrystalGlitter",
 		},
 	},
 }
