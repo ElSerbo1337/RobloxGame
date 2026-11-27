@@ -492,6 +492,39 @@ def pattern_clouds(look):
     return objs
 
 
+def slice_mesh(r, depth):
+    """A little pizza slice: a flat triangle (tip down) with a rounded crust edge on top."""
+    verts = [(0.0, -r)]
+    for i in range(7):
+        a = math.radians(60 + i * 10)
+        verts.append((math.cos(a) * r * 1.15, math.sin(a) * r * 0.55 + r * 0.15))
+    mesh = bpy.data.meshes.new("Slice")
+    bm = bmesh.new()
+    n = len(verts)
+    bottom = [bm.verts.new((x, y, 0)) for x, y in verts]
+    top = [bm.verts.new((x, y, depth)) for x, y in verts]
+    for i in range(n):
+        j = (i + 1) % n
+        bm.faces.new((bottom[i], bottom[j], top[j], top[i]))
+    bm.faces.new(list(reversed(bottom)))
+    bm.faces.new(top)
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new("Slice", mesh)
+    bpy.context.collection.objects.link(obj)
+    return obj
+
+
+def pattern_slices(look):
+    """Pizza Paradise (#89): little pizza slices around the egg in two staggered rings."""
+    objs = []
+    spots = [(-2.6, -0.3, 0.32), (-1.3, -0.4, 0.3), (0.0, -0.3, 0.34), (1.3, -0.42, 0.3), (2.6, -0.32, 0.32),
+             (-1.95, 0.38, 0.24), (-0.65, 0.42, 0.24), (0.65, 0.34, 0.26), (1.95, 0.42, 0.24)]
+    for i, (theta, u, r) in enumerate(spots):
+        objs.append(on_surface(slice_mesh(r, 0.05), theta, u, lift=-0.02, spin=0.5 * (i % 3) - 0.5))
+    return objs
+
+
 PATTERNS = {
     "Spots": pattern_spots,
     "Stripes": pattern_stripes,
@@ -507,6 +540,7 @@ PATTERNS = {
     "Footprints": pattern_footprints,
     "Crystals": pattern_crystals,
     "Clouds": pattern_clouds,
+    "Slices": pattern_slices,
 }
 
 
