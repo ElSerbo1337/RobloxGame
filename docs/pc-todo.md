@@ -2,6 +2,75 @@
 
 Aufgaben, die nur auf einem Rechner mit Roblox Studio erledigt werden können. Die lokale Claude-Sitzung arbeitet diese Liste bei „sync“ ab und streicht erledigte Punkte.
 
+## MEGA UPDATE – großer Test (#116)
+
+Kurzfassung zum Abhaken, in dieser Reihenfolge. Details zu jedem Punkt stehen weiter unten in den Abschnitten „MEGA UPDATE – #…“. Was rot im Output steht oder nicht klappt: hier unter dem Punkt notieren, die Cloud-Sitzung behebt es.
+
+**0) Vorbereitung**
+
+- [ ] `git checkout update-1` und `git pull` (nicht `main`), danach `rokit install`.
+- [ ] `lune run test` → alle grün.
+- [ ] `rojo serve` starten, Studio öffnen, Plugins → Rojo → **Connect**.
+- [ ] Eigene **private Test-Experience** anlegen (File → Publish to Roblox **as** → neues Spiel, privat), damit das echte Spiel unberührt bleibt. Dort Game Settings → Security → **Enable Studio Access to API Services** an (Speichern, Bestenlisten).
+- [ ] Admin ist User `372358501` (`GameConfig.admin.userIds`): mit diesem Konto in Studio anmelden, sonst fehlt das 🛠️-Panel.
+
+**1) FBX-Import** (Home → Import 3D, *Rig Type* = No Rig, *Insert Using Scene Position* = aus; Namen nicht ändern)
+
+- [ ] Pets → `ReplicatedStorage.GameAssets.Models.Pets`: `assets/models/pets/` MozzarellaGhost, ScarecrowRaven, TreasureOctopus, AuroraWolf, ObsidianDragon, GingerbreadGolem, BlackHoleCat (Geheim-Pets, #81), CalendarFox (#101), MerchantCamel (#107).
+- [ ] Welten → Ordner `ReplicatedStorage.GameAssets.Models.Worlds` anlegen, dann je **eine Datei pro Welt** aus `assets/models/worlds/`: Atlantis, JungleTemple, DesertPyramids, HauntedCastle, DinoAge, CrystalCave, CloudCity, PizzaParadise. Jede muss **11 Kinder** haben: `print(#game.ReplicatedStorage.GameAssets.Models.Worlds.Atlantis:GetChildren())` → 11 (für jede Welt).
+- [ ] Wenn Studio flach importiert (nur MeshParts statt 11 Models): hier notieren.
+- [ ] Ort speichern (Ctrl+S), damit die Importe bleiben.
+
+**2) Sound-IDs**
+
+- [ ] Alle leeren `id = ""` in `src/shared/SoundList.luau` füllen (Suchbegriffe stehen dort bei `search`; Toolbox → Audio, Creator „Roblox“). Liste: Abschnitt „#112 → Sound-IDs suchen“ unten. Danach `lune run test`.
+
+**3) Smoke-Test** (Play als neuer Spieler)
+
+- [ ] Spielstand leeren (Bearbeitungsmodus, Command Bar, siehe #73) → **Play**: Ladebildschirm mit Pizza und Tipps, danach 0 Münzen, Welt 1, Tutorial 1/4.
+- [ ] Tutorial komplett durchspielen.
+- [ ] Output beim Start und nach 2 Minuten: **keine roten Fehler**, keine `[Save]`-Warnung (gelbe `[Badges]`-Warnungen in Studio sind ok).
+- [ ] Stop → erneut Play (Rejoin): Münzen, Pets, Einstellungen sind noch da.
+
+**4) Kernschleife und Systeme** (mit dem 🛠️-Admin-Panel)
+
+- [ ] Sammeln, Ofen verkaufen, goldene Beläge, Shop-Upgrades, Tränke (auch Shiny/Gold/Mega).
+- [ ] Eier öffnen (1er/3er), Ei-Vorschau mit echten Chancen, Shiny, Geheim-Pet + Banner.
+- [ ] Pets: Verschmelzen (Gold, Regenbogen), Level, Sperren, Umbenennen, Mehrfach-Löschen, Auto-Löschen, Teams.
+- [ ] Quests (Tag/Woche, Neuwürfeln, Bonus-Truhe), Glücksrad, Login-Kalender 30 Tage, Geschenke – Admin **Tage vorspulen** zum Zurücksetzen.
+- [ ] Codes `WELCOME` und `PIZZA`, Pet-/Belag-Index, Profil und Titel, Händler (Admin: **Händler jetzt erscheinen lassen**), Freunde-Bonus (Admin: **Freunde-Anzahl simulieren**), Lieferdienst, Rebirth.
+
+**5) Alle 15 Welten anspielen** (Admin: **Rebirths setzen**, **Münzen geben**, **Welten freischalten (bis)**)
+
+- [ ] Welten 1–7: neue Deko (#104), Tag/Nacht und Wetter (Admin: **Wetter jetzt starten**).
+- [ ] Welten 8–15 (Atlantis bis Pizza-Paradies): Tor-Preis und Rebirth-Grenze, Insel und Wahrzeichen, Beläge, Ei mit Geheim-Pet, Shop, Wetter, Kamerafahrt beim ersten Besuch.
+- [ ] Geheime Truhen in Welt 3, 6, 9, 12, 15 finden (10 Gems, einmal pro Tag).
+- [ ] Welten-Menü (Karten, 3D-Vorschau) und Portal-Teleport in jede Welt.
+- [ ] Grafik **Niedrig**: weniger Deko/Partikel, Bildrate ok.
+
+**6) Menüs und HUD am Handy-Emulator** (Test → Device: ein Handy quer, ein Tablet)
+
+- [ ] Seitenleiste mit „Mehr“ (⋯): alle Kacheln erreichbar, rote Punkte stimmen.
+- [ ] Jedes Menü einmal öffnen: nichts ragt aus dem Bild, Scrollen klappt, nur ein Menü gleichzeitig.
+- [ ] HUD: Boni-Pillen (Tränke, Wetter, Freunde), Auftrag, Ei-Vorschau, 🛠️-Knopf, Geheim-Banner überlappen nicht und liegen nicht auf Joystick/Sprungknopf.
+- [ ] Sprache Englisch (Workspace-Attribut `Language` = `en`): keine Texte wie `notify.…` oder abgeschnittene Zeilen.
+
+**7) Badges**
+
+- [ ] Die 16 Badges aus `docs/store/badges.md` im Creator Hub anlegen (im **echten** Spiel) und die IDs in `GameConfig.badges` (`badgeId`) eintragen, committen.
+
+**8) Spielseite und Freigabe**
+
+- [ ] Beschreibung, Icon und Thumbnails aus `docs/store/mega-update.md` und `docs/store/mega/` (de/en) hochladen.
+- [ ] Altersfragebogen (Experience Questionnaire) im Creator Hub ausfüllen bzw. prüfen.
+- [ ] Echter Handy-Test im Team-Test oder in der privaten Test-Experience (Bildrate, Bedienung, Badges).
+
+**9) Merge und Publish** (erst wenn 3–8 erledigt sind)
+
+- [ ] `update-1` nach `main` mergen (Pull Request), `git pull` auf `main`.
+- [ ] Studio mit Rojo auf `main` verbinden, im **echten** Spiel File → Publish to Roblox.
+- [ ] Nach dem Publish einmal live joinen: Start ohne Fehler (Developer Console F9), Speichern klappt.
+
 - [x] Rojo-Verbindung testen: Play drücken, im Output müssen `[RobloxGame] Server gestartet` und `[RobloxGame] Client gestartet` stehen.
 - [x] Baseplate per File → Publish to Roblox veröffentlichen (falls noch nicht geschehen). _(16.11.2026: neue Experience „Pizza Topping Simulator“, privat)_
 
